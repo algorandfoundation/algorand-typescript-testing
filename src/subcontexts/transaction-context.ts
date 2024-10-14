@@ -162,6 +162,10 @@ export class TransactionGroup {
     return this.constructingItxnGroup.at(-1)!
   }
 
+  getScratchSpace() {
+    return this.activeTransaction.scratchSpace
+  }
+
   getScratchSlot(index: internal.primitives.StubUint64Compat): bytes | uint64 {
     return this.activeTransaction.getScratchSlot(index)
   }
