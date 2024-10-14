@@ -429,4 +429,23 @@ describe('State op codes', async () => {
       })
     })
   })
+
+  describe('Block', async () => {
+    it('should return the correct field value of the block', async () => {
+      const index = 42
+      const seed = 123
+      const timestamp = 1234567890
+      ctx.ledger.setBlock(index, seed, timestamp)
+      const seedResult = op.btoi(op.Block.blkSeed(Uint64(index)))
+      const timestampResult = op.Block.blkTimestamp(Uint64(index))
+
+      expect(seedResult).toEqual(Uint64(seed))
+      expect(timestampResult).toEqual(Uint64(timestamp))
+    })
+    it('should throw error if the block is not set', async () => {
+      const index = 42
+      expect(() => op.Block.blkSeed(Uint64(index))).toThrow('Block 42 not set')
+      expect(() => op.Block.blkTimestamp(Uint64(index))).toThrow('Block 42 not set')
+    })
+  })
 })

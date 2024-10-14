@@ -6,6 +6,11 @@ import { AssetData } from '../impl/asset'
 import { asBigInt, asBytesCls, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64Cls, iterBigInt } from '../util'
 import { GlobalData } from '../impl/global'
 
+interface BlockData {
+  seed: bigint
+  timestamp: bigint
+}
+
 export class LedgerContext {
   appIdIter = iterBigInt(1001n, MAX_UINT64)
   assetIdIter = iterBigInt(1001n, MAX_UINT64)
@@ -13,6 +18,7 @@ export class LedgerContext {
   appIdContractMap = new Map<bigint, BaseContract>()
   accountDataMap = new Map<string, AccountData>()
   assetDataMap = new Map<bigint, AssetData>()
+  blocks = new Map<bigint, BlockData>()
   globalData = new GlobalData()
 
   addAppIdContractMap(appId: internal.primitives.StubUint64Compat, contract: BaseContract): void {
@@ -75,5 +81,25 @@ export class LedgerContext {
       ...this.globalData,
       ...data,
     }
+  }
+
+  setBlock(
+    index: internal.primitives.StubUint64Compat,
+    seed: internal.primitives.StubUint64Compat,
+    timestamp: internal.primitives.StubUint64Compat,
+  ): void {
+    const i = asBigInt(index)
+    const s = asBigInt(seed)
+    const t = asBigInt(timestamp)
+
+    this.blocks.set(i, { seed: s, timestamp: t })
+  }
+
+  getBlockContent(index: internal.primitives.StubUint64Compat): BlockData {
+    const i = asBigInt(index)
+    if (this.blocks.has(i)) {
+      return this.blocks.get(i)!
+    }
+    throw internal.errors.internalError(`Block ${i} not set`)
   }
 }
