@@ -1,19 +1,10 @@
 import { Account, Application, arc4, Asset, bytes, internal, TransactionType, uint64 } from '@algorandfoundation/algo-ts'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asNumber, asUint64, asUint64Cls } from '../util'
-// import {
-//   getApplicationTransaction,
-//   getAssetConfigTransaction,
-//   getAssetFreezeTransaction,
-//   getAssetTransferTransaction,
-//   getKeyRegistrationTransaction,
-//   getPaymentTransaction,
-//   getTransaction,
-// } from './gtxn'
 
 export const gaid = (a: internal.primitives.StubUint64Compat): uint64 => {
   const group = lazyContext.activeGroup
-  const transaction = group.transactions[asNumber(a)]
+  const transaction = group.getTransaction(a)
   if (transaction.type === TransactionType.ApplicationCall) {
     return transaction.createdApp.id
   } else if (transaction.type === TransactionType.AssetConfig) {

@@ -32,6 +32,7 @@ import assetParamsAppSpecJson from './artifacts/state-ops/data/StateAssetParamsC
 import { asUint8Array } from './util'
 import { InnerTxn } from '../src/impl/itxn'
 import { ApplicationTransaction } from '../src/impl/transactions'
+import { gloadBytes, gloadUint64 } from '../src/impl'
 
 describe('State op codes', async () => {
   const ctx = new TestExecutionContext()
@@ -384,6 +385,48 @@ describe('State op codes', async () => {
       expect(ctx.txn.lastGroup.getScratchSlot(index)).toEqual(value)
 
       expect(() => ctx.txn.lastGroup.getScratchSlot(256)).toThrow('invalid scratch slot')
+    })
+  })
+
+  describe('gloadBytes', async () => {
+    it('should return the correct field value of the scratch slot', async () => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(0), Bytes('hello'), Bytes('world')] })]).execute(() => {
+        const slot1 = gloadBytes(0, 1)
+        const slot2 = gloadBytes(0, 2)
+        expect(asUint8Array(slot1)).toEqual(asUint8Array('hello'))
+        expect(asUint8Array(slot2)).toEqual(asUint8Array('world'))
+      })
+    })
+    it('should throw error if the scratch slot is not a bytes type', async () => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(0), Bytes('hello'), Bytes('world')] })]).execute(() => {
+        expect(() => gloadBytes(0, 0)).toThrow('invalid scratch slot type')
+      })
+    })
+    it('should throw error if the scratch slot is out of range', async () => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(0), Bytes('hello'), Bytes('world')] })]).execute(() => {
+        expect(() => gloadBytes(0, 256)).toThrow('invalid scratch slot')
+      })
+    })
+  })
+
+  describe('gloadUint64', async () => {
+    it('should return the correct field value of the scratch slot', async () => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(7), Uint64(42), Bytes('world')] })]).execute(() => {
+        const slot0 = gloadUint64(0, 0)
+        const slot1 = gloadUint64(0, 1)
+        expect(asNumber(slot0)).toEqual(7)
+        expect(asNumber(slot1)).toEqual(42)
+      })
+    })
+    it('should throw error if the scratch slot is not a uint64 type', async () => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(7), Uint64(42), Bytes('world')] })]).execute(() => {
+        expect(() => gloadUint64(0, 2)).toThrow('invalid scratch slot type')
+      })
+    })
+    it('should throw error if the scratch slot is out of range', async () => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(7), Uint64(42), Bytes('world')] })]).execute(() => {
+        expect(() => gloadUint64(0, 256)).toThrow('invalid scratch slot')
+      })
     })
   })
 })
