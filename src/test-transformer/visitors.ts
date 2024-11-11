@@ -1,5 +1,7 @@
 import {
   anyPType,
+  ARC4BooleanType,
+  ARC4StringType,
   ARC4StructType,
   ARC4TupleType,
   BoxMapPType,
@@ -106,9 +108,21 @@ class ExpressionVisitor {
       // `voted = LocalState<uint64>()` is resolved to FunctionPType with returnType LocalState<uint64>
       if (type instanceof FunctionPType) type = type.returnType
 
-      if (isGenericType(type)) {
-        const info = getGenericTypeInfo(type)
-        return nodeFactory.captureGenericTypeInfo(ts.visitEachChild(node, this.visit, this.context), JSON.stringify(info))
+      const isGeneric = isGenericType(type)
+      const isArc4Encoded = isArc4EncodedType(type)
+      if (isGeneric || isArc4Encoded) {
+        let updatedNode = node
+        const info = isGeneric ? getGenericTypeInfo(type) : undefined
+        if (isArc4EncodedType(type)) {
+          if (ts.isNewExpression(updatedNode)) {
+            updatedNode = nodeFactory.instantiateARC4EncodedType(updatedNode, info)
+          } else if (ts.isCallExpression(updatedNode) && isCallingARC4EncodedStaticMethod(updatedNode)) {
+            updatedNode = nodeFactory.callARC4EncodedStaticMethod(updatedNode, info)
+          }
+        }
+        return isGeneric
+          ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
+          : ts.visitEachChild(updatedNode, this.visit, this.context)
       }
     }
     return ts.visitEachChild(node, this.visit, this.context)
@@ -172,6 +186,7 @@ class FunctionOrMethodVisitor {
         return nodeFactory.prefixUnaryOp(node.operand, tokenText)
       }
     }
+
     /*
      * capture generic type info in test functions; e.g.
      * ```
@@ -182,7 +197,7 @@ class FunctionOrMethodVisitor {
      *   })
      * ```
      */
-    if (this.isFunction && ts.isVariableDeclaration(node) && node.initializer) {
+    if (ts.isVariableDeclaration(node) && node.initializer) {
       return new VariableInitializerVisitor(this.context, this.helper, node).result()
     }
 
@@ -191,12 +206,17 @@ class FunctionOrMethodVisitor {
      * ```
      *  it('should work', () => {
      *   expect(() => new UintN<32>(2 ** 32)).toThrowError(`expected value <= ${2 ** 32 - 1}`)
+     *   expect(UintN.fromBytes<UintN<32>>('').bytes).toEqual(Bytes())
      * })
      * ```
      */
-    if (this.isFunction && ts.isNewExpression(node)) {
+    if (ts.isNewExpression(node)) {
       return new ExpressionVisitor(this.context, this.helper, node).result()
     }
+    if (ts.isCallExpression(node) && isCallingARC4EncodedStaticMethod(node)) {
+      return new ExpressionVisitor(this.context, this.helper, node).result()
+    }
+
     return node
   }
 }
@@ -277,6 +297,11 @@ const isGenericType = (type: PType): boolean =>
     UintNType,
   )
 
+const isArc4EncodedType = (type: PType): boolean =>
+  instanceOfAny(type, ARC4StructType, ARC4TupleType, DynamicArrayType, StaticArrayType, UFixedNxMType, UintNType) ||
+  type === ARC4StringType ||
+  type === ARC4BooleanType
+
 const getGenericTypeInfo = (type: PType): TypeInfo => {
   const genericArgs: TypeInfo[] | Record<string, TypeInfo> = []
 
@@ -309,4 +334,12 @@ const getGenericTypeInfo = (type: PType): TypeInfo => {
     result.genericArgs = genericArgs
   }
   return result
+}
+
+const isCallingARC4EncodedStaticMethod = (node: ts.CallExpression) => {
+  if (node.expression.kind !== ts.SyntaxKind.PropertyAccessExpression) return false
+  const propertyAccessExpression = node.expression as ts.PropertyAccessExpression
+  const staticMethodNames = ['fromBytes', 'fromLog']
+  const propertyName = propertyAccessExpression.name.kind === ts.SyntaxKind.Identifier ? propertyAccessExpression.name.text : ''
+  return staticMethodNames.includes(propertyName)
 }

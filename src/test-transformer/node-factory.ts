@@ -1,5 +1,6 @@
 import { FunctionPType } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
+import { TypeInfo } from '../encoders'
 import type { DeliberateAny } from '../typescript-helpers'
 import { getPropertyNameAsString } from './helpers'
 
@@ -75,6 +76,30 @@ export const nodeFactory = {
       ),
       undefined,
       [x, factory.createStringLiteral(info)],
+    )
+  },
+
+  instantiateARC4EncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
+    const infoString = JSON.stringify(typeInfo)
+    return factory.createNewExpression(
+      factory.createIdentifier(`runtimeHelpers.${node.expression.getText().replace('arc4.', '')}Impl`),
+      node.typeArguments,
+      [infoString ? factory.createStringLiteral(infoString) : undefined, ...(node.arguments ?? [])].filter((arg) => !!arg),
+    )
+  },
+
+  callARC4EncodedStaticMethod(node: ts.CallExpression, typeInfo?: TypeInfo) {
+    const propertyAccessExpression = node.expression as ts.PropertyAccessExpression
+    const infoString = JSON.stringify(typeInfo)
+    const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
+      factory.createIdentifier(`runtimeHelpers.${propertyAccessExpression.expression.getText().replace('arc4.', '')}Impl`),
+      `${propertyAccessExpression.name.getText()}Impl`,
+    )
+
+    return factory.createCallExpression(
+      updatedPropertyAccessExpression,
+      node.typeArguments,
+      [infoString ? factory.createStringLiteral(infoString) : undefined, ...(node.arguments ?? [])].filter((arg) => !!arg),
     )
   },
 } satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>

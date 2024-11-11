@@ -25,3 +25,7 @@ export function instanceOfAny<T extends Array<{ new (...args: DeliberateAny[]): 
 ): x is InstanceType<T[number]> {
   return types.some((t) => x instanceof t)
 }
+
+export interface IConstructor<T> {
+  new (...args: DeliberateAny[]): T
+}

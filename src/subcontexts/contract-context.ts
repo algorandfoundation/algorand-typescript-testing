@@ -17,12 +17,8 @@ import {
   Transaction,
 } from '../impl/transactions'
 import { getGenericTypeInfo } from '../runtime-helpers'
-import { DeliberateAny } from '../typescript-helpers'
+import { DeliberateAny, IConstructor } from '../typescript-helpers'
 import { asUint64Cls } from '../util'
-
-interface IConstructor<T> {
-  new (...args: DeliberateAny[]): T
-}
 
 type StateTotals = Pick<Application, 'globalNumBytes' | 'globalNumUint' | 'localNumBytes' | 'localNumUint'>
 

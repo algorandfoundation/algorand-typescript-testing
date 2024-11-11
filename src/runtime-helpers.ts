@@ -5,6 +5,7 @@ import { DeliberateAny } from './typescript-helpers'
 import { nameOfType } from './util'
 
 export { attachAbiMetadata } from './abi-metadata'
+export * from './impl/encoded-types'
 
 export function switchableValue(x: unknown): bigint | string | boolean {
   if (typeof x === 'boolean') return x
