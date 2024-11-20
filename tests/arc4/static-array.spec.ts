@@ -1,0 +1,559 @@
+import { Bytes, internal } from '@algorandfoundation/algorand-typescript'
+import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import {
+  Address,
+  Bool,
+  DynamicArray,
+  interpretAsArc4,
+  StaticArray,
+  Str,
+  Struct,
+  Tuple,
+  UFixedNxM,
+  UintN,
+} from '@algorandfoundation/algorand-typescript/arc4'
+import { encodingUtil } from '@algorandfoundation/puya-ts'
+import { ABIType } from 'algosdk'
+import { afterEach, describe, expect, it, test } from 'vitest'
+import { AccountCls } from '../../src/impl/account'
+import { DeliberateAny } from '../../src/typescript-helpers'
+import { asBytes, asUint8Array } from '../../src/util'
+
+const addressStaticArray = {
+  abiType: ABIType.from('address[10]'),
+  nativeValues() {
+    return [
+      asUint8Array(Bytes.fromHex('00'.repeat(32))),
+      asUint8Array(Bytes.fromHex('01'.repeat(32))),
+      asUint8Array(Bytes.fromHex('ff'.repeat(32))),
+      asUint8Array(Bytes.fromHex(`${'00'.repeat(31)}ff`)),
+      asUint8Array(Bytes.fromHex(`${'00'.repeat(30)}${'ff'.repeat(2)}`)),
+      asUint8Array(Bytes.fromHex(`${'00'.repeat(29)}${'ff'.repeat(3)}`)),
+      asUint8Array(Bytes.fromHex(`${'00'.repeat(28)}${'ff'.repeat(4)}`)),
+      asUint8Array(Bytes.fromHex(`${'00'.repeat(27)}${'ff'.repeat(5)}`)),
+      asUint8Array(Bytes.fromHex(`${'00'.repeat(26)}${'ff'.repeat(6)}`)),
+      asUint8Array(Bytes.fromHex(`${'00'.repeat(25)}${'ff'.repeat(7)}`)),
+    ]
+  },
+  abiValues() {
+    return this.nativeValues().map((v) => new Address(Bytes(v)))
+  },
+  array() {
+    return new StaticArray<Address, 10>(...this.abiValues())
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<Address, 10>>(asBytes(value))
+  },
+}
+const boolStaticArray = {
+  abiType: ABIType.from('bool[10]'),
+  nativeValues() {
+    return [true, true, false, true, false, true, true, false, true, false]
+  },
+  abiValues() {
+    return this.nativeValues().map((v) => new Bool(v))
+  },
+  array() {
+    return new StaticArray<Bool, 10>(...this.abiValues())
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<Bool, 10>>(asBytes(value))
+  },
+}
+const uint256StaticArray = {
+  abiType: ABIType.from('uint256[10]'),
+  nativeValues() {
+    return [0n, 1n, 2n, 3n, 2n ** 8n, 2n ** 16n, 2n ** 32n, 2n ** 64n, 2n ** 128n, 2n ** 256n - 1n]
+  },
+  abiValues() {
+    return this.nativeValues().map((v) => new UintN<256>(v))
+  },
+  array() {
+    return new StaticArray<UintN<256>, 10>(...this.abiValues())
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<UintN<256>, 10>>(asBytes(value))
+  },
+}
+const ufixednxmStaticArray = {
+  abiType: ABIType.from('ufixed256x16[10]'),
+  nativeValues() {
+    return this.abiValues().map((v) => v.native.valueOf())
+  },
+  abiValues() {
+    return [
+      new UFixedNxM<256, 16>('0.0'),
+      new UFixedNxM<256, 16>('1.0'),
+      new UFixedNxM<256, 16>('2.0'),
+      new UFixedNxM<256, 16>('3.0'),
+      new UFixedNxM<256, 16>('255.0'),
+      new UFixedNxM<256, 16>('65536.0'),
+      new UFixedNxM<256, 16>('4294967295.0'),
+      new UFixedNxM<256, 16>('1844.6744073709551616'),
+      new UFixedNxM<256, 16>('340282366920938463463374.607431768211456'),
+      new UFixedNxM<256, 16>('11579208923731619542357098500868790785326998466564056403945758.4007913129639935'),
+    ]
+  },
+  array() {
+    return new StaticArray<UFixedNxM<256, 16>, 10>(...this.abiValues())
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<UFixedNxM<256, 16>, 10>>(asBytes(value))
+  },
+}
+const stringStaticArray = {
+  abiType: ABIType.from('string[10]'),
+  nativeValues() {
+    return [
+      '',
+      '1',
+      'hello',
+      'World',
+      (2 ** 8).toString(),
+      (2 ** 16).toString(),
+      (2 ** 32).toString(),
+      (2 ** 64).toString(),
+      (2 ** 128).toString(),
+      (2 ** 256).toString(),
+    ]
+  },
+  abiValues() {
+    return this.nativeValues().map((v) => new Str(v))
+  },
+  array() {
+    return new StaticArray<Str, 10>(...this.abiValues())
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<Str, 10>>(asBytes(value))
+  },
+}
+const addressStaticArrayOfArray = {
+  abiType: ABIType.from('address[10][2]'),
+  nativeValues() {
+    return [addressStaticArray.nativeValues(), addressStaticArray.nativeValues().reverse()]
+  },
+  abiValues() {
+    return this.nativeValues().map((a) => new StaticArray<Address, 10>(...a.map((v) => new Address(Bytes(v)))))
+  },
+  array() {
+    return new StaticArray<StaticArray<Address, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Address, 10>(...a)))
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<StaticArray<Address, 10>, 2>>(asBytes(value))
+  },
+}
+const boolStaticArrayOfArray = {
+  abiType: ABIType.from('bool[10][2]'),
+  nativeValues() {
+    return [boolStaticArray.nativeValues(), boolStaticArray.nativeValues().reverse()]
+  },
+  abiValues() {
+    return this.nativeValues().map((a) => new StaticArray<Bool, 10>(...a.map((v) => new Bool(v))))
+  },
+  array() {
+    return new StaticArray<StaticArray<Bool, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Bool, 10>(...a)))
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<StaticArray<Bool, 10>, 2>>(asBytes(value))
+  },
+}
+const uint256StaticArrayOfArray = {
+  abiType: ABIType.from('uint256[10][2]'),
+  nativeValues() {
+    return [uint256StaticArray.nativeValues(), uint256StaticArray.nativeValues().reverse()]
+  },
+  abiValues() {
+    return this.nativeValues().map((a) => new StaticArray<UintN<256>, 10>(...a.map((v) => new UintN<256>(v))))
+  },
+  array() {
+    return new StaticArray<StaticArray<UintN<256>, 10>, 2>(...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...a)))
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<StaticArray<UintN<256>, 10>, 2>>(asBytes(value))
+  },
+}
+const uint256StaticArrayOfDynamicArray = {
+  abiType: ABIType.from('uint256[][2]'),
+  nativeValues() {
+    return [uint256StaticArray.nativeValues(), uint256StaticArray.nativeValues().reverse()]
+  },
+  abiValues() {
+    return this.nativeValues().map((a) => new DynamicArray<UintN<256>>(...a.map((v) => new UintN<256>(v))))
+  },
+  array() {
+    return new StaticArray<DynamicArray<UintN<256>>, 2>(...this.abiValues().map((a) => new DynamicArray<UintN<256>>(...a)))
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<DynamicArray<UintN<256>>, 2>>(asBytes(value))
+  },
+}
+const stringStaticArrayOfArray = {
+  abiType: ABIType.from('string[10][2]'),
+  nativeValues() {
+    return [stringStaticArray.nativeValues(), stringStaticArray.nativeValues().reverse()]
+  },
+  abiValues() {
+    return this.nativeValues().map((a) => new StaticArray<Str, 10>(...a.map((v) => new Str(v))))
+  },
+  array() {
+    return new StaticArray<StaticArray<Str, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Str, 10>(...a)))
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<StaticArray<Str, 10>, 2>>(asBytes(value))
+  },
+}
+const stringStaticArrayOfArrayOfArray = {
+  abiType: ABIType.from('string[10][3][2]'),
+  nativeValues() {
+    return [
+      [stringStaticArray.nativeValues(), stringStaticArray.nativeValues().reverse(), stringStaticArray.nativeValues()],
+      [stringStaticArray.nativeValues().reverse(), stringStaticArray.nativeValues(), stringStaticArray.nativeValues().reverse()],
+    ]
+  },
+  abiValues() {
+    return this.nativeValues().map(
+      (x) => new StaticArray<StaticArray<Str, 10>, 3>(...x.map((y) => new StaticArray<Str, 10>(...y.map((v) => new Str(v))))),
+    )
+  },
+  array() {
+    return new StaticArray<StaticArray<StaticArray<Str, 10>, 3>, 2>(
+      ...this.abiValues().map((x) => new StaticArray<StaticArray<Str, 10>, 3>(...x)),
+    )
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<StaticArray<StaticArray<Str, 10>, 3>, 2>>(asBytes(value))
+  },
+}
+const tupleStaticArray = {
+  abiType: ABIType.from('(string[],(string[],string,uint256,address),bool,uint256[3])[2]'),
+  nativeValues() {
+    return Array(2).fill([
+      stringStaticArray.nativeValues().slice(0, 2),
+      [
+        stringStaticArray.nativeValues().slice(6, 8),
+        stringStaticArray.nativeValues()[9],
+        uint256StaticArray.nativeValues()[4],
+        addressStaticArray.nativeValues()[5],
+      ],
+      boolStaticArray.nativeValues()[3],
+      uint256StaticArray.nativeValues().slice(4, 7),
+    ])
+  },
+  abiValues() {
+    return Array(2).fill(
+      new Tuple(
+        ...[
+          new DynamicArray<Str>(...stringStaticArray.abiValues().slice(0, 2)),
+          new Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>(
+            new DynamicArray<Str>(...stringStaticArray.abiValues().slice(6, 8)),
+            stringStaticArray.abiValues()[9],
+            uint256StaticArray.abiValues()[4],
+            addressStaticArray.abiValues()[5],
+          ),
+          boolStaticArray.abiValues()[3],
+          new StaticArray<UintN<256>, 3>(...uint256StaticArray.abiValues().slice(4, 7)),
+        ],
+      ),
+    )
+  },
+  array() {
+    return new StaticArray<
+      Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>,
+      2
+    >(...this.abiValues())
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<
+      StaticArray<Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>, 2>
+    >(asBytes(value))
+  },
+}
+class Swapped extends Struct<{
+  b: UintN<256>
+  c: Bool
+  d: Str
+  a: Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<256>, Bool, StaticArray<UintN<256>, 3>]>
+}> {}
+const structStaticArray = {
+  abiType: ABIType.from('(uint256,bool,string,(string[],string[],string,uint256,bool,uint256[3]))[2]'),
+  nativeValues() {
+    return Array(2).fill([
+      uint256StaticArray.nativeValues()[0],
+      boolStaticArray.nativeValues()[1],
+      stringStaticArray.nativeValues()[2],
+      [
+        [stringStaticArray.nativeValues()[3], stringStaticArray.nativeValues()[4]],
+        [stringStaticArray.nativeValues()[5], stringStaticArray.nativeValues()[6]],
+        stringStaticArray.nativeValues()[7],
+        uint256StaticArray.nativeValues()[1],
+        boolStaticArray.nativeValues()[2],
+        [uint256StaticArray.nativeValues()[2], uint256StaticArray.nativeValues()[3], uint256StaticArray.nativeValues()[4]],
+      ],
+    ])
+  },
+  abiValues() {
+    return Array(2).fill(
+      new Swapped({
+        b: uint256StaticArray.abiValues()[0],
+        c: boolStaticArray.abiValues()[1],
+        d: stringStaticArray.abiValues()[2],
+        a: new Tuple(
+          new DynamicArray<Str>(stringStaticArray.abiValues()[3], stringStaticArray.abiValues()[4]),
+          new DynamicArray<Str>(stringStaticArray.abiValues()[5], stringStaticArray.abiValues()[6]),
+          stringStaticArray.abiValues()[7],
+          uint256StaticArray.abiValues()[1],
+          boolStaticArray.abiValues()[2],
+          new StaticArray<UintN<256>, 3>(
+            uint256StaticArray.abiValues()[2],
+            uint256StaticArray.abiValues()[3],
+            uint256StaticArray.abiValues()[4],
+          ),
+        ),
+      }),
+    )
+  },
+  array() {
+    return new StaticArray<Swapped, 2>(...this.abiValues())
+  },
+  create(value: internal.primitives.StubBytesCompat) {
+    return interpretAsArc4<StaticArray<Swapped, 2>>(asBytes(value))
+  },
+}
+
+describe('arc4.StaticArray', async () => {
+  const ctx = new TestExecutionContext()
+  afterEach(async () => {
+    ctx.reset()
+  })
+
+  test.each([
+    addressStaticArray,
+    boolStaticArray,
+    uint256StaticArray,
+    ufixednxmStaticArray,
+    stringStaticArray,
+    addressStaticArrayOfArray,
+    boolStaticArrayOfArray,
+    uint256StaticArrayOfArray,
+    uint256StaticArrayOfDynamicArray,
+    stringStaticArrayOfArray,
+    stringStaticArrayOfArrayOfArray,
+    tupleStaticArray,
+    structStaticArray,
+  ])('should be able to get bytes representation', async (data) => {
+    const sdkResult = data.abiType.encode(data.nativeValues())
+    const result = data.array().bytes
+    expect(result).toEqual(Bytes(sdkResult))
+  })
+
+  test.each([
+    addressStaticArray,
+    boolStaticArray,
+    uint256StaticArray,
+    ufixednxmStaticArray,
+    stringStaticArray,
+    addressStaticArrayOfArray,
+    boolStaticArrayOfArray,
+    uint256StaticArrayOfArray,
+    uint256StaticArrayOfDynamicArray,
+    stringStaticArrayOfArray,
+    stringStaticArrayOfArrayOfArray,
+    tupleStaticArray,
+    structStaticArray,
+  ])('copy static array', async (data) => {
+    const sdkResult = data.abiType.encode(data.nativeValues())
+    const original = data.array()
+    const copy = original.copy()
+    const result = copy.bytes
+    expect(copy.length).toEqual(original.length)
+    expect(result).toEqual(sdkResult)
+  })
+
+  test.each([
+    addressStaticArray,
+    boolStaticArray,
+    uint256StaticArray,
+    ufixednxmStaticArray,
+    stringStaticArray,
+    addressStaticArrayOfArray,
+    boolStaticArrayOfArray,
+    uint256StaticArrayOfArray,
+    uint256StaticArrayOfDynamicArray,
+    stringStaticArrayOfArray,
+    stringStaticArrayOfArrayOfArray,
+    tupleStaticArray,
+    structStaticArray,
+  ])('get item from static array', async (data) => {
+    const staticArray = data.array()
+    const nativeValues = data.nativeValues()
+    for (let i = 0; i < staticArray.length; i++) {
+      compareARC4AndABIValue(staticArray[i], nativeValues[i])
+    }
+    expect(staticArray.length).toEqual(nativeValues.length)
+  })
+
+  test.each([
+    addressStaticArray,
+    boolStaticArray,
+    uint256StaticArray,
+    ufixednxmStaticArray,
+    stringStaticArray,
+    addressStaticArrayOfArray,
+    boolStaticArrayOfArray,
+    uint256StaticArrayOfArray,
+    uint256StaticArrayOfDynamicArray,
+    stringStaticArrayOfArray,
+    stringStaticArrayOfArrayOfArray,
+    tupleStaticArray,
+    structStaticArray,
+  ])('set item in static array', async (data) => {
+    const nativeValues = data.nativeValues()
+    const nativeValuesCopy = [...nativeValues]
+    const nativeTemp = nativeValuesCopy.at(-1)!
+    nativeValuesCopy[nativeValuesCopy.length - 1] = nativeValuesCopy[0]
+    nativeValuesCopy[0] = nativeTemp
+
+    const staticArray = data.array()
+    const staticArrayCopy = staticArray.copy()
+    const arrayTemp = staticArrayCopy.at(-1)
+    staticArrayCopy[staticArrayCopy.length - 1] = staticArrayCopy[0]
+    staticArrayCopy[0] = arrayTemp
+
+    const sdkResult = data.abiType.encode(nativeValuesCopy)
+    const result = staticArrayCopy.bytes
+    expect(result).toEqual(Bytes(sdkResult))
+  })
+
+  test.each([
+    addressStaticArray,
+    boolStaticArray,
+    uint256StaticArray,
+    ufixednxmStaticArray,
+    stringStaticArray,
+    addressStaticArrayOfArray,
+    boolStaticArrayOfArray,
+    uint256StaticArrayOfArray,
+    uint256StaticArrayOfDynamicArray,
+    stringStaticArrayOfArray,
+    stringStaticArrayOfArrayOfArray,
+    tupleStaticArray,
+    structStaticArray,
+  ])('create static array from bytes', async (data) => {
+    const sdkEncodedBytes = data.abiType.encode(data.nativeValues())
+    const result = data.create(Bytes(sdkEncodedBytes))
+    const nativeValues = data.nativeValues()
+    for (let i = 0; i < result.length; i++) {
+      compareARC4AndABIValue(result[i], nativeValues[i])
+    }
+  })
+
+  test.each([
+    addressStaticArray,
+    boolStaticArray,
+    uint256StaticArray,
+    ufixednxmStaticArray,
+    stringStaticArray,
+    addressStaticArrayOfArray,
+    boolStaticArrayOfArray,
+    uint256StaticArrayOfArray,
+    uint256StaticArrayOfDynamicArray,
+    stringStaticArrayOfArray,
+    stringStaticArrayOfArrayOfArray,
+    tupleStaticArray,
+    structStaticArray,
+  ])('get item from static array created from bytes', async (data) => {
+    const nativeValues = data.nativeValues()
+    const sdkEncodedBytes = data.abiType.encode(data.nativeValues())
+    const staticArray = data.create(Bytes(sdkEncodedBytes))
+    for (let i = 0; i < staticArray.length; i++) {
+      compareARC4AndABIValue(staticArray[i], nativeValues[i])
+    }
+    expect(staticArray.length).toEqual(nativeValues.length)
+  })
+
+  test.each([
+    addressStaticArray,
+    boolStaticArray,
+    uint256StaticArray,
+    ufixednxmStaticArray,
+    stringStaticArray,
+    addressStaticArrayOfArray,
+    boolStaticArrayOfArray,
+    uint256StaticArrayOfArray,
+    uint256StaticArrayOfDynamicArray,
+    stringStaticArrayOfArray,
+    stringStaticArrayOfArrayOfArray,
+    tupleStaticArray,
+    structStaticArray,
+  ])('set item in static array created from bytes', async (data) => {
+    const nativeValues = data.nativeValues()
+    const nativeValuesCopy = [...nativeValues]
+    const nativeTemp = nativeValuesCopy.at(-1)!
+    nativeValuesCopy[nativeValuesCopy.length - 1] = nativeValuesCopy[0]
+    nativeValuesCopy[0] = nativeTemp
+
+    const sdkEncodedBytes = data.abiType.encode(data.nativeValues())
+    const staticArray = data.create(Bytes(sdkEncodedBytes))
+    const staticArrayCopy = staticArray.copy()
+    const arrayTemp = staticArrayCopy.at(-1)
+    staticArrayCopy[staticArrayCopy.length - 1] = staticArrayCopy[0]
+    staticArrayCopy[0] = arrayTemp
+
+    const sdkResult = data.abiType.encode(nativeValuesCopy)
+    const result = staticArrayCopy.bytes
+    expect(result).toEqual(Bytes(sdkResult))
+  })
+
+  it('set item in nested static array', async () => {
+    const data = stringStaticArrayOfArrayOfArray
+    const nativeValues = data.nativeValues()
+    nativeValues[0][0][0] = 'new value'
+
+    const staticArray = data.array()
+    staticArray[0][0][0] = new Str('new value')
+
+    const sdkResult = data.abiType.encode(nativeValues)
+    const result = staticArray.bytes
+    expect(result).toEqual(Bytes(sdkResult))
+  })
+
+  it('set item in nested static array create from bytes', async () => {
+    const data = stringStaticArrayOfArrayOfArray
+    const nativeValues = data.nativeValues()
+    nativeValues[0][0][0] = 'new value'
+
+    const sdkEncodedBytes = data.abiType.encode(data.nativeValues())
+    const staticArray = data.create(Bytes(sdkEncodedBytes))
+    staticArray[0][0][0] = new Str('new value')
+
+    const sdkResult = data.abiType.encode(nativeValues)
+    const result = staticArray.bytes
+    expect(result).toEqual(Bytes(sdkResult))
+  })
+})
+
+const compareARC4AndABIValue = (arc4Value: DeliberateAny, nativeValue: DeliberateAny) => {
+  if (arc4Value instanceof StaticArray || arc4Value instanceof DynamicArray) {
+    for (let i = 0; i < arc4Value.length; i++) {
+      compareARC4AndABIValue(arc4Value[i], nativeValue[i])
+    }
+  } else if (arc4Value instanceof Tuple) {
+    const tupleValues = arc4Value.native
+    for (let i = 0; i < arc4Value.length; i++) {
+      compareARC4AndABIValue(tupleValues[i], nativeValue[i])
+    }
+  } else if (arc4Value instanceof Struct) {
+    const structValues = Object.values(arc4Value.items)
+    for (let i = 0; i < structValues.length; i++) {
+      compareARC4AndABIValue(structValues[i], nativeValue[i])
+    }
+  } else if (arc4Value.native !== undefined) {
+    if (arc4Value.native instanceof AccountCls) {
+      expect(arc4Value.native.bytes).toEqual(nativeValue)
+    } else {
+      expect(arc4Value.native).toEqual(nativeValue)
+    }
+  } else {
+    expect(arc4Value.bytes).toEqual(encodingUtil.bigIntToUint8Array(arc4Value, arc4Value.bytes.length))
+  }
+}
