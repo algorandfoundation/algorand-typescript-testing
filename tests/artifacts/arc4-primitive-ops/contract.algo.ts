@@ -259,11 +259,11 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_uintn_from_bytes(a: bytes): UintN<32> {
-    return UintN.fromBytes<UintN<32>>(a)
+    return UintN.fromBytes<32>(a)
   }
   @arc4.abimethod()
   public verify_biguintn_from_bytes(a: bytes): UintN<256> {
-    return UintN.fromBytes<UintN<256>>(a)
+    return UintN.fromBytes<256>(a)
   }
   @arc4.abimethod()
   public verify_byte_from_bytes(a: bytes): Byte {
@@ -271,11 +271,11 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_uintn_from_log(a: bytes): UintN<32> {
-    return UintN.fromLog<UintN<32>>(a)
+    return UintN.fromLog<32>(a)
   }
   @arc4.abimethod()
   public verify_biguintn_from_log(a: bytes): UintN<256> {
-    return UintN.fromLog<UintN<256>>(a)
+    return UintN.fromLog<256>(a)
   }
   @arc4.abimethod()
   public verify_byte_from_log(a: bytes): Byte {
@@ -291,19 +291,19 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_ufixednxm_from_bytes(a: bytes): UFixedNxM<32, 8> {
-    return UFixedNxM.fromBytes<UFixedNxM<32, 8>>(a)
+    return UFixedNxM.fromBytes<32, 8>(a)
   }
   @arc4.abimethod()
   public verify_bigufixednxm_from_bytes(a: bytes): UFixedNxM<256, 16> {
-    return UFixedNxM.fromBytes<UFixedNxM<256, 16>>(a)
+    return UFixedNxM.fromBytes<256, 16>(a)
   }
   @arc4.abimethod()
   public verify_ufixednxm_from_log(a: bytes): UFixedNxM<32, 8> {
-    return UFixedNxM.fromLog<UFixedNxM<32, 8>>(a)
+    return UFixedNxM.fromLog<32, 8>(a)
   }
   @arc4.abimethod()
   public verify_bigufixednxm_from_log(a: bytes): UFixedNxM<256, 16> {
-    return UFixedNxM.fromLog<UFixedNxM<256, 16>>(a)
+    return UFixedNxM.fromLog<256, 16>(a)
   }
   @arc4.abimethod()
   public verify_string_init(a: string): Str {

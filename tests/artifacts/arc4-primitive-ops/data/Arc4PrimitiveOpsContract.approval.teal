@@ -2575,7 +2575,7 @@ verify_uintn_from_bytes:
     // public verify_uintn_from_bytes(a: bytes): UintN<32> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:262
-    // return UintN.fromBytes<UintN<32>>(a)
+    // return UintN.fromBytes<32>(a)
     frame_dig -1
     retsub
 
@@ -2587,7 +2587,7 @@ verify_biguintn_from_bytes:
     // public verify_biguintn_from_bytes(a: bytes): UintN<256> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:266
-    // return UintN.fromBytes<UintN<256>>(a)
+    // return UintN.fromBytes<256>(a)
     frame_dig -1
     retsub
 
@@ -2611,7 +2611,7 @@ verify_uintn_from_log:
     // public verify_uintn_from_log(a: bytes): UintN<32> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:274
-    // return UintN.fromLog<UintN<32>>(a)
+    // return UintN.fromLog<32>(a)
     frame_dig -1
     extract 4 0
     frame_dig -1
@@ -2629,7 +2629,7 @@ verify_biguintn_from_log:
     // public verify_biguintn_from_log(a: bytes): UintN<256> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:278
-    // return UintN.fromLog<UintN<256>>(a)
+    // return UintN.fromLog<256>(a)
     frame_dig -1
     extract 4 0
     frame_dig -1
@@ -2689,7 +2689,7 @@ verify_ufixednxm_from_bytes:
     // public verify_ufixednxm_from_bytes(a: bytes): UFixedNxM<32, 8> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:294
-    // return UFixedNxM.fromBytes<UFixedNxM<32, 8>>(a)
+    // return UFixedNxM.fromBytes<32, 8>(a)
     frame_dig -1
     retsub
 
@@ -2701,7 +2701,7 @@ verify_bigufixednxm_from_bytes:
     // public verify_bigufixednxm_from_bytes(a: bytes): UFixedNxM<256, 16> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:298
-    // return UFixedNxM.fromBytes<UFixedNxM<256, 16>>(a)
+    // return UFixedNxM.fromBytes<256, 16>(a)
     frame_dig -1
     retsub
 
@@ -2713,7 +2713,7 @@ verify_ufixednxm_from_log:
     // public verify_ufixednxm_from_log(a: bytes): UFixedNxM<32, 8> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:302
-    // return UFixedNxM.fromLog<UFixedNxM<32, 8>>(a)
+    // return UFixedNxM.fromLog<32, 8>(a)
     frame_dig -1
     extract 4 0
     frame_dig -1
@@ -2731,7 +2731,7 @@ verify_bigufixednxm_from_log:
     // public verify_bigufixednxm_from_log(a: bytes): UFixedNxM<256, 16> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:306
-    // return UFixedNxM.fromLog<UFixedNxM<256, 16>>(a)
+    // return UFixedNxM.fromLog<256, 16>(a)
     frame_dig -1
     extract 4 0
     frame_dig -1
