@@ -1,14 +1,5 @@
-import { Bytes, bytes, internal, StringCompat } from '@algorandfoundation/algorand-typescript'
-import {
-  BitSize,
-  Bool,
-  Byte,
-  CompatForArc4Int,
-  NativeForArc4Int,
-  Str,
-  UFixedNxM,
-  UintN,
-} from '@algorandfoundation/algorand-typescript/arc4'
+import { BigUintCompat, Bytes, bytes, internal, StringCompat, Uint64Compat } from '@algorandfoundation/algorand-typescript'
+import { BitSize, Bool, Byte, Str, UFixedNxM, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import assert from 'assert'
 import { ABI_RETURN_VALUE_LOG_PREFIX, BITS_IN_BYTE, UINT64_SIZE } from '../constants'
@@ -20,6 +11,7 @@ const ABI_LENGTH_SIZE = 2
 const maxBigIntValue = (bitSize: number) => 2n ** BigInt(bitSize) - 1n
 const maxBytesLength = (bitSize: number) => Math.floor(bitSize / BITS_IN_BYTE)
 const encodeLength = (length: number) => new internal.primitives.BytesCls(encodingUtil.bigIntToUint8Array(BigInt(length), ABI_LENGTH_SIZE))
+type CompatForArc4Int<N extends BitSize> = N extends 8 | 16 | 32 | 64 ? Uint64Compat : BigUintCompat
 export class UintNImpl<N extends BitSize> extends UintN<N> {
   private value: Uint8Array
   private bitSize: N
@@ -39,9 +31,9 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
     this.value = encodingUtil.bigIntToUint8Array(bigIntValue, maxBytesLength(this.bitSize))
   }
 
-  get native(): NativeForArc4Int<N> {
+  get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as NativeForArc4Int<N>
+    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as UintN<N>['native']
   }
 
   get bytes(): bytes {
@@ -85,9 +77,9 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
     this.value = encodingUtil.bigIntToUint8Array(bigIntValue, maxBytesLength(this.bitSize))
   }
 
-  get native(): NativeForArc4Int<N> {
+  get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as NativeForArc4Int<N>
+    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as UFixedNxM<N, M>['native']
   }
 
   get bytes(): bytes {
@@ -120,7 +112,7 @@ export class ByteImpl extends Byte {
     this.value = new UintNImpl<8>(typeInfoString, v)
   }
 
-  get native(): NativeForArc4Int<8> {
+  get native() {
     return this.value.native
   }
 
