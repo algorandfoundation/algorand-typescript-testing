@@ -1,23 +1,4 @@
-import {
-  anyPType,
-  ARC4BooleanType,
-  ARC4StringType,
-  ARC4StructType,
-  ARC4TupleType,
-  BoxMapPType,
-  BoxPType,
-  ContractClassPType,
-  DynamicArrayType,
-  FunctionPType,
-  GlobalStateType,
-  LocalStateType,
-  PType,
-  SourceLocation,
-  StaticArrayType,
-  TypeResolver,
-  UFixedNxMType,
-  UintNType,
-} from '@algorandfoundation/puya-ts'
+import { ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
 import type { TypeInfo } from '../encoders'
 import { instanceOfAny } from '../typescript-helpers'
@@ -33,7 +14,7 @@ const { factory } = ts
 
 type VisitorHelper = {
   additionalStatements: ts.Statement[]
-  resolveType(node: ts.Node): PType
+  resolveType(node: ts.Node): ptypes.PType
   sourceLocation(node: ts.Node): SourceLocation
 }
 
@@ -49,11 +30,11 @@ export class SourceFileVisitor {
 
     this.helper = {
       additionalStatements: [],
-      resolveType(node: ts.Node): PType {
+      resolveType(node: ts.Node): ptypes.PType {
         try {
           return typeResolver.resolve(node, this.sourceLocation(node))
         } catch {
-          return anyPType
+          return ptypes.anyPType
         }
       },
       sourceLocation(node: ts.Node): SourceLocation {
@@ -106,7 +87,7 @@ class ExpressionVisitor {
       let type = this.helper.resolveType(node)
 
       // `voted = LocalState<uint64>()` is resolved to FunctionPType with returnType LocalState<uint64>
-      if (type instanceof FunctionPType) type = type.returnType
+      if (type instanceof ptypes.FunctionPType) type = type.returnType
 
       const isGeneric = isGenericType(type)
       const isArc4Encoded = isArc4EncodedType(type)
@@ -256,7 +237,7 @@ class ClassVisitor {
     private classDec: ts.ClassDeclaration,
   ) {
     const classType = helper.resolveType(classDec)
-    this.isArc4 = classType instanceof ContractClassPType && classType.isARC4
+    this.isArc4 = classType instanceof ptypes.ContractClassPType && classType.isARC4
   }
 
   public result(): ts.ClassDeclaration {
@@ -267,7 +248,7 @@ class ClassVisitor {
     if (ts.isMethodDeclaration(node)) {
       if (this.classDec.name && this.isArc4) {
         const methodType = this.helper.resolveType(node)
-        if (methodType instanceof FunctionPType) {
+        if (methodType instanceof ptypes.FunctionPType) {
           this.helper.additionalStatements.push(nodeFactory.attachMetaData(this.classDec.name, node, methodType))
         }
       }
@@ -282,42 +263,50 @@ class ClassVisitor {
   }
 }
 
-const isGenericType = (type: PType): boolean =>
+const isGenericType = (type: ptypes.PType): boolean =>
   instanceOfAny(
     type,
-    ARC4StructType,
-    ARC4TupleType,
-    BoxMapPType,
-    BoxPType,
-    DynamicArrayType,
-    GlobalStateType,
-    LocalStateType,
-    StaticArrayType,
-    UFixedNxMType,
-    UintNType,
+    ptypes.ARC4StructType,
+    ptypes.ARC4TupleType,
+    ptypes.BoxMapPType,
+    ptypes.BoxPType,
+    ptypes.DynamicArrayType,
+    ptypes.GlobalStateType,
+    ptypes.LocalStateType,
+    ptypes.StaticArrayType,
+    ptypes.UFixedNxMType,
+    ptypes.UintNType,
   )
 
-const isArc4EncodedType = (type: PType): boolean =>
-  instanceOfAny(type, ARC4StructType, ARC4TupleType, DynamicArrayType, StaticArrayType, UFixedNxMType, UintNType) ||
-  type === ARC4StringType ||
-  type === ARC4BooleanType
+const isArc4EncodedType = (type: ptypes.PType): boolean =>
+  instanceOfAny(
+    type,
+    ptypes.ARC4StructType,
+    ptypes.ARC4TupleType,
+    ptypes.DynamicArrayType,
+    ptypes.StaticArrayType,
+    ptypes.UFixedNxMType,
+    ptypes.UintNType,
+  ) ||
+  type === ptypes.ARC4StringType ||
+  type === ptypes.ARC4BooleanType
 
-const getGenericTypeInfo = (type: PType): TypeInfo => {
+const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
   const genericArgs: TypeInfo[] | Record<string, TypeInfo> = []
 
-  if (instanceOfAny(type, LocalStateType, GlobalStateType, BoxPType)) {
+  if (instanceOfAny(type, ptypes.LocalStateType, ptypes.GlobalStateType, ptypes.BoxPType)) {
     genericArgs.push(getGenericTypeInfo(type.contentType))
-  } else if (type instanceof BoxMapPType) {
+  } else if (type instanceof ptypes.BoxMapPType) {
     genericArgs.push(getGenericTypeInfo(type.keyType))
     genericArgs.push(getGenericTypeInfo(type.contentType))
-  } else if (instanceOfAny(type, StaticArrayType, DynamicArrayType)) {
+  } else if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.DynamicArrayType)) {
     genericArgs.push(getGenericTypeInfo(type.elementType))
-  } else if (type instanceof UFixedNxMType) {
+  } else if (type instanceof ptypes.UFixedNxMType) {
     genericArgs.push({ name: type.n.toString() })
     genericArgs.push({ name: type.m.toString() })
-  } else if (type instanceof UintNType) {
+  } else if (type instanceof ptypes.UintNType) {
     genericArgs.push({ name: type.n.toString() })
-  } else if (type instanceof ARC4StructType) {
+  } else if (type instanceof ptypes.ARC4StructType) {
     genericArgs.push(
       ...Object.fromEntries(
         Object.entries(type.fields)
@@ -325,7 +314,7 @@ const getGenericTypeInfo = (type: PType): TypeInfo => {
           .filter((x) => !!x),
       ),
     )
-  } else if (type instanceof ARC4TupleType) {
+  } else if (type instanceof ptypes.ARC4TupleType) {
     genericArgs.push(...type.items.map(getGenericTypeInfo))
   }
 

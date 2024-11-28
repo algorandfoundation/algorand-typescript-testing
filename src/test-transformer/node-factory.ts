@@ -1,4 +1,4 @@
-import { FunctionPType } from '@algorandfoundation/puya-ts'
+import { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
 import { TypeInfo } from '../encoders'
 import type { DeliberateAny } from '../typescript-helpers'
@@ -48,7 +48,7 @@ export const nodeFactory = {
     )
   },
 
-  attachMetaData(classIdentifier: ts.Identifier, method: ts.MethodDeclaration, functionType: FunctionPType) {
+  attachMetaData(classIdentifier: ts.Identifier, method: ts.MethodDeclaration, functionType: ptypes.FunctionPType) {
     const methodName = getPropertyNameAsString(method.name)
     const metadata = factory.createObjectLiteralExpression([
       factory.createPropertyAssignment('methodName', methodName),
