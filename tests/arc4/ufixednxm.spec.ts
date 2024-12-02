@@ -1,7 +1,7 @@
 import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { UFixedNxM } from '@algorandfoundation/algorand-typescript/arc4'
+import { interpretAsArc4, UFixedNxM } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, test } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
@@ -62,7 +62,7 @@ describe('arc4.UFixedNxM', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 32n - 1n),
   ])('create UFixedNxM<32,8> from bytes', async (value) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_ufixednxm_from_bytes', value)
-    const result = UFixedNxM.fromBytes<32, 8>(Bytes(value))
+    const result = interpretAsArc4<UFixedNxM<32, 8>>(Bytes(value))
 
     expect(result.native).toEqual(avmResult)
   })
@@ -75,7 +75,7 @@ describe('arc4.UFixedNxM', async () => {
   ])('sdk throws error when creating UFixedNxM<32,8> from bytes with invalid length', async (value) => {
     await expect(getAvmResult({ appClient }, 'verify_ufixednxm_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(32))
 
-    const result = UFixedNxM.fromBytes<32, 8>(Bytes(value))
+    const result = interpretAsArc4<UFixedNxM<32, 8>>(Bytes(value))
     expect(result.bytes).toEqual(value)
   })
 
@@ -88,7 +88,7 @@ describe('arc4.UFixedNxM', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
     const avmResult = await getAvmResult({ appClient }, 'verify_ufixednxm_from_log', logValue)
 
-    const result = UFixedNxM.fromLog<32, 8>(Bytes(logValue))
+    const result = interpretAsArc4<UFixedNxM<32, 8>>(Bytes(logValue), 'log')
     expect(avmResult).toEqual(expected)
     expect(result.native).toEqual(expected)
   })
@@ -99,7 +99,7 @@ describe('arc4.UFixedNxM', async () => {
   ])('should throw error when log prefix is invalid for UFixedNxM<32,8>', async (value, prefix) => {
     const logValue = asUint8Array(Bytes(prefix).concat(Bytes(value)))
     await expect(() => getAvmResult({ appClient }, 'verify_ufixednxm_from_log', logValue)).rejects.toThrowError('assert failed')
-    expect(() => UFixedNxM.fromLog<32, 8>(Bytes(logValue))).toThrowError('ABI return prefix not found')
+    expect(() => interpretAsArc4<UFixedNxM<32, 8>>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
   })
 
   test.each([
@@ -111,7 +111,7 @@ describe('arc4.UFixedNxM', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
     await expect(() => getAvmResult({ appClient }, 'verify_ufixednxm_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError(32))
 
-    const result = UFixedNxM.fromLog<32, 8>(Bytes(logValue))
+    const result = interpretAsArc4<UFixedNxM<32, 8>>(Bytes(logValue), 'log')
     expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
   })
 
@@ -122,7 +122,7 @@ describe('arc4.UFixedNxM', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 256n - 1n),
   ])('create UFixedNxM<256,16> from bytes', async (value) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_bigufixednxm_from_bytes', value)
-    const result = UFixedNxM.fromBytes<256, 16>(Bytes(value))
+    const result = interpretAsArc4<UFixedNxM<256, 16>>(Bytes(value))
 
     expect(result.native).toEqual(avmResult)
   })
@@ -135,7 +135,7 @@ describe('arc4.UFixedNxM', async () => {
   ])('sdk throws error when creating UFixedNxM<256,16> from bytes with invalid length', async (value) => {
     await expect(getAvmResult({ appClient }, 'verify_bigufixednxm_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(256))
 
-    const result = UFixedNxM.fromBytes<256, 16>(Bytes(value))
+    const result = interpretAsArc4<UFixedNxM<256, 16>>(Bytes(value))
     expect(result.bytes).toEqual(value)
   })
 
@@ -148,7 +148,7 @@ describe('arc4.UFixedNxM', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
     const avmResult = await getAvmResult({ appClient }, 'verify_bigufixednxm_from_log', logValue)
 
-    const result = UFixedNxM.fromLog<256, 16>(Bytes(logValue))
+    const result = interpretAsArc4<UFixedNxM<256, 16>>(Bytes(logValue), 'log')
     expect(avmResult).toEqual(expected)
     expect(result.native).toEqual(expected)
   })
@@ -159,7 +159,7 @@ describe('arc4.UFixedNxM', async () => {
   ])('should throw error when log prefix is invalid for UFixedNxM<256,16>', async (value, prefix) => {
     const logValue = asUint8Array(Bytes(prefix).concat(Bytes(value)))
     await expect(() => getAvmResult({ appClient }, 'verify_bigufixednxm_from_log', logValue)).rejects.toThrowError('assert failed')
-    expect(() => UFixedNxM.fromLog<256, 16>(Bytes(logValue))).toThrowError('ABI return prefix not found')
+    expect(() => interpretAsArc4<UFixedNxM<256, 16>>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
   })
 
   test.each([
@@ -173,7 +173,7 @@ describe('arc4.UFixedNxM', async () => {
       invalidBytesLengthError(256),
     )
 
-    const result = UFixedNxM.fromLog<256, 16>(Bytes(logValue))
+    const result = interpretAsArc4<UFixedNxM<256, 16>>(Bytes(logValue), 'log')
     expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
   })
 })

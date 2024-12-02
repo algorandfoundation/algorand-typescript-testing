@@ -10,3 +10,5 @@ export const getPropertyNameAsString = (name: ts.PropertyName): ts.Identifier | 
   }
   throw new TransformerError(`Node ${name.kind} cannot be converted to a static string`)
 }
+
+export const trimGenericTypeName = (typeName: string) => typeName.replace(/<.*>/, '')

@@ -1,7 +1,7 @@
 import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Byte } from '@algorandfoundation/algorand-typescript/arc4'
+import { Byte, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_UINT64 } from '../../src/constants'
@@ -73,9 +73,9 @@ describe('arc4.Byte', async () => {
       const getStubResult = (a: Byte, b: Byte) => {
         switch (operator) {
           case '===':
-            return a.equals(b)
+            return a === b
           case '!==':
-            return !a.equals(b)
+            return a !== b
           case '<':
             return a.native < b.native
           case '<=':
@@ -108,7 +108,7 @@ describe('arc4.Byte', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 8n - 1n, 1),
   ])('create Byte from bytes', async (value) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_byte_from_bytes', value)
-    const result = Byte.fromBytes(Bytes(value))
+    const result = interpretAsArc4<Byte>(Bytes(value))
 
     expect(result.native).toEqual(avmResult)
   })
@@ -118,7 +118,7 @@ describe('arc4.Byte', async () => {
     async (value) => {
       await expect(getAvmResult({ appClient }, 'verify_byte_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError)
 
-      const result = Byte.fromBytes(Bytes(value))
+      const result = interpretAsArc4<Byte>(Bytes(value))
       expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
@@ -131,7 +131,7 @@ describe('arc4.Byte', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
     const avmResult = await getAvmResult({ appClient }, 'verify_byte_from_log', logValue)
 
-    const result = Byte.fromLog(Bytes(logValue))
+    const result = interpretAsArc4<Byte>(Bytes(logValue), 'log')
     expect(avmResult).toEqual(expected)
     expect(result.native).toEqual(expected)
   })
@@ -144,7 +144,7 @@ describe('arc4.Byte', async () => {
     await expect(() => getAvmResult({ appClient }, 'verify_byte_from_log', logValue)).rejects.toThrowError(
       new RegExp('(assert failed)|(extraction start \\d+ is beyond length)'),
     )
-    expect(() => Byte.fromLog(Bytes(logValue))).toThrowError('ABI return prefix not found')
+    expect(() => interpretAsArc4<Byte>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
   })
 
   test.each([
@@ -155,7 +155,7 @@ describe('arc4.Byte', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
     await expect(() => getAvmResult({ appClient }, 'verify_byte_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError)
 
-    const result = Byte.fromLog(Bytes(logValue))
+    const result = interpretAsArc4<Byte>(Bytes(logValue), 'log')
     expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
   })
 })

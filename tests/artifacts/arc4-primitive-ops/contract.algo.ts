@@ -1,5 +1,5 @@
 import { arc4, BigUint, bytes } from '@algorandfoundation/algorand-typescript'
-import { Bool, Byte, Contract, Str, UFixedNxM, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import { Bool, Byte, Contract, interpretAsArc4, Str, UFixedNxM, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class Arc4PrimitiveOpsContract extends Contract {
   @arc4.abimethod()
@@ -8,7 +8,7 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aUintN = new UintN<64>(aBiguint)
     const bUintN = new UintN<64>(bBiguint)
-    return aUintN.equals(bUintN)
+    return aUintN === bUintN
   }
   @arc4.abimethod()
   public verify_biguintn_uintn_eq(a: bytes, b: bytes): boolean {
@@ -32,7 +32,7 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aUintN = new UintN<512>(aBiguint)
     const bUintN = new UintN<512>(bBiguint)
-    return aUintN.equals(bUintN)
+    return aUintN === bUintN
   }
   @arc4.abimethod()
   public verify_byte_byte_eq(a: bytes, b: bytes): boolean {
@@ -40,7 +40,7 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aByte = new Byte(aBiguint)
     const bByte = new Byte(bBiguint)
-    return aByte.equals(bByte)
+    return aByte === bByte
   }
   @arc4.abimethod()
   public verify_uintn_uintn_ne(a: bytes, b: bytes): boolean {
@@ -48,7 +48,7 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aUintN = new UintN<64>(aBiguint)
     const bUintN = new UintN<64>(bBiguint)
-    return !aUintN.equals(bUintN)
+    return aUintN !== bUintN
   }
   @arc4.abimethod()
   public verify_biguintn_uintn_ne(a: bytes, b: bytes): boolean {
@@ -72,7 +72,7 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aUintN = new UintN<512>(aBiguint)
     const bUintN = new UintN<512>(bBiguint)
-    return !aUintN.equals(bUintN)
+    return aUintN !== bUintN
   }
   @arc4.abimethod()
   public verify_byte_byte_ne(a: bytes, b: bytes): boolean {
@@ -80,7 +80,7 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aByte = new Byte(aBiguint)
     const bByte = new Byte(bBiguint)
-    return !aByte.equals(bByte)
+    return aByte !== bByte
   }
   @arc4.abimethod()
   public verify_uintn_uintn_lt(a: bytes, b: bytes): boolean {
@@ -259,27 +259,27 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_uintn_from_bytes(a: bytes): UintN<32> {
-    return UintN.fromBytes<32>(a)
+    return interpretAsArc4<UintN<32>>(a)
   }
   @arc4.abimethod()
   public verify_biguintn_from_bytes(a: bytes): UintN<256> {
-    return UintN.fromBytes<256>(a)
+    return interpretAsArc4<UintN<256>>(a)
   }
   @arc4.abimethod()
   public verify_byte_from_bytes(a: bytes): Byte {
-    return Byte.fromBytes(a)
+    return interpretAsArc4<Byte>(a)
   }
   @arc4.abimethod()
   public verify_uintn_from_log(a: bytes): UintN<32> {
-    return UintN.fromLog<32>(a)
+    return interpretAsArc4<UintN<32>>(a, 'log')
   }
   @arc4.abimethod()
   public verify_biguintn_from_log(a: bytes): UintN<256> {
-    return UintN.fromLog<256>(a)
+    return interpretAsArc4<UintN<256>>(a, 'log')
   }
   @arc4.abimethod()
   public verify_byte_from_log(a: bytes): Byte {
-    return Byte.fromLog(a)
+    return interpretAsArc4<Byte>(a, 'log')
   }
   @arc4.abimethod()
   public verify_ufixednxm_bytes(a: UFixedNxM<32, 8>): bytes {
@@ -291,19 +291,19 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_ufixednxm_from_bytes(a: bytes): UFixedNxM<32, 8> {
-    return UFixedNxM.fromBytes<32, 8>(a)
+    return interpretAsArc4<UFixedNxM<32, 8>>(a)
   }
   @arc4.abimethod()
   public verify_bigufixednxm_from_bytes(a: bytes): UFixedNxM<256, 16> {
-    return UFixedNxM.fromBytes<256, 16>(a)
+    return interpretAsArc4<UFixedNxM<256, 16>>(a)
   }
   @arc4.abimethod()
   public verify_ufixednxm_from_log(a: bytes): UFixedNxM<32, 8> {
-    return UFixedNxM.fromLog<32, 8>(a)
+    return interpretAsArc4<UFixedNxM<32, 8>>(a, 'log')
   }
   @arc4.abimethod()
   public verify_bigufixednxm_from_log(a: bytes): UFixedNxM<256, 16> {
-    return UFixedNxM.fromLog<256, 16>(a)
+    return interpretAsArc4<UFixedNxM<256, 16>>(a, 'log')
   }
   @arc4.abimethod()
   public verify_string_init(a: string): Str {
@@ -317,7 +317,7 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_string_eq(a: Str, b: Str): boolean {
-    return a.equals(b)
+    return a === b
   }
   @arc4.abimethod()
   public verify_string_bytes(a: string): bytes {
@@ -326,11 +326,11 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_string_from_bytes(a: bytes): Str {
-    return Str.fromBytes(a)
+    return interpretAsArc4<Str>(a)
   }
   @arc4.abimethod()
   public verify_string_from_log(a: bytes): Str {
-    return Str.fromLog(a)
+    return interpretAsArc4<Str>(a, 'log')
   }
   @arc4.abimethod()
   public verify_bool_bytes(a: Bool): bytes {
@@ -338,10 +338,10 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_bool_from_bytes(a: bytes): Bool {
-    return Bool.fromBytes(a)
+    return interpretAsArc4<Bool>(a)
   }
   @arc4.abimethod()
   public verify_bool_from_log(a: bytes): Bool {
-    return Bool.fromLog(a)
+    return interpretAsArc4<Bool>(a, 'log')
   }
 }

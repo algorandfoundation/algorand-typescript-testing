@@ -25,9 +25,9 @@ __puya_arc4_router___verify_uintn_uintn_eq_route@2:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -53,9 +53,9 @@ __puya_arc4_router___verify_biguintn_uintn_eq_route@3:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -81,9 +81,9 @@ __puya_arc4_router___verify_uintn_biguintn_eq_route@4:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -109,9 +109,9 @@ __puya_arc4_router___verify_biguintn_biguintn_eq_route@5:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -137,9 +137,9 @@ __puya_arc4_router___verify_byte_byte_eq_route@6:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -165,9 +165,9 @@ __puya_arc4_router___verify_uintn_uintn_ne_route@7:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -193,9 +193,9 @@ __puya_arc4_router___verify_biguintn_uintn_ne_route@8:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -221,9 +221,9 @@ __puya_arc4_router___verify_uintn_biguintn_ne_route@9:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -249,9 +249,9 @@ __puya_arc4_router___verify_biguintn_biguintn_ne_route@10:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -277,9 +277,9 @@ __puya_arc4_router___verify_byte_byte_ne_route@11:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -305,9 +305,9 @@ __puya_arc4_router___verify_uintn_uintn_lt_route@12:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -333,9 +333,9 @@ __puya_arc4_router___verify_biguintn_uintn_lt_route@13:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -361,9 +361,9 @@ __puya_arc4_router___verify_uintn_biguintn_lt_route@14:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -389,9 +389,9 @@ __puya_arc4_router___verify_biguintn_biguintn_lt_route@15:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -417,9 +417,9 @@ __puya_arc4_router___verify_byte_byte_lt_route@16:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -445,9 +445,9 @@ __puya_arc4_router___verify_uintn_uintn_le_route@17:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -473,9 +473,9 @@ __puya_arc4_router___verify_biguintn_uintn_le_route@18:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -501,9 +501,9 @@ __puya_arc4_router___verify_uintn_biguintn_le_route@19:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -529,9 +529,9 @@ __puya_arc4_router___verify_biguintn_biguintn_le_route@20:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -557,9 +557,9 @@ __puya_arc4_router___verify_byte_byte_le_route@21:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -585,9 +585,9 @@ __puya_arc4_router___verify_uintn_uintn_gt_route@22:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -613,9 +613,9 @@ __puya_arc4_router___verify_biguintn_uintn_gt_route@23:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -641,9 +641,9 @@ __puya_arc4_router___verify_uintn_biguintn_gt_route@24:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -669,9 +669,9 @@ __puya_arc4_router___verify_biguintn_biguintn_gt_route@25:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -697,9 +697,9 @@ __puya_arc4_router___verify_byte_byte_gt_route@26:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -725,9 +725,9 @@ __puya_arc4_router___verify_uintn_uintn_ge_route@27:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -753,9 +753,9 @@ __puya_arc4_router___verify_biguintn_uintn_ge_route@28:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -781,9 +781,9 @@ __puya_arc4_router___verify_uintn_biguintn_ge_route@29:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -809,9 +809,9 @@ __puya_arc4_router___verify_biguintn_biguintn_ge_route@30:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -837,9 +837,9 @@ __puya_arc4_router___verify_byte_byte_ge_route@31:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -865,9 +865,9 @@ __puya_arc4_router___verify_uintn_init_route@32:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -887,9 +887,9 @@ __puya_arc4_router___verify_biguintn_init_route@33:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -909,9 +909,9 @@ __puya_arc4_router___verify_byte_init_route@34:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -931,9 +931,9 @@ __puya_arc4_router___verify_uintn_from_bytes_route@35:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -953,9 +953,9 @@ __puya_arc4_router___verify_biguintn_from_bytes_route@36:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -975,9 +975,9 @@ __puya_arc4_router___verify_byte_from_bytes_route@37:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -997,9 +997,9 @@ __puya_arc4_router___verify_uintn_from_log_route@38:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1019,9 +1019,9 @@ __puya_arc4_router___verify_biguintn_from_log_route@39:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1041,9 +1041,9 @@ __puya_arc4_router___verify_byte_from_log_route@40:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1063,9 +1063,9 @@ __puya_arc4_router___verify_ufixednxm_bytes_route@41:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1090,9 +1090,9 @@ __puya_arc4_router___verify_bigufixednxm_bytes_route@42:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1117,9 +1117,9 @@ __puya_arc4_router___verify_ufixednxm_from_bytes_route@43:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1139,9 +1139,9 @@ __puya_arc4_router___verify_bigufixednxm_from_bytes_route@44:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1161,9 +1161,9 @@ __puya_arc4_router___verify_ufixednxm_from_log_route@45:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1183,9 +1183,9 @@ __puya_arc4_router___verify_bigufixednxm_from_log_route@46:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1205,9 +1205,9 @@ __puya_arc4_router___verify_string_init_route@47:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1227,9 +1227,9 @@ __puya_arc4_router___verify_string_add_route@48:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1249,9 +1249,9 @@ __puya_arc4_router___verify_string_eq_route@49:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1275,9 +1275,9 @@ __puya_arc4_router___verify_string_bytes_route@50:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1303,9 +1303,9 @@ __puya_arc4_router___verify_string_from_bytes_route@51:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1325,9 +1325,9 @@ __puya_arc4_router___verify_string_from_log_route@52:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1347,9 +1347,9 @@ __puya_arc4_router___verify_bool_bytes_route@53:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1374,9 +1374,9 @@ __puya_arc4_router___verify_bool_from_bytes_route@54:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1396,9 +1396,9 @@ __puya_arc4_router___verify_bool_from_log_route@55:
     // @arc4.abimethod()
     txn OnCompletion
     !
-    assert // OnCompletion is NoOp
+    assert // OnCompletion is not NoOp
     txn ApplicationID
-    assert // is not creating
+    assert // can only call when not creating
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:4
     // export class Arc4PrimitiveOpsContract extends Contract {
     txna ApplicationArgs 1
@@ -1420,7 +1420,7 @@ __puya_arc4_router___bare_routing@58:
     bnz __puya_arc4_router___after_if_else@62
     txn ApplicationID
     !
-    assert // is creating
+    assert // can only call when creating
     intc_0 // 1
     retsub
 
@@ -1460,7 +1460,7 @@ verify_uintn_uintn_eq:
     uncover 2
     b|
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:11
-    // return aUintN.equals(bUintN)
+    // return aUintN === bUintN
     ==
     retsub
 
@@ -1562,7 +1562,7 @@ verify_biguintn_biguintn_eq:
     uncover 2
     b|
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:35
-    // return aUintN.equals(bUintN)
+    // return aUintN === bUintN
     ==
     retsub
 
@@ -1596,7 +1596,7 @@ verify_byte_byte_eq:
     uncover 2
     b|
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:43
-    // return aByte.equals(bByte)
+    // return aByte === bByte
     ==
     retsub
 
@@ -1630,9 +1630,8 @@ verify_uintn_uintn_ne:
     uncover 2
     b|
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:51
-    // return !aUintN.equals(bUintN)
-    ==
-    !
+    // return aUintN !== bUintN
+    !=
     retsub
 
 
@@ -1735,9 +1734,8 @@ verify_biguintn_biguintn_ne:
     uncover 2
     b|
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:75
-    // return !aUintN.equals(bUintN)
-    ==
-    !
+    // return aUintN !== bUintN
+    !=
     retsub
 
 
@@ -1770,9 +1768,8 @@ verify_byte_byte_ne:
     uncover 2
     b|
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:83
-    // return !aByte.equals(bByte)
-    ==
-    !
+    // return aByte !== bByte
+    !=
     retsub
 
 
@@ -2575,7 +2572,7 @@ verify_uintn_from_bytes:
     // public verify_uintn_from_bytes(a: bytes): UintN<32> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:262
-    // return UintN.fromBytes<32>(a)
+    // return interpretAsArc4<UintN<32>>(a)
     frame_dig -1
     retsub
 
@@ -2587,7 +2584,7 @@ verify_biguintn_from_bytes:
     // public verify_biguintn_from_bytes(a: bytes): UintN<256> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:266
-    // return UintN.fromBytes<256>(a)
+    // return interpretAsArc4<UintN<256>>(a)
     frame_dig -1
     retsub
 
@@ -2599,7 +2596,7 @@ verify_byte_from_bytes:
     // public verify_byte_from_bytes(a: bytes): Byte {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:270
-    // return Byte.fromBytes(a)
+    // return interpretAsArc4<Byte>(a)
     frame_dig -1
     retsub
 
@@ -2611,14 +2608,14 @@ verify_uintn_from_log:
     // public verify_uintn_from_log(a: bytes): UintN<32> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:274
-    // return UintN.fromLog<32>(a)
+    // return interpretAsArc4<UintN<32>>(a, 'log')
     frame_dig -1
     extract 4 0
     frame_dig -1
     extract 0 4
     bytec_0 // 0x151f7c75
     ==
-    assert // ARC4 prefix is valid
+    assert // Bytes has valid prefix
     retsub
 
 
@@ -2629,14 +2626,14 @@ verify_biguintn_from_log:
     // public verify_biguintn_from_log(a: bytes): UintN<256> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:278
-    // return UintN.fromLog<256>(a)
+    // return interpretAsArc4<UintN<256>>(a, 'log')
     frame_dig -1
     extract 4 0
     frame_dig -1
     extract 0 4
     bytec_0 // 0x151f7c75
     ==
-    assert // ARC4 prefix is valid
+    assert // Bytes has valid prefix
     retsub
 
 
@@ -2647,14 +2644,14 @@ verify_byte_from_log:
     // public verify_byte_from_log(a: bytes): Byte {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:282
-    // return Byte.fromLog(a)
+    // return interpretAsArc4<Byte>(a, 'log')
     frame_dig -1
     extract 4 0
     frame_dig -1
     extract 0 4
     bytec_0 // 0x151f7c75
     ==
-    assert // ARC4 prefix is valid
+    assert // Bytes has valid prefix
     retsub
 
 
@@ -2689,7 +2686,7 @@ verify_ufixednxm_from_bytes:
     // public verify_ufixednxm_from_bytes(a: bytes): UFixedNxM<32, 8> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:294
-    // return UFixedNxM.fromBytes<32, 8>(a)
+    // return interpretAsArc4<UFixedNxM<32, 8>>(a)
     frame_dig -1
     retsub
 
@@ -2701,7 +2698,7 @@ verify_bigufixednxm_from_bytes:
     // public verify_bigufixednxm_from_bytes(a: bytes): UFixedNxM<256, 16> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:298
-    // return UFixedNxM.fromBytes<256, 16>(a)
+    // return interpretAsArc4<UFixedNxM<256, 16>>(a)
     frame_dig -1
     retsub
 
@@ -2713,14 +2710,14 @@ verify_ufixednxm_from_log:
     // public verify_ufixednxm_from_log(a: bytes): UFixedNxM<32, 8> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:302
-    // return UFixedNxM.fromLog<32, 8>(a)
+    // return interpretAsArc4<UFixedNxM<32, 8>>(a, 'log')
     frame_dig -1
     extract 4 0
     frame_dig -1
     extract 0 4
     bytec_0 // 0x151f7c75
     ==
-    assert // ARC4 prefix is valid
+    assert // Bytes has valid prefix
     retsub
 
 
@@ -2731,14 +2728,14 @@ verify_bigufixednxm_from_log:
     // public verify_bigufixednxm_from_log(a: bytes): UFixedNxM<256, 16> {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:306
-    // return UFixedNxM.fromLog<256, 16>(a)
+    // return interpretAsArc4<UFixedNxM<256, 16>>(a, 'log')
     frame_dig -1
     extract 4 0
     frame_dig -1
     extract 0 4
     bytec_0 // 0x151f7c75
     ==
-    assert // ARC4 prefix is valid
+    assert // Bytes has valid prefix
     retsub
 
 
@@ -2795,7 +2792,7 @@ verify_string_eq:
     // public verify_string_eq(a: Str, b: Str): boolean {
     proto 2 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:320
-    // return a.equals(b)
+    // return a === b
     frame_dig -2
     frame_dig -1
     ==
@@ -2828,7 +2825,7 @@ verify_string_from_bytes:
     // public verify_string_from_bytes(a: bytes): Str {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:329
-    // return Str.fromBytes(a)
+    // return interpretAsArc4<Str>(a)
     frame_dig -1
     retsub
 
@@ -2840,14 +2837,14 @@ verify_string_from_log:
     // public verify_string_from_log(a: bytes): Str {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:333
-    // return Str.fromLog(a)
+    // return interpretAsArc4<Str>(a, 'log')
     frame_dig -1
     extract 4 0
     frame_dig -1
     extract 0 4
     bytec_0 // 0x151f7c75
     ==
-    assert // ARC4 prefix is valid
+    assert // Bytes has valid prefix
     retsub
 
 
@@ -2870,7 +2867,7 @@ verify_bool_from_bytes:
     // public verify_bool_from_bytes(a: bytes): Bool {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:341
-    // return Bool.fromBytes(a)
+    // return interpretAsArc4<Bool>(a)
     frame_dig -1
     retsub
 
@@ -2882,12 +2879,12 @@ verify_bool_from_log:
     // public verify_bool_from_log(a: bytes): Bool {
     proto 1 1
     // tests/artifacts/arc4-primitive-ops/contract.algo.ts:345
-    // return Bool.fromLog(a)
+    // return interpretAsArc4<Bool>(a, 'log')
     frame_dig -1
     extract 4 0
     frame_dig -1
     extract 0 4
     bytec_0 // 0x151f7c75
     ==
-    assert // ARC4 prefix is valid
+    assert // Bytes has valid prefix
     retsub

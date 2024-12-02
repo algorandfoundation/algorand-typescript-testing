@@ -1,9 +1,9 @@
 import { BigUintCompat, Bytes, bytes, internal, StringCompat, Uint64Compat } from '@algorandfoundation/algorand-typescript'
-import { BitSize, Bool, Byte, Str, UFixedNxM, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import { ARC4Encoded, BitSize, Bool, Byte, Str, UFixedNxM, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import assert from 'assert'
 import { ABI_RETURN_VALUE_LOG_PREFIX, BITS_IN_BYTE, UINT64_SIZE } from '../constants'
-import { TypeInfo } from '../encoders'
+import { fromBytes, TypeInfo } from '../encoders'
 import { DeliberateAny } from '../typescript-helpers'
 import { asBigUint, asBigUintCls, asBytesCls, asUint64, asUint8Array } from '../util'
 
@@ -15,10 +15,10 @@ type CompatForArc4Int<N extends BitSize> = N extends 8 | 16 | 32 | 64 ? Uint64Co
 export class UintNImpl<N extends BitSize> extends UintN<N> {
   private value: Uint8Array
   private bitSize: N
-  private typeInfo: TypeInfo
+  typeInfo: TypeInfo
 
   constructor(typeInfoString: string, v?: CompatForArc4Int<N>) {
-    super(v)
+    super()
     this.typeInfo = JSON.parse(typeInfoString)
     this.bitSize = parseInt((this.typeInfo.genericArgs as TypeInfo[])![0].name, 10) as N
 
@@ -40,32 +40,45 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
     return Bytes(this.value)
   }
 
-  static fromBytesImpl(typeInfo: string, value: internal.primitives.StubBytesCompat): UintNImpl<BitSize> {
-    const result = new UintNImpl<BitSize>(typeInfo)
-    result.value = asUint8Array(value)
-    return result
+  equals(other: this): boolean {
+    if (!(other instanceof UintNImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+    }
+    return this.bytes.equals(other.bytes)
   }
 
-  static fromLogImpl(typeInfo: string, value: internal.primitives.StubBytesCompat): UintNImpl<BitSize> {
-    const bytesValue = asBytesCls(value)
-    assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
-    return UintNImpl.fromBytesImpl(typeInfo, bytesValue.slice(4))
+  static fromBytesImpl(
+    value: internal.primitives.StubBytesCompat | Uint8Array,
+    typeInfo: string | TypeInfo,
+    prefix: 'none' | 'log' = 'none',
+  ): UintNImpl<BitSize> {
+    let bytesValue = asBytesCls(value)
+    if (prefix === 'log') {
+      assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
+      bytesValue = bytesValue.slice(4)
+    }
+    const typeInfoString = typeof typeInfo === 'string' ? typeInfo : JSON.stringify(typeInfo)
+    const result = new UintNImpl<BitSize>(typeInfoString)
+    result.value = asUint8Array(bytesValue)
+    return result
   }
 }
 
 const regExpNxM = (maxPrecision: number) => new RegExp(`^\\d*\\.?\\d{0,${maxPrecision}}$`)
 const trimTrailingDecimalZeros = (v: string) => v.replace(/(\d+\.\d*?)0+$/, '$1').replace(/\.$/, '')
+type uFixedNxMGenericArgs = { n: TypeInfo; m: TypeInfo }
 export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNxM<N, M> {
   private value: Uint8Array
-  private typeInfo: TypeInfo
   private bitSize: N
   private precision: M
+  private typeInfo: TypeInfo
 
   constructor(typeInfoString: string, v: `${number}.${number}`) {
     super(v)
     this.typeInfo = JSON.parse(typeInfoString)
-    this.bitSize = parseInt((this.typeInfo.genericArgs as TypeInfo[])![0].name, 10) as N
-    this.precision = parseInt((this.typeInfo.genericArgs as TypeInfo[])![1].name, 10) as M
+    const genericArgs = this.typeInfo.genericArgs as uFixedNxMGenericArgs
+    this.bitSize = parseInt(genericArgs.n.name, 10) as N
+    this.precision = parseInt(genericArgs.m.name, 10) as M
 
     const trimmedValue = trimTrailingDecimalZeros(v)
     assert(regExpNxM(this.precision).test(trimmedValue), `expected positive decimal literal with max of ${this.precision} decimal places`)
@@ -86,28 +99,34 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
     return Bytes(this.value)
   }
 
-  equals(other: UFixedNxM<DeliberateAny, DeliberateAny>): boolean {
-    const otherImpl = other as UFixedNxMImpl<DeliberateAny, DeliberateAny>
-    return this.bitSize === otherImpl.bitSize && this.precision === otherImpl.precision && this.value === otherImpl.value
+  equals(other: this): boolean {
+    if (!(other instanceof UFixedNxMImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+    }
+    return this.bytes.equals(other.bytes)
   }
 
-  static fromBytesImpl(typeInfo: string, value: internal.primitives.StubBytesCompat): UFixedNxM<BitSize, number> {
-    const result = new UFixedNxMImpl<BitSize, number>(typeInfo, '0.0')
-    result.value = asUint8Array(value)
+  static fromBytesImpl(
+    value: internal.primitives.StubBytesCompat | Uint8Array,
+    typeInfo: string | TypeInfo,
+    prefix: 'none' | 'log' = 'none',
+  ): UFixedNxM<BitSize, number> {
+    let bytesValue = asBytesCls(value)
+    if (prefix === 'log') {
+      assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
+      bytesValue = bytesValue.slice(4)
+    }
+    const typeInfoString = typeof typeInfo === 'string' ? typeInfo : JSON.stringify(typeInfo)
+    const result = new UFixedNxMImpl<BitSize, number>(typeInfoString, '0.0')
+    result.value = asUint8Array(bytesValue)
     return result
-  }
-
-  static fromLogImpl(typeInfo: string, value: internal.primitives.StubBytesCompat): UFixedNxM<BitSize, number> {
-    const bytesValue = asBytesCls(value)
-    assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
-    return UFixedNxMImpl.fromBytesImpl(typeInfo, bytesValue.slice(4))
   }
 }
 
 export class ByteImpl extends Byte {
   private value: UintNImpl<8>
 
-  constructor(typeInfoString: string, v: CompatForArc4Int<8>) {
+  constructor(typeInfoString: string, v?: CompatForArc4Int<8>) {
     super(v)
     this.value = new UintNImpl<8>(typeInfoString, v)
   }
@@ -120,19 +139,30 @@ export class ByteImpl extends Byte {
     return this.value.bytes
   }
 
-  static fromBytesImpl(typeInfo: string, value: internal.primitives.StubBytesCompat): Byte {
-    return UintNImpl.fromBytesImpl(typeInfo, value) as Byte
+  equals(other: this): boolean {
+    if (!(other instanceof ByteImpl) || JSON.stringify(this.value.typeInfo) !== JSON.stringify(other.value.typeInfo)) {
+      throw new internal.errors.CodeError(`Expected expression of type ${this.value.typeInfo.name}, got ${other.value.typeInfo.name}`)
+    }
+    return this.bytes.equals(other.bytes)
   }
 
-  static fromLogImpl(typeInfo: string, value: internal.primitives.StubBytesCompat): Byte {
-    return UintNImpl.fromLogImpl(typeInfo, value) as Byte
+  static fromBytesImpl(
+    value: internal.primitives.StubBytesCompat | Uint8Array,
+    typeInfo: string | TypeInfo,
+    prefix: 'none' | 'log' = 'none',
+  ): ByteImpl {
+    const uintNValue = UintNImpl.fromBytesImpl(value, typeInfo, prefix) as UintNImpl<8>
+    const typeInfoString = typeof typeInfo === 'string' ? typeInfo : JSON.stringify(typeInfo)
+    const result = new ByteImpl(typeInfoString)
+    result.value = uintNValue
+    return result
   }
 }
 
 export class StrImpl extends Str {
   private value: Uint8Array
 
-  constructor(s?: StringCompat) {
+  constructor(_typeInfoString: string, s?: StringCompat) {
     super()
     const bytesValue = asBytesCls(s ?? '')
     const bytesLength = encodeLength(bytesValue.length.asNumber())
@@ -146,16 +176,27 @@ export class StrImpl extends Str {
     return Bytes(this.value)
   }
 
-  static fromBytesImpl(bytes: internal.primitives.StubBytesCompat): StrImpl {
-    const strValue = new StrImpl()
-    strValue.value = asUint8Array(bytes)
-    return strValue
+  equals(other: this): boolean {
+    if (!(other instanceof StrImpl)) {
+      throw new internal.errors.CodeError(`Expected expression of type ${Str}, got ${(other as object).constructor.name}`)
+    }
+    return this.bytes.equals(other.bytes)
   }
 
-  static fromLogImpl(value: internal.primitives.StubBytesCompat): StrImpl {
-    const bytesValue = asBytesCls(value)
-    assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
-    return StrImpl.fromBytesImpl(bytesValue.slice(4))
+  static fromBytesImpl(
+    value: internal.primitives.StubBytesCompat | Uint8Array,
+    typeInfo: string | TypeInfo,
+    prefix: 'none' | 'log' = 'none',
+  ): StrImpl {
+    let bytesValue = asBytesCls(value)
+    if (prefix === 'log') {
+      assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
+      bytesValue = bytesValue.slice(4)
+    }
+    const typeInfoString = typeof typeInfo === 'string' ? typeInfo : JSON.stringify(typeInfo)
+    const result = new StrImpl(typeInfoString)
+    result.value = asUint8Array(bytesValue)
+    return result
   }
 }
 const TRUE_BIGINT_VALUE = 128n
@@ -164,7 +205,7 @@ const FALSE_BIGINT_VALUE = 0n
 export class BoolImpl extends Bool {
   private value: Uint8Array
 
-  constructor(v?: boolean) {
+  constructor(_typeInfoString: string, v?: boolean) {
     super(v)
     this.value = encodingUtil.bigIntToUint8Array(v ? TRUE_BIGINT_VALUE : FALSE_BIGINT_VALUE, 1)
   }
@@ -177,15 +218,43 @@ export class BoolImpl extends Bool {
     return Bytes(this.value)
   }
 
-  static fromBytesImpl(value: internal.primitives.StubBytesCompat): BoolImpl {
-    const result = new BoolImpl()
-    result.value = asUint8Array(value)
+  static fromBytesImpl(
+    value: internal.primitives.StubBytesCompat | Uint8Array,
+    typeInfo: string | TypeInfo,
+    prefix: 'none' | 'log' = 'none',
+  ): BoolImpl {
+    let bytesValue = asBytesCls(value)
+    if (prefix === 'log') {
+      assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
+      bytesValue = bytesValue.slice(4)
+    }
+    const typeInfoString = typeof typeInfo === 'string' ? typeInfo : JSON.stringify(typeInfo)
+    const result = new BoolImpl(typeInfoString)
+    result.value = asUint8Array(bytesValue)
     return result
   }
+}
 
-  static fromLogImpl(value: internal.primitives.StubBytesCompat): BoolImpl {
-    const bytesValue = asBytesCls(value)
-    assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
-    return BoolImpl.fromBytesImpl(bytesValue.slice(4))
+export function interpretAsArc4Impl<T extends ARC4Encoded>(
+  typeInfoString: string,
+  bytes: internal.primitives.StubBytesCompat,
+  prefix: 'none' | 'log' = 'none',
+): T {
+  const typeInfo = JSON.parse(typeInfoString)
+  return getArc4Encoder<T>(typeInfo)(bytes, typeInfo, prefix)
+}
+
+export const arc4Encoders: Record<string, fromBytes<DeliberateAny>> = {
+  Bool: BoolImpl.fromBytesImpl,
+  Byte: ByteImpl.fromBytesImpl,
+  Str: StrImpl.fromBytesImpl,
+  'UintN<.*>': UintNImpl.fromBytesImpl,
+  'UFixedNxM<.*>': UFixedNxMImpl.fromBytesImpl,
+}
+export const getArc4Encoder = <T>(typeInfo: TypeInfo, encoders?: Record<string, fromBytes<DeliberateAny>>): fromBytes<T> => {
+  const encoder = Object.entries(encoders ?? arc4Encoders).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]
+  if (!encoder) {
+    throw new Error(`No encoder found for type ${typeInfo.name}`)
   }
+  return encoder as fromBytes<T>
 }

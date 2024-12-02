@@ -93,12 +93,12 @@ class ExpressionVisitor {
       const isArc4Encoded = isArc4EncodedType(type)
       if (isGeneric || isArc4Encoded) {
         let updatedNode = node
-        const info = isGeneric ? getGenericTypeInfo(type) : undefined
+        const info = getGenericTypeInfo(type)
         if (isArc4EncodedType(type)) {
           if (ts.isNewExpression(updatedNode)) {
             updatedNode = nodeFactory.instantiateARC4EncodedType(updatedNode, info)
-          } else if (ts.isCallExpression(updatedNode) && isCallingARC4EncodedStaticMethod(updatedNode)) {
-            updatedNode = nodeFactory.callARC4EncodedStaticMethod(updatedNode, info)
+          } else if (ts.isCallExpression(updatedNode) && isCallingARC4EncodingUtils(updatedNode)) {
+            updatedNode = nodeFactory.callARC4EncodingUtil(updatedNode, info)
           }
         }
         return isGeneric
@@ -194,7 +194,7 @@ class FunctionOrMethodVisitor {
     if (ts.isNewExpression(node)) {
       return new ExpressionVisitor(this.context, this.helper, node).result()
     }
-    if (ts.isCallExpression(node) && isCallingARC4EncodedStaticMethod(node)) {
+    if (ts.isCallExpression(node) && isCallingARC4EncodingUtils(node)) {
       return new ExpressionVisitor(this.context, this.helper, node).result()
     }
 
@@ -292,7 +292,8 @@ const isArc4EncodedType = (type: ptypes.PType): boolean =>
   type === ptypes.ARC4BooleanType
 
 const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
-  const genericArgs: TypeInfo[] | Record<string, TypeInfo> = []
+  let typeName = type?.name ?? type?.toString() ?? 'unknown'
+  let genericArgs: TypeInfo[] | Record<string, TypeInfo> = []
 
   if (instanceOfAny(type, ptypes.LocalStateType, ptypes.GlobalStateType, ptypes.BoxPType)) {
     genericArgs.push(getGenericTypeInfo(type.contentType))
@@ -300,35 +301,37 @@ const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
     genericArgs.push(getGenericTypeInfo(type.keyType))
     genericArgs.push(getGenericTypeInfo(type.contentType))
   } else if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.DynamicArrayType)) {
-    genericArgs.push(getGenericTypeInfo(type.elementType))
+    const entries = []
+    entries.push(['elementType', getGenericTypeInfo(type.elementType)])
+    if (instanceOfAny(type, ptypes.StaticArrayType)) {
+      entries.push(['size', { name: type.arraySize.toString() }])
+    }
+    genericArgs = Object.fromEntries(entries)
   } else if (type instanceof ptypes.UFixedNxMType) {
-    genericArgs.push({ name: type.n.toString() })
-    genericArgs.push({ name: type.m.toString() })
+    genericArgs = { n: { name: type.n.toString() }, m: { name: type.m.toString() } }
   } else if (type instanceof ptypes.UintNType) {
     genericArgs.push({ name: type.n.toString() })
   } else if (type instanceof ptypes.ARC4StructType) {
-    genericArgs.push(
-      ...Object.fromEntries(
-        Object.entries(type.fields)
-          .map(([key, value]) => [key, getGenericTypeInfo(value)])
-          .filter((x) => !!x),
-      ),
+    typeName = 'Struct'
+    genericArgs = Object.fromEntries(
+      Object.entries(type.fields)
+        .map(([key, value]) => [key, getGenericTypeInfo(value)])
+        .filter((x) => !!x),
     )
   } else if (type instanceof ptypes.ARC4TupleType) {
     genericArgs.push(...type.items.map(getGenericTypeInfo))
   }
 
-  const result: TypeInfo = { name: type?.name ?? type?.toString() ?? 'unknown' }
+  const result: TypeInfo = { name: typeName }
   if (genericArgs && (genericArgs.length || Object.keys(genericArgs).length)) {
     result.genericArgs = genericArgs
   }
   return result
 }
 
-const isCallingARC4EncodedStaticMethod = (node: ts.CallExpression) => {
-  if (node.expression.kind !== ts.SyntaxKind.PropertyAccessExpression) return false
-  const propertyAccessExpression = node.expression as ts.PropertyAccessExpression
-  const staticMethodNames = ['fromBytes', 'fromLog']
-  const propertyName = propertyAccessExpression.name.kind === ts.SyntaxKind.Identifier ? propertyAccessExpression.name.text : ''
-  return staticMethodNames.includes(propertyName)
+const isCallingARC4EncodingUtils = (node: ts.CallExpression) => {
+  if (node.expression.kind !== ts.SyntaxKind.Identifier) return false
+  const identityExpression = node.expression as ts.Identifier
+  const utilMethods = ['interpretAsArc4', 'decodeArc4', 'encodeArc4']
+  return utilMethods.includes(identityExpression.text)
 }

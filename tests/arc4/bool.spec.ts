@@ -1,7 +1,7 @@
 import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Bool } from '@algorandfoundation/algorand-typescript/arc4'
+import { Bool, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect, test } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
 import appSpecJson from '../artifacts/arc4-primitive-ops/data/Arc4PrimitiveOpsContract.arc32.json'
@@ -24,14 +24,14 @@ describe('arc4.Bool', async () => {
 
   test.each([asUint8Array(Bytes.fromHex('00')), asUint8Array(Bytes.fromHex('80'))])('create Bool from bytes', async (value) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_bytes', value)
-    const result = Bool.fromBytes(Bytes(value))
+    const result = interpretAsArc4<Bool>(Bytes(value))
     expect(result.native).toEqual(avmResult)
   })
 
   test.each([asUint8Array(Bytes.fromHex('00')), asUint8Array(Bytes.fromHex('80'))])('create Bool from log', async (value) => {
     const paddedValue = new Uint8Array([...asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX), ...value])
     const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)
-    const result = Bool.fromLog(Bytes(paddedValue))
+    const result = interpretAsArc4<Bool>(Bytes(paddedValue), 'log')
     expect(result.native).toEqual(avmResult)
   })
 
@@ -44,6 +44,6 @@ describe('arc4.Bool', async () => {
     await expect(() => getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)).rejects.toThrowError(
       new RegExp('(assert failed)|(extraction start \\d+ is beyond length)'),
     )
-    expect(() => Bool.fromLog(Bytes(paddedValue))).toThrowError('ABI return prefix not found')
+    expect(() => interpretAsArc4<Bool>(Bytes(paddedValue), 'log')).toThrowError('ABI return prefix not found')
   })
 })

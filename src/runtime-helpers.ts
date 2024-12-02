@@ -1,4 +1,5 @@
 import { internal } from '@algorandfoundation/algorand-typescript'
+import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import { MAX_UINT64 } from './constants'
 import type { TypeInfo } from './encoders'
 import { DeliberateAny } from './typescript-helpers'
@@ -33,6 +34,9 @@ function tryGetBigInt(value: unknown): bigint | undefined {
 }
 
 export function binaryOp(left: unknown, right: unknown, op: BinaryOps) {
+  if (left instanceof ARC4Encoded && right instanceof ARC4Encoded) {
+    return arc4EncodedOp(left, right, op)
+  }
   if (left instanceof internal.primitives.BigUintCls || right instanceof internal.primitives.BigUintCls) {
     return bigUintBinaryOp(left, right, op)
   }
@@ -67,6 +71,19 @@ export function unaryOp(operand: unknown, op: UnaryOps) {
   return defaultUnaryOp(operand, op)
 }
 
+function arc4EncodedOp(left: ARC4Encoded, right: ARC4Encoded, op: BinaryOps): DeliberateAny {
+  const hasEqualsMethod = (x: ARC4Encoded) => Object.hasOwn(x, 'equals') && typeof (x as DeliberateAny).equals === 'function'
+  const compareEquality = (x: ARC4Encoded, y: ARC4Encoded) =>
+    hasEqualsMethod(x) ? (x as DeliberateAny).equals(y) : (y as DeliberateAny).equals(x)
+  switch (op) {
+    case '===':
+      return compareEquality(left, right)
+    case '!==':
+      return !compareEquality(left, right)
+    default:
+      internal.errors.internalError(`Unsupported operator ${op}`)
+  }
+}
 function uint64BinaryOp(left: DeliberateAny, right: DeliberateAny, op: BinaryOps): DeliberateAny {
   const lbi = internal.primitives.Uint64Cls.fromCompat(left).valueOf()
   const rbi = internal.primitives.Uint64Cls.fromCompat(right).valueOf()

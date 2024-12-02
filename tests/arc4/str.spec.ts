@@ -1,7 +1,7 @@
 import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Str } from '@algorandfoundation/algorand-typescript/arc4'
+import { interpretAsArc4, Str } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, test } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_LOG_SIZE } from '../../src/constants'
@@ -48,7 +48,7 @@ describe('arc4.Str', async () => {
     const avmResult = await getAvmResult({ appClient }, 'verify_string_eq', asUint8Array(a), asUint8Array(b))
     const aStr = new Str(a)
     const bStr = new Str(b)
-    const result = aStr.equals(bStr)
+    const result = aStr === bStr
     expect(result).toEqual(avmResult)
   })
 
@@ -69,7 +69,7 @@ describe('arc4.Str', async () => {
   ])('create Str from bytes', async (value) => {
     const paddedValue = new Uint8Array([...encodingUtil.bigIntToUint8Array(BigInt(value.length), 2), ...value])
     const avmResult = await getAvmResult({ appClient }, 'verify_string_from_bytes', paddedValue)
-    const result = Str.fromBytes(Bytes(paddedValue))
+    const result = interpretAsArc4<Str>(Bytes(paddedValue))
     expect(result.native).toEqual(avmResult)
   })
 
@@ -84,7 +84,7 @@ describe('arc4.Str', async () => {
       ...value,
     ])
     const avmResult = await getAvmResult({ appClient }, 'verify_string_from_log', paddedValue)
-    const result = Str.fromLog(Bytes(paddedValue))
+    const result = interpretAsArc4<Str>(Bytes(paddedValue), 'log')
     expect(result.native).toEqual(avmResult)
   })
 
@@ -97,6 +97,6 @@ describe('arc4.Str', async () => {
     await expect(() => getAvmResult({ appClient }, 'verify_string_from_log', paddedValue)).rejects.toThrowError(
       new RegExp('(assert failed)|(extraction start \\d+ is beyond length)'),
     )
-    expect(() => Str.fromLog(Bytes(paddedValue))).toThrowError('ABI return prefix not found')
+    expect(() => interpretAsArc4<Str>(Bytes(paddedValue), 'log')).toThrowError('ABI return prefix not found')
   })
 })

@@ -2,7 +2,7 @@ import { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
 import { TypeInfo } from '../encoders'
 import type { DeliberateAny } from '../typescript-helpers'
-import { getPropertyNameAsString } from './helpers'
+import { getPropertyNameAsString, trimGenericTypeName } from './helpers'
 
 const factory = ts.factory
 export const nodeFactory = {
@@ -81,19 +81,20 @@ export const nodeFactory = {
 
   instantiateARC4EncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
     const infoString = JSON.stringify(typeInfo)
+    const classIdentifier = node.expression.getText().replace('arc4.', '')
     return factory.createNewExpression(
-      factory.createIdentifier(`runtimeHelpers.${node.expression.getText().replace('arc4.', '')}Impl`),
+      factory.createIdentifier(`runtimeHelpers.${trimGenericTypeName(typeInfo?.name ?? classIdentifier)}Impl`),
       node.typeArguments,
       [infoString ? factory.createStringLiteral(infoString) : undefined, ...(node.arguments ?? [])].filter((arg) => !!arg),
     )
   },
 
-  callARC4EncodedStaticMethod(node: ts.CallExpression, typeInfo?: TypeInfo) {
-    const propertyAccessExpression = node.expression as ts.PropertyAccessExpression
+  callARC4EncodingUtil(node: ts.CallExpression, typeInfo?: TypeInfo) {
+    const identifierExpression = node.expression as ts.Identifier
     const infoString = JSON.stringify(typeInfo)
     const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
-      factory.createIdentifier(`runtimeHelpers.${propertyAccessExpression.expression.getText().replace('arc4.', '')}Impl`),
-      `${propertyAccessExpression.name.getText()}Impl`,
+      factory.createIdentifier('runtimeHelpers'),
+      `${identifierExpression.getText()}Impl`,
     )
 
     return factory.createCallExpression(
