@@ -59,3 +59,27 @@ export const encoders: Record<string, fromBytes<DeliberateAny>> = {
 export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
   return getArc4Encoder<T>(typeInfo, encoders)
 }
+
+export function decodeArc4Impl<T>(
+  _targetTypeInfoString: string,
+  sourceTypeInfoString: string,
+  bytes: internal.primitives.StubBytesCompat,
+): T {
+  const sourceTypeInfo = JSON.parse(sourceTypeInfoString)
+  const encoder = getEncoder(sourceTypeInfo)
+  const source = encoder(bytes, sourceTypeInfo)
+
+  return getNativeValue(source) as T
+}
+
+const getNativeValue = (value: DeliberateAny): DeliberateAny => {
+  const native = (value as DeliberateAny).native
+  if (Array.isArray(native)) {
+    return native.map((item) => getNativeValue(item))
+  } else if (native instanceof internal.primitives.AlgoTsPrimitiveCls) {
+    return native
+  } else if (typeof native === 'object') {
+    return Object.fromEntries(Object.entries(native).map(([key, value]) => [key, getNativeValue(value)]))
+  }
+  return native
+}

@@ -6,6 +6,7 @@ import { DeliberateAny } from './typescript-helpers'
 import { nameOfType } from './util'
 
 export { attachAbiMetadata } from './abi-metadata'
+export { decodeArc4Impl } from './encoders'
 export * from './impl/encoded-types'
 
 export function switchableValue(x: unknown): bigint | string | boolean {

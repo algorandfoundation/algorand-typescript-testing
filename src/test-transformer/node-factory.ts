@@ -94,18 +94,18 @@ export const nodeFactory = {
     )
   },
 
-  callARC4EncodingUtil(node: ts.CallExpression, typeInfo?: TypeInfo) {
+  callARC4EncodingUtil(node: ts.CallExpression, ...typeInfos: TypeInfo[]) {
     const identifierExpression = node.expression as ts.Identifier
-    const infoString = JSON.stringify(typeInfo)
+    const infoStringArray = typeInfos.length ? typeInfos.map((typeInfo) => JSON.stringify(typeInfo)) : undefined
     const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
       factory.createIdentifier('runtimeHelpers'),
       `${identifierExpression.getText()}Impl`,
     )
-
+    const typeInfoArgs = infoStringArray ? infoStringArray?.map((infoString) => factory.createStringLiteral(infoString)) : undefined
     return factory.createCallExpression(
       updatedPropertyAccessExpression,
       node.typeArguments,
-      [infoString ? factory.createStringLiteral(infoString) : undefined, ...(node.arguments ?? [])].filter((arg) => !!arg),
+      [...(typeInfoArgs ?? []), ...(node.arguments ?? [])].filter((arg) => !!arg),
     )
   },
 } satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>

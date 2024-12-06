@@ -89,22 +89,26 @@ class ExpressionVisitor {
       // `voted = LocalState<uint64>()` is resolved to FunctionPType with returnType LocalState<uint64>
       if (type instanceof ptypes.FunctionPType) type = type.returnType
 
+      let updatedNode = node
+
       const isGeneric = isGenericType(type)
       const isArc4Encoded = isArc4EncodedType(type)
-      if (isGeneric || isArc4Encoded) {
-        let updatedNode = node
-        const info = getGenericTypeInfo(type)
-        if (isArc4EncodedType(type)) {
-          if (ts.isNewExpression(updatedNode)) {
-            updatedNode = nodeFactory.instantiateARC4EncodedType(updatedNode, info)
-          } else if (ts.isCallExpression(updatedNode) && isCallingARC4EncodingUtils(updatedNode)) {
-            updatedNode = nodeFactory.callARC4EncodingUtil(updatedNode, info)
-          }
+      const info = getGenericTypeInfo(type)
+
+      if (ts.isCallExpression(updatedNode) && isCallingDecodeOrEncodeArc4(updatedNode)) {
+        const targetType = ptypes.ptypeToArc4EncodedType(type, this.helper.sourceLocation(node))
+        const targetTypeInfo = getGenericTypeInfo(targetType)
+        updatedNode = nodeFactory.callARC4EncodingUtil(updatedNode, info, targetTypeInfo)
+      } else if (isArc4Encoded) {
+        if (ts.isNewExpression(updatedNode)) {
+          updatedNode = nodeFactory.instantiateARC4EncodedType(updatedNode, info)
+        } else if (ts.isCallExpression(updatedNode) && isCallingInterpretAsArc4(updatedNode)) {
+          updatedNode = nodeFactory.callARC4EncodingUtil(updatedNode, info)
         }
-        return isGeneric
-          ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
-          : ts.visitEachChild(updatedNode, this.visit, this.context)
       }
+      return isGeneric
+        ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
+        : ts.visitEachChild(updatedNode, this.visit, this.context)
     }
     return ts.visitEachChild(node, this.visit, this.context)
   }
@@ -278,6 +282,7 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
+    ptypes.TuplePType,
   )
 
 const isArc4EncodedType = (type: ptypes.PType): boolean =>
@@ -331,9 +336,11 @@ const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
   return result
 }
 
-const isCallingARC4EncodingUtils = (node: ts.CallExpression) => {
+const isCallingInterpretAsArc4 = (node: ts.CallExpression) => isCallingARC4EncodingUtils(node, 'interpretAsArc4')
+const isCallingDecodeOrEncodeArc4 = (node: ts.CallExpression) => isCallingARC4EncodingUtils(node, 'decodeArc4', 'encodeArc4')
+
+const isCallingARC4EncodingUtils = (node: ts.CallExpression, ...utilMethods: string[]) => {
   if (node.expression.kind !== ts.SyntaxKind.Identifier) return false
   const identityExpression = node.expression as ts.Identifier
-  const utilMethods = ['interpretAsArc4', 'decodeArc4', 'encodeArc4']
-  return utilMethods.includes(identityExpression.text)
+  return (utilMethods.length ? utilMethods : ['interpretAsArc4', 'decodeArc4', 'encodeArc4']).includes(identityExpression.text)
 }

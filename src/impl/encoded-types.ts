@@ -378,6 +378,10 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     return StaticArrayImpl.fromBytesImpl(this.bytes, JSON.stringify(this.typeInfo)) as StaticArrayImpl<TItem, TLength>
   }
 
+  get native(): TItem[] {
+    return this.items
+  }
+
   static fromBytesImpl(
     value: internal.primitives.StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
@@ -561,6 +565,10 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
     return popped
   }
 
+  get native(): TItem[] {
+    return this.items
+  }
+
   static fromBytesImpl(
     value: internal.primitives.StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
@@ -730,6 +738,10 @@ export class StructImpl<T extends StructConstraint> extends (Struct<StructConstr
       result[key] = (this as unknown as StructConstraint)[key]
     })
     return result as T
+  }
+
+  get native(): T {
+    return this.items
   }
 
   private decodeAsProperties() {
@@ -1110,6 +1122,7 @@ export function interpretAsArc4Impl<T extends ARC4Encoded>(
   bytes: internal.primitives.StubBytesCompat,
   prefix: 'none' | 'log' = 'none',
 ): T {
+  console.log('typeInfoString', typeInfoString)
   const typeInfo = JSON.parse(typeInfoString)
   return getArc4Encoder<T>(typeInfo)(bytes, typeInfo, prefix)
 }
