@@ -19,7 +19,7 @@ import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { decodeAddress } from 'algosdk'
 import assert from 'assert'
 import { ABI_RETURN_VALUE_LOG_PREFIX, BITS_IN_BYTE, UINT64_SIZE } from '../constants'
-import { fromBytes, TypeInfo } from '../encoders'
+import { fromBytes, getEncoder, TypeInfo } from '../encoders'
 import { DeliberateAny } from '../typescript-helpers'
 import { asBigUint, asBigUintCls, asBytesCls, asUint64, asUint8Array, conactUint8Arrays, uint8ArrayToNumber } from '../util'
 
@@ -403,6 +403,10 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     }
     return size
   }
+
+  get native(): TItem[] {
+    return this.items
+  }
 }
 
 export class AddressImpl extends Address {
@@ -545,6 +549,10 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
     const popped = items.pop()
     if (popped === undefined) internal.errors.avmError('The array is empty')
     return popped
+  }
+
+  get native(): TItem[] {
+    return this.items
   }
 
   static fromBytesImpl(
@@ -708,11 +716,15 @@ export class StructImpl<T extends StructConstraint> extends (Struct<StructConstr
     return result as T
   }
 
+  get native(): T {
+    return this.items
+  }
+
   private decodeAsProperties() {
     if (this.uint8ArrayValue) {
       const values = decode(this.uint8ArrayValue, Object.values(this.genericArgs))
       Object.keys(this.genericArgs).forEach((key, index) => {
-        ;(this as unknown as StructConstraint)[key] = values[index]
+        ; (this as unknown as StructConstraint)[key] = values[index]
       })
       this.uint8ArrayValue = undefined
     }
@@ -1074,6 +1086,13 @@ export function interpretAsArc4Impl<T extends ARC4Encoded>(
 ): T {
   const typeInfo = JSON.parse(typeInfoString)
   return getArc4Encoder<T>(typeInfo)(bytes, typeInfo, prefix)
+}
+
+export function decodeArc4Impl<T>(_targetTypeInfoString: string, sourceTypeInfoString: string, bytes: internal.primitives.StubBytesCompat): T {
+  const sourceTypeInfo = JSON.parse(sourceTypeInfoString)
+  const encoder = getEncoder(sourceTypeInfo)
+  const source = encoder(bytes, sourceTypeInfo)
+  return (source as DeliberateAny).native
 }
 
 export const arc4Encoders: Record<string, fromBytes<DeliberateAny>> = {
