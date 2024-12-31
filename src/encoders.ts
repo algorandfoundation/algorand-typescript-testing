@@ -1,10 +1,8 @@
 import { biguint, BigUint, bytes, internal, TransactionType, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { ARC4Encoded, OnCompleteAction } from '@algorandfoundation/algorand-typescript/arc4'
-import { AccountCls } from './impl/account'
-import { ApplicationCls } from './impl/application'
-import { AssetCls } from './impl/asset'
 import { BytesBackedCls, Uint64BackedCls } from './impl/base'
 import { arc4Encoders, encodeArc4Impl, getArc4Encoder } from './impl/encoded-types'
+import { AccountCls, ApplicationCls, AssetCls } from './impl/reference'
 import { DeliberateAny } from './typescript-helpers'
 import { asBytes, asMaybeBigUintCls, asMaybeBytesCls, asMaybeUint64Cls, asUint64Cls, asUint8Array, nameOfType } from './util'
 

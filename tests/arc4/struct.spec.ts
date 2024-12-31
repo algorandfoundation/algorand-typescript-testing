@@ -3,7 +3,7 @@ import { Bytes, internal } from '@algorandfoundation/algorand-typescript'
 import { Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Struct, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { describe, expect, it, test } from 'vitest'
-import { AccountCls } from '../../src/impl/account'
+import { AccountCls } from '../../src/impl/reference'
 import { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
 

@@ -28,9 +28,7 @@ import { lazyContext } from '../context-helpers/internal-context'
 import { fromBytes, TypeInfo } from '../encoders'
 import { DeliberateAny } from '../typescript-helpers'
 import { asBigInt, asBigUint, asBigUintCls, asBytesCls, asUint64, asUint8Array, conactUint8Arrays, uint8ArrayToNumber } from '../util'
-import { AccountCls } from './account'
-import { ApplicationCls } from './application'
-import { AssetCls } from './asset'
+import { AccountCls, AccountImpl, ApplicationCls, AssetCls } from './reference'
 import { ApplicationTransaction } from './transactions'
 
 const ABI_LENGTH_SIZE = 2
@@ -479,7 +477,7 @@ export class AddressImpl extends Address {
   }
 
   get native(): Account {
-    return Account(this.value.bytes)
+    return AccountImpl(this.value.bytes)
   }
 
   get items(): ByteImpl[] {

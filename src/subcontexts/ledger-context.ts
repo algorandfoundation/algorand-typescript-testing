@@ -1,11 +1,9 @@
 import { Account, Application, Asset, BaseContract, bytes, internal, LocalStateForAccount } from '@algorandfoundation/algorand-typescript'
 import { AccountMap, Uint64Map } from '../collections/custom-key-map'
 import { MAX_UINT64 } from '../constants'
-import { AccountData, AssetHolding } from '../impl/account'
-import { ApplicationData } from '../impl/application'
-import { AssetData } from '../impl/asset'
 import { BlockData } from '../impl/block'
 import { GlobalData } from '../impl/global'
+import { AccountData, AccountImpl, ApplicationData, ApplicationImpl, AssetData, AssetHolding, AssetImpl } from '../impl/reference'
 import { GlobalStateCls } from '../impl/state'
 import { VoterData } from '../impl/voter-params'
 import { asBigInt, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64Cls, iterBigInt } from '../util'
@@ -29,21 +27,21 @@ export class LedgerContext {
 
   getAccount(address: Account): Account {
     if (this.accountDataMap.has(address)) {
-      return Account(address.bytes)
+      return AccountImpl(address.bytes)
     }
     throw internal.errors.internalError('Unknown account, check correct testing context is active')
   }
 
   getAsset(assetId: internal.primitives.StubUint64Compat): Asset {
     if (this.assetDataMap.has(assetId)) {
-      return Asset(asUint64(assetId))
+      return AssetImpl(asUint64(assetId))
     }
     throw internal.errors.internalError('Unknown asset, check correct testing context is active')
   }
 
   getApplication(applicationId: internal.primitives.StubUint64Compat): Application {
     if (this.applicationDataMap.has(applicationId)) {
-      return Application(asUint64(applicationId))
+      return ApplicationImpl(asUint64(applicationId))
     }
     throw internal.errors.internalError('Unknown application, check correct testing context is active')
   }
@@ -52,7 +50,7 @@ export class LedgerContext {
     for (const [appId, c] of this.appIdContractMap) {
       if (c === contract) {
         if (this.applicationDataMap.has(appId)) {
-          return Application(asUint64(appId))
+          return ApplicationImpl(asUint64(appId))
         }
       }
     }
@@ -75,7 +73,7 @@ export class LedgerContext {
     if (found && next?.value) {
       const appId = asUint64(next.value[0])
       if (this.applicationDataMap.has(appId)) {
-        return Application(appId)
+        return ApplicationImpl(appId)
       }
     }
     return undefined

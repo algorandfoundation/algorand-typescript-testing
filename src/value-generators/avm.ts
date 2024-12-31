@@ -2,9 +2,7 @@ import { Account, Application, Asset, bytes, Bytes, internal, Uint64, uint64 } f
 import { randomBytes } from 'crypto'
 import { MAX_BYTES_SIZE, MAX_UINT64, ZERO_ADDRESS } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { AccountData } from '../impl/account'
-import { ApplicationCls, ApplicationData } from '../impl/application'
-import { AssetCls, AssetData } from '../impl/asset'
+import { AccountData, AccountImpl, ApplicationCls, ApplicationData, AssetCls, AssetData } from '../impl/reference'
 import { asBigInt, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
 
 type AccountContextData = Partial<AccountData['account']> & {
@@ -48,7 +46,7 @@ export class AvmValueGenerator {
   }
 
   account(input?: AccountContextData): Account {
-    const account = input?.address ?? Account(getRandomBytes(32).asAlgoTs())
+    const account = input?.address ?? AccountImpl(getRandomBytes(32).asAlgoTs())
 
     if (input?.address && lazyContext.ledger.accountDataMap.has(account)) {
       internal.errors.internalError(
@@ -92,11 +90,11 @@ export class AvmValueGenerator {
       name: lazyContext.any.bytes(32),
       url: lazyContext.any.bytes(10),
       metadataHash: lazyContext.any.bytes(32),
-      manager: Account(ZERO_ADDRESS),
-      freeze: Account(ZERO_ADDRESS),
-      clawback: Account(ZERO_ADDRESS),
+      manager: AccountImpl(ZERO_ADDRESS),
+      freeze: AccountImpl(ZERO_ADDRESS),
+      clawback: AccountImpl(ZERO_ADDRESS),
       creator: lazyContext.defaultSender,
-      reserve: Account(ZERO_ADDRESS),
+      reserve: AccountImpl(ZERO_ADDRESS),
     }
     const { assetId: _, ...assetData } = input ?? {}
     lazyContext.ledger.assetDataMap.set(assetId, {

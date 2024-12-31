@@ -1,6 +1,7 @@
 import { Account, Asset, Bytes, bytes, gtxn, internal, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asMaybeUint64Cls, asUint64 } from '../util'
+import { AccountImpl } from './reference'
 
 const resolveAssetIndex = (assetIdOrIndex: internal.primitives.StubUint64Compat): uint64 => {
   const input = asUint64(assetIdOrIndex)
@@ -54,22 +55,22 @@ export const AssetParams: internal.opTypes.AssetParamsType = {
   },
   assetManager(a: Asset | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
     const asset = getAsset(a)
-    return asset === undefined ? [Account(), false] : [asset.manager, true]
+    return asset === undefined ? [AccountImpl(), false] : [asset.manager, true]
   },
   assetReserve(a: Asset | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
     const asset = getAsset(a)
-    return asset === undefined ? [Account(), false] : [asset.reserve, true]
+    return asset === undefined ? [AccountImpl(), false] : [asset.reserve, true]
   },
   assetFreeze(a: Asset | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
     const asset = getAsset(a)
-    return asset === undefined ? [Account(), false] : [asset.freeze, true]
+    return asset === undefined ? [AccountImpl(), false] : [asset.freeze, true]
   },
   assetClawback(a: Asset | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
     const asset = getAsset(a)
-    return asset === undefined ? [Account(), false] : [asset.clawback, true]
+    return asset === undefined ? [AccountImpl(), false] : [asset.clawback, true]
   },
   assetCreator(a: Asset | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
     const asset = getAsset(a)
-    return asset === undefined ? [Account(), false] : [asset.creator, true]
+    return asset === undefined ? [AccountImpl(), false] : [asset.creator, true]
   },
 }

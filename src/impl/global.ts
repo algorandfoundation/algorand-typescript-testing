@@ -9,7 +9,8 @@ import {
   ZERO_ADDRESS,
 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { getApplicationAddress, getObjectReference } from '../util'
+import { getObjectReference } from '../util'
+import { AccountImpl, getApplicationAddress } from './reference'
 
 export class GlobalData {
   minTxnFee: uint64
@@ -34,7 +35,7 @@ export class GlobalData {
     this.minTxnFee = Uint64(MIN_TXN_FEE)
     this.minBalance = Uint64(DEFAULT_ACCOUNT_MIN_BALANCE)
     this.maxTxnLife = Uint64(DEFAULT_MAX_TXN_LIFE)
-    this.zeroAddress = Account(ZERO_ADDRESS)
+    this.zeroAddress = AccountImpl(ZERO_ADDRESS)
     this.callerApplicationId = Uint64(0)
     this.assetCreateMinBalance = Uint64(DEFAULT_ASSET_CREATE_MIN_BALANCE)
     this.assetOptInMinBalance = Uint64(DEFAULT_ASSET_OPT_IN_MIN_BALANCE)

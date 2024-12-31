@@ -16,6 +16,7 @@ import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes } from '../encoders'
 import { Mutable, ObjectKeys } from '../typescript-helpers'
 import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asNumber, asUint64Cls, combineIntoMaxBytePages, getRandomBytes } from '../util'
+import { AccountImpl, ApplicationImpl, AssetImpl } from './reference'
 
 const baseDefaultFields = () => ({
   sender: lazyContext.defaultSender,
@@ -27,7 +28,7 @@ const baseDefaultFields = () => ({
   lease: Bytes(),
   groupIndex: Uint64(0),
   txnId: getRandomBytes(32).asAlgoTs(),
-  rekeyTo: Account(),
+  rekeyTo: AccountImpl(),
 })
 
 export type TxnFields<TTxn> = Partial<Mutable<Pick<TTxn, ObjectKeys<TTxn>>>>
@@ -90,9 +91,9 @@ export class PaymentTransaction extends TransactionBase implements gtxn.PaymentT
 
   protected constructor(fields: TxnFields<gtxn.PaymentTxn>) {
     super(fields)
-    this.receiver = fields.receiver ?? Account()
+    this.receiver = fields.receiver ?? AccountImpl()
     this.amount = fields.amount ?? Uint64(0)
-    this.closeRemainderTo = fields.closeRemainderTo ?? Account()
+    this.closeRemainderTo = fields.closeRemainderTo ?? AccountImpl()
   }
 
   readonly receiver: Account
@@ -144,7 +145,7 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
 
   protected constructor(fields: TxnFields<gtxn.AssetConfigTxn>) {
     super(fields)
-    this.configAsset = fields.configAsset ?? Asset()
+    this.configAsset = fields.configAsset ?? AssetImpl()
     this.total = fields.total ?? Uint64(0)
     this.decimals = fields.decimals ?? Uint64(0)
     this.defaultFrozen = fields.defaultFrozen ?? false
@@ -152,11 +153,11 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
     this.assetName = fields.assetName ?? Bytes()
     this.url = fields.url ?? Bytes()
     this.metadataHash = fields.metadataHash ?? Bytes()
-    this.manager = fields.manager ?? Account()
-    this.reserve = fields.reserve ?? Account()
-    this.freeze = fields.freeze ?? Account()
-    this.clawback = fields.clawback ?? Account()
-    this.createdAsset = fields.createdAsset ?? Asset()
+    this.manager = fields.manager ?? AccountImpl()
+    this.reserve = fields.reserve ?? AccountImpl()
+    this.freeze = fields.freeze ?? AccountImpl()
+    this.clawback = fields.clawback ?? AccountImpl()
+    this.createdAsset = fields.createdAsset ?? AssetImpl()
   }
 
   readonly configAsset: Asset
@@ -184,11 +185,11 @@ export class AssetTransferTransaction extends TransactionBase implements gtxn.As
 
   protected constructor(fields: TxnFields<gtxn.AssetTransferTxn>) {
     super(fields)
-    this.xferAsset = fields.xferAsset ?? Asset()
+    this.xferAsset = fields.xferAsset ?? AssetImpl()
     this.assetAmount = fields.assetAmount ?? Uint64(0)
-    this.assetSender = fields.assetSender ?? Account()
-    this.assetReceiver = fields.assetReceiver ?? Account()
-    this.assetCloseTo = fields.assetCloseTo ?? Account()
+    this.assetSender = fields.assetSender ?? AccountImpl()
+    this.assetReceiver = fields.assetReceiver ?? AccountImpl()
+    this.assetCloseTo = fields.assetCloseTo ?? AccountImpl()
   }
 
   readonly xferAsset: Asset
@@ -209,8 +210,8 @@ export class AssetFreezeTransaction extends TransactionBase implements gtxn.Asse
 
   protected constructor(fields: TxnFields<gtxn.AssetFreezeTxn>) {
     super(fields)
-    this.freezeAsset = fields.freezeAsset ?? Asset()
-    this.freezeAccount = fields.freezeAccount ?? Account()
+    this.freezeAsset = fields.freezeAsset ?? AssetImpl()
+    this.freezeAccount = fields.freezeAccount ?? AccountImpl()
     this.frozen = fields.frozen ?? false
   }
 
@@ -249,14 +250,14 @@ export class ApplicationTransaction extends TransactionBase implements gtxn.Appl
 
   protected constructor(fields: ApplicationTransactionFields) {
     super(fields)
-    this.appId = fields.appId ?? Application()
+    this.appId = fields.appId ?? ApplicationImpl()
     this.onCompletion = fields.onCompletion ?? 'NoOp'
     this.globalNumUint = fields.globalNumUint ?? Uint64(0)
     this.globalNumBytes = fields.globalNumBytes ?? Uint64(0)
     this.localNumUint = fields.localNumUint ?? Uint64(0)
     this.localNumBytes = fields.localNumBytes ?? Uint64(0)
     this.extraProgramPages = fields.extraProgramPages ?? Uint64(0)
-    this.createdApp = fields.createdApp ?? Application()
+    this.createdApp = fields.createdApp ?? ApplicationImpl()
     this.#appArgs = fields.appArgs ?? []
     this.#appLogs = fields.appLogs ?? []
     this.#accounts = fields.accounts ?? []

@@ -6,6 +6,7 @@ import { AssetCreateParams } from '@algorandfoundation/algokit-utils/types/compo
 import { KmdAccountManager } from '@algorandfoundation/algokit-utils/types/kmd-account-manager'
 import { nullLogger } from '@algorandfoundation/algokit-utils/types/logging'
 import { Account, Bytes, internal, uint64 } from '@algorandfoundation/algorand-typescript'
+import { AccountImpl } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
 import { randomUUID } from 'crypto'
 import { Mutable } from '../src/typescript-helpers'
 import { asUint64, getRandomBigInt, getRandomNumber, Lazy } from '../src/util'
@@ -109,7 +110,7 @@ export const generateAVMTestAccount = async (): Promise<ReturnType<algokit.Algor
 
 export const generateTestAccount = async (): Promise<Account> => {
   const account = await generateAVMTestAccount()
-  return Account(Bytes.fromBase32(account.addr.toString()))
+  return AccountImpl(Bytes.fromBase32(account.addr.toString()))
 }
 
 export const generateTestAsset = async (fields: Mutable<AssetCreateParams>): Promise<uint64> => {

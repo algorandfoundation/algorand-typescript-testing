@@ -4,7 +4,7 @@ import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-te
 import { Address, Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, test } from 'vitest'
-import { AccountCls } from '../../src/impl/account'
+import { AccountCls } from '../../src/impl/reference'
 import { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes, asUint8Array } from '../../src/util'
 

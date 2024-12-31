@@ -388,6 +388,10 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     'urange',
     'match',
     'assertMatch',
+    'Account',
+    'Application',
+    'Asset',
+    'log',
   ]
   return stubbedFunctionNames.includes(functionName) ? functionName : undefined
 }

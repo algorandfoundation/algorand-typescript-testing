@@ -5,6 +5,7 @@ import { asBytes, asNumber } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
 import { InnerTxn, InnerTxnFields } from './itxn'
+import { AccountImpl } from './reference'
 import {
   ApplicationTransaction,
   AssetConfigTransaction,
@@ -21,9 +22,13 @@ const mapCommonFields = <T extends InnerTxnFields>(
 
   return {
     sender:
-      sender instanceof Account ? sender : typeof sender === 'string' ? Account(asBytes(sender)) : lazyContext.activeApplication.address,
+      sender instanceof Account
+        ? sender
+        : typeof sender === 'string'
+          ? AccountImpl(asBytes(sender))
+          : lazyContext.activeApplication.address,
     note: note !== undefined ? asBytes(note) : undefined,
-    rekeyTo: rekeyTo instanceof Account ? rekeyTo : typeof rekeyTo === 'string' ? Account(asBytes(rekeyTo)) : undefined,
+    rekeyTo: rekeyTo instanceof Account ? rekeyTo : typeof rekeyTo === 'string' ? AccountImpl(asBytes(rekeyTo)) : undefined,
     ...rest,
   }
 }
@@ -118,7 +123,8 @@ export class AssetFreezeInnerTxn extends AssetFreezeTransaction implements itxn.
   constructor(fields: itxn.AssetFreezeFields) {
     const { freezeAsset, freezeAccount, ...rest } = mapCommonFields(fields)
     const asset: Asset | undefined = freezeAsset instanceof internal.primitives.Uint64Cls ? getAsset(freezeAsset) : (freezeAsset as Asset)
-    const account: Account | undefined = typeof freezeAccount === 'string' ? Account(asBytes(freezeAccount)) : (freezeAccount as Account)
+    const account: Account | undefined =
+      typeof freezeAccount === 'string' ? AccountImpl(asBytes(freezeAccount)) : (freezeAccount as Account)
     super({
       freezeAsset: asset,
       freezeAccount: account,

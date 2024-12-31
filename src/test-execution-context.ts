@@ -1,11 +1,8 @@
-import { Account, Application, Asset, BaseContract, bytes, internal, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
+import { Account, BaseContract, bytes, internal, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
 import { captureMethodConfig } from './abi-metadata'
 import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
 import { DecodedLogs, LogDecoding } from './decode-logs'
 import * as ops from './impl'
-import { AccountCls } from './impl/account'
-import { ApplicationCls } from './impl/application'
-import { AssetCls } from './impl/asset'
 import {
   applicationCall as itxnApplicationCall,
   assetConfig as itxnAssetConfig,
@@ -15,6 +12,7 @@ import {
   payment as itxnPayment,
   submitGroup as itxnSubmitGroup,
 } from './impl/inner-transactions'
+import { AccountImpl } from './impl/reference'
 import { Box, BoxMap, BoxRef, GlobalState, LocalState } from './impl/state'
 import { ContractContext } from './subcontexts/contract-context'
 import { LedgerContext } from './subcontexts/ledger-context'
@@ -40,28 +38,8 @@ export class TestExecutionContext implements internal.ExecutionContext {
     this.#ledgerContext = new LedgerContext()
     this.#txnContext = new TransactionContext()
     this.#valueGenerator = new ValueGenerator()
-    this.#defaultSender = Account(defaultSenderAddress ?? getRandomBytes(32).asAlgoTs())
+    this.#defaultSender = AccountImpl(defaultSenderAddress ?? getRandomBytes(32).asAlgoTs())
     this.#activeLogicSigArgs = []
-  }
-
-  /* @internal */
-  account(address?: bytes): Account {
-    return new AccountCls(address)
-  }
-
-  /* @internal */
-  application(id?: uint64): Application {
-    return new ApplicationCls(id)
-  }
-
-  /* @internal */
-  asset(id?: uint64): Asset {
-    return new AssetCls(id)
-  }
-
-  /* @internal */
-  log(value: bytes): void {
-    this.txn.appendLog(value)
   }
 
   exportLogs<const T extends [...LogDecoding[]]>(appId: uint64, ...decoding: T): DecodedLogs<T> {

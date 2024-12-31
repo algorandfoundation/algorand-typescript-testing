@@ -1,7 +1,7 @@
 import { internal } from '@algorandfoundation/algorand-typescript'
 import { Address } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { AccountCls } from './impl/account'
+import { AccountCls } from './impl/reference'
 
 type Tester = (this: TesterContext, a: unknown, b: unknown, customTesters: Array<Tester>) => boolean | undefined
 interface TesterContext {

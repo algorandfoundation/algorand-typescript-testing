@@ -22,9 +22,7 @@ import { BytesMap } from '../collections/custom-key-map'
 import { checkRoutingConditions } from '../context-helpers/context-util'
 import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes, type TypeInfo } from '../encoders'
-import { AccountCls } from '../impl/account'
-import { ApplicationCls } from '../impl/application'
-import { AssetCls } from '../impl/asset'
+import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
 import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
 import {
   ApplicationTransaction,

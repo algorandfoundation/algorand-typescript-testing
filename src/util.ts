@@ -1,19 +1,6 @@
-import { Account, Bytes, bytes, internal } from '@algorandfoundation/algorand-typescript'
-import { encodingUtil } from '@algorandfoundation/puya-ts'
+import { Bytes, bytes, internal } from '@algorandfoundation/algorand-typescript'
 import { randomBytes } from 'crypto'
-import js_sha512 from 'js-sha512'
-import {
-  ALGORAND_ADDRESS_BYTE_LENGTH,
-  ALGORAND_ADDRESS_LENGTH,
-  ALGORAND_CHECKSUM_BYTE_LENGTH,
-  APP_ID_PREFIX,
-  BITS_IN_BYTE,
-  HASH_BYTES_LENGTH,
-  MAX_BYTES_SIZE,
-  MAX_UINT512,
-  MAX_UINT8,
-  UINT512_SIZE,
-} from './constants'
+import { BITS_IN_BYTE, MAX_BYTES_SIZE, MAX_UINT512, MAX_UINT8, UINT512_SIZE } from './constants'
 import { DeliberateAny } from './typescript-helpers'
 
 export const nameOfType = (x: unknown) => {
@@ -169,26 +156,4 @@ export const conactUint8Arrays = (...values: Uint8Array[]): Uint8Array => {
 
 export const uint8ArrayToNumber = (value: Uint8Array): number => {
   return value.reduce((acc, x) => acc * 256 + x, 0)
-}
-
-export const checksumFromPublicKey = (pk: Uint8Array): Uint8Array => {
-  return Uint8Array.from(js_sha512.sha512_256.array(pk).slice(HASH_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, HASH_BYTES_LENGTH))
-}
-
-export const getApplicationAddress = (appId: internal.primitives.StubUint64Compat): Account => {
-  const toBeSigned = conactUint8Arrays(asUint8Array(APP_ID_PREFIX), encodingUtil.bigIntToUint8Array(asBigInt(appId), 8))
-  const appIdHash = js_sha512.sha512_256.array(toBeSigned)
-  const publicKey = Uint8Array.from(appIdHash)
-  const address = encodeAddress(publicKey)
-  return Account(Bytes.fromBase32(address))
-}
-
-export const encodeAddress = (address: Uint8Array): string => {
-  const checksum = checksumFromPublicKey(address)
-  return encodingUtil.uint8ArrayToBase32(conactUint8Arrays(address, checksum)).slice(0, ALGORAND_ADDRESS_LENGTH)
-}
-
-export const decodePublicKey = (address: string): Uint8Array => {
-  const decoded = encodingUtil.base32ToUint8Array(address)
-  return decoded.slice(0, ALGORAND_ADDRESS_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)
 }

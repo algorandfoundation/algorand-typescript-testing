@@ -1,8 +1,8 @@
 import { internal } from '@algorandfoundation/algorand-typescript'
-import { lazyContext } from '../context-helpers/internal-context'
 import { DeliberateAny } from '../typescript-helpers'
 import { sha512_256 } from './crypto'
 import { getArc4Encoded, getArc4TypeName } from './encoded-types'
+import { logImpl } from './log'
 
 export function emitImpl<T>(typeInfoString: string, event: T | string, ...eventProps: unknown[]) {
   let eventData
@@ -24,5 +24,5 @@ export function emitImpl<T>(typeInfoString: string, event: T | string, ...eventP
   }
 
   const eventHash = sha512_256(eventName)
-  lazyContext.value.log(eventHash.slice(0, 4).concat(eventData.bytes))
+  logImpl(eventHash.slice(0, 4).concat(eventData.bytes))
 }

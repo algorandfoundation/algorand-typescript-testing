@@ -1,7 +1,5 @@
 import { Account, BaseContract, internal } from '@algorandfoundation/algorand-typescript'
-import { AccountData } from '../impl/account'
-import { ApplicationData } from '../impl/application'
-import { AssetData } from '../impl/asset'
+import { AccountData, ApplicationData, AssetData } from '../impl/reference'
 import { VoterData } from '../impl/voter-params'
 import { TransactionGroup } from '../subcontexts/transaction-context'
 import { TestExecutionContext } from '../test-execution-context'

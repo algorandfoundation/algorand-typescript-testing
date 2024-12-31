@@ -1,7 +1,7 @@
 import { Account, Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { TestExecutionContext } from '../../src'
-import { AssetCls } from '../../src/impl/asset'
+import { AssetCls } from '../../src/impl/reference'
 import { asBytes, asUint64, asUint8Array } from '../../src/util'
 
 describe('Asset', () => {

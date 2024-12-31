@@ -1,6 +1,7 @@
 import { Account, Application, Bytes, bytes, gtxn, internal, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asMaybeUint64Cls, asUint64 } from '../util'
+import { AccountImpl } from './reference'
 
 const resolveAppIndex = (appIdOrIndex: internal.primitives.StubUint64Compat): uint64 => {
   const input = asUint64(appIdOrIndex)
@@ -54,10 +55,10 @@ export const AppParams: internal.opTypes.AppParamsType = {
   },
   appCreator(a: Application | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
     const app = getApp(a)
-    return app === undefined ? [Account(), false] : [app.creator, true]
+    return app === undefined ? [AccountImpl(), false] : [app.creator, true]
   },
   appAddress(a: Application | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
     const app = getApp(a)
-    return app === undefined ? [Account(), false] : [app.address, true]
+    return app === undefined ? [AccountImpl(), false] : [app.address, true]
   },
 }

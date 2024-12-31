@@ -9,7 +9,7 @@ import {
 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { ConstructorFor } from '../typescript-helpers'
-import { ApplicationData } from './application'
+import { ApplicationData } from './reference'
 
 export function compileImpl(
   artefact: ConstructorFor<BaseContract> | ConstructorFor<LogicSig>,
