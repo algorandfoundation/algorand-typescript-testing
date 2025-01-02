@@ -1,6 +1,7 @@
 import { Account, bytes, internal, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asUint64, getRandomBytes } from '../util'
+import { AccountImpl } from './reference'
 
 export class BlockData {
   seed: bytes
@@ -17,11 +18,11 @@ export class BlockData {
   constructor() {
     this.seed = getRandomBytes(32).asAlgoTs()
     this.timestamp = asUint64(Date.now())
-    this.proposer = Account()
+    this.proposer = AccountImpl()
     this.feesCollected = Uint64(0)
     this.bonus = Uint64(0)
     this.branch = getRandomBytes(32).asAlgoTs()
-    this.feeSink = Account()
+    this.feeSink = AccountImpl()
     this.protocol = getRandomBytes(32).asAlgoTs()
     this.txnCounter = Uint64(0)
     this.proposerPayout = Uint64(0)
