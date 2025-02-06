@@ -6,7 +6,7 @@
 
 # Class: LedgerContext
 
-Defined in: [src/subcontexts/ledger-context.ts:31](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L31)
+Defined in: [src/subcontexts/ledger-context.ts:32](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L32)
 
 ## Constructors
 
@@ -24,7 +24,7 @@ Defined in: [src/subcontexts/ledger-context.ts:31](https://github.com/algorandfo
 
 > **accountDataMap**: `AccountMap`\<`AccountData`\>
 
-Defined in: [src/subcontexts/ledger-context.ts:36](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L36)
+Defined in: [src/subcontexts/ledger-context.ts:37](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L37)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/subcontexts/ledger-context.ts:36](https://github.com/algorandfo
 
 > **appIdContractMap**: `Uint64Map`\<`BaseContract`\>
 
-Defined in: [src/subcontexts/ledger-context.ts:35](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L35)
+Defined in: [src/subcontexts/ledger-context.ts:36](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L36)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/subcontexts/ledger-context.ts:35](https://github.com/algorandfo
 
 > **appIdIter**: `Generator`\<`bigint`\>
 
-Defined in: [src/subcontexts/ledger-context.ts:32](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L32)
+Defined in: [src/subcontexts/ledger-context.ts:33](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L33)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [src/subcontexts/ledger-context.ts:32](https://github.com/algorandfo
 
 > **applicationDataMap**: `Uint64Map`\<`ApplicationData`\>
 
-Defined in: [src/subcontexts/ledger-context.ts:34](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L34)
+Defined in: [src/subcontexts/ledger-context.ts:35](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L35)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [src/subcontexts/ledger-context.ts:34](https://github.com/algorandfo
 
 > **assetDataMap**: `Uint64Map`\<`Mutable`\<`Omit`\<`Asset`, `"id"` \| `"balance"` \| `"frozen"`\>\>\>
 
-Defined in: [src/subcontexts/ledger-context.ts:37](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L37)
+Defined in: [src/subcontexts/ledger-context.ts:38](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L38)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [src/subcontexts/ledger-context.ts:37](https://github.com/algorandfo
 
 > **assetIdIter**: `Generator`\<`bigint`\>
 
-Defined in: [src/subcontexts/ledger-context.ts:33](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L33)
+Defined in: [src/subcontexts/ledger-context.ts:34](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L34)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [src/subcontexts/ledger-context.ts:33](https://github.com/algorandfo
 
 > **blocks**: `Uint64Map`\<`BlockData`\>
 
-Defined in: [src/subcontexts/ledger-context.ts:39](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L39)
+Defined in: [src/subcontexts/ledger-context.ts:40](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L40)
 
 ***
 
@@ -80,7 +80,7 @@ Defined in: [src/subcontexts/ledger-context.ts:39](https://github.com/algorandfo
 
 > **globalData**: `GlobalData`
 
-Defined in: [src/subcontexts/ledger-context.ts:40](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L40)
+Defined in: [src/subcontexts/ledger-context.ts:41](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L41)
 
 ***
 
@@ -88,7 +88,7 @@ Defined in: [src/subcontexts/ledger-context.ts:40](https://github.com/algorandfo
 
 > **onlineStake**: `number` = `0`
 
-Defined in: [src/subcontexts/ledger-context.ts:41](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L41)
+Defined in: [src/subcontexts/ledger-context.ts:42](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L42)
 
 ***
 
@@ -96,7 +96,7 @@ Defined in: [src/subcontexts/ledger-context.ts:41](https://github.com/algorandfo
 
 > **voterDataMap**: `AccountMap`\<`VoterData`\>
 
-Defined in: [src/subcontexts/ledger-context.ts:38](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L38)
+Defined in: [src/subcontexts/ledger-context.ts:39](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L39)
 
 ## Methods
 
@@ -104,7 +104,7 @@ Defined in: [src/subcontexts/ledger-context.ts:38](https://github.com/algorandfo
 
 > **addAppIdContractMap**(`appId`, `contract`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:49](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L49)
+Defined in: [src/subcontexts/ledger-context.ts:50](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L50)
 
 **`Internal`**
 
@@ -134,7 +134,7 @@ The contract to add.
 
 > **boxExists**(`app`, `key`): `boolean`
 
-Defined in: [src/subcontexts/ledger-context.ts:394](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L394)
+Defined in: [src/subcontexts/ledger-context.ts:379](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L379)
 
 Checks if a box exists for an application by key.
 
@@ -164,7 +164,7 @@ True if the box exists, false otherwise.
 
 > **deleteBox**(`app`, `key`): `boolean`
 
-Defined in: [src/subcontexts/ledger-context.ts:382](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L382)
+Defined in: [src/subcontexts/ledger-context.ts:367](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L367)
 
 Deletes a box for an application by key.
 
@@ -194,7 +194,7 @@ True if the box was deleted, false otherwise.
 
 > **getAccount**(`address`): `Account`
 
-Defined in: [src/subcontexts/ledger-context.ts:59](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L59)
+Defined in: [src/subcontexts/ledger-context.ts:60](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L60)
 
 Retrieves an account by address.
 
@@ -222,7 +222,7 @@ If the account is unknown.
 
 > **getApplication**(`applicationId`): `Application`
 
-Defined in: [src/subcontexts/ledger-context.ts:85](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L85)
+Defined in: [src/subcontexts/ledger-context.ts:86](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L86)
 
 Retrieves an application by application ID.
 
@@ -250,7 +250,7 @@ If the application is unknown.
 
 > **getApplicationForApprovalProgram**(`approvalProgram`): `undefined` \| `Application`
 
-Defined in: [src/subcontexts/ledger-context.ts:114](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L114)
+Defined in: [src/subcontexts/ledger-context.ts:115](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L115)
 
 Retrieves an application for a given approval program.
 
@@ -274,7 +274,7 @@ The application or undefined if not found.
 
 > **getApplicationForContract**(`contract`): `Application`
 
-Defined in: [src/subcontexts/ledger-context.ts:98](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L98)
+Defined in: [src/subcontexts/ledger-context.ts:99](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L99)
 
 Retrieves an application for a given contract.
 
@@ -302,7 +302,7 @@ If the contract is unknown.
 
 > **getAsset**(`assetId`): `Asset`
 
-Defined in: [src/subcontexts/ledger-context.ts:72](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L72)
+Defined in: [src/subcontexts/ledger-context.ts:73](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L73)
 
 Retrieves an asset by asset ID.
 
@@ -330,7 +330,7 @@ If the asset is unknown.
 
 > **getBlockData**(`index`): `BlockData`
 
-Defined in: [src/subcontexts/ledger-context.ts:253](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L253)
+Defined in: [src/subcontexts/ledger-context.ts:249](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L249)
 
 Retrieves block data by index.
 
@@ -358,7 +358,7 @@ If the block is not set.
 
 > **getBox**(`app`, `key`): `Uint8Array`
 
-Defined in: [src/subcontexts/ledger-context.ts:353](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L353)
+Defined in: [src/subcontexts/ledger-context.ts:342](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L342)
 
 Retrieves a box for an application by key.
 
@@ -388,7 +388,7 @@ The box data.
 
 > **getGlobalState**(`app`, `key`): \[`GlobalStateCls`\<`unknown`\>, `true`\] \| \[`undefined`, `false`\]
 
-Defined in: [src/subcontexts/ledger-context.ts:267](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L267)
+Defined in: [src/subcontexts/ledger-context.ts:263](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L263)
 
 Retrieves global state for an application by key.
 
@@ -418,7 +418,7 @@ The global state and a boolean indicating if it was found.
 
 > **getLocalState**(`app`, `account`, `key`): \[`undefined`, `false`\] \| \[`LocalStateForAccount`\<`unknown`\>, `true`\]
 
-Defined in: [src/subcontexts/ledger-context.ts:309](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L309)
+Defined in: [src/subcontexts/ledger-context.ts:298](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L298)
 
 Retrieves local state for an application and account by key.
 
@@ -454,7 +454,7 @@ The local state and a boolean indicating if it was found.
 
 > **patchAccountData**(`account`, `data`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:175](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L175)
+Defined in: [src/subcontexts/ledger-context.ts:171](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L171)
 
 Patches account data with the provided partial data.
 
@@ -482,7 +482,7 @@ The partial account data.
 
 > **patchApplicationData**(`app`, `data`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:192](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L192)
+Defined in: [src/subcontexts/ledger-context.ts:188](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L188)
 
 Patches application data with the provided partial data.
 
@@ -510,7 +510,7 @@ The partial application data.
 
 > **patchAssetData**(`asset`, `data`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:212](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L212)
+Defined in: [src/subcontexts/ledger-context.ts:208](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L208)
 
 Patches asset data with the provided partial data.
 
@@ -536,7 +536,7 @@ The partial asset data.
 
 > **patchBlockData**(`index`, `data`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:238](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L238)
+Defined in: [src/subcontexts/ledger-context.ts:234](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L234)
 
 Patches block data with the provided partial data.
 
@@ -564,7 +564,7 @@ The partial block data.
 
 > **patchGlobalData**(`data`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:163](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L163)
+Defined in: [src/subcontexts/ledger-context.ts:159](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L159)
 
 Patches global data with the provided partial data.
 
@@ -586,7 +586,7 @@ The partial global data.
 
 > **patchVoterData**(`account`, `data`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:225](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L225)
+Defined in: [src/subcontexts/ledger-context.ts:221](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L221)
 
 Patches voter data with the provided partial data.
 
@@ -614,7 +614,7 @@ The partial voter data.
 
 > **setBox**(`app`, `key`, `value`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:365](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L365)
+Defined in: [src/subcontexts/ledger-context.ts:354](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L354)
 
 Sets a box for an application by key.
 
@@ -636,7 +636,7 @@ The key.
 
 The box data.
 
-`StubBytesCompat` | `Uint8Array`
+`Uint8Array` | `StubBytesCompat`
 
 #### Returns
 
@@ -648,7 +648,7 @@ The box data.
 
 > **setGlobalState**(`app`, `key`, `value`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:285](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L285)
+Defined in: [src/subcontexts/ledger-context.ts:278](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L278)
 
 Sets global state for an application by key.
 
@@ -682,7 +682,7 @@ The value (optional).
 
 > **setLocalState**(`app`, `account`, `key`, `value`): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:330](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L330)
+Defined in: [src/subcontexts/ledger-context.ts:319](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L319)
 
 Sets local state for an application and account by key.
 
@@ -722,7 +722,7 @@ The value (optional).
 
 > **updateAssetHolding**(`account`, `assetId`, `balance`?, `frozen`?): `void`
 
-Defined in: [src/subcontexts/ledger-context.ts:144](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L144)
+Defined in: [src/subcontexts/ledger-context.ts:145](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/ledger-context.ts#L145)
 
 Update asset holdings for account, only specified values will be updated.
 AccountType will also be opted-in to asset

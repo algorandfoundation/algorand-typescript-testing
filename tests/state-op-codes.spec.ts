@@ -1,7 +1,7 @@
 import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
 import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Account, arc4, Bytes, Global, internal, op, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { Account, arc4, Bytes, Global, op, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { DynamicBytes, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
@@ -10,6 +10,7 @@ import { lazyContext } from '../src/context-helpers/internal-context'
 import { testInvariant } from '../src/errors'
 import { Block, gloadBytes, gloadUint64 } from '../src/impl'
 import type { InnerTxn } from '../src/impl/itxn'
+import { BytesCls, Uint64Cls } from '../src/impl/primitives'
 import { AccountCls, encodeAddress } from '../src/impl/reference'
 import type { ApplicationTransaction } from '../src/impl/transactions'
 import type { DeliberateAny } from '../src/typescript-helpers'
@@ -439,12 +440,12 @@ describe('State op codes', async () => {
       // Test common fields for both transactions
       ;[appItxn, paymentItxn].forEach((t: InnerTxn) => {
         expect(t.sender instanceof AccountCls)
-        expect((t.fee as unknown) instanceof internal.primitives.Uint64Cls)
-        expect((t.firstValid as unknown) instanceof internal.primitives.Uint64Cls)
-        expect((t.lastValid as unknown) instanceof internal.primitives.Uint64Cls)
-        expect(t.note instanceof internal.primitives.BytesCls)
-        expect(t.lease instanceof internal.primitives.BytesCls)
-        expect(t.txnId instanceof internal.primitives.BytesCls)
+        expect((t.fee as unknown) instanceof Uint64Cls)
+        expect((t.firstValid as unknown) instanceof Uint64Cls)
+        expect((t.lastValid as unknown) instanceof Uint64Cls)
+        expect(t.note instanceof BytesCls)
+        expect(t.lease instanceof BytesCls)
+        expect(t.txnId instanceof BytesCls)
       })
 
       // Test logs (should be empty for newly created transactions as its a void method)

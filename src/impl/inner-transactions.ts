@@ -6,13 +6,15 @@ import type {
   itxn,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { arc4, internal, TransactionType } from '@algorandfoundation/algorand-typescript'
+import { arc4, TransactionType } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
+import { InternalError } from '../errors'
 import type { Mutable } from '../typescript-helpers'
 import { asBytes, asNumber } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
 import type { InnerTxn, InnerTxnFields } from './itxn'
+import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
 import {
   ApplicationTransaction,
@@ -144,8 +146,7 @@ export class AssetFreezeInnerTxn extends AssetFreezeTransaction implements itxn.
   /* @internal */
   constructor(fields: itxn.AssetFreezeFields) {
     const { freezeAsset, freezeAccount, ...rest } = mapCommonFields(fields)
-    const asset: AssetType | undefined =
-      freezeAsset instanceof internal.primitives.Uint64Cls ? getAsset(freezeAsset) : (freezeAsset as AssetType)
+    const asset: AssetType | undefined = freezeAsset instanceof Uint64Cls ? getAsset(freezeAsset) : (freezeAsset as AssetType)
     const account: AccountType | undefined =
       typeof freezeAccount === 'string' ? Account(asBytes(freezeAccount)) : (freezeAccount as AccountType)
     super({
@@ -174,12 +175,7 @@ export class ApplicationInnerTxn extends ApplicationTransaction implements itxn.
         ? lazyContext.ledger.getApplicationForApprovalProgram(approvalProgram)
         : undefined
     super({
-      appId:
-        appId === undefined && compiledApp
-          ? compiledApp
-          : appId instanceof internal.primitives.Uint64Cls
-            ? getApp(appId)
-            : (appId as ApplicationType),
+      appId: appId === undefined && compiledApp ? compiledApp : appId instanceof Uint64Cls ? getApp(appId) : (appId as ApplicationType),
       onCompletion:
         typeof onCompletion === 'string'
           ? (onCompletion as arc4.OnCompleteActionStr)
@@ -215,7 +211,7 @@ export const createInnerTxn = <TFields extends InnerTxnFields>(fields: TFields) 
     case TransactionType.KeyRegistration:
       return new KeyRegistrationInnerTxn(fields)
     default:
-      throw new internal.errors.InternalError(`Invalid inner transaction type: ${fields.type}`)
+      throw new InternalError(`Invalid inner transaction type: ${fields.type}`)
   }
 }
 

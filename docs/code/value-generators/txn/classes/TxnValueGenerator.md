@@ -6,7 +6,7 @@
 
 # Class: TxnValueGenerator
 
-Defined in: [src/value-generators/txn.ts:15](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L15)
+Defined in: [src/value-generators/txn.ts:16](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L16)
 
 ## Constructors
 
@@ -24,7 +24,7 @@ Defined in: [src/value-generators/txn.ts:15](https://github.com/algorandfoundati
 
 > **applicationCall**(`fields`?): `ApplicationTransaction`
 
-Defined in: [src/value-generators/txn.ts:21](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L21)
+Defined in: [src/value-generators/txn.ts:22](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L22)
 
 Generates a random application call transaction with the specified fields.
 
@@ -48,7 +48,7 @@ The fields for the application call transaction where `appId` value can be insta
 
 > **assetConfig**(`fields`?): `AssetConfigTransaction`
 
-Defined in: [src/value-generators/txn.ts:64](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L64)
+Defined in: [src/value-generators/txn.ts:65](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L65)
 
 Generates a random asset configuration transaction with the specified fields.
 
@@ -72,7 +72,7 @@ The fields for the asset configuration transaction.
 
 > **assetFreeze**(`fields`?): `AssetFreezeTransaction`
 
-Defined in: [src/value-generators/txn.ts:82](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L82)
+Defined in: [src/value-generators/txn.ts:83](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L83)
 
 Generates a random asset freeze transaction with the specified fields.
 
@@ -96,7 +96,7 @@ The fields for the asset freeze transaction.
 
 > **assetTransfer**(`fields`?): `AssetTransferTransaction`
 
-Defined in: [src/value-generators/txn.ts:73](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L73)
+Defined in: [src/value-generators/txn.ts:74](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L74)
 
 Generates a random asset transfer transaction with the specified fields.
 
@@ -120,7 +120,7 @@ The fields for the asset transfer transaction.
 
 > **keyRegistration**(`fields`?): `KeyRegistrationTransaction`
 
-Defined in: [src/value-generators/txn.ts:55](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L55)
+Defined in: [src/value-generators/txn.ts:56](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L56)
 
 Generates a random key registration transaction with the specified fields.
 
@@ -144,7 +144,7 @@ The fields for the key registration transaction.
 
 > **payment**(`fields`?): `PaymentTransaction`
 
-Defined in: [src/value-generators/txn.ts:46](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L46)
+Defined in: [src/value-generators/txn.ts:47](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L47)
 
 Generates a random payment transaction with the specified fields.
 

@@ -1,4 +1,4 @@
-import { internal } from '@algorandfoundation/algorand-typescript'
+import { CodeError } from '../errors'
 import type { DeliberateAny } from '../typescript-helpers'
 import { sha512_256 } from './crypto'
 import { getArc4Encoded, getArc4TypeName } from './encoded-types'
@@ -14,7 +14,7 @@ export function emitImpl<T>(typeInfoString: string, event: T | string, ...eventP
     if (eventName.indexOf('(') === -1) {
       eventName += argTypes
     } else if (event.indexOf(argTypes) === -1) {
-      throw internal.errors.codeError(`Event signature ${event} does not match arg types ${argTypes}`)
+      throw new CodeError(`Event signature ${event} does not match arg types ${argTypes}`)
     }
   } else {
     eventData = getArc4Encoded(event)

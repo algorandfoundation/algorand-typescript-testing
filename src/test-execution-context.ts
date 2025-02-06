@@ -1,7 +1,6 @@
 import type { Account as AccountType, BaseContract, bytes, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
-import { internal } from '@algorandfoundation/algorand-typescript'
-import { captureMethodConfig } from './abi-metadata'
 import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
+import { ContextManager } from './context-helpers/context-manager'
 import type { DecodedLogs, LogDecoding } from './decode-logs'
 import { Account, AccountCls } from './impl/reference'
 import { ContractContext } from './subcontexts/contract-context'
@@ -18,7 +17,7 @@ import { ValueGenerator } from './value-generators'
  *
  * @class
  */
-export class TestExecutionContext implements internal.ExecutionContext {
+export class TestExecutionContext {
   #contractContext: ContractContext
   #ledgerContext: LedgerContext
   #txnContext: TransactionContext
@@ -35,7 +34,7 @@ export class TestExecutionContext implements internal.ExecutionContext {
    * @param {bytes} [defaultSenderAddress] - The default sender address.
    */
   constructor(defaultSenderAddress?: bytes) {
-    internal.ctxMgr.instance = this
+    ContextManager.instance = this
     this.#contractContext = new ContractContext()
     this.#ledgerContext = new LedgerContext()
     this.#txnContext = new TransactionContext()
@@ -108,18 +107,6 @@ export class TestExecutionContext implements internal.ExecutionContext {
    */
   set defaultSender(val: bytes | AccountType) {
     this.#defaultSender = val instanceof AccountCls ? val : Account(val as bytes)
-  }
-
-  /**
-   * Returns an object containing ABI metadata operations.
-   *
-   * @internal
-   * @type {object}
-   */
-  get abiMetadata() {
-    return {
-      captureMethodConfig,
-    }
   }
 
   /**
@@ -228,7 +215,7 @@ export class TestExecutionContext implements internal.ExecutionContext {
     this.#activeLogicSigArgs = []
     this.#template_vars = {}
     this.#compiledApps = []
-    internal.ctxMgr.reset()
-    internal.ctxMgr.instance = this
+    ContextManager.reset()
+    ContextManager.instance = this
   }
 }

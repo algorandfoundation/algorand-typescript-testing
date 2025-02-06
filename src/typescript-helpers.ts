@@ -32,3 +32,14 @@ export interface IConstructor<T> {
 }
 
 export type PickPartial<T, K extends keyof T> = { [P in K]: Partial<T[P]> }
+
+export const nameOfType = (x: unknown) => {
+  if (typeof x === 'object') {
+    if (x === null) return 'Null'
+    if (x === undefined) return 'undefined'
+    if ('constructor' in x) {
+      return x.constructor.name
+    }
+  }
+  return typeof x
+}

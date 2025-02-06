@@ -1,8 +1,9 @@
-import type { biguint, bytes, internal, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { Bool, decodeArc4, DynamicBytes, encodeArc4, Str, Struct, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, test } from 'vitest'
 import { MAX_UINT128 } from '../../src/constants'
+import type { StubBytesCompat } from '../../src/impl/primitives'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
 
@@ -36,7 +37,7 @@ const testData = [
     arc4Value() {
       return new Tuple<[UintN<64>, UintN<64>, UintN<512>, DynamicBytes]>(abiUint64, abiUint64, abiUint512, abiBytes)
     },
-    decode(value: internal.primitives.StubBytesCompat) {
+    decode(value: StubBytesCompat) {
       return decodeArc4<[uint64, uint64, biguint, bytes]>(asBytes(value))
     },
   },
@@ -64,7 +65,7 @@ const testData = [
         ...this.abiValues(),
       )
     },
-    decode(value: internal.primitives.StubBytesCompat) {
+    decode(value: StubBytesCompat) {
       return decodeArc4<
         [
           [boolean, [string, boolean]],
@@ -93,7 +94,7 @@ const testData = [
     arc4Value() {
       return new Swapped1(this.abiValues())
     },
-    decode(value: internal.primitives.StubBytesCompat) {
+    decode(value: StubBytesCompat) {
       return decodeArc4<{ b: uint64; c: boolean; d: string; a: [uint64, boolean, boolean] }>(asBytes(value))
     },
   },

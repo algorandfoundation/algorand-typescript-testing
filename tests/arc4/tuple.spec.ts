@@ -1,10 +1,10 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
-import type { internal } from '@algorandfoundation/algorand-typescript'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { Address, Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, test } from 'vitest'
+import type { StubBytesCompat } from '../../src/impl/primitives'
 import { AccountCls } from '../../src/impl/reference'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes, asUint8Array } from '../../src/util'
@@ -37,7 +37,7 @@ const testData = [
     tuple() {
       return new Tuple<[UintN<8>, Bool, Bool, Address]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[UintN<8>, Bool, Bool, Address]>>(asBytes(value))
     },
   },
@@ -52,7 +52,7 @@ const testData = [
     tuple() {
       return new Tuple<[Str, UintN<8>, Bool]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Str, UintN<8>, Bool]>>(asBytes(value))
     },
   },
@@ -73,7 +73,7 @@ const testData = [
     tuple() {
       return new Tuple<[Tuple<[UintN<8>, Bool, Bool]>, Tuple<[UintN<8>, Bool, Bool]>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[UintN<8>, Bool, Bool]>, Tuple<[UintN<8>, Bool, Bool]>]>>(asBytes(value))
     },
   },
@@ -102,7 +102,7 @@ const testData = [
     tuple() {
       return new Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>>(asBytes(value))
     },
   },
@@ -121,7 +121,7 @@ const testData = [
     tuple() {
       return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>>(asBytes(value))
     },
   },
@@ -142,7 +142,7 @@ const testData = [
     tuple() {
       return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>>(asBytes(value))
     },
   },
@@ -168,7 +168,7 @@ const testData = [
         ...this.abiValues(),
       )
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>>(
         asBytes(value),
       )

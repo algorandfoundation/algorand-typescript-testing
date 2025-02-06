@@ -1,11 +1,14 @@
-import type { bytes, contract, LocalState, Account, Application, Asset } from '@algorandfoundation/algorand-typescript'
-import { BaseContract, Bytes, Contract, internal } from '@algorandfoundation/algorand-typescript'
+import type { Account, Application, Asset, bytes, contract, LocalState } from '@algorandfoundation/algorand-typescript'
 import type { AbiMetadata } from '../abi-metadata'
 import { copyAbiMetadatas, getArc4Selector, getContractAbiMetadata, getContractMethodAbiMetadata, isContractProxy } from '../abi-metadata'
 import { BytesMap } from '../collections/custom-key-map'
 import { checkRoutingConditions } from '../context-helpers/context-util'
 import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes, type TypeInfo } from '../encoders'
+import { CodeError } from '../errors'
+import { BaseContract, ContractOptionsSymbol } from '../impl/base-contract'
+import { Contract } from '../impl/contract'
+import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
 import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
 import type { Transaction } from '../impl/transactions'
@@ -182,7 +185,7 @@ export class ContractContext {
     } else if (proto === Contract) {
       return true
     } else if (proto === Object || proto === null) {
-      throw new internal.errors.CodeError('Cannot create a contract for class as it does not extend Contract or BaseContract')
+      throw new CodeError('Cannot create a contract for class as it does not extend Contract or BaseContract')
     }
     return this.isArc4(proto)
   }
@@ -252,7 +255,7 @@ export class ContractContext {
 
 const getContractOptions = (contract: BaseContract): ContractOptionsParameter | undefined => {
   const contractClass = contract.constructor as DeliberateAny
-  return contractClass[internal.ContractOptionsSymbol] as ContractOptionsParameter
+  return contractClass[ContractOptionsSymbol] as ContractOptionsParameter
 }
 
 const hasCreateMethods = (contract: BaseContract) => {

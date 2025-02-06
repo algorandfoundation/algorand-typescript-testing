@@ -1,7 +1,7 @@
-import type { Account as AccountType, bytes, internal, op, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asUint64, getRandomBytes } from '../util'
+import { Uint64, type StubUint64Compat } from './primitives'
 import { Account } from './reference'
 
 export class BlockData {
@@ -31,10 +31,10 @@ export class BlockData {
 }
 
 export const Block: typeof op.Block = {
-  blkSeed: function (a: internal.primitives.StubUint64Compat): bytes {
+  blkSeed: function (a: StubUint64Compat): bytes {
     return lazyContext.ledger.getBlockData(a).seed
   },
-  blkTimestamp: function (a: internal.primitives.StubUint64Compat): uint64 {
+  blkTimestamp: function (a: StubUint64Compat): uint64 {
     return lazyContext.ledger.getBlockData(a).timestamp
   },
   blkProposer: function (a: uint64): AccountType {

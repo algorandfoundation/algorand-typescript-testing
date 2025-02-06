@@ -6,10 +6,11 @@ import type {
   bytes,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { BigUint, Bytes, internal, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { randomBytes } from 'crypto'
 import { MAX_BYTES_SIZE, MAX_UINT512, MAX_UINT64 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
+import { InternalError } from '../errors'
+import { BigUint, Bytes, Uint64, type StubBigUintCompat, type StubUint64Compat } from '../impl/primitives'
 import type { AssetData } from '../impl/reference'
 import { Account, AccountData, ApplicationCls, ApplicationData, AssetCls, getDefaultAssetData } from '../impl/reference'
 import { asBigInt, asBigUintCls, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
@@ -19,45 +20,45 @@ type AccountContextData = Partial<AccountData['account']> & {
   incentiveEligible?: boolean
   lastProposed?: uint64
   lastHeartbeat?: uint64
-  optedAssetBalances?: Map<internal.primitives.StubUint64Compat, internal.primitives.StubUint64Compat>
+  optedAssetBalances?: Map<StubUint64Compat, StubUint64Compat>
   optedApplications?: ApplicationType[]
 }
 
-type AssetContextData = Partial<AssetData> & { assetId?: internal.primitives.StubUint64Compat }
+type AssetContextData = Partial<AssetData> & { assetId?: StubUint64Compat }
 
-type ApplicationContextData = Partial<ApplicationData['application']> & { applicationId?: internal.primitives.StubUint64Compat }
+type ApplicationContextData = Partial<ApplicationData['application']> & { applicationId?: StubUint64Compat }
 
 export class AvmValueGenerator {
   /**
    * Generates a random uint64 value within the specified range.
-   * @param {internal.primitives.StubUint64Compat} [minValue=0n] - The minimum value (inclusive).
-   * @param {internal.primitives.StubUint64Compat} [maxValue=MAX_UINT64] - The maximum value (inclusive).
+   * @param {StubUint64Compat} [minValue=0n] - The minimum value (inclusive).
+   * @param {StubUint64Compat} [maxValue=MAX_UINT64] - The maximum value (inclusive).
    * @returns {uint64} - A random uint64 value.
    */
-  uint64(minValue: internal.primitives.StubUint64Compat = 0n, maxValue: internal.primitives.StubUint64Compat = MAX_UINT64): uint64 {
+  uint64(minValue: StubUint64Compat = 0n, maxValue: StubUint64Compat = MAX_UINT64): uint64 {
     const min = asBigInt(minValue)
     const max = asBigInt(maxValue)
     if (max > MAX_UINT64) {
-      internal.errors.internalError('maxValue must be less than or equal to 2n ** 64n - 1n')
+      throw new InternalError('maxValue must be less than or equal to 2n ** 64n - 1n')
     }
     if (min > max) {
-      internal.errors.internalError('minValue must be less than or equal to maxValue')
+      throw new InternalError('minValue must be less than or equal to maxValue')
     }
     if (min < 0n || max < 0n) {
-      internal.errors.internalError('minValue and maxValue must be greater than or equal to 0')
+      throw new InternalError('minValue and maxValue must be greater than or equal to 0')
     }
     return Uint64(getRandomBigInt(min, max))
   }
 
   /**
    * Generates a random biguint value within the specified range.
-   * @param {internal.primitives.StubBigUintCompat} [minValue=0n] - The minimum value (inclusive).
+   * @param {StubBigUintCompat} [minValue=0n] - The minimum value (inclusive).
    * @returns {biguint} - A random biguint value.
    */
-  biguint(minValue: internal.primitives.StubBigUintCompat = 0n): biguint {
+  biguint(minValue: StubBigUintCompat = 0n): biguint {
     const min = asBigUintCls(minValue).asBigInt()
     if (min < 0n) {
-      internal.errors.internalError('minValue must be greater than or equal to 0')
+      throw new InternalError('minValue must be greater than or equal to 0')
     }
 
     return BigUint(getRandomBigInt(min, MAX_UINT512))
@@ -95,7 +96,7 @@ export class AvmValueGenerator {
     const account = input?.address ? Account(input.address) : Account(getRandomBytes(32).asAlgoTs())
 
     if (input?.address && lazyContext.ledger.accountDataMap.has(account)) {
-      internal.errors.internalError(
+      throw new InternalError(
         'Account with such address already exists in testing context. Use `context.ledger.getAccount(address)` to retrieve the existing account.',
       )
     }
@@ -132,7 +133,7 @@ export class AvmValueGenerator {
   asset(input?: AssetContextData): AssetType {
     const id = input?.assetId
     if (id && lazyContext.ledger.assetDataMap.has(id)) {
-      internal.errors.internalError('Asset with such ID already exists in testing context!')
+      throw new InternalError('Asset with such ID already exists in testing context!')
     }
     const assetId = asUint64Cls(id ?? lazyContext.ledger.assetIdIter.next().value)
     const defaultAssetData = getDefaultAssetData()
@@ -152,7 +153,7 @@ export class AvmValueGenerator {
   application(input?: ApplicationContextData): ApplicationType {
     const id = input?.applicationId
     if (id && lazyContext.ledger.applicationDataMap.has(id)) {
-      internal.errors.internalError('Application with such ID already exists in testing context!')
+      throw new InternalError('Application with such ID already exists in testing context!')
     }
     const applicationId = asUint64Cls(id ?? lazyContext.ledger.appIdIter.next().value)
     const data = new ApplicationData()

@@ -7,12 +7,14 @@ import type {
   gtxn,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, internal, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_ITEMS_IN_LOG } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes } from '../encoders'
+import { InternalError } from '../errors'
 import type { Mutable, ObjectKeys } from '../typescript-helpers'
 import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asNumber, asUint64Cls, combineIntoMaxBytePages, getRandomBytes } from '../util'
+import { Bytes, Uint64, type StubBytesCompat, type StubUint64Compat } from './primitives'
 import { Account, Application, Asset } from './reference'
 
 const baseDefaultFields = () => ({
@@ -58,23 +60,20 @@ abstract class TransactionBase {
   readonly rekeyTo: AccountType
   readonly scratchSpace: Array<bytes | uint64>
 
-  setScratchSlot(
-    index: internal.primitives.StubUint64Compat,
-    value: internal.primitives.StubBytesCompat | internal.primitives.StubUint64Compat,
-  ): void {
+  setScratchSlot(index: StubUint64Compat, value: StubBytesCompat | StubUint64Compat): void {
     const i = asNumber(index)
     if (i >= this.scratchSpace.length) {
-      throw internal.errors.internalError('invalid scratch slot')
+      throw new InternalError('invalid scratch slot')
     }
     const bytesValue = asMaybeBytesCls(value)
     const uint64Value = asMaybeUint64Cls(value)
     this.scratchSpace[i] = bytesValue?.asAlgoTs() ?? uint64Value?.asAlgoTs() ?? Uint64(0)
   }
 
-  getScratchSlot(index: internal.primitives.StubUint64Compat): bytes | uint64 {
+  getScratchSlot(index: StubUint64Compat): bytes | uint64 {
     const i = asNumber(index)
     if (i >= this.scratchSpace.length) {
-      throw internal.errors.internalError('invalid scratch slot')
+      throw new InternalError('invalid scratch slot')
     }
     return this.scratchSpace[i]
   }
@@ -312,25 +311,25 @@ export class ApplicationTransaction extends TransactionBase implements gtxn.Appl
   get apfa() {
     return this.#apps
   }
-  appArgs(index: internal.primitives.StubUint64Compat): bytes {
+  appArgs(index: StubUint64Compat): bytes {
     return toBytes(this.#appArgs[asNumber(index)])
   }
-  accounts(index: internal.primitives.StubUint64Compat): AccountType {
+  accounts(index: StubUint64Compat): AccountType {
     return this.#accounts[asNumber(index)]
   }
-  assets(index: internal.primitives.StubUint64Compat): AssetType {
+  assets(index: StubUint64Compat): AssetType {
     return this.#assets[asNumber(index)]
   }
-  apps(index: internal.primitives.StubUint64Compat): ApplicationType {
+  apps(index: StubUint64Compat): ApplicationType {
     return this.#apps[asNumber(index)]
   }
-  approvalProgramPages(index: internal.primitives.StubUint64Compat): bytes {
+  approvalProgramPages(index: StubUint64Compat): bytes {
     return combineIntoMaxBytePages(this.#approvalProgramPages)[asNumber(index)]
   }
-  clearStateProgramPages(index: internal.primitives.StubUint64Compat): bytes {
+  clearStateProgramPages(index: StubUint64Compat): bytes {
     return combineIntoMaxBytePages(this.#clearStateProgramPages)[asNumber(index)]
   }
-  logs(index: internal.primitives.StubUint64Compat): bytes {
+  logs(index: StubUint64Compat): bytes {
     const i = asNumber(index)
     return this.#appLogs[i] ?? lazyContext.getApplicationData(this.appId.id).application.appLogs ?? Bytes()
   }
@@ -342,9 +341,9 @@ export class ApplicationTransaction extends TransactionBase implements gtxn.Appl
     return this.#appLogs
   }
   /* @internal */
-  appendLog(value: internal.primitives.StubBytesCompat): void {
+  appendLog(value: StubBytesCompat): void {
     if (this.#appLogs.length + 1 > MAX_ITEMS_IN_LOG) {
-      throw internal.errors.internalError(`Too many log calls in program, up to ${MAX_ITEMS_IN_LOG} is allowed`)
+      throw new InternalError(`Too many log calls in program, up to ${MAX_ITEMS_IN_LOG} is allowed`)
     }
     this.#appLogs.push(asBytes(value))
   }

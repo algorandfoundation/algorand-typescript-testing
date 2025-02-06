@@ -1,9 +1,11 @@
 import type { biguint, bytes, TransactionType, uint64 } from '@algorandfoundation/algorand-typescript'
-import { BigUint, internal, Uint64 } from '@algorandfoundation/algorand-typescript'
 import type { OnCompleteAction } from '@algorandfoundation/algorand-typescript/arc4'
 import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
+import { encodingUtil } from '@algorandfoundation/puya-ts'
+import { InternalError } from './errors'
 import { BytesBackedCls, Uint64BackedCls } from './impl/base'
 import { arc4Encoders, encodeArc4Impl, getArc4Encoder } from './impl/encoded-types'
+import { BigUint, Uint64, type StubBytesCompat } from './impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from './impl/reference'
 import type { DeliberateAny } from './typescript-helpers'
 import { asBytes, asMaybeBigUintCls, asMaybeBytesCls, asMaybeUint64Cls, asUint64Cls, asUint8Array, nameOfType } from './util'
@@ -13,14 +15,14 @@ export type TypeInfo = {
   genericArgs?: TypeInfo[] | Record<string, TypeInfo>
 }
 
-export type fromBytes<T> = (val: Uint8Array | internal.primitives.StubBytesCompat, typeInfo: TypeInfo, prefix?: 'none' | 'log') => T
+export type fromBytes<T> = (val: Uint8Array | StubBytesCompat, typeInfo: TypeInfo, prefix?: 'none' | 'log') => T
 
 const booleanFromBytes: fromBytes<boolean> = (val) => {
-  return internal.encodingUtil.uint8ArrayToBigInt(asUint8Array(val)) > 0n
+  return encodingUtil.uint8ArrayToBigInt(asUint8Array(val)) > 0n
 }
 
 const bigUintFromBytes: fromBytes<biguint> = (val) => {
-  return BigUint(internal.encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
+  return BigUint(encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
 }
 
 const bytesFromBytes: fromBytes<bytes> = (val) => {
@@ -32,15 +34,15 @@ const stringFromBytes: fromBytes<string> = (val) => {
 }
 
 const uint64FromBytes: fromBytes<uint64> = (val) => {
-  return Uint64(internal.encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
+  return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
 }
 
 const onCompletionFromBytes: fromBytes<OnCompleteAction> = (val) => {
-  return Uint64(internal.encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as OnCompleteAction
+  return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as OnCompleteAction
 }
 
 const transactionTypeFromBytes: fromBytes<TransactionType> = (val) => {
-  return Uint64(internal.encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as TransactionType
+  return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as TransactionType
 }
 
 export const encoders: Record<string, fromBytes<DeliberateAny>> = {
@@ -86,5 +88,5 @@ export const toBytes = (val: unknown): bytes => {
   if (Array.isArray(val) || typeof val === 'object') {
     return encodeArc4Impl('', val)
   }
-  internal.errors.internalError(`Invalid type for bytes: ${nameOfType(val)}`)
+  throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
 }

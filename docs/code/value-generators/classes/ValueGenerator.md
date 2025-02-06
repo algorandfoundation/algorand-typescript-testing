@@ -50,7 +50,7 @@ Defined in: [src/value-generators/index.ts:6](https://github.com/algorandfoundat
 
 > **account**(`input`?): `Account`
 
-Defined in: [src/value-generators/avm.ts:94](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L94)
+Defined in: [src/value-generators/avm.ts:95](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L95)
 
 Generates a random account with the specified context data.
 
@@ -78,7 +78,7 @@ The context data for the account.
 
 > **application**(`input`?): `Application`
 
-Defined in: [src/value-generators/avm.ts:152](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L152)
+Defined in: [src/value-generators/avm.ts:153](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L153)
 
 Generates a random application with the specified context data.
 
@@ -106,7 +106,7 @@ The context data for the application.
 
 > **asset**(`input`?): `Asset`
 
-Defined in: [src/value-generators/avm.ts:132](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L132)
+Defined in: [src/value-generators/avm.ts:133](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L133)
 
 Generates a random asset with the specified context data.
 
@@ -134,7 +134,7 @@ The context data for the asset.
 
 > **biguint**(`minValue`?): `biguint`
 
-Defined in: [src/value-generators/avm.ts:57](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L57)
+Defined in: [src/value-generators/avm.ts:58](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L58)
 
 Generates a random biguint value within the specified range.
 
@@ -162,7 +162,7 @@ The minimum value (inclusive).
 
 > **bytes**(`length`?): `bytes`
 
-Defined in: [src/value-generators/avm.ts:71](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L71)
+Defined in: [src/value-generators/avm.ts:72](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L72)
 
 Generates a random bytes of the specified length.
 
@@ -190,7 +190,7 @@ The length of the bytes.
 
 > **string**(`length`?): `string`
 
-Defined in: [src/value-generators/avm.ts:80](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L80)
+Defined in: [src/value-generators/avm.ts:81](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L81)
 
 Generates a random string of the specified length.
 
@@ -218,7 +218,7 @@ The length of the string.
 
 > **uint64**(`minValue`?, `maxValue`?): `uint64`
 
-Defined in: [src/value-generators/avm.ts:37](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L37)
+Defined in: [src/value-generators/avm.ts:38](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/avm.ts#L38)
 
 Generates a random uint64 value within the specified range.
 

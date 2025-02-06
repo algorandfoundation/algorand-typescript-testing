@@ -1,21 +1,21 @@
-import type { Application, bytes, internal, op, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Application, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes } from '../encoders'
 import { asBytes } from '../util'
 import { getApp } from './app-params'
+import { Bytes, Uint64, type StubBytesCompat, type StubUint64Compat } from './primitives'
 
 export const AppGlobal: typeof op.AppGlobal = {
-  delete(a: internal.primitives.StubBytesCompat): void {
+  delete(a: StubBytesCompat): void {
     lazyContext.ledger.setGlobalState(lazyContext.activeApplication, a, undefined)
   },
-  getBytes(a: internal.primitives.StubBytesCompat): bytes {
+  getBytes(a: StubBytesCompat): bytes {
     return this.getExBytes(0, asBytes(a))[0]
   },
-  getUint64(a: internal.primitives.StubBytesCompat): uint64 {
+  getUint64(a: StubBytesCompat): uint64 {
     return this.getExUint64(0, asBytes(a))[0]
   },
-  getExBytes(a: Application | internal.primitives.StubUint64Compat, b: internal.primitives.StubBytesCompat): readonly [bytes, boolean] {
+  getExBytes(a: Application | StubUint64Compat, b: StubBytesCompat): readonly [bytes, boolean] {
     const app = getApp(a)
     if (app === undefined) {
       return [Bytes(), false]
@@ -26,7 +26,7 @@ export const AppGlobal: typeof op.AppGlobal = {
     }
     return [toBytes(state!.value), exists]
   },
-  getExUint64(a: Application | internal.primitives.StubUint64Compat, b: internal.primitives.StubBytesCompat): readonly [uint64, boolean] {
+  getExUint64(a: Application | StubUint64Compat, b: StubBytesCompat): readonly [uint64, boolean] {
     const app = getApp(a)
     if (app === undefined) {
       return [Uint64(0), false]
@@ -37,7 +37,7 @@ export const AppGlobal: typeof op.AppGlobal = {
     }
     return [state!.value as uint64, exists]
   },
-  put(a: internal.primitives.StubBytesCompat, b: internal.primitives.StubUint64Compat | internal.primitives.StubBytesCompat): void {
+  put(a: StubBytesCompat, b: StubUint64Compat | StubBytesCompat): void {
     lazyContext.ledger.setGlobalState(lazyContext.activeApplication, a, b)
   },
 }

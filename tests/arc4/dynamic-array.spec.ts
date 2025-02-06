@@ -1,5 +1,4 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
-import type { internal } from '@algorandfoundation/algorand-typescript'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import {
@@ -16,6 +15,7 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, it, test } from 'vitest'
+import type { StubBytesCompat } from '../../src/impl/primitives'
 import { AccountCls } from '../../src/impl/reference'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes, asUint8Array } from '../../src/util'
@@ -42,7 +42,7 @@ const addressDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Address>() : new DynamicArray<Address>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Address>>(asBytes(value))
   },
 }
@@ -57,7 +57,7 @@ const boolDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Bool>() : new DynamicArray<Bool>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Bool>>(asBytes(value))
   },
 }
@@ -72,7 +72,7 @@ const uint256DynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<UintN<256>>() : new DynamicArray<UintN<256>>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<UintN<256>>>(asBytes(value))
   },
 }
@@ -98,7 +98,7 @@ const ufixednxmDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<UFixedNxM<256, 16>>() : new DynamicArray<UFixedNxM<256, 16>>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<UFixedNxM<256, 16>>>(asBytes(value))
   },
 }
@@ -124,7 +124,7 @@ const stringDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Str>() : new DynamicArray<Str>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Str>>(asBytes(value))
   },
 }
@@ -141,7 +141,7 @@ const boolDynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<Bool>>()
       : new DynamicArray<DynamicArray<Bool>>(...this.abiValues().map((a) => new DynamicArray<Bool>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<Bool>>>(asBytes(value))
   },
 }
@@ -158,7 +158,7 @@ const addressDynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<Address>>()
       : new DynamicArray<DynamicArray<Address>>(...this.abiValues().map((a) => new DynamicArray<Address>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<Address>>>(asBytes(value))
   },
 }
@@ -175,7 +175,7 @@ const uint256DynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<UintN<256>>>()
       : new DynamicArray<DynamicArray<UintN<256>>>(...this.abiValues().map((a) => new DynamicArray<UintN<256>>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<UintN<256>>>>(asBytes(value))
   },
 }
@@ -192,7 +192,7 @@ const uint256DynamicArrayOfStaticArray = {
       ? new DynamicArray<StaticArray<UintN<256>, 10>>()
       : new DynamicArray<StaticArray<UintN<256>, 10>>(...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<StaticArray<UintN<256>, 10>>>(asBytes(value))
   },
 }
@@ -209,7 +209,7 @@ const stringDynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<Str>>()
       : new DynamicArray<DynamicArray<Str>>(...this.abiValues().map((a) => new DynamicArray<Str>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<Str>>>(asBytes(value))
   },
 }
@@ -231,7 +231,7 @@ const stringDynamicArrayOfArrayOfArray = {
       ? new DynamicArray<DynamicArray<DynamicArray<Str>>>()
       : new DynamicArray<DynamicArray<DynamicArray<Str>>>(...this.abiValues().map((x) => new DynamicArray<DynamicArray<Str>>(...x)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<DynamicArray<Str>>>>(asBytes(value))
   },
 }
@@ -276,7 +276,7 @@ const tupleDynamicArray = {
           Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>
         >(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<
       DynamicArray<Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>>
     >(asBytes(value))
@@ -329,7 +329,7 @@ const structDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Swapped>() : new DynamicArray<Swapped>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Swapped>>(asBytes(value))
   },
 }

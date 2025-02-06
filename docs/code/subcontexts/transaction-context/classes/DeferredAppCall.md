@@ -6,7 +6,7 @@
 
 # Class: DeferredAppCall\<TParams, TReturn\>
 
-Defined in: [src/subcontexts/transaction-context.ts:59](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L59)
+Defined in: [src/subcontexts/transaction-context.ts:60](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L60)
 
 Represents a deferred application call.
 
@@ -22,7 +22,7 @@ Represents a deferred application call.
 
 > **new DeferredAppCall**\<`TParams`, `TReturn`\>(`appId`, `txns`, `method`, `abiMetadata`, `args`): [`DeferredAppCall`](DeferredAppCall.md)\<`TParams`, `TReturn`\>
 
-Defined in: [src/subcontexts/transaction-context.ts:60](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L60)
+Defined in: [src/subcontexts/transaction-context.ts:61](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L61)
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: [src/subcontexts/transaction-context.ts:60](https://github.com/algor
 
 > `readonly` **txns**: `Transaction`[]
 
-Defined in: [src/subcontexts/transaction-context.ts:62](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L62)
+Defined in: [src/subcontexts/transaction-context.ts:63](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L63)
 
 ## Methods
 
@@ -64,7 +64,7 @@ Defined in: [src/subcontexts/transaction-context.ts:62](https://github.com/algor
 
 > **submit**(): `TReturn`
 
-Defined in: [src/subcontexts/transaction-context.ts:72](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L72)
+Defined in: [src/subcontexts/transaction-context.ts:73](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L73)
 
 Submits the deferred application call.
 

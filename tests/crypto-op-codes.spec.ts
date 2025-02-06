@@ -1,6 +1,6 @@
 import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, Ec, Ecdsa, internal, MimcConfigurations, op, VrfVerify } from '@algorandfoundation/algorand-typescript'
+import { Bytes, Ec, Ecdsa, MimcConfigurations, op, VrfVerify } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import elliptic from 'elliptic'
 import js_sha3 from 'js-sha3'
@@ -10,6 +10,7 @@ import type { Mock } from 'vitest'
 import { afterEach, beforeAll, describe, expect, vi } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { LOGIC_DATA_PREFIX, MAX_BYTES_SIZE, PROGRAM_TAG } from '../src/constants'
+import { BytesCls, Uint64Cls } from '../src/impl/primitives'
 import { decodePublicKey } from '../src/impl/reference'
 import { asBytes, asUint64, asUint8Array, conactUint8Arrays } from '../src/util'
 import { getAvmResult, INITIAL_BALANCE_MICRO_ALGOS } from './avm-invoker'
@@ -288,11 +289,11 @@ describe('crypto op codes', async () => {
   })
 
   describe('vrfVerify', async () => {
-    const a = internal.primitives.BytesCls.fromHex('528b9e23d93d0e020a119d7ba213f6beb1c1f3495a217166ecd20f5a70e7c2d7')
-    const b = internal.primitives.BytesCls.fromHex(
+    const a = BytesCls.fromHex('528b9e23d93d0e020a119d7ba213f6beb1c1f3495a217166ecd20f5a70e7c2d7')
+    const b = BytesCls.fromHex(
       '372a3afb42f55449c94aaa5f274f26543e77e8d8af4babee1a6fbc1c0391aa9e6e0b8d8d7f4ed045d5b517fea8ad3566025ae90d2f29f632e38384b4c4f5b9eb741c6e446b0f540c1b3761d814438b04',
     )
-    const c = internal.primitives.BytesCls.fromHex('3a2740da7a0788ebb12a52154acbcca1813c128ca0b249e93f8eb6563fee418d')
+    const c = BytesCls.fromHex('3a2740da7a0788ebb12a52154acbcca1813c128ca0b249e93f8eb6563fee418d')
 
     test('should throw not available error', async () => {
       const mockedVrfVerify = op.vrfVerify as Mock<typeof op.vrfVerify>
@@ -312,7 +313,7 @@ describe('crypto op codes', async () => {
         asUint8Array(c),
       )
       const mockedVrfVerify = op.vrfVerify as Mock<typeof op.vrfVerify>
-      mockedVrfVerify.mockReturnValue([internal.primitives.BytesCls.fromCompat(new Uint8Array(avmResult[0])).asAlgoTs(), avmResult[1]])
+      mockedVrfVerify.mockReturnValue([BytesCls.fromCompat(new Uint8Array(avmResult[0])).asAlgoTs(), avmResult[1]])
       const result = op.vrfVerify(VrfVerify.VrfAlgorand, asBytes(a), asBytes(b), asBytes(c))
 
       expect(asUint8Array(result[0])).toEqual(new Uint8Array(avmResult[0]))
@@ -368,17 +369,17 @@ const generateEcdsaTestData = (v: Ecdsa) => {
   const ecdsa = new elliptic.ec(curveMap[v])
   const keyPair = ecdsa.genKeyPair()
   const pk = keyPair.getPublic('array')
-  const data = internal.primitives.BytesCls.fromCompat('test data for ecdsa')
+  const data = BytesCls.fromCompat('test data for ecdsa')
   const messageHash = js_sha3.keccak256.create().update(data.asUint8Array()).digest()
   const signature = keyPair.sign(messageHash)
   const recoveryId = 0 // Recovery ID is typically 0 or 1
 
   return {
-    data: internal.primitives.BytesCls.fromCompat(new Uint8Array(messageHash)),
-    r: internal.primitives.BytesCls.fromCompat(new Uint8Array(signature.r.toArray('be', 32))),
-    s: internal.primitives.BytesCls.fromCompat(new Uint8Array(signature.s.toArray('be', 32))),
-    recoveryId: internal.primitives.Uint64Cls.fromCompat(recoveryId),
-    pubkeyX: internal.primitives.BytesCls.fromCompat(new Uint8Array(pk.slice(0, 32))),
-    pubkeyY: internal.primitives.BytesCls.fromCompat(new Uint8Array(pk.slice(32))),
+    data: BytesCls.fromCompat(new Uint8Array(messageHash)),
+    r: BytesCls.fromCompat(new Uint8Array(signature.r.toArray('be', 32))),
+    s: BytesCls.fromCompat(new Uint8Array(signature.s.toArray('be', 32))),
+    recoveryId: Uint64Cls.fromCompat(recoveryId),
+    pubkeyX: BytesCls.fromCompat(new Uint8Array(pk.slice(0, 32))),
+    pubkeyY: BytesCls.fromCompat(new Uint8Array(pk.slice(32))),
   }
 }

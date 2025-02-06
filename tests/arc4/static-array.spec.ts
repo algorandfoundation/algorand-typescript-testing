@@ -1,5 +1,4 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
-import type { internal } from '@algorandfoundation/algorand-typescript'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import {
@@ -16,6 +15,7 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, it, test } from 'vitest'
+import type { StubBytesCompat } from '../../src/impl/primitives'
 import { AccountCls } from '../../src/impl/reference'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes, asUint8Array } from '../../src/util'
@@ -42,7 +42,7 @@ const addressStaticArray = {
   array() {
     return new StaticArray<Address, 10>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Address, 10>>(asBytes(value))
   },
 }
@@ -57,7 +57,7 @@ const boolStaticArray = {
   array() {
     return new StaticArray<Bool, 10>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Bool, 10>>(asBytes(value))
   },
 }
@@ -72,7 +72,7 @@ const uint256StaticArray = {
   array() {
     return new StaticArray<UintN<256>, 10>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<UintN<256>, 10>>(asBytes(value))
   },
 }
@@ -98,7 +98,7 @@ const ufixednxmStaticArray = {
   array() {
     return new StaticArray<UFixedNxM<256, 16>, 10>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<UFixedNxM<256, 16>, 10>>(asBytes(value))
   },
 }
@@ -124,7 +124,7 @@ const stringStaticArray = {
   array() {
     return new StaticArray<Str, 10>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Str, 10>>(asBytes(value))
   },
 }
@@ -139,7 +139,7 @@ const addressStaticArrayOfArray = {
   array() {
     return new StaticArray<StaticArray<Address, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Address, 10>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<Address, 10>, 2>>(asBytes(value))
   },
 }
@@ -154,7 +154,7 @@ const boolStaticArrayOfArray = {
   array() {
     return new StaticArray<StaticArray<Bool, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Bool, 10>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<Bool, 10>, 2>>(asBytes(value))
   },
 }
@@ -169,7 +169,7 @@ const uint256StaticArrayOfArray = {
   array() {
     return new StaticArray<StaticArray<UintN<256>, 10>, 2>(...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<UintN<256>, 10>, 2>>(asBytes(value))
   },
 }
@@ -184,7 +184,7 @@ const uint256StaticArrayOfDynamicArray = {
   array() {
     return new StaticArray<DynamicArray<UintN<256>>, 2>(...this.abiValues().map((a) => new DynamicArray<UintN<256>>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<DynamicArray<UintN<256>>, 2>>(asBytes(value))
   },
 }
@@ -199,7 +199,7 @@ const stringStaticArrayOfArray = {
   array() {
     return new StaticArray<StaticArray<Str, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Str, 10>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<Str, 10>, 2>>(asBytes(value))
   },
 }
@@ -221,7 +221,7 @@ const stringStaticArrayOfArrayOfArray = {
       ...this.abiValues().map((x) => new StaticArray<StaticArray<Str, 10>, 3>(...x)),
     )
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<StaticArray<Str, 10>, 3>, 2>>(asBytes(value))
   },
 }
@@ -263,7 +263,7 @@ const tupleStaticArray = {
       2
     >(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<
       StaticArray<Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>, 2>
     >(asBytes(value))
@@ -316,7 +316,7 @@ const structStaticArray = {
   array() {
     return new StaticArray<Swapped, 2>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Swapped, 2>>(asBytes(value))
   },
 }

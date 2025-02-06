@@ -1,5 +1,5 @@
-import { internal, Uint64 } from '@algorandfoundation/algorand-typescript'
-import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { Uint64 } from '@algorandfoundation/algorand-typescript'
+import { AvmError, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, it } from 'vitest'
 import MyContract from './contract.algo'
 
@@ -19,7 +19,7 @@ describe('Calculator', () => {
           }),
         ])
         .execute(() => {
-          expect(() => contract.approvalProgram()).toThrowError(new internal.errors.AvmError('Unknown operation'))
+          expect(() => contract.approvalProgram()).toThrowError(new AvmError('Unknown operation'))
         })
     })
   })

@@ -1,5 +1,5 @@
-import type { Account as AccountType, Application as ApplicationType, bytes, uint64, op } from '@algorandfoundation/algorand-typescript'
-import { Bytes, internal, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, Application as ApplicationType, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
+import { encodingUtil } from '@algorandfoundation/puya-ts'
 import {
   DEFAULT_ACCOUNT_MIN_BALANCE,
   DEFAULT_ASSET_CREATE_MIN_BALANCE,
@@ -10,8 +10,10 @@ import {
   ZERO_ADDRESS,
 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
+import { InternalError } from '../errors'
 import { getObjectReference } from '../util'
 import { sha256 } from './crypto'
+import { Bytes, Uint64 } from './primitives'
 import { Account, getApplicationAddress } from './reference'
 
 export class GlobalData {
@@ -98,7 +100,7 @@ export const Global: typeof op.Global = {
   get logicSigVersion(): uint64 {
     const data = getGlobalData()
     if (data.logicSigVersion !== undefined) return data.logicSigVersion
-    throw new internal.errors.InternalError(getMissingValueErrorMessage('logicSigVersion'))
+    throw new InternalError(getMissingValueErrorMessage('logicSigVersion'))
   },
 
   /**
@@ -148,7 +150,7 @@ export const Global: typeof op.Global = {
     const data = getGlobalData()
     if (data.groupId !== undefined) return data.groupId
     const reference = getObjectReference(lazyContext.activeGroup)
-    const referenceBytes = Bytes(internal.encodingUtil.bigIntToUint8Array(reference))
+    const referenceBytes = Bytes(encodingUtil.bigIntToUint8Array(reference))
     return sha256(referenceBytes)
   },
 
@@ -158,7 +160,7 @@ export const Global: typeof op.Global = {
   get opcodeBudget(): uint64 {
     const data = getGlobalData()
     if (data.opcodeBudget !== undefined) return data.opcodeBudget
-    throw new internal.errors.InternalError(getMissingValueErrorMessage('opcodeBudget'))
+    throw new InternalError(getMissingValueErrorMessage('opcodeBudget'))
   },
 
   /**

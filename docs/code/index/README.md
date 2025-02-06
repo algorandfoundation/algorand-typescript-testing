@@ -8,12 +8,14 @@
 
 ## Classes
 
+- [AssertError](classes/AssertError.md)
+- [AvmError](classes/AvmError.md)
+- [CodeError](classes/CodeError.md)
+- [InternalError](classes/InternalError.md)
+- [NotImplementedError](classes/NotImplementedError.md)
 - [TestExecutionContext](classes/TestExecutionContext.md)
-
-## Variables
-
-- [encodingUtil](variables/encodingUtil.md)
 
 ## Functions
 
 - [addEqualityTesters](functions/addEqualityTesters.md)
+- [toExternalValue](functions/toExternalValue.md)

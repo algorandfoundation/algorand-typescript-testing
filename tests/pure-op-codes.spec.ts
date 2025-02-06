@@ -1,5 +1,6 @@
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Base64, BigUint, Bytes, err, internal, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { Base64, BigUint, Bytes, err, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import {
@@ -111,11 +112,11 @@ describe('Pure op codes', async () => {
 
   describe('bitLength', async () => {
     test.for([
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(0n)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(1n)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT64)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT512)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT512 * MAX_UINT512)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(0n)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(1n)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT64)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT512)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT512 * MAX_UINT512)), 0],
       [Bytes(Array(8).fill(0x00).concat(Array(4).fill(0x0f))), 0],
       [Bytes([0x0f]), MAX_BYTES_SIZE - 1],
       [Bytes(), 0],
@@ -148,7 +149,7 @@ describe('Pure op codes', async () => {
     test.for([0, 1, 2, 9, 13, 144n, MAX_UINT64, MAX_UINT512])(
       'should compute the square root of a big uint',
       async (a, { appClientMiscellaneousOpsContract: appClient }) => {
-        const uint8ArrayA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
+        const uint8ArrayA = encodingUtil.bigIntToUint8Array(BigInt(a))
         const avmResult = (await getAvmResult<Uint8Array>({ appClient }, 'verify_bsqrt', uint8ArrayA))!
 
         const result = op.bsqrt(a)
@@ -160,7 +161,7 @@ describe('Pure op codes', async () => {
     test.for([MAX_UINT512 + 1n, MAX_UINT512 * 2n])(
       'should throw error when input overflows',
       async (a, { appClientMiscellaneousOpsContract: appClient }) => {
-        const uint8ArrayA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
+        const uint8ArrayA = encodingUtil.bigIntToUint8Array(BigInt(a))
         await expect(getAvmResultRaw({ appClient }, 'verify_bsqrt', uint8ArrayA)).rejects.toThrow('math attempted on large byte-array')
         expect(() => op.bsqrt(a)).toThrow(BIGUINT_OVERFLOW_UNDERFLOW_MESSAGE)
       },
@@ -169,9 +170,9 @@ describe('Pure op codes', async () => {
 
   describe('btoi', async () => {
     test.for([
-      Bytes(internal.encodingUtil.bigIntToUint8Array(0n)),
-      Bytes(internal.encodingUtil.bigIntToUint8Array(1n)),
-      Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT64)),
+      Bytes(encodingUtil.bigIntToUint8Array(0n)),
+      Bytes(encodingUtil.bigIntToUint8Array(1n)),
+      Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT64)),
       Bytes(Array(4).fill(0x00).concat(Array(4).fill(0x0f))),
     ])('should convert bytes to uint64', async (a, { appClientMiscellaneousOpsContract: appClient }) => {
       const avmResult = await getAvmResult<uint64>({ appClient }, 'verify_btoi', asUint8Array(a))
@@ -180,8 +181,8 @@ describe('Pure op codes', async () => {
     })
 
     test.for([
-      Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT512)),
-      Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT512 * MAX_UINT512, 128)),
+      Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT512)),
+      Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT512 * MAX_UINT512, 128)),
       Bytes(Array(5).fill(0x00).concat(Array(4).fill(0x0f))),
     ])('should throw error when input overflows', async (a, { appClientMiscellaneousOpsContract: appClient }) => {
       const errorRegex = new RegExp(`btoi arg too long, got \\[${a.length.valueOf()}\\]bytes`)
@@ -727,11 +728,11 @@ describe('Pure op codes', async () => {
 
   describe('len', async () => {
     test.for([
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(0n)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(1n)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT64)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT512)), 0],
-      [Bytes(internal.encodingUtil.bigIntToUint8Array(MAX_UINT512 * MAX_UINT512)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(0n)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(1n)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT64)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT512)), 0],
+      [Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT512 * MAX_UINT512)), 0],
       [Bytes(Array(8).fill(0x00).concat(Array(4).fill(0x0f))), 0],
       [Bytes([0x0f]), MAX_BYTES_SIZE - 1],
       [Bytes(), 0],

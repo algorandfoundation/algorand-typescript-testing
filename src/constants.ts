@@ -1,4 +1,4 @@
-import { Bytes } from '@algorandfoundation/algorand-typescript'
+import { Bytes } from './impl/primitives'
 
 export const UINT64_SIZE = 64
 export const UINT512_SIZE = 512

@@ -7,11 +7,12 @@ import type {
   LocalStateForAccount,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { internal } from '@algorandfoundation/algorand-typescript'
 import { AccountMap, Uint64Map } from '../collections/custom-key-map'
 import { MAX_UINT64 } from '../constants'
+import { InternalError } from '../errors'
 import { BlockData } from '../impl/block'
 import { GlobalData } from '../impl/global'
+import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
 import type { AssetData } from '../impl/reference'
 import {
   AccountCls,
@@ -46,7 +47,7 @@ export class LedgerContext {
    * @param appId - The application ID.
    * @param contract - The contract to add.
    */
-  addAppIdContractMap(appId: internal.primitives.StubUint64Compat, contract: BaseContract): void {
+  addAppIdContractMap(appId: StubUint64Compat, contract: BaseContract): void {
     this.appIdContractMap.set(appId, contract)
   }
 
@@ -60,7 +61,7 @@ export class LedgerContext {
     if (this.accountDataMap.has(address)) {
       return new AccountCls(address.bytes)
     }
-    throw internal.errors.internalError('Unknown account, check correct testing context is active')
+    throw new InternalError('Unknown account, check correct testing context is active')
   }
 
   /**
@@ -69,11 +70,11 @@ export class LedgerContext {
    * @returns The asset.
    * @throws If the asset is unknown.
    */
-  getAsset(assetId: internal.primitives.StubUint64Compat): AssetType {
+  getAsset(assetId: StubUint64Compat): AssetType {
     if (this.assetDataMap.has(assetId)) {
       return Asset(asUint64(assetId))
     }
-    throw internal.errors.internalError('Unknown asset, check correct testing context is active')
+    throw new InternalError('Unknown asset, check correct testing context is active')
   }
 
   /**
@@ -82,11 +83,11 @@ export class LedgerContext {
    * @returns The application.
    * @throws If the application is unknown.
    */
-  getApplication(applicationId: internal.primitives.StubUint64Compat): ApplicationType {
+  getApplication(applicationId: StubUint64Compat): ApplicationType {
     if (this.applicationDataMap.has(applicationId)) {
       return Application(asUint64(applicationId))
     }
-    throw internal.errors.internalError('Unknown application, check correct testing context is active')
+    throw new InternalError('Unknown application, check correct testing context is active')
   }
 
   /**
@@ -103,7 +104,7 @@ export class LedgerContext {
         }
       }
     }
-    throw internal.errors.internalError('Unknown contract, check correct testing context is active')
+    throw new InternalError('Unknown contract, check correct testing context is active')
   }
 
   /**
@@ -141,12 +142,7 @@ export class LedgerContext {
    * @param balance
    * @param frozen
    */
-  updateAssetHolding(
-    account: AccountType,
-    assetId: internal.primitives.StubUint64Compat | AssetType,
-    balance?: internal.primitives.StubUint64Compat,
-    frozen?: boolean,
-  ): void {
+  updateAssetHolding(account: AccountType, assetId: StubUint64Compat | AssetType, balance?: StubUint64Compat, frozen?: boolean): void {
     const id = asMaybeUint64Cls(assetId) ?? asUint64Cls((assetId as AssetType).id)
     const accountData = this.accountDataMap.get(account)!
     const asset = this.assetDataMap.get(id)!
@@ -235,7 +231,7 @@ export class LedgerContext {
    * @param index - The block index.
    * @param data - The partial block data.
    */
-  patchBlockData(index: internal.primitives.StubUint64Compat, data: Partial<BlockData>): void {
+  patchBlockData(index: StubUint64Compat, data: Partial<BlockData>): void {
     const i = asUint64(index)
     const blockData = this.blocks.get(i) ?? new BlockData()
     this.blocks.set(i, {
@@ -250,12 +246,12 @@ export class LedgerContext {
    * @returns The block data.
    * @throws If the block is not set.
    */
-  getBlockData(index: internal.primitives.StubUint64Compat): BlockData {
+  getBlockData(index: StubUint64Compat): BlockData {
     const i = asBigInt(index)
     if (this.blocks.has(i)) {
       return this.blocks.get(i)!
     }
-    throw internal.errors.internalError(`Block ${i} not set`)
+    throw new InternalError(`Block ${i} not set`)
   }
 
   /**
@@ -264,10 +260,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns The global state and a boolean indicating if it was found.
    */
-  getGlobalState(
-    app: ApplicationType | BaseContract,
-    key: internal.primitives.StubBytesCompat,
-  ): [GlobalStateCls<unknown>, true] | [undefined, false] {
+  getGlobalState(app: ApplicationType | BaseContract, key: StubBytesCompat): [GlobalStateCls<unknown>, true] | [undefined, false] {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.get(appId)
     if (!appData?.application.globalStates.has(key)) {
@@ -282,11 +275,7 @@ export class LedgerContext {
    * @param key - The key.
    * @param value - The value (optional).
    */
-  setGlobalState(
-    app: ApplicationType | BaseContract,
-    key: internal.primitives.StubBytesCompat,
-    value: internal.primitives.StubUint64Compat | internal.primitives.StubBytesCompat | undefined,
-  ): void {
+  setGlobalState(app: ApplicationType | BaseContract, key: StubBytesCompat, value: StubUint64Compat | StubBytesCompat | undefined): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     const globalState = appData.application.globalStates.get(key)
@@ -309,7 +298,7 @@ export class LedgerContext {
   getLocalState(
     app: ApplicationType | BaseContract,
     account: AccountType,
-    key: internal.primitives.StubBytesCompat,
+    key: StubBytesCompat,
   ): [LocalStateForAccount<unknown>, true] | [undefined, false] {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.get(appId)
@@ -330,8 +319,8 @@ export class LedgerContext {
   setLocalState(
     app: ApplicationType | BaseContract,
     account: AccountType,
-    key: internal.primitives.StubBytesCompat,
-    value: internal.primitives.StubUint64Compat | internal.primitives.StubBytesCompat | undefined,
+    key: StubBytesCompat,
+    value: StubUint64Compat | StubBytesCompat | undefined,
   ): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
@@ -350,7 +339,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns The box data.
    */
-  getBox(app: ApplicationType | BaseContract, key: internal.primitives.StubBytesCompat): Uint8Array {
+  getBox(app: ApplicationType | BaseContract, key: StubBytesCompat): Uint8Array {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     return appData.application.boxes.get(key) ?? new Uint8Array()
@@ -362,11 +351,7 @@ export class LedgerContext {
    * @param key - The key.
    * @param value - The box data.
    */
-  setBox(
-    app: ApplicationType | BaseContract,
-    key: internal.primitives.StubBytesCompat,
-    value: internal.primitives.StubBytesCompat | Uint8Array,
-  ): void {
+  setBox(app: ApplicationType | BaseContract, key: StubBytesCompat, value: StubBytesCompat | Uint8Array): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     const uint8ArrayValue = value instanceof Uint8Array ? value : asUint8Array(value)
@@ -379,7 +364,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns True if the box was deleted, false otherwise.
    */
-  deleteBox(app: ApplicationType | BaseContract, key: internal.primitives.StubBytesCompat): boolean {
+  deleteBox(app: ApplicationType | BaseContract, key: StubBytesCompat): boolean {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     return appData.application.boxes.delete(key)
@@ -391,7 +376,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns True if the box exists, false otherwise.
    */
-  boxExists(app: ApplicationType | BaseContract, key: internal.primitives.StubBytesCompat): boolean {
+  boxExists(app: ApplicationType | BaseContract, key: StubBytesCompat): boolean {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     return appData.application.boxes.has(key)

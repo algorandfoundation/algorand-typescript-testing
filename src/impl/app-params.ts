@@ -3,16 +3,15 @@ import type {
   Application as ApplicationType,
   bytes,
   gtxn,
-  internal,
   op,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asMaybeUint64Cls, asUint64 } from '../util'
+import { Bytes, Uint64, type StubUint64Compat } from './primitives'
 import { Account } from './reference'
 
-const resolveAppIndex = (appIdOrIndex: internal.primitives.StubUint64Compat): uint64 => {
+const resolveAppIndex = (appIdOrIndex: StubUint64Compat): uint64 => {
   const input = asUint64(appIdOrIndex)
   if (input >= 1001) {
     return input
@@ -21,7 +20,7 @@ const resolveAppIndex = (appIdOrIndex: internal.primitives.StubUint64Compat): ui
   return txn.apps(input).id
 }
 
-export const getApp = (app: ApplicationType | internal.primitives.StubUint64Compat): ApplicationType | undefined => {
+export const getApp = (app: ApplicationType | StubUint64Compat): ApplicationType | undefined => {
   try {
     const appId = asMaybeUint64Cls(app)
     if (appId !== undefined) {
@@ -34,39 +33,39 @@ export const getApp = (app: ApplicationType | internal.primitives.StubUint64Comp
 }
 
 export const AppParams: typeof op.AppParams = {
-  appApprovalProgram(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [bytes, boolean] {
+  appApprovalProgram(a: ApplicationType | StubUint64Compat): readonly [bytes, boolean] {
     const app = getApp(a)
     return app === undefined ? [Bytes(), false] : [app.approvalProgram, true]
   },
-  appClearStateProgram(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [bytes, boolean] {
+  appClearStateProgram(a: ApplicationType | StubUint64Compat): readonly [bytes, boolean] {
     const app = getApp(a)
     return app === undefined ? [Bytes(), false] : [app.clearStateProgram, true]
   },
-  appGlobalNumUint(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appGlobalNumUint(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.globalNumUint, true]
   },
-  appGlobalNumByteSlice(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appGlobalNumByteSlice(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.globalNumBytes, true]
   },
-  appLocalNumUint(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appLocalNumUint(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.localNumUint, true]
   },
-  appLocalNumByteSlice(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appLocalNumByteSlice(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.localNumBytes, true]
   },
-  appExtraProgramPages(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appExtraProgramPages(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.extraProgramPages, true]
   },
-  appCreator(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [AccountType, boolean] {
+  appCreator(a: ApplicationType | StubUint64Compat): readonly [AccountType, boolean] {
     const app = getApp(a)
     return app === undefined ? [Account(), false] : [app.creator, true]
   },
-  appAddress(a: ApplicationType | internal.primitives.StubUint64Compat): readonly [AccountType, boolean] {
+  appAddress(a: ApplicationType | StubUint64Compat): readonly [AccountType, boolean] {
     const app = getApp(a)
     return app === undefined ? [Account(), false] : [app.address, true]
   },

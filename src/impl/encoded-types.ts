@@ -1,13 +1,11 @@
 import type {
   Account as AccountType,
-  arc4,
   BigUintCompat,
   bytes,
   StringCompat,
   uint64,
   Uint64Compat,
 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, internal } from '@algorandfoundation/algorand-typescript'
 import type { BitSize } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Address,
@@ -35,16 +33,18 @@ import {
 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { fromBytes, TypeInfo } from '../encoders'
+import { AvmError, avmInvariant, CodeError } from '../errors'
 import type { DeliberateAny } from '../typescript-helpers'
 import { asBigInt, asBigUint, asBigUintCls, asBytesCls, asUint64, asUint8Array, conactUint8Arrays, uint8ArrayToNumber } from '../util'
-import { sha512_256 } from './crypto'
+import type { StubBytesCompat } from './primitives'
+import { AlgoTsPrimitiveCls, arrayUtil, BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from './primitives'
 import { Account, AccountCls, ApplicationCls, AssetCls } from './reference'
 import type { ApplicationTransaction } from './transactions'
 
 const ABI_LENGTH_SIZE = 2
 const maxBigIntValue = (bitSize: number) => 2n ** BigInt(bitSize) - 1n
 const maxBytesLength = (bitSize: number) => Math.floor(bitSize / BITS_IN_BYTE)
-const encodeLength = (length: number) => new internal.primitives.BytesCls(encodingUtil.bigIntToUint8Array(BigInt(length), ABI_LENGTH_SIZE))
+const encodeLength = (length: number) => new BytesCls(encodingUtil.bigIntToUint8Array(BigInt(length), ABI_LENGTH_SIZE))
 
 type CompatForArc4Int<N extends BitSize> = N extends 8 | 16 | 32 | 64 ? Uint64Compat : BigUintCompat
 export class UintNImpl<N extends BitSize> extends UintN<N> {
@@ -77,13 +77,13 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
 
   equals(other: this): boolean {
     if (!(other instanceof UintNImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
   static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
+    value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
   ): UintNImpl<BitSize> {
@@ -143,13 +143,13 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
 
   equals(other: this): boolean {
     if (!(other instanceof UFixedNxMImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
   static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
+    value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
   ): UFixedNxM<BitSize, number> {
@@ -194,16 +194,12 @@ export class ByteImpl extends Byte {
 
   equals(other: this): boolean {
     if (!(other instanceof ByteImpl) || JSON.stringify(this.value.typeInfo) !== JSON.stringify(other.value.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.value.typeInfo.name}, got ${other.value.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.value.typeInfo.name}, got ${other.value.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
-  static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
-    typeInfo: string | TypeInfo,
-    prefix: 'none' | 'log' = 'none',
-  ): ByteImpl {
+  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): ByteImpl {
     const uintNValue = UintNImpl.fromBytesImpl(value, typeInfo, prefix) as UintNImpl<8>
     const result = new ByteImpl(typeInfo)
     result.value = uintNValue
@@ -236,16 +232,12 @@ export class StrImpl extends Str {
 
   equals(other: this): boolean {
     if (!(other instanceof StrImpl)) {
-      throw new internal.errors.CodeError(`Expected expression of type Str, got ${(other as object).constructor.name}`)
+      throw new CodeError(`Expected expression of type Str, got ${(other as object).constructor.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
-  static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
-    typeInfo: string | TypeInfo,
-    prefix: 'none' | 'log' = 'none',
-  ): StrImpl {
+  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): StrImpl {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
@@ -275,7 +267,7 @@ export class BoolImpl extends Bool {
 
   equals(other: this): boolean {
     if (!(other instanceof BoolImpl)) {
-      throw new internal.errors.CodeError(`Expected expression of type Bool, got ${(other as object).constructor.name}`)
+      throw new CodeError(`Expected expression of type Bool, got ${(other as object).constructor.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
@@ -284,11 +276,7 @@ export class BoolImpl extends Bool {
     return Bytes(this.value)
   }
 
-  static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
-    typeInfo: string | TypeInfo,
-    prefix: 'none' | 'log' = 'none',
-  ): BoolImpl {
+  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): BoolImpl {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
@@ -312,14 +300,14 @@ const arrayProxyHandler = <TItem>() => ({
     const idx = prop ? parseInt(prop.toString(), 10) : NaN
     if (!isNaN(idx)) {
       if (idx < target.items.length) return target.items[idx]
-      internal.errors.avmError('Index out of bounds')
+      throw new AvmError('Index out of bounds')
     } else if (prop === Symbol.iterator) {
       return target.items[Symbol.iterator].bind(target.items)
     } else if (prop === 'entries') {
       return target.items.entries.bind(target.items)
     } else if (prop === 'at') {
       return (index: Uint64Compat): TItem => {
-        return internal.primitives.arrayUtil.arrayAt(target.items, index)
+        return arrayUtil.arrayAt(target.items, index)
       }
     }
     return Reflect.get(target, prop)
@@ -331,7 +319,7 @@ const arrayProxyHandler = <TItem>() => ({
         target.setItem(idx, value)
         return true
       }
-      internal.errors.avmError('Index out of bounds')
+      throw new AvmError('Index out of bounds')
     }
 
     return Reflect.set(target, prop, value)
@@ -353,7 +341,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
 
     this.size = parseInt(this.genericArgs.size.name, 10)
     if (items.length && items.length !== this.size) {
-      throw new internal.errors.CodeError(`expected ${this.size} items, not ${items.length}`)
+      throw new CodeError(`expected ${this.size} items, not ${items.length}`)
     }
 
     assert(areAllARC4Encoded(items), 'expected ARC4 type')
@@ -373,7 +361,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
 
   equals(other: this): boolean {
     if (!(other instanceof StaticArrayImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
@@ -392,7 +380,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
       this.uint8ArrayValue = undefined
       return this.value
     }
-    throw new internal.errors.CodeError('value is not set')
+    throw new CodeError('value is not set')
   }
 
   setItem(index: number, value: TItem): void {
@@ -408,7 +396,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
   }
 
   static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
+    value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
   ): StaticArrayImpl<ARC4Encoded, number> {
@@ -459,12 +447,12 @@ export class AddressImpl extends Address {
       uint8ArrayValue = new Uint8Array(32)
     } else if (typeof value === 'string') {
       uint8ArrayValue = encodingUtil.base32ToUint8Array(value).slice(0, ALGORAND_ADDRESS_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)
-    } else if (internal.primitives.isBytes(value)) {
-      uint8ArrayValue = internal.primitives.getUint8Array(value)
+    } else if (isBytes(value)) {
+      uint8ArrayValue = getUint8Array(value)
     } else {
-      uint8ArrayValue = internal.primitives.getUint8Array(value.bytes)
+      uint8ArrayValue = getUint8Array(value.bytes)
     }
-    internal.errors.avmInvariant(uint8ArrayValue.length === 32, 'Addresses should be 32 bytes')
+    avmInvariant(uint8ArrayValue.length === 32, 'Addresses should be 32 bytes')
 
     this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as StaticArrayImpl<ByteImpl, 32>
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
@@ -477,7 +465,7 @@ export class AddressImpl extends Address {
 
   equals(other: this): boolean {
     if (!(other instanceof AddressImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
@@ -495,14 +483,10 @@ export class AddressImpl extends Address {
   }
 
   setItem(_index: number, _value: ByteImpl): void {
-    throw new internal.errors.CodeError('Address is immutable')
+    throw new CodeError('Address is immutable')
   }
 
-  static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
-    typeInfo: string | TypeInfo,
-    prefix: 'none' | 'log' = 'none',
-  ): AddressImpl {
+  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): AddressImpl {
     const staticArrayValue = StaticArrayImpl.fromBytesImpl(value, typeInfo, prefix) as StaticArrayImpl<ByteImpl, 32>
     const result = new AddressImpl(typeInfo)
     result.value = staticArrayValue
@@ -547,7 +531,7 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
 
   equals(other: this): boolean {
     if (!(other instanceof DynamicArrayImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
@@ -567,7 +551,7 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
       this.uint8ArrayValue = undefined
       return this.value
     }
-    throw new internal.errors.CodeError('value is not set')
+    throw new CodeError('value is not set')
   }
 
   setItem(index: number, value: TItem): void {
@@ -590,12 +574,12 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
   pop(): TItem {
     const items = this.items
     const popped = items.pop()
-    if (popped === undefined) internal.errors.avmError('The array is empty')
+    if (popped === undefined) throw new AvmError('The array is empty')
     return popped
   }
 
   static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
+    value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
   ): DynamicArrayImpl<ARC4Encoded> {
@@ -645,7 +629,7 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
 
   equals(other: this): boolean {
     if (!(other instanceof TupleImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
@@ -671,11 +655,11 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
       this.uint8ArrayValue = undefined
       return this.value
     }
-    throw new internal.errors.CodeError('value is not set')
+    throw new CodeError('value is not set')
   }
 
   static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
+    value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
   ): TupleImpl<[ARC4Encoded, ...ARC4Encoded[]]> {
@@ -779,7 +763,7 @@ export class StructImpl<T extends StructConstraint> extends (Struct<StructConstr
   }
 
   static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
+    value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
   ): StructImpl<StructConstraint> {
@@ -817,7 +801,7 @@ export class DynamicBytesImpl extends DynamicBytes {
 
   equals(other: this): boolean {
     if (!(other instanceof DynamicBytesImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
@@ -835,11 +819,11 @@ export class DynamicBytesImpl extends DynamicBytes {
   }
 
   setItem(_index: number, _value: ByteImpl): void {
-    throw new internal.errors.CodeError('DynamicBytes is immutable')
+    throw new CodeError('DynamicBytes is immutable')
   }
 
   static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
+    value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
   ): DynamicBytesImpl {
@@ -872,7 +856,7 @@ export class StaticBytesImpl extends StaticBytes {
 
   equals(other: this): boolean {
     if (!(other instanceof StaticBytesImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
-      throw new internal.errors.CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
+      throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
@@ -890,14 +874,10 @@ export class StaticBytesImpl extends StaticBytes {
   }
 
   setItem(_index: number, _value: ByteImpl): void {
-    throw new internal.errors.CodeError('StaticBytes is immutable')
+    throw new CodeError('StaticBytes is immutable')
   }
 
-  static fromBytesImpl(
-    value: internal.primitives.StubBytesCompat | Uint8Array,
-    typeInfo: string | TypeInfo,
-    prefix: 'none' | 'log' = 'none',
-  ): StaticBytesImpl {
+  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): StaticBytesImpl {
     const staticArrayValue = StaticArrayImpl.fromBytesImpl(value, typeInfo, prefix) as StaticArrayImpl<ByteImpl, number>
     const result = new StaticBytesImpl(typeInfo)
     result.value = staticArrayValue
@@ -938,7 +918,7 @@ const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
       let after = findBoolTypes(childTypes, i, 1)
 
       if (before % 8 != 0) {
-        throw new internal.errors.CodeError('"expected before index should have number of bool mod 8 equal 0"')
+        throw new CodeError('"expected before index should have number of bool mod 8 equal 0"')
       }
       after = Math.min(7, after)
       const bits = uint8ArrayToNumber(value.slice(arrayIndex, arrayIndex + 1))
@@ -959,7 +939,7 @@ const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
     }
 
     if (arrayIndex >= value.length && i != childTypes.length - 1) {
-      throw new internal.errors.CodeError('input string is not long enough to be decoded')
+      throw new CodeError('input string is not long enough to be decoded')
     }
     i += 1
   }
@@ -969,7 +949,7 @@ const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
     arrayIndex = value.length
   }
   if (arrayIndex < value.length) {
-    throw new internal.errors.CodeError('input string was not fully consumed')
+    throw new CodeError('input string was not fully consumed')
   }
 
   // Check dynamic element partitions
@@ -1026,7 +1006,7 @@ const getMaxLengthOfStaticContentType = (type: TypeInfo): number => {
     case 'Tuple':
       return TupleImpl.getMaxBytesLength(type)
   }
-  throw new internal.errors.CodeError(`unsupported type ${type.name}`)
+  throw new CodeError(`unsupported type ${type.name}`)
 }
 
 const encode = (values: ARC4Encoded[]) => {
@@ -1048,7 +1028,7 @@ const encode = (values: ARC4Encoded[]) => {
         const before = findBool(values, i, -1)
         let after = findBool(values, i, 1)
         if (before % 8 != 0) {
-          throw new internal.errors.CodeError('"expected before index should have number of bool mod 8 equal 0"')
+          throw new CodeError('"expected before index should have number of bool mod 8 equal 0"')
         }
         after = Math.min(7, after)
         const consecutiveBools = values.slice(i, i + after + 1) as Bool[]
@@ -1143,7 +1123,7 @@ const holdsDynamicLengthContent = (value: StaticArrayImpl<ARC4Encoded, number> |
 
 export function interpretAsArc4Impl<T extends ARC4Encoded>(
   typeInfoString: string,
-  bytes: internal.primitives.StubBytesCompat,
+  bytes: StubBytesCompat,
   prefix: 'none' | 'log' = 'none',
 ): T {
   const typeInfo = JSON.parse(typeInfoString)
@@ -1193,11 +1173,7 @@ export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
   return undefined
 }
 
-export function decodeArc4Impl<T>(
-  sourceTypeInfoString: string,
-  bytes: internal.primitives.StubBytesCompat,
-  prefix: 'none' | 'log' = 'none',
-): T {
+export function decodeArc4Impl<T>(sourceTypeInfoString: string, bytes: StubBytesCompat, prefix: 'none' | 'log' = 'none'): T {
   const sourceTypeInfo = JSON.parse(sourceTypeInfoString)
   const encoder = getArc4Encoder(sourceTypeInfo)
   const source = encoder(bytes, sourceTypeInfo, prefix)
@@ -1213,7 +1189,7 @@ const getNativeValue = (value: DeliberateAny): DeliberateAny => {
   const native = (value as DeliberateAny).native
   if (Array.isArray(native)) {
     return native.map((item) => getNativeValue(item))
-  } else if (native instanceof internal.primitives.AlgoTsPrimitiveCls) {
+  } else if (native instanceof AlgoTsPrimitiveCls) {
     return native
   } else if (typeof native === 'object') {
     return Object.fromEntries(Object.entries(native).map(([key, value]) => [key, getNativeValue(value)]))
@@ -1240,16 +1216,16 @@ export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
   if (typeof value === 'boolean') {
     return new BoolImpl({ name: 'Bool' }, value)
   }
-  if (value instanceof internal.primitives.Uint64Cls || typeof value === 'number') {
+  if (value instanceof Uint64Cls || typeof value === 'number') {
     return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(value))
   }
-  if (value instanceof internal.primitives.BigUintCls) {
+  if (value instanceof BigUintCls) {
     return new UintNImpl({ name: 'UintN<512>', genericArgs: [{ name: '512' }] }, value.asBigInt())
   }
   if (typeof value === 'bigint') {
     return new UintNImpl({ name: 'UintN<512>', genericArgs: [{ name: '512' }] }, value)
   }
-  if (value instanceof internal.primitives.BytesCls) {
+  if (value instanceof BytesCls) {
     return new DynamicBytesImpl(
       { name: 'DynamicBytes', genericArgs: { elementType: { name: 'Byte', genericArgs: [{ name: '8' }] } } },
       value.asAlgoTs(),
@@ -1278,9 +1254,5 @@ export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
     return new StructImpl(typeInfo, Object.fromEntries(Object.keys(value).map((x, i) => [x, result[i]])))
   }
 
-  throw internal.errors.codeError(`Unsupported type for encoding: ${typeof value}`)
-}
-
-export const methodSelector: typeof arc4.methodSelector = (methodSignature: string): bytes => {
-  return sha512_256(Bytes(encodingUtil.utf8ToUint8Array(methodSignature))).slice(0, 4)
+  throw new CodeError(`Unsupported type for encoding: ${typeof value}`)
 }

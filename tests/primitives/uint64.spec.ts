@@ -1,7 +1,8 @@
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
-import { internal, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { Uint64 } from '@algorandfoundation/algorand-typescript'
 import { beforeAll, describe, expect } from 'vitest'
 import { MAX_UINT64, UINT64_OVERFLOW_UNDERFLOW_MESSAGE } from '../../src/constants'
+import { Uint64Cls } from '../../src/impl/primitives'
 import { asUint64 } from '../../src/util'
 import { getAvmResult } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
@@ -512,7 +513,7 @@ describe('Unit64', async () => {
     [MAX_UINT64, MAX_UINT64],
   ])('fromCompat', async (a, b) => {
     test(`${a}`, async () => {
-      const result = internal.primitives.Uint64Cls.fromCompat(a)
+      const result = Uint64Cls.fromCompat(a)
       expect(result.valueOf(), `for value: ${a}`).toBe(b)
     })
   })

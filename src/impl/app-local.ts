@@ -1,30 +1,26 @@
-import type { Account, Application, bytes, internal, op, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account, Application, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes } from '../encoders'
 import { asBytes } from '../util'
 import { getAccount } from './acct-params'
 import { getApp } from './app-params'
+import { Bytes, Uint64, type StubBytesCompat, type StubUint64Compat } from './primitives'
 
 export const AppLocal: typeof op.AppLocal = {
-  delete: function (a: Account | internal.primitives.StubUint64Compat, b: internal.primitives.StubBytesCompat): void {
+  delete: function (a: Account | StubUint64Compat, b: StubBytesCompat): void {
     const app = lazyContext.activeApplication
     const account = getAccount(a)
     lazyContext.ledger.setLocalState(app, account, b, undefined)
   },
-  getBytes: function (a: Account | internal.primitives.StubUint64Compat, b: internal.primitives.StubBytesCompat): bytes {
+  getBytes: function (a: Account | StubUint64Compat, b: StubBytesCompat): bytes {
     const account = getAccount(a)
     return this.getExBytes(account, 0, asBytes(b))[0]
   },
-  getUint64: function (a: Account | internal.primitives.StubUint64Compat, b: internal.primitives.StubBytesCompat): uint64 {
+  getUint64: function (a: Account | StubUint64Compat, b: StubBytesCompat): uint64 {
     const account = getAccount(a)
     return this.getExUint64(account, 0, asBytes(b))[0]
   },
-  getExBytes: function (
-    a: Account | internal.primitives.StubUint64Compat,
-    b: Application | internal.primitives.StubUint64Compat,
-    c: internal.primitives.StubBytesCompat,
-  ): readonly [bytes, boolean] {
+  getExBytes: function (a: Account | StubUint64Compat, b: Application | StubUint64Compat, c: StubBytesCompat): readonly [bytes, boolean] {
     const app = getApp(b)
     const account = getAccount(a)
     if (app === undefined || account === undefined) {
@@ -36,11 +32,7 @@ export const AppLocal: typeof op.AppLocal = {
     }
     return [toBytes(state!.value), exists]
   },
-  getExUint64: function (
-    a: Account | internal.primitives.StubUint64Compat,
-    b: Application | internal.primitives.StubUint64Compat,
-    c: internal.primitives.StubBytesCompat,
-  ): readonly [uint64, boolean] {
+  getExUint64: function (a: Account | StubUint64Compat, b: Application | StubUint64Compat, c: StubBytesCompat): readonly [uint64, boolean] {
     const app = getApp(b)
     const account = getAccount(a)
     if (app === undefined || account === undefined) {
@@ -52,7 +44,7 @@ export const AppLocal: typeof op.AppLocal = {
     }
     return [state!.value as uint64, exists]
   },
-  put: function (a: Account | internal.primitives.StubUint64Compat, b: internal.primitives.StubBytesCompat, c: uint64 | bytes): void {
+  put: function (a: Account | StubUint64Compat, b: StubBytesCompat, c: uint64 | bytes): void {
     const app = lazyContext.activeApplication
     const account = getAccount(a)
     lazyContext.ledger.setLocalState(app, account, b, c)

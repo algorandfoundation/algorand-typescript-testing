@@ -1,4 +1,4 @@
-import { ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
+import { LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
 import path from 'path'
 import ts from 'typescript'
 import type { TypeInfo } from '../encoders'
@@ -32,6 +32,7 @@ type VisitorHelper = {
 
 export class SourceFileVisitor {
   private helper: VisitorHelper
+
   constructor(
     private context: ts.TransformationContext,
     private sourceFile: ts.SourceFile,
@@ -39,18 +40,19 @@ export class SourceFileVisitor {
     private config: TransformerConfig,
   ) {
     const typeChecker = program.getTypeChecker()
+    const loggingContext = LoggingContext.create()
     const typeResolver = new TypeResolver(typeChecker, program.getCurrentDirectory())
     this.helper = {
       additionalStatements: [],
       resolveType(node: ts.Node): ptypes.PType {
         try {
-          return typeResolver.resolve(node, this.sourceLocation(node))
+          return loggingContext.run(() => typeResolver.resolve(node, this.sourceLocation(node)))
         } catch {
           return ptypes.anyPType
         }
       },
       resolveTypeParameters(node: ts.CallExpression) {
-        return typeResolver.resolveTypeParameters(node, this.sourceLocation(node))
+        return loggingContext.run(() => typeResolver.resolveTypeParameters(node, this.sourceLocation(node)))
       },
       tryGetSymbol(node: ts.Node): ts.Symbol | undefined {
         const s = typeChecker.getSymbolAtLocation(node)

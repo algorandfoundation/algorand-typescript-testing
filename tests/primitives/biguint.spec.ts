@@ -1,9 +1,12 @@
 // noinspection SuspiciousTypeOfGuard
 
 import type { biguint } from '@algorandfoundation/algorand-typescript'
-import { BigUint, Bytes, internal, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { BigUint, Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { beforeAll, describe, expect } from 'vitest'
 import { BIGUINT_OVERFLOW_UNDERFLOW_MESSAGE, MAX_UINT512, MAX_UINT64 } from '../../src/constants'
+
+import { BigUintCls } from '../../src/impl/primitives'
 import { asBigUint, asUint64 } from '../../src/util'
 import { getAvmResult, getAvmResultRaw } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
@@ -65,8 +68,8 @@ describe('BigUint', async () => {
     ])(`${operator}`, async (a, b) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       test(`${a} ${operator} ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
         const avmResult = await getAvmResult<boolean>({ appClient }, `verify_biguint_${op}`, bytesA, bytesB)
@@ -91,10 +94,10 @@ describe('BigUint', async () => {
       [1, MAX_UINT512],
       [MAX_UINT512, MAX_UINT512],
     ])(`${operator} using bytes`, async (a, b) => {
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(BigInt(b))
-      const paddedBytesA = internal.encodingUtil.bigIntToUint8Array(BigInt(a), 64)
-      const paddedBytesB = internal.encodingUtil.bigIntToUint8Array(BigInt(b), 64)
+      const bytesA = encodingUtil.bigIntToUint8Array(BigInt(a))
+      const bytesB = encodingUtil.bigIntToUint8Array(BigInt(b))
+      const paddedBytesA = encodingUtil.bigIntToUint8Array(BigInt(a), 64)
+      const paddedBytesB = encodingUtil.bigIntToUint8Array(BigInt(b), 64)
       const bigUintA = BigUint(Bytes(bytesA))
       const bigUintB = BigUint(Bytes(bytesB))
       const paddedBigUintA = BigUint(Bytes(paddedBytesA))
@@ -125,7 +128,7 @@ describe('BigUint', async () => {
       [MAX_UINT512, MAX_UINT64],
     ])(`${operator} with uint64`, async (a, b) => {
       const bigUintA = asBigUint(a)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
       const uintB = typeof b === 'bigint' ? Uint64(b) : Uint64(b)
 
       test(`${a} ${operator} ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
@@ -142,8 +145,8 @@ describe('BigUint', async () => {
       [MAX_UINT512, MAX_UINT512 + 1n],
       [MAX_UINT512 + 1n, MAX_UINT512 + 1n],
     ])(`${operator} with overflowing input`, async (a, b) => {
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(BigInt(b))
+      const bytesA = encodingUtil.bigIntToUint8Array(BigInt(a))
+      const bytesB = encodingUtil.bigIntToUint8Array(BigInt(b))
       const bigUintA = BigUint(Bytes(bytesA))
       const bigUintB = BigUint(Bytes(bytesB))
 
@@ -174,8 +177,8 @@ describe('BigUint', async () => {
     test(`${a} + ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = BigUint(a)
       const bigUintB = BigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_add', bytesA, bytesB))
 
@@ -198,8 +201,8 @@ describe('BigUint', async () => {
     test(`${a} + ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = BigUint(a)
       const bigUintB = BigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_add', bytesA, bytesB))
 
@@ -219,8 +222,8 @@ describe('BigUint', async () => {
     [1, MAX_UINT512 + 1n],
     [MAX_UINT512 + 1n, MAX_UINT512 + 1n],
   ])('addition with overflowing input', async (a, b) => {
-    const bytesA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
-    const bytesB = internal.encodingUtil.bigIntToUint8Array(BigInt(b))
+    const bytesA = encodingUtil.bigIntToUint8Array(BigInt(a))
+    const bytesB = encodingUtil.bigIntToUint8Array(BigInt(b))
     const bigUintA = BigUint(Bytes(bytesA))
     const bigUintB = BigUint(Bytes(bytesB))
 
@@ -253,7 +256,7 @@ describe('BigUint', async () => {
     test(`${a} + ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = BigUint(a)
       const uint64B = Uint64(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_add_uint64', bytesA, b))
 
@@ -281,8 +284,8 @@ describe('BigUint', async () => {
     test(`${a} - ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = BigUint(a)
       const bigUintB = BigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_sub', bytesA, bytesB))
 
@@ -307,8 +310,8 @@ describe('BigUint', async () => {
     test(`${a} - ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       await expect(getAvmResultRaw({ appClient }, 'verify_biguint_sub', bytesA, bytesB)).rejects.toThrow('math would have negative result')
       expect(() => bigUintA - bigUintB).toThrow('BigUint underflow')
@@ -324,8 +327,8 @@ describe('BigUint', async () => {
     [1n, MAX_UINT512 + 1n],
     [MAX_UINT512 + 1n, MAX_UINT512 + 1n],
   ])(`subtraction with overflowing input`, async (a, b) => {
-    const bytesA = internal.encodingUtil.bigIntToUint8Array(a)
-    const bytesB = internal.encodingUtil.bigIntToUint8Array(b)
+    const bytesA = encodingUtil.bigIntToUint8Array(a)
+    const bytesB = encodingUtil.bigIntToUint8Array(b)
     const bigUintA = BigUint(Bytes(bytesA))
     const bigUintB = BigUint(Bytes(bytesB))
 
@@ -352,7 +355,7 @@ describe('BigUint', async () => {
     test(`${a} - ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = BigUint(a)
       const uint64B = Uint64(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_sub_uint64', bytesA, b))
 
@@ -376,8 +379,8 @@ describe('BigUint', async () => {
     test(`${a} * ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_mul', bytesA, bytesB))
 
@@ -404,8 +407,8 @@ describe('BigUint', async () => {
     test(`${a} * ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_mul', bytesA, bytesB))
 
@@ -430,8 +433,8 @@ describe('BigUint', async () => {
     [MAX_UINT512 + 1n, MAX_UINT512 + 1n],
   ])(`multiplication with overflowing input`, async (a, b) => {
     test(`${a} * ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(BigInt(b))
+      const bytesA = encodingUtil.bigIntToUint8Array(BigInt(a))
+      const bytesB = encodingUtil.bigIntToUint8Array(BigInt(b))
       const bigUintA = BigUint(Bytes(bytesA))
       const bigUintB = BigUint(Bytes(bytesB))
 
@@ -460,7 +463,7 @@ describe('BigUint', async () => {
     test(`${a} * ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const uint64B = asUint64(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_mul_uint64', bytesA, b))
 
@@ -487,8 +490,8 @@ describe('BigUint', async () => {
     test(`${a} / ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_div', bytesA, bytesB))
 
@@ -511,8 +514,8 @@ describe('BigUint', async () => {
     test(`${a} / 0`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(0)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(0n)
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(0n)
 
       await expect(getAvmResultRaw({ appClient }, 'verify_biguint_div', bytesA, bytesB)).rejects.toThrow('division by zero')
       expect(() => bigUintA / bigUintB).toThrow('Division by zero')
@@ -530,8 +533,8 @@ describe('BigUint', async () => {
     [MAX_UINT512 + 1n, MAX_UINT512 + 1n],
   ])(`division with overflowing input`, async (a, b) => {
     test(`${a} / ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(BigInt(b))
+      const bytesA = encodingUtil.bigIntToUint8Array(BigInt(a))
+      const bytesB = encodingUtil.bigIntToUint8Array(BigInt(b))
       const bigUintA = BigUint(Bytes(bytesA))
       const bigUintB = BigUint(Bytes(bytesB))
 
@@ -561,7 +564,7 @@ describe('BigUint', async () => {
     test(`${a} / ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const uint64B = asUint64(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_div_uint64', bytesA, b))
 
@@ -585,8 +588,8 @@ describe('BigUint', async () => {
     test(`${a} % ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_mod', bytesA, bytesB))
       let result = bigUintA % bigUintB
@@ -608,8 +611,8 @@ describe('BigUint', async () => {
     test(`${a} % 0`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(0)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(0n)
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(0n)
 
       await expect(getAvmResultRaw({ appClient }, 'verify_biguint_mod', bytesA, bytesB)).rejects.toThrow('modulo by zero')
       expect(() => bigUintA % bigUintB).toThrow('Division by zero')
@@ -627,8 +630,8 @@ describe('BigUint', async () => {
     [MAX_UINT512 + 1n, MAX_UINT512 + 1n],
   ])(`modulo with overflowing input`, async (a, b) => {
     test(`${a} % ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(BigInt(a))
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(BigInt(b))
+      const bytesA = encodingUtil.bigIntToUint8Array(BigInt(a))
+      const bytesB = encodingUtil.bigIntToUint8Array(BigInt(b))
       const bigUintA = BigUint(Bytes(bytesA))
       const bigUintB = BigUint(Bytes(bytesB))
 
@@ -658,7 +661,7 @@ describe('BigUint', async () => {
     test(`${a} % ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
       const bigUintA = asBigUint(a)
       const uint64B = asUint64(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
 
       const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, 'verify_biguint_mod_uint64', bytesA, b))
       const result = bigUintA % BigUint(uint64B)
@@ -705,8 +708,8 @@ describe('BigUint', async () => {
     ])(`${operator}`, async (a, b) => {
       const bigUintA = asBigUint(a)
       const bigUintB = asBigUint(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
-      const bytesB = internal.encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesB = encodingUtil.bigIntToUint8Array(bigUintB.valueOf())
 
       test(`${a} ${operator} ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
         const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, `verify_biguint_${op}`, bytesA, bytesB))
@@ -734,7 +737,7 @@ describe('BigUint', async () => {
     ])(`${operator} with uint64`, async (a, b) => {
       const bigUintA = asBigUint(a)
       const uint64B = asUint64(b)
-      const bytesA = internal.encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
+      const bytesA = encodingUtil.bigIntToUint8Array(bigUintA.valueOf())
 
       test(`${a} ${operator} ${b}`, async ({ appClientPrimitiveOpsContract: appClient }) => {
         const avmResult = asBigUint(await getAvmResult<Uint8Array>({ appClient }, `verify_biguint_${op}_uint64`, bytesA, b))
@@ -772,7 +775,7 @@ describe('BigUint', async () => {
     [Bytes('hello'), 448378203247n],
   ])('fromCompat', async (a, b) => {
     test(`${a}`, async () => {
-      const result = internal.primitives.BigUintCls.fromCompat(a)
+      const result = BigUintCls.fromCompat(a)
       expect(result, `for value: ${a}`).toEqual(b)
     })
   })

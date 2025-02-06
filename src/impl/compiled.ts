@@ -1,4 +1,5 @@
 import type {
+  Account,
   BaseContract,
   CompileContractOptions,
   CompiledContract,
@@ -6,7 +7,6 @@ import type {
   CompileLogicSigOptions,
   LogicSig,
 } from '@algorandfoundation/algorand-typescript'
-import type { Account } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { ConstructorFor } from '../typescript-helpers'
 import type { ApplicationData } from './reference'

@@ -1,5 +1,5 @@
 import type { bytes, Contract, uint64 } from '@algorandfoundation/algorand-typescript'
-import { internal, TransactionType } from '@algorandfoundation/algorand-typescript'
+import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import type { AbiMetadata } from '../abi-metadata'
 import { getContractMethodAbiMetadata } from '../abi-metadata'
 import { TRANSACTION_GROUP_MAX_SIZE } from '../constants'
@@ -7,7 +7,7 @@ import { checkRoutingConditions } from '../context-helpers/context-util'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { DecodedLogs, LogDecoding } from '../decode-logs'
 import { decodeLogs } from '../decode-logs'
-import { testInvariant } from '../errors'
+import { InternalError, testInvariant } from '../errors'
 import type {
   ApplicationInnerTxn,
   AssetConfigInnerTxn,
@@ -18,6 +18,7 @@ import type {
 } from '../impl/inner-transactions'
 import { createInnerTxn } from '../impl/inner-transactions'
 import type { InnerTxn, InnerTxnFields } from '../impl/itxn'
+import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
 import type {
   AllTransactionFields,
   ApplicationTransaction,
@@ -139,7 +140,7 @@ export class TransactionContext {
     if (this.#activeGroup) {
       return this.#activeGroup
     }
-    throw internal.errors.internalError('no active txn group')
+    throw new InternalError('no active txn group')
   }
 
   /**
@@ -149,7 +150,7 @@ export class TransactionContext {
    */
   get lastGroup(): TransactionGroup {
     if (this.groups.length === 0) {
-      internal.errors.internalError('No group transactions found!')
+      throw new InternalError('No group transactions found!')
     }
     return this.groups.at(-1)!
   }
@@ -168,10 +169,10 @@ export class TransactionContext {
    * @param value The log value.
    * @throws If the active transaction is not an application call.
    */
-  appendLog(value: internal.primitives.StubBytesCompat): void {
+  appendLog(value: StubBytesCompat): void {
     const activeTransaction = this.activeGroup.activeTransaction
     if (activeTransaction.type !== TransactionType.ApplicationCall) {
-      throw internal.errors.internalError('Can only add logs to ApplicationCallTransaction!')
+      throw new InternalError('Can only add logs to ApplicationCallTransaction!')
     }
     activeTransaction.appendLog(value)
   }
@@ -230,7 +231,7 @@ export class TransactionGroup {
   constructor(transactions: Transaction[], activeTransactionIndex?: number) {
     this.latestTimestamp = Date.now()
     if (transactions.length > TRANSACTION_GROUP_MAX_SIZE) {
-      internal.errors.internalError(`Transaction group can have at most ${TRANSACTION_GROUP_MAX_SIZE} transactions, as per AVM limits.`)
+      throw new InternalError(`Transaction group can have at most ${TRANSACTION_GROUP_MAX_SIZE} transactions, as per AVM limits.`)
     }
     transactions.forEach((txn, index) => Object.assign(txn, { groupIndex: asUint64(index) }))
     this.activeTransactionIndex = activeTransactionIndex === undefined ? transactions.length - 1 : activeTransactionIndex
@@ -252,7 +253,7 @@ export class TransactionGroup {
    */
   get activeApplicationId() {
     if (this.transactions.length === 0) {
-      internal.errors.internalError('No transactions in the group')
+      throw new InternalError('No transactions in the group')
     }
     testInvariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No app_id found in the active transaction')
     return this.activeTransaction.appId.id
@@ -261,7 +262,7 @@ export class TransactionGroup {
   /* @internal */
   get constructingItxn() {
     if (!this.constructingItxnGroup.length) {
-      internal.errors.internalError('itxn field without itxn begin')
+      throw new InternalError('itxn field without itxn begin')
     }
     return this.constructingItxnGroup.at(-1)!
   }
@@ -279,7 +280,7 @@ export class TransactionGroup {
    * @param index The index of the scratch slot.
    * @returns The scratch slot value.
    */
-  getScratchSlot(index: internal.primitives.StubUint64Compat): bytes | uint64 {
+  getScratchSlot(index: StubUint64Compat): bytes | uint64 {
     return this.activeTransaction.getScratchSlot(index)
   }
 
@@ -309,11 +310,11 @@ export class TransactionGroup {
    */
   beginInnerTransactionGroup() {
     if (this.constructingItxnGroup.length) {
-      internal.errors.internalError('itxn begin without itxn submit')
+      throw new InternalError('itxn begin without itxn submit')
     }
     testInvariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No active application call transaction')
     if (this.activeTransaction.onCompletion === 'ClearState') {
-      internal.errors.internalError('Cannot begin inner transaction group in a clear state call')
+      throw new InternalError('Cannot begin inner transaction group in a clear state call')
     }
     this.constructingItxnGroup.push({} as InnerTxnFields)
   }
@@ -325,7 +326,7 @@ export class TransactionGroup {
    */
   appendInnerTransactionGroup() {
     if (!this.constructingItxnGroup.length) {
-      internal.errors.internalError('itxn next without itxn begin')
+      throw new InternalError('itxn next without itxn begin')
     }
     this.constructingItxnGroup.push({ type: TransactionType.Payment } as InnerTxnFields)
   }
@@ -337,10 +338,10 @@ export class TransactionGroup {
    */
   submitInnerTransactionGroup() {
     if (!this.constructingItxnGroup.length) {
-      internal.errors.internalError('itxn submit without itxn begin')
+      throw new InternalError('itxn submit without itxn begin')
     }
     if (this.constructingItxnGroup.length > TRANSACTION_GROUP_MAX_SIZE) {
-      internal.errors.internalError(`Cannot submit more than ${TRANSACTION_GROUP_MAX_SIZE} inner transactions at once`)
+      throw new InternalError(`Cannot submit more than ${TRANSACTION_GROUP_MAX_SIZE} inner transactions at once`)
     }
     const itxns = this.constructingItxnGroup.map((t) => createInnerTxn(t))
     itxns.forEach((itxn, index) => Object.assign(itxn, { groupIndex: asUint64(index) }))
@@ -362,12 +363,12 @@ export class TransactionGroup {
    * @returns The inner transaction group.
    * @throws If the index is invalid or there are no previous inner transactions.
    */
-  getItxnGroup(index?: internal.primitives.StubUint64Compat): ItxnGroup {
+  getItxnGroup(index?: StubUint64Compat): ItxnGroup {
     const i = index !== undefined ? asNumber(index) : undefined
 
     testInvariant(this.itxnGroups.length > 0, 'no previous inner transactions')
     if (i !== undefined && i >= this.itxnGroups.length) {
-      throw new internal.errors.InternalError('Invalid group index')
+      throw new InternalError('Invalid group index')
     }
     const group = i !== undefined ? this.itxnGroups[i] : this.itxnGroups.at(-1)!
     testInvariant(group.itxns.length > 0, 'no previous inner transactions')
@@ -380,7 +381,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The application transaction.
    */
-  getApplicationTransaction(index?: internal.primitives.StubUint64Compat): ApplicationTransaction {
+  getApplicationTransaction(index?: StubUint64Compat): ApplicationTransaction {
     return this.getTransactionImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationTransaction
   }
 
@@ -389,7 +390,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The asset configuration transaction.
    */
-  getAssetConfigTransaction(index?: internal.primitives.StubUint64Compat): AssetConfigTransaction {
+  getAssetConfigTransaction(index?: StubUint64Compat): AssetConfigTransaction {
     return this.getTransactionImpl({ type: TransactionType.AssetConfig, index }) as AssetConfigTransaction
   }
 
@@ -398,7 +399,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The asset transfer transaction.
    */
-  getAssetTransferTransaction(index?: internal.primitives.StubUint64Compat): AssetTransferTransaction {
+  getAssetTransferTransaction(index?: StubUint64Compat): AssetTransferTransaction {
     return this.getTransactionImpl({ type: TransactionType.AssetTransfer, index }) as AssetTransferTransaction
   }
 
@@ -407,7 +408,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The asset freeze transaction.
    */
-  getAssetFreezeTransaction(index?: internal.primitives.StubUint64Compat): AssetFreezeTransaction {
+  getAssetFreezeTransaction(index?: StubUint64Compat): AssetFreezeTransaction {
     return this.getTransactionImpl({ type: TransactionType.AssetFreeze, index }) as AssetFreezeTransaction
   }
 
@@ -416,7 +417,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The key registration transaction.
    */
-  getKeyRegistrationTransaction(index?: internal.primitives.StubUint64Compat): KeyRegistrationTransaction {
+  getKeyRegistrationTransaction(index?: StubUint64Compat): KeyRegistrationTransaction {
     return this.getTransactionImpl({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationTransaction
   }
 
@@ -425,7 +426,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The payment transaction.
    */
-  getPaymentTransaction(index?: internal.primitives.StubUint64Compat): PaymentTransaction {
+  getPaymentTransaction(index?: StubUint64Compat): PaymentTransaction {
     return this.getTransactionImpl({ type: TransactionType.Payment, index }) as PaymentTransaction
   }
 
@@ -434,20 +435,20 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The transaction.
    */
-  getTransaction(index?: internal.primitives.StubUint64Compat): Transaction {
+  getTransaction(index?: StubUint64Compat): Transaction {
     return this.getTransactionImpl({ index })
   }
-  private getTransactionImpl({ type, index }: { type?: TransactionType; index?: internal.primitives.StubUint64Compat }) {
+  private getTransactionImpl({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= lazyContext.activeGroup.transactions.length) {
-      throw new internal.errors.InternalError('Invalid group index')
+      throw new InternalError('Invalid group index')
     }
     const transaction = i !== undefined ? lazyContext.activeGroup.transactions[i] : lazyContext.activeGroup.activeTransaction
     if (type === undefined) {
       return transaction
     }
     if (transaction.type !== type) {
-      throw new internal.errors.InternalError(`Invalid transaction type: ${transaction.type}`)
+      throw new InternalError(`Invalid transaction type: ${transaction.type}`)
     }
     switch (type) {
       case TransactionType.ApplicationCall:
@@ -463,7 +464,7 @@ export class TransactionGroup {
       case TransactionType.KeyRegistration:
         return transaction as KeyRegistrationTransaction
       default:
-        throw new internal.errors.InternalError(`Invalid transaction type: ${type}`)
+        throw new InternalError(`Invalid transaction type: ${type}`)
     }
   }
 }
@@ -482,7 +483,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The application inner transaction.
    */
-  getApplicationInnerTxn(index?: internal.primitives.StubUint64Compat): ApplicationInnerTxn {
+  getApplicationInnerTxn(index?: StubUint64Compat): ApplicationInnerTxn {
     return this.getInnerTxnImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationInnerTxn
   }
 
@@ -491,7 +492,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The asset configuration inner transaction.
    */
-  getAssetConfigInnerTxn(index?: internal.primitives.StubUint64Compat): AssetConfigInnerTxn {
+  getAssetConfigInnerTxn(index?: StubUint64Compat): AssetConfigInnerTxn {
     return this.getInnerTxnImpl({ type: TransactionType.AssetConfig, index }) as AssetConfigInnerTxn
   }
 
@@ -500,7 +501,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The asset transfer inner transaction.
    */
-  getAssetTransferInnerTxn(index?: internal.primitives.StubUint64Compat): AssetTransferInnerTxn {
+  getAssetTransferInnerTxn(index?: StubUint64Compat): AssetTransferInnerTxn {
     return this.getInnerTxnImpl({ type: TransactionType.AssetTransfer, index }) as AssetTransferInnerTxn
   }
 
@@ -509,7 +510,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The asset freeze inner transaction.
    */
-  getAssetFreezeInnerTxn(index?: internal.primitives.StubUint64Compat): AssetFreezeInnerTxn {
+  getAssetFreezeInnerTxn(index?: StubUint64Compat): AssetFreezeInnerTxn {
     return this.getInnerTxnImpl({ type: TransactionType.AssetFreeze, index }) as AssetFreezeInnerTxn
   }
 
@@ -518,7 +519,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The key registration inner transaction.
    */
-  getKeyRegistrationInnerTxn(index?: internal.primitives.StubUint64Compat): KeyRegistrationInnerTxn {
+  getKeyRegistrationInnerTxn(index?: StubUint64Compat): KeyRegistrationInnerTxn {
     return this.getInnerTxnImpl({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationInnerTxn
   }
 
@@ -527,7 +528,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The payment inner transaction.
    */
-  getPaymentInnerTxn(index?: internal.primitives.StubUint64Compat): PaymentInnerTxn {
+  getPaymentInnerTxn(index?: StubUint64Compat): PaymentInnerTxn {
     return this.getInnerTxnImpl({ type: TransactionType.Payment, index }) as PaymentInnerTxn
   }
 
@@ -536,22 +537,22 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The inner transaction.
    */
-  getInnerTxn(index?: internal.primitives.StubUint64Compat): InnerTxn {
+  getInnerTxn(index?: StubUint64Compat): InnerTxn {
     return this.getInnerTxnImpl({ index })
   }
 
-  private getInnerTxnImpl({ type, index }: { type?: TransactionType; index?: internal.primitives.StubUint64Compat }) {
+  private getInnerTxnImpl({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
     testInvariant(this.itxns.length > 0, 'no previous inner transactions')
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= this.itxns.length) {
-      throw new internal.errors.InternalError('Invalid group index')
+      throw new InternalError('Invalid group index')
     }
     const transaction = i !== undefined ? this.itxns[i] : this.itxns.at(-1)!
     if (type === undefined) {
       return transaction
     }
     if (transaction.type !== type) {
-      throw new internal.errors.InternalError(`Invalid transaction type: ${transaction.type}`)
+      throw new InternalError(`Invalid transaction type: ${transaction.type}`)
     }
     switch (type) {
       case TransactionType.ApplicationCall:
@@ -567,7 +568,7 @@ export class ItxnGroup {
       case TransactionType.KeyRegistration:
         return transaction as KeyRegistrationInnerTxn
       default:
-        throw new internal.errors.InternalError(`Invalid transaction type: ${type}`)
+        throw new InternalError(`Invalid transaction type: ${type}`)
     }
   }
 }

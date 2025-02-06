@@ -6,7 +6,6 @@ import type {
   LocalState,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, internal } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import js_sha512 from 'js-sha512'
 import { BytesMap, Uint64Map } from '../collections/custom-key-map'
@@ -21,15 +20,18 @@ import {
   ZERO_ADDRESS,
 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
+import { AvmError, InternalError } from '../errors'
 import type { Mutable } from '../typescript-helpers'
 import { asBigInt, asBytes, asUint64, asUint64Cls, asUint8Array, conactUint8Arrays } from '../util'
 import { BytesBackedCls, Uint64BackedCls } from './base'
+import type { StubUint64Compat } from './primitives'
+import { Bytes, BytesCls, Uint64Cls } from './primitives'
 import type { GlobalStateCls } from './state'
 
 export class AssetHolding {
   balance: uint64
   frozen: boolean
-  constructor(balance: internal.primitives.StubUint64Compat, frozen: boolean) {
+  constructor(balance: StubUint64Compat, frozen: boolean) {
     this.balance = asUint64(balance)
     this.frozen = frozen
   }
@@ -69,7 +71,7 @@ export class AccountCls extends BytesBackedCls implements AccountType {
   constructor(address?: bytes) {
     const addressBytes = address ?? ZERO_ADDRESS
     if (![32n, 36n].includes(asUint64Cls(addressBytes.length).valueOf())) {
-      throw new internal.errors.AvmError('Address must be 32 bytes long, or 36 bytes including checksum')
+      throw new AvmError('Address must be 32 bytes long, or 36 bytes including checksum')
     }
     super(addressBytes.slice(0, 32))
   }
@@ -122,7 +124,7 @@ export class AccountCls extends BytesBackedCls implements AccountType {
     if (assetOrApp instanceof ApplicationCls) {
       return this.data.optedApplications.has(asUint64Cls(assetOrApp.id).asBigInt())
     }
-    throw new internal.errors.InternalError('Invalid argument type. Must be an `Asset` or `Application` instance.')
+    throw new InternalError('Invalid argument type. Must be an `Asset` or `Application` instance.')
   }
 }
 
@@ -224,7 +226,7 @@ export class AssetCls extends Uint64BackedCls implements AssetType {
     return this.uint64
   }
 
-  constructor(id?: internal.primitives.StubUint64Compat) {
+  constructor(id?: StubUint64Compat) {
     super(asUint64(id ?? 0))
   }
 
@@ -279,7 +281,7 @@ export class AssetCls extends Uint64BackedCls implements AssetType {
     const accountData = lazyContext.getAccountData(account)
     const assetHolding = accountData.optedAssets.get(this.id)
     if (assetHolding === undefined) {
-      internal.errors.internalError(
+      throw new InternalError(
         'The asset is not opted into the account! Use `ctx.any.account(opted_asset_balances={{ASSET_ID: VALUE}})` to set emulated opted asset into the account.',
       )
     }
@@ -291,7 +293,7 @@ export const checksumFromPublicKey = (pk: Uint8Array): Uint8Array => {
   return Uint8Array.from(js_sha512.sha512_256.array(pk).slice(HASH_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, HASH_BYTES_LENGTH))
 }
 
-export const getApplicationAddress = (appId: internal.primitives.StubUint64Compat): AccountType => {
+export const getApplicationAddress = (appId: StubUint64Compat): AccountType => {
   const toBeSigned = conactUint8Arrays(asUint8Array(APP_ID_PREFIX), encodingUtil.bigIntToUint8Array(asBigInt(appId), 8))
   const appIdHash = js_sha512.sha512_256.array(toBeSigned)
   const publicKey = Uint8Array.from(appIdHash)
@@ -314,15 +316,15 @@ export const asAccount = (val: AccountType | bytes | string | undefined): Accoun
     ? val
     : typeof val === 'string'
       ? Account(asBytes(val))
-      : val instanceof internal.primitives.BytesCls
+      : val instanceof BytesCls
         ? Account(val.asAlgoTs())
         : undefined
 }
 
 export const asAsset = (val: AssetType | uint64 | undefined): AssetType | undefined => {
-  return val instanceof internal.primitives.Uint64Cls ? Asset(val.asAlgoTs()) : val instanceof AssetCls ? val : undefined
+  return val instanceof Uint64Cls ? Asset(val.asAlgoTs()) : val instanceof AssetCls ? val : undefined
 }
 
 export const asApplication = (val: ApplicationType | uint64 | undefined): ApplicationType | undefined => {
-  return val instanceof internal.primitives.Uint64Cls ? Application(val.asAlgoTs()) : val instanceof ApplicationCls ? val : undefined
+  return val instanceof Uint64Cls ? Application(val.asAlgoTs()) : val instanceof ApplicationCls ? val : undefined
 }
