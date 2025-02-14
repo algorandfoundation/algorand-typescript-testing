@@ -317,6 +317,9 @@ export class Uint64Cls extends AlgoTsPrimitiveCls {
     }
     return Number(this.#value)
   }
+  toString(): string {
+    return this.#value.toString()
+  }
 }
 
 export function BigUintImpl(v?: BigUintCompat | string): biguint {

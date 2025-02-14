@@ -35,7 +35,17 @@ import { lazyContext } from '../context-helpers/internal-context'
 import type { fromBytes, TypeInfo } from '../encoders'
 import { AvmError, avmInvariant, CodeError } from '../errors'
 import type { DeliberateAny } from '../typescript-helpers'
-import { asBigInt, asBigUint, asBigUintCls, asBytesCls, asUint64, asUint8Array, conactUint8Arrays, uint8ArrayToNumber } from '../util'
+import {
+  asBigInt,
+  asBigUint,
+  asBigUintCls,
+  asBytes,
+  asBytesCls,
+  asUint64,
+  asUint8Array,
+  conactUint8Arrays,
+  uint8ArrayToNumber,
+} from '../util'
 import type { StubBytesCompat } from './primitives'
 import { AlgoTsPrimitiveCls, arrayUtil, BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from './primitives'
 import { Account, AccountCls, ApplicationCls, AssetCls } from './reference'
@@ -46,7 +56,8 @@ const maxBigIntValue = (bitSize: number) => 2n ** BigInt(bitSize) - 1n
 const maxBytesLength = (bitSize: number) => Math.floor(bitSize / BITS_IN_BYTE)
 const encodeLength = (length: number) => new BytesCls(encodingUtil.bigIntToUint8Array(BigInt(length), ABI_LENGTH_SIZE))
 
-type CompatForArc4Int<N extends BitSize> = N extends 8 | 16 | 32 | 64 ? Uint64Compat : BigUintCompat
+type CompatForArc4Int<N extends BitSize> = N extends 8 | 16 | 24 | 32 | 40 | 48 | 56 | 64 ? Uint64Compat : BigUintCompat
+const validBitSizes = [...Array(64).keys()].map((x) => (x + 1) * 8)
 export class UintNImpl<N extends BitSize> extends UintN<N> {
   private value: Uint8Array
   private bitSize: N
@@ -57,7 +68,7 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.bitSize = UintNImpl.getMaxBitsLength(this.typeInfo) as N
 
-    assert([8, 16, 32, 64, 128, 256, 512].includes(this.bitSize), `Invalid bit size ${this.bitSize}`)
+    assert(validBitSizes.includes(this.bitSize), `Invalid bit size ${this.bitSize}`)
 
     const bigIntValue = asBigUintCls(v ?? 0n).valueOf()
     const maxValue = maxBigIntValue(this.bitSize)
@@ -299,7 +310,7 @@ const arrayProxyHandler = <TItem>() => ({
   get(target: { items: TItem[] }, prop: PropertyKey) {
     const idx = prop ? parseInt(prop.toString(), 10) : NaN
     if (!isNaN(idx)) {
-      if (idx < target.items.length) return target.items[idx]
+      if (idx >= 0 && idx < target.items.length) return target.items[idx]
       throw new AvmError('Index out of bounds')
     } else if (prop === Symbol.iterator) {
       return target.items[Symbol.iterator].bind(target.items)
@@ -315,7 +326,7 @@ const arrayProxyHandler = <TItem>() => ({
   set(target: { items: TItem[]; setItem: (index: number, value: TItem) => void }, prop: PropertyKey, value: TItem) {
     const idx = prop ? parseInt(prop.toString(), 10) : NaN
     if (!isNaN(idx)) {
-      if (idx < target.items.length) {
+      if (idx >= 0 && idx < target.items.length) {
         target.setItem(idx, value)
         return true
       }
@@ -389,6 +400,20 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
 
   copy(): StaticArrayImpl<TItem, TLength> {
     return StaticArrayImpl.fromBytesImpl(this.bytes, JSON.stringify(this.typeInfo)) as StaticArrayImpl<TItem, TLength>
+  }
+
+  concat(other: Parameters<InstanceType<typeof StaticArray>['concat']>[0]): DynamicArrayImpl<TItem> {
+    const items = this.items
+    const otherEntries = other.entries()
+    let next = otherEntries.next()
+    while (!next.done) {
+      items.push(next.value[1] as TItem)
+      next = otherEntries.next()
+    }
+    return new DynamicArrayImpl<TItem>(
+      { name: `DynamicArray<${this.genericArgs.elementType.name}>`, genericArgs: { elementType: this.genericArgs.elementType } },
+      ...items,
+    )
   }
 
   get native(): TItem[] {
@@ -576,6 +601,17 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
     const popped = items.pop()
     if (popped === undefined) throw new AvmError('The array is empty')
     return popped
+  }
+
+  concat(other: Parameters<InstanceType<typeof DynamicArray>['concat']>[0]): DynamicArrayImpl<TItem> {
+    const items = this.items
+    const otherEntries = other.entries()
+    let next = otherEntries.next()
+    while (!next.done) {
+      items.push(next.value[1] as TItem)
+      next = otherEntries.next()
+    }
+    return new DynamicArrayImpl<TItem>(this.typeInfo, ...items)
   }
 
   static fromBytesImpl(
@@ -822,6 +858,20 @@ export class DynamicBytesImpl extends DynamicBytes {
     throw new CodeError('DynamicBytes is immutable')
   }
 
+  concat(other: Parameters<InstanceType<typeof DynamicBytes>['concat']>[0]): DynamicBytesImpl {
+    const items = this.items
+    const otherEntries = other.entries()
+    let next = otherEntries.next()
+    while (!next.done) {
+      items.push(next.value[1] as ByteImpl)
+      next = otherEntries.next()
+    }
+    const concatenatedBytes = items
+      .map((item) => item.bytes)
+      .reduce((acc, curr) => conactUint8Arrays(acc, asUint8Array(curr)), new Uint8Array())
+    return new DynamicBytesImpl(this.typeInfo, asBytes(concatenatedBytes))
+  }
+
   static fromBytesImpl(
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
@@ -875,6 +925,20 @@ export class StaticBytesImpl extends StaticBytes {
 
   setItem(_index: number, _value: ByteImpl): void {
     throw new CodeError('StaticBytes is immutable')
+  }
+
+  concat(other: Parameters<InstanceType<typeof StaticBytes>['concat']>[0]): DynamicBytesImpl {
+    const items = this.items
+    const otherEntries = other.entries()
+    let next = otherEntries.next()
+    while (!next.done) {
+      items.push(next.value[1] as ByteImpl)
+      next = otherEntries.next()
+    }
+    const concatenatedBytes = items
+      .map((item) => item.bytes)
+      .reduce((acc, curr) => conactUint8Arrays(acc, asUint8Array(curr)), new Uint8Array())
+    return new DynamicBytesImpl(this.typeInfo, asBytes(concatenatedBytes))
   }
 
   static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): StaticBytesImpl {
