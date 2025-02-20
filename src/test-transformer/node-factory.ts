@@ -107,4 +107,16 @@ export const nodeFactory = {
       [typeInfoArg, ...(node.arguments ?? [])].filter((arg) => !!arg),
     )
   },
+
+  callMethodSelectorFunction(node: ts.CallExpression) {
+    if (
+      node.arguments.length === 1 &&
+      ts.isPropertyAccessExpression(node.arguments[0]) &&
+      ts.isPropertyAccessExpression(node.arguments[0].expression)
+    ) {
+      const contractIdenifier = node.arguments[0].expression.expression
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdenifier])
+    }
+    return node
+  },
 } satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>

@@ -7,6 +7,7 @@ import type { DeliberateAny } from './typescript-helpers'
 
 export interface AbiMetadata {
   methodName: string
+  methodNameOverride?: string
   methodSignature: string | undefined
   argTypes: string[]
   returnType: string
@@ -42,6 +43,8 @@ export const captureMethodConfig = <T extends Contract>(
   config?: AbiMethodConfig<T> | BareMethodConfig,
 ): void => {
   const metadata = getContractMethodAbiMetadata(contract, methodName)
+
+  metadata.methodNameOverride = config && 'name' in config ? config.name : undefined
   metadata.onCreate = config?.onCreate ?? 'disallow'
   metadata.allowActions = ([] as OnCompleteActionStr[]).concat(config?.allowActions ?? 'NoOp')
 }
@@ -53,7 +56,7 @@ export const hasAbiMetadata = <T extends Contract>(contract: T): boolean => {
   )
 }
 export const getContractAbiMetadata = <T extends BaseContract>(contract: T): Record<string, AbiMetadata> => {
-  if ((contract as DeliberateAny)[isContractProxy]) {
+  if ((contract as DeliberateAny)[AbiMetaSymbol]) {
     return (contract as DeliberateAny)[AbiMetaSymbol] as Record<string, AbiMetadata>
   }
   const contractClass = contract.constructor as { new (): T }
@@ -73,7 +76,7 @@ export const getArc4Signature = (metadata: AbiMetadata): string => {
   if (metadata.methodSignature === undefined) {
     const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map(getArc4TypeName)
     const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo)
-    metadata.methodSignature = `${metadata.methodName}(${argTypes.join(',')})${returnType}`
+    metadata.methodSignature = `${metadata.methodNameOverride ?? metadata.methodName}(${argTypes.join(',')})${returnType}`
   }
   return metadata.methodSignature
 }
