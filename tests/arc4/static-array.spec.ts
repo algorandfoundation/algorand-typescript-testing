@@ -40,7 +40,7 @@ const addressStaticArray = {
     return this.nativeValues().map((v) => new Address(Bytes(v)))
   },
   array() {
-    return new StaticArray<Address, 10>(...this.abiValues())
+    return new StaticArray<Address, 10>(...(this.abiValues() as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Address, 10>>(asBytes(value))
@@ -61,7 +61,7 @@ const boolStaticArray = {
     return this.nativeValues().map((v) => new Bool(v))
   },
   array() {
-    return new StaticArray<Bool, 10>(...this.abiValues())
+    return new StaticArray<Bool, 10>(...(this.abiValues() as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Bool, 10>>(asBytes(value))
@@ -82,7 +82,7 @@ const uint256StaticArray = {
     return this.nativeValues().map((v) => new UintN<256>(v))
   },
   array() {
-    return new StaticArray<UintN<256>, 10>(...this.abiValues())
+    return new StaticArray<UintN<256>, 10>(...(this.abiValues() as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<UintN<256>, 10>>(asBytes(value))
@@ -114,7 +114,7 @@ const ufixednxmStaticArray = {
     ]
   },
   array() {
-    return new StaticArray<UFixedNxM<256, 16>, 10>(...this.abiValues())
+    return new StaticArray<UFixedNxM<256, 16>, 10>(...(this.abiValues() as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<UFixedNxM<256, 16>, 10>>(asBytes(value))
@@ -146,7 +146,7 @@ const stringStaticArray = {
     return this.nativeValues().map((v) => new Str(v))
   },
   array() {
-    return new StaticArray<Str, 10>(...this.abiValues())
+    return new StaticArray<Str, 10>(...(this.abiValues() as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Str, 10>>(asBytes(value))
@@ -164,10 +164,12 @@ const addressStaticArrayOfArray = {
     return [addressStaticArray.nativeValues(), addressStaticArray.nativeValues().reverse()]
   },
   abiValues() {
-    return this.nativeValues().map((a) => new StaticArray<Address, 10>(...a.map((v) => new Address(Bytes(v)))))
+    return this.nativeValues().map((a) => new StaticArray<Address, 10>(...(a.map((v) => new Address(Bytes(v))) as [])))
   },
   array() {
-    return new StaticArray<StaticArray<Address, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Address, 10>(...a)))
+    return new StaticArray<StaticArray<Address, 10>, 2>(
+      ...(this.abiValues().map((a) => new StaticArray<Address, 10>(...(a as DeliberateAny))) as []),
+    )
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<Address, 10>, 2>>(asBytes(value))
@@ -185,10 +187,12 @@ const boolStaticArrayOfArray = {
     return [boolStaticArray.nativeValues(), boolStaticArray.nativeValues().reverse()]
   },
   abiValues() {
-    return this.nativeValues().map((a) => new StaticArray<Bool, 10>(...a.map((v) => new Bool(v))))
+    return this.nativeValues().map((a) => new StaticArray<Bool, 10>(...(a.map((v) => new Bool(v)) as [])))
   },
   array() {
-    return new StaticArray<StaticArray<Bool, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Bool, 10>(...a)))
+    return new StaticArray<StaticArray<Bool, 10>, 2>(
+      ...(this.abiValues().map((a) => new StaticArray<Bool, 10>(...(a as DeliberateAny))) as []),
+    )
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<Bool, 10>, 2>>(asBytes(value))
@@ -206,10 +210,12 @@ const uint256StaticArrayOfArray = {
     return [uint256StaticArray.nativeValues(), uint256StaticArray.nativeValues().reverse()]
   },
   abiValues() {
-    return this.nativeValues().map((a) => new StaticArray<UintN<256>, 10>(...a.map((v) => new UintN<256>(v))))
+    return this.nativeValues().map((a) => new StaticArray<UintN<256>, 10>(...(a.map((v) => new UintN<256>(v)) as [])))
   },
   array() {
-    return new StaticArray<StaticArray<UintN<256>, 10>, 2>(...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...a)))
+    return new StaticArray<StaticArray<UintN<256>, 10>, 2>(
+      ...(this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...(a as DeliberateAny))) as []),
+    )
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<UintN<256>, 10>, 2>>(asBytes(value))
@@ -230,7 +236,7 @@ const uint256StaticArrayOfDynamicArray = {
     return this.nativeValues().map((a) => new DynamicArray<UintN<256>>(...a.map((v) => new UintN<256>(v))))
   },
   array() {
-    return new StaticArray<DynamicArray<UintN<256>>, 2>(...this.abiValues().map((a) => new DynamicArray<UintN<256>>(...a)))
+    return new StaticArray<DynamicArray<UintN<256>>, 2>(...(this.abiValues().map((a) => new DynamicArray<UintN<256>>(...a)) as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<DynamicArray<UintN<256>>, 2>>(asBytes(value))
@@ -248,10 +254,12 @@ const stringStaticArrayOfArray = {
     return [stringStaticArray.nativeValues(), stringStaticArray.nativeValues().reverse()]
   },
   abiValues() {
-    return this.nativeValues().map((a) => new StaticArray<Str, 10>(...a.map((v) => new Str(v))))
+    return this.nativeValues().map((a) => new StaticArray<Str, 10>(...(a.map((v) => new Str(v)) as [])))
   },
   array() {
-    return new StaticArray<StaticArray<Str, 10>, 2>(...this.abiValues().map((a) => new StaticArray<Str, 10>(...a)))
+    return new StaticArray<StaticArray<Str, 10>, 2>(
+      ...(this.abiValues().map((a) => new StaticArray<Str, 10>(...(a as DeliberateAny))) as []),
+    )
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<StaticArray<Str, 10>, 2>>(asBytes(value))
@@ -273,12 +281,13 @@ const stringStaticArrayOfArrayOfArray = {
   },
   abiValues() {
     return this.nativeValues().map(
-      (x) => new StaticArray<StaticArray<Str, 10>, 3>(...x.map((y) => new StaticArray<Str, 10>(...y.map((v) => new Str(v))))),
+      (x) =>
+        new StaticArray<StaticArray<Str, 10>, 3>(...(x.map((y) => new StaticArray<Str, 10>(...(y.map((v) => new Str(v)) as []))) as [])),
     )
   },
   array() {
     return new StaticArray<StaticArray<StaticArray<Str, 10>, 3>, 2>(
-      ...this.abiValues().map((x) => new StaticArray<StaticArray<Str, 10>, 3>(...x)),
+      ...(this.abiValues().map((x) => new StaticArray<StaticArray<Str, 10>, 3>(...(x as DeliberateAny))) as []),
     )
   },
   create(value: StubBytesCompat) {
@@ -318,7 +327,7 @@ const tupleStaticArray = {
             addressStaticArray.abiValues()[5],
           ),
           boolStaticArray.abiValues()[3],
-          new StaticArray<UintN<256>, 3>(...uint256StaticArray.abiValues().slice(4, 7)),
+          new StaticArray<UintN<256>, 3>(...(uint256StaticArray.abiValues().slice(4, 7) as [])),
         ],
       ),
     )
@@ -327,7 +336,7 @@ const tupleStaticArray = {
     return new StaticArray<
       Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>,
       2
-    >(...this.abiValues())
+    >(...(this.abiValues() as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<
@@ -390,7 +399,7 @@ const structStaticArray = {
     )
   },
   array() {
-    return new StaticArray<Swapped, 2>(...this.abiValues())
+    return new StaticArray<Swapped, 2>(...(this.abiValues() as []))
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<StaticArray<Swapped, 2>>(asBytes(value))
