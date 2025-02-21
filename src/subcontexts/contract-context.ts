@@ -213,14 +213,14 @@ export class ContractContext {
         lazyContext.txn.ensureScope([txn]).execute(() => {
           t = new target(...args)
         })
-        appData.isCreating = hasCreateMethods(t!)
+        appData.isCreating = isArc4 && hasCreateMethods(t! as Contract)
         const instance = new Proxy(t!, {
           get(target, prop, receiver) {
             if (prop === isContractProxy) {
               return true
             }
             const orig = Reflect.get(target, prop, receiver)
-            const abiMetadata = getContractMethodAbiMetadata(target, prop as string)
+            const abiMetadata = isArc4 ? getContractMethodAbiMetadata(target as Contract, prop as string) : undefined
             const isProgramMethod = prop === 'approvalProgram' || prop === 'clearStateProgram'
             const isAbiMethod = isArc4 && abiMetadata
             if (isAbiMethod || isProgramMethod) {
@@ -245,7 +245,9 @@ export class ContractContext {
 
         onConstructed(application, instance, getContractOptions(t!))
 
-        copyAbiMetadatas(t!, instance)
+        if (isArc4) {
+          copyAbiMetadatas(t! as Contract, instance as Contract)
+        }
 
         return instance
       },
@@ -258,7 +260,7 @@ const getContractOptions = (contract: BaseContract): ContractOptionsParameter | 
   return contractClass[ContractOptionsSymbol] as ContractOptionsParameter
 }
 
-const hasCreateMethods = (contract: BaseContract) => {
+const hasCreateMethods = (contract: Contract) => {
   const metadatas = getContractAbiMetadata(contract)
   return Object.values(metadatas).some((metadata) => (metadata.onCreate ?? 'disallow') !== 'disallow')
 }

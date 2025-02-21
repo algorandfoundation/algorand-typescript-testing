@@ -1,6 +1,6 @@
 import type { arc4, bytes } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { captureMethodConfig } from '../abi-metadata'
+import { getArc4Selector, getContractMethodAbiMetadata } from '../abi-metadata'
 import type { DeliberateAny } from '../typescript-helpers'
 import { BaseContract } from './base-contract'
 import { sha512_256 } from './crypto'
@@ -14,30 +14,30 @@ export class Contract extends BaseContract {
   }
 }
 
-export function abimethod<TContract extends Contract>(config?: arc4.AbiMethodConfig<TContract>) {
+export function abimethod<TContract extends Contract>(_config?: arc4.AbiMethodConfig<TContract>) {
   return function <TArgs extends DeliberateAny[], TReturn>(
     target: (this: TContract, ...args: TArgs) => TReturn,
-    ctx: ClassMethodDecoratorContext<TContract>,
   ): (this: TContract, ...args: TArgs) => TReturn {
-    ctx.addInitializer(function () {
-      captureMethodConfig(this, target.name, config)
-    })
     return target
   }
 }
 
-export function baremethod<TContract extends Contract>(config?: arc4.BareMethodConfig) {
+export function baremethod<TContract extends Contract>(_config?: arc4.BareMethodConfig) {
   return function <TArgs extends DeliberateAny[], TReturn>(
     target: (this: TContract, ...args: TArgs) => TReturn,
-    ctx: ClassMethodDecoratorContext<TContract>,
   ): (this: TContract, ...args: TArgs) => TReturn {
-    ctx.addInitializer(function () {
-      captureMethodConfig(this, target.name, config)
-    })
     return target
   }
 }
 
-export const methodSelector: typeof arc4.methodSelector = (methodSignature: string): bytes => {
-  return sha512_256(Bytes(encodingUtil.utf8ToUint8Array(methodSignature))).slice(0, 4)
+export const methodSelector = <TContract extends Contract>(
+  methodSignature: Parameters<typeof arc4.methodSelector>[0],
+  contract?: TContract,
+): bytes => {
+  if (typeof methodSignature === 'string') {
+    return sha512_256(Bytes(encodingUtil.utf8ToUint8Array(methodSignature))).slice(0, 4)
+  } else {
+    const abiMetadata = getContractMethodAbiMetadata(contract!, methodSignature.name)
+    return Bytes(getArc4Selector(abiMetadata))
+  }
 }

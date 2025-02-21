@@ -1,4 +1,4 @@
-import type { BaseContract, Contract } from '@algorandfoundation/algorand-typescript'
+import type { Contract } from '@algorandfoundation/algorand-typescript'
 import type { AbiMethodConfig, BareMethodConfig, CreateOptions, OnCompleteActionStr } from '@algorandfoundation/algorand-typescript/arc4'
 import js_sha512 from 'js-sha512'
 import type { TypeInfo } from './encoders'
@@ -7,6 +7,7 @@ import type { DeliberateAny } from './typescript-helpers'
 
 export interface AbiMetadata {
   methodName: string
+  name?: string
   methodSignature: string | undefined
   argTypes: string[]
   returnType: string
@@ -14,20 +15,33 @@ export interface AbiMetadata {
   allowActions?: OnCompleteActionStr[]
 }
 const AbiMetaSymbol = Symbol('AbiMetadata')
+const overwrittenMetadata: Array<readonly [Contract | { new (): Contract }, Record<string, AbiMetadata>]> = []
 export const isContractProxy = Symbol('isContractProxy')
 export const attachAbiMetadata = (contract: { new (): Contract }, methodName: string, metadata: AbiMetadata): void => {
   const metadatas: Record<string, AbiMetadata> = (AbiMetaSymbol in contract ? contract[AbiMetaSymbol] : {}) as Record<string, AbiMetadata>
-  metadatas[methodName] = metadata
+
+  // classes inherited from the same parent shares the same metadata object stored in `AbiMetaSymbol`
+  // to prevent one subclass from overwriting the metadata of another subclass, we store the overwritten metadata in a separate array
+  if (metadatas[methodName]) {
+    let contractMetadatas = overwrittenMetadata.find(([c]) => c === contract)
+    if (!contractMetadatas) {
+      contractMetadatas = [contract, {}]
+      overwrittenMetadata.push(contractMetadatas)
+    }
+    contractMetadatas[1][methodName] = metadata
+  } else {
+    metadatas[methodName] = metadata
+  }
   if (!(AbiMetaSymbol in contract)) {
     Object.defineProperty(contract, AbiMetaSymbol, {
       value: metadatas,
       writable: true,
-      enumerable: false,
+      enumerable: true,
     })
   }
 }
 
-export const copyAbiMetadatas = <T extends BaseContract>(sourceContract: T, targetContract: T): void => {
+export const copyAbiMetadatas = <T extends Contract>(sourceContract: T, targetContract: T): void => {
   const metadatas = getContractAbiMetadata(sourceContract)
   Object.defineProperty(targetContract, AbiMetaSymbol, {
     value: metadatas,
@@ -42,6 +56,7 @@ export const captureMethodConfig = <T extends Contract>(
   config?: AbiMethodConfig<T> | BareMethodConfig,
 ): void => {
   const metadata = getContractMethodAbiMetadata(contract, methodName)
+  metadata.name = (config as AbiMethodConfig<T>)?.name ?? methodName
   metadata.onCreate = config?.onCreate ?? 'disallow'
   metadata.allowActions = ([] as OnCompleteActionStr[]).concat(config?.allowActions ?? 'NoOp')
 }
@@ -52,19 +67,20 @@ export const hasAbiMetadata = <T extends Contract>(contract: T): boolean => {
     Object.getOwnPropertySymbols(contractClass).some((s) => s.toString() === AbiMetaSymbol.toString()) || AbiMetaSymbol in contractClass
   )
 }
-export const getContractAbiMetadata = <T extends BaseContract>(contract: T): Record<string, AbiMetadata> => {
-  if ((contract as DeliberateAny)[isContractProxy]) {
-    return (contract as DeliberateAny)[AbiMetaSymbol] as Record<string, AbiMetadata>
+export const getContractAbiMetadata = <T extends Contract>(contract: T): Record<string, AbiMetadata> => {
+  const overwrittenMetadataEntry = overwrittenMetadata.find(([c]) => c === contract)
+  if ((contract as DeliberateAny)[AbiMetaSymbol]) {
+    return { ...((contract as DeliberateAny)[AbiMetaSymbol] as Record<string, AbiMetadata>), ...overwrittenMetadataEntry?.[1] }
   }
   const contractClass = contract.constructor as { new (): T }
   const s = Object.getOwnPropertySymbols(contractClass).find((s) => s.toString() === AbiMetaSymbol.toString())
   const metadatas: Record<string, AbiMetadata> = (
     s ? (contractClass as DeliberateAny)[s] : AbiMetaSymbol in contractClass ? contractClass[AbiMetaSymbol] : {}
   ) as Record<string, AbiMetadata>
-  return metadatas
+  return { ...metadatas, ...overwrittenMetadataEntry?.[1] }
 }
 
-export const getContractMethodAbiMetadata = <T extends BaseContract>(contract: T, methodName: string): AbiMetadata => {
+export const getContractMethodAbiMetadata = <T extends Contract>(contract: T, methodName: string): AbiMetadata => {
   const metadatas = getContractAbiMetadata(contract)
   return metadatas[methodName]
 }
@@ -73,7 +89,7 @@ export const getArc4Signature = (metadata: AbiMetadata): string => {
   if (metadata.methodSignature === undefined) {
     const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map(getArc4TypeName)
     const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo)
-    metadata.methodSignature = `${metadata.methodName}(${argTypes.join(',')})${returnType}`
+    metadata.methodSignature = `${metadata.name ?? metadata.methodName}(${argTypes.join(',')})${returnType}`
   }
   return metadata.methodSignature
 }

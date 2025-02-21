@@ -9,7 +9,7 @@ import { AccountCls } from './impl/reference'
 import type { DeliberateAny } from './typescript-helpers'
 import { nameOfType } from './util'
 
-export { attachAbiMetadata } from './abi-metadata'
+export { attachAbiMetadata, captureMethodConfig } from './abi-metadata'
 export { emitImpl } from './impl/emit'
 export * from './impl/encoded-types'
 export { decodeArc4Impl, encodeArc4Impl } from './impl/encoded-types'

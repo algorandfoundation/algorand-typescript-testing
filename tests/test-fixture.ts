@@ -248,7 +248,6 @@ async function compilePath(
       outputDestructuredIr: false,
       outputMemoryIr: false,
 
-      matchAlgodBytecode: false,
       debugLevel: 1,
       targetAvmVersion: 10,
       cliTemplateDefinitions: [],

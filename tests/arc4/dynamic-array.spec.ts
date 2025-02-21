@@ -233,12 +233,14 @@ const uint256DynamicArrayOfStaticArray = {
     return [uint256DynamicArray.nativeValues(), uint256DynamicArray.nativeValues().reverse()]
   },
   abiValues() {
-    return this.nativeValues().map((a) => new StaticArray<UintN<256>, 10>(...a.map((v) => new UintN<256>(v))))
+    return this.nativeValues().map((a) => new StaticArray<UintN<256>, 10>(...(a.map((v) => new UintN<256>(v)) as [])))
   },
   array(isEmpty = false) {
     return isEmpty
       ? new DynamicArray<StaticArray<UintN<256>, 10>>()
-      : new DynamicArray<StaticArray<UintN<256>, 10>>(...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...a)))
+      : new DynamicArray<StaticArray<UintN<256>, 10>>(
+          ...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...(a as DeliberateAny))),
+        )
   },
   create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<StaticArray<UintN<256>, 10>>>(asBytes(value))
@@ -328,7 +330,7 @@ const tupleDynamicArray = {
             addressDynamicArray.abiValues()[5],
           ),
           boolDynamicArray.abiValues()[3],
-          new StaticArray<UintN<256>, 3>(...uint256DynamicArray.abiValues().slice(4, 7)),
+          new StaticArray<UintN<256>, 3>(...(uint256DynamicArray.abiValues().slice(4, 7) as [])),
         ],
       ),
     )

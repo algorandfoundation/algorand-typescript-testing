@@ -131,6 +131,8 @@ class ExpressionVisitor {
     private helper: VisitorHelper,
     private expressionNode: ts.Expression,
     private stubbedFunctionName?: string,
+    private className?: ts.Identifier,
+    private methodNode?: ts.MethodDeclaration,
   ) {}
 
   public result(): ts.Expression {
@@ -162,13 +164,21 @@ class ExpressionVisitor {
         let infoArg = info
         if (isCallingEmit(stubbedFunctionName)) {
           infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
-        }
-        if (isCallingDecodeArc4(stubbedFunctionName)) {
+        } else if (isCallingDecodeArc4(stubbedFunctionName)) {
           const targetType = ptypes.ptypeToArc4EncodedType(type, this.helper.sourceLocation(node))
           const targetTypeInfo = getGenericTypeInfo(targetType)
           infoArg = targetTypeInfo
+        } else if (isCallingDecoratorMethod(stubbedFunctionName)) {
+          this.helper.additionalStatements.push(nodeFactory.captureMethodConfig(this.className!, this.methodNode!, updatedNode))
         }
-        updatedNode = stubbedFunctionName ? nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg) : updatedNode
+
+        updatedNode = stubbedFunctionName
+          ? isCallingMethodSelector(stubbedFunctionName)
+            ? nodeFactory.callMethodSelectorFunction(updatedNode)
+            : isCallingDecoratorMethod(stubbedFunctionName)
+              ? updatedNode
+              : nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
+          : updatedNode
       }
       return needsToCaptureTypeInfo
         ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
@@ -204,7 +214,8 @@ class FunctionOrMethodVisitor {
   constructor(
     protected context: ts.TransformationContext,
     protected helper: VisitorHelper,
-    private isFunction?: boolean,
+    protected className?: ts.Identifier,
+    protected methodNode?: ts.MethodDeclaration,
   ) {}
   protected visit = (node: ts.Node): ts.Node => {
     return ts.visitEachChild(this.updateNode(node), this.visit, this.context)
@@ -265,7 +276,7 @@ class FunctionOrMethodVisitor {
     if (ts.isCallExpression(node)) {
       const stubbedFunctionName = tryGetStubbedFunctionName(node, this.helper)
       if (stubbedFunctionName) {
-        return new ExpressionVisitor(this.context, this.helper, node, stubbedFunctionName).result()
+        return new ExpressionVisitor(this.context, this.helper, node, stubbedFunctionName, this.className, this.methodNode).result()
       }
     }
 
@@ -279,7 +290,7 @@ class FunctionLikeDecVisitor extends FunctionOrMethodVisitor {
     helper: VisitorHelper,
     private funcNode: ts.SignatureDeclaration,
   ) {
-    super(context, helper, true)
+    super(context, helper)
   }
 
   public result(): ts.SignatureDeclaration {
@@ -290,9 +301,10 @@ class MethodDecVisitor extends FunctionOrMethodVisitor {
   constructor(
     context: ts.TransformationContext,
     helper: VisitorHelper,
-    private methodNode: ts.MethodDeclaration,
+    methodNode: ts.MethodDeclaration,
+    className: ts.Identifier | undefined,
   ) {
-    super(context, helper)
+    super(context, helper, className, methodNode)
   }
 
   public result(): ts.MethodDeclaration {
@@ -326,7 +338,7 @@ class ClassVisitor {
         }
       }
 
-      return new MethodDecVisitor(this.context, this.helper, node).result()
+      return new MethodDecVisitor(this.context, this.helper, node, this.classDec.name).result()
     }
 
     if (ts.isCallExpression(node)) {
@@ -417,9 +429,11 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     if (sourceFileName && !algotsModulePaths.some((s) => sourceFileName.includes(s))) return undefined
   }
   const functionName = functionSymbol?.getName() ?? identityExpression.text
-  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit']
+  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'abimethod', 'baremethod']
   return stubbedFunctionNames.includes(functionName) ? functionName : undefined
 }
 
 const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['decodeArc4', 'encodeArc4'].includes(functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
+const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
+const isCallingDecoratorMethod = (functionName: string | undefined): boolean => ['abimethod', 'baremethod'].includes(functionName ?? '')

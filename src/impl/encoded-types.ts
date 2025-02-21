@@ -346,7 +346,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
   constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength })
   constructor(typeInfo: TypeInfo | string, ...items: TItem[])
   constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength }) {
-    super(...items)
+    super(...(items as DeliberateAny))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = this.typeInfo.genericArgs as StaticArrayGenericArgs
 
@@ -536,7 +536,7 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
   genericArgs: DynamicArrayGenericArgs
 
   constructor(typeInfo: TypeInfo | string, ...items: TItem[]) {
-    super(...items)
+    super(...(items as TItem[]))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = this.typeInfo.genericArgs as DynamicArrayGenericArgs
 
