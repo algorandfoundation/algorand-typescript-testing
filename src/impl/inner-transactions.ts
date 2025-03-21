@@ -4,10 +4,11 @@ import type {
   Asset as AssetType,
   bytes,
   itxn,
+  OnCompleteAction,
   OnCompleteActionStr,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
+import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
 import type { Mutable } from '../typescript-helpers'
@@ -18,7 +19,7 @@ import type { InnerTxn, InnerTxnFields } from './itxn'
 import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
 import {
-  ApplicationTransaction,
+  ApplicationCallTransaction,
   AssetConfigTransaction,
   AssetFreezeTransaction,
   AssetTransferTransaction,
@@ -158,14 +159,14 @@ export class AssetFreezeInnerTxn extends AssetFreezeTransaction implements itxn.
   }
 }
 
-export class ApplicationInnerTxn extends ApplicationTransaction implements itxn.ApplicationInnerTxn {
+export class ApplicationCallInnerTxn extends ApplicationCallTransaction implements itxn.ApplicationCallInnerTxn {
   readonly isItxn?: true
 
   /* @internal */
   static create(
     fields: Omit<itxn.ApplicationCallFields, 'onCompletion'> & { onCompletion?: OnCompleteAction | uint64 | OnCompleteActionStr },
   ) {
-    return new ApplicationInnerTxn(fields as itxn.ApplicationCallFields)
+    return new ApplicationCallInnerTxn(fields as itxn.ApplicationCallFields)
   }
 
   /* @internal */
@@ -177,12 +178,7 @@ export class ApplicationInnerTxn extends ApplicationTransaction implements itxn.
         : undefined
     super({
       appId: appId === undefined && compiledApp ? compiledApp : appId instanceof Uint64Cls ? getApp(appId) : (appId as ApplicationType),
-      onCompletion:
-        typeof onCompletion === 'string'
-          ? (onCompletion as OnCompleteActionStr)
-          : onCompletion !== undefined
-            ? (OnCompleteAction[onCompletion] as OnCompleteActionStr)
-            : undefined,
+      onCompletion,
       approvalProgram: Array.isArray(approvalProgram) ? undefined : (approvalProgram as bytes),
       approvalProgramPages: Array.isArray(approvalProgram) ? approvalProgram : undefined,
       clearStateProgram: Array.isArray(clearStateProgram) ? undefined : (clearStateProgram as bytes),
@@ -208,7 +204,7 @@ export const createInnerTxn = <TFields extends InnerTxnFields>(fields: TFields) 
     case TransactionType.AssetFreeze:
       return new AssetFreezeInnerTxn(fields as itxn.AssetFreezeFields)
     case TransactionType.ApplicationCall:
-      return new ApplicationInnerTxn(fields)
+      return new ApplicationCallInnerTxn(fields)
     case TransactionType.KeyRegistration:
       return new KeyRegistrationInnerTxn(fields)
     default:
@@ -216,7 +212,7 @@ export const createInnerTxn = <TFields extends InnerTxnFields>(fields: TFields) 
   }
 }
 
-export function submitGroup<TFields extends itxn.InnerTxnList>(...transactionFields: TFields): itxn.TxnFor<TFields> {
+export function submitGroup<TFields extends [...itxn.ItxnParams[]]>(...transactionFields: TFields): itxn.TxnFor<TFields> {
   return transactionFields.map((f: (typeof transactionFields)[number]) => f.submit()) as itxn.TxnFor<TFields>
 }
 export function payment(fields: itxn.PaymentFields): itxn.PaymentItxnParams {
@@ -235,7 +231,7 @@ export function assetFreeze(fields: itxn.AssetFreezeFields): itxn.AssetFreezeItx
   return new ItxnParams<itxn.AssetFreezeFields, itxn.AssetFreezeInnerTxn>(fields, TransactionType.AssetFreeze)
 }
 export function applicationCall(fields: itxn.ApplicationCallFields): itxn.ApplicationCallItxnParams {
-  return new ItxnParams<itxn.ApplicationCallFields, itxn.ApplicationInnerTxn>(fields, TransactionType.ApplicationCall)
+  return new ItxnParams<itxn.ApplicationCallFields, itxn.ApplicationCallInnerTxn>(fields, TransactionType.ApplicationCall)
 }
 
 export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends InnerTxn> {

@@ -3,9 +3,9 @@ import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
 import { BaseContract } from '../impl/base-contract'
 import { ApplicationCls } from '../impl/reference'
-import type { ApplicationTransactionFields, TxnFields } from '../impl/transactions'
+import type { ApplicationCallTransactionFields, TxnFields } from '../impl/transactions'
 import {
-  ApplicationTransaction,
+  ApplicationCallTransaction,
   AssetConfigTransaction,
   AssetFreezeTransaction,
   AssetTransferTransaction,
@@ -16,12 +16,12 @@ import {
 export class TxnValueGenerator {
   /**
    * Generates a random application call transaction with the specified fields.
-   * @param {ApplicationTransactionFields} [fields] - The fields for the application call transaction where `appId` value can be instance of Application or BaseContract.
-   * @returns {ApplicationTransaction} - A random application call transaction.
+   * @param {ApplicationCallTransactionFields} [fields] - The fields for the application call transaction where `appId` value can be instance of Application or BaseContract.
+   * @returns {ApplicationCallTransaction} - A random application call transaction.
    */
   applicationCall(
-    fields?: Partial<Omit<ApplicationTransactionFields, 'appId'> & { appId: ApplicationType | BaseContract }>,
-  ): ApplicationTransaction {
+    fields?: Partial<Omit<ApplicationCallTransactionFields, 'appId'> & { appId: ApplicationType | BaseContract }>,
+  ): ApplicationCallTransaction {
     const params = fields ?? {}
     let appId =
       params.appId instanceof ApplicationCls
@@ -36,7 +36,7 @@ export class TxnValueGenerator {
       appId = lazyContext.any.application()
     }
 
-    return ApplicationTransaction.create({ ...params, appId })
+    return ApplicationCallTransaction.create({ ...params, appId })
   }
 
   /**

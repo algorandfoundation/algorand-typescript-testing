@@ -18,7 +18,7 @@ const ctx = new TestExecutionContext()
 
 Subclasses of `arc4.Contract` are **required** to be instantiated with an active test context. As part of instantiation, the test context will automatically create a matching `Application` object instance.
 
-Within the class implementation, methods decorated with `arc4.abimethod` and `arc4.baremethod` will automatically assemble an `gtxn.ApplicationTxn` transaction to emulate the AVM application call. This behavior can be overriden by setting the transaction group manually as part of test setup, this is done via implicit invocation of `ctx.any.txn.applicationCall` _value generator_ (refer to [APIs](../apis.md) for more details).
+Within the class implementation, methods decorated with `arc4.abimethod` and `arc4.baremethod` will automatically assemble an `gtxn.ApplicationCallTxn` transaction to emulate the AVM application call. This behavior can be overriden by setting the transaction group manually as part of test setup, this is done via implicit invocation of `ctx.any.txn.applicationCall` _value generator_ (refer to [APIs](../apis.md) for more details).
 
 ```ts
 class SimpleVotingContract extends arc4.Contract {

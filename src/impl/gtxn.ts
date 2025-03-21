@@ -1,5 +1,4 @@
 import type { Account, Application, Asset, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
-import { OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asUint64, asUint64Cls } from '../util'
 import type { StubUint64Compat } from './primitives'
@@ -78,29 +77,29 @@ export const GTxn: typeof op.GTxn = {
     return lazyContext.activeGroup.getTransaction(t).txnId
   },
   applicationId(t: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getApplicationTransaction(t).appId
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).appId
   },
   onCompletion(t: StubUint64Compat): uint64 {
-    const onCompletionStr = lazyContext.activeGroup.getApplicationTransaction(t).onCompletion
-    return asUint64(OnCompleteAction[onCompletionStr])
+    const onCompletion = lazyContext.activeGroup.getApplicationCallTransaction(t).onCompletion
+    return asUint64(onCompletion)
   },
   applicationArgs(a: StubUint64Compat, b: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction(a).appArgs(asUint64(b))
+    return lazyContext.activeGroup.getApplicationCallTransaction(a).appArgs(asUint64(b))
   },
   numAppArgs(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).numAppArgs
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).numAppArgs
   },
   accounts(a: StubUint64Compat, b: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getApplicationTransaction(a).accounts(asUint64(b))
+    return lazyContext.activeGroup.getApplicationCallTransaction(a).accounts(asUint64(b))
   },
   numAccounts(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).numAccounts
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).numAccounts
   },
   approvalProgram(t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction(t).approvalProgram
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).approvalProgram
   },
   clearStateProgram(t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction(t).clearStateProgram
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).clearStateProgram
   },
   rekeyTo(t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getTransaction(t).rekeyTo
@@ -151,64 +150,64 @@ export const GTxn: typeof op.GTxn = {
     return lazyContext.activeGroup.getAssetFreezeTransaction(t).frozen
   },
   assets(a: StubUint64Compat, b: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getApplicationTransaction(a).assets(asUint64(b))
+    return lazyContext.activeGroup.getApplicationCallTransaction(a).assets(asUint64(b))
   },
   numAssets(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).numAssets
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).numAssets
   },
   applications(a: StubUint64Compat, b: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getApplicationTransaction(a).apps(asUint64(b))
+    return lazyContext.activeGroup.getApplicationCallTransaction(a).apps(asUint64(b))
   },
   numApplications(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).numApps
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).numApps
   },
   globalNumUint(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).globalNumUint
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).globalNumUint
   },
   globalNumByteSlice(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).globalNumBytes
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).globalNumBytes
   },
   localNumUint(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).localNumUint
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).localNumUint
   },
   localNumByteSlice(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).localNumBytes
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).localNumBytes
   },
   extraProgramPages(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).extraProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).extraProgramPages
   },
   nonparticipation(t: StubUint64Compat): boolean {
     return lazyContext.activeGroup.getKeyRegistrationTransaction(t).nonparticipation
   },
   logs(a: StubUint64Compat, b: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction(a).logs(asUint64(b))
+    return lazyContext.activeGroup.getApplicationCallTransaction(a).logs(asUint64(b))
   },
   numLogs(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).numLogs
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).numLogs
   },
   createdAssetId(t: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getAssetConfigTransaction(t).createdAsset
   },
   createdApplicationId(t: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getApplicationTransaction(t).createdApp
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).createdApp
   },
   lastLog(t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction(t).lastLog
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).lastLog
   },
   stateProofPk(t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getKeyRegistrationTransaction(t).stateProofKey
   },
   approvalProgramPages(a: StubUint64Compat, b: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction(a).approvalProgramPages(asUint64(b))
+    return lazyContext.activeGroup.getApplicationCallTransaction(a).approvalProgramPages(asUint64(b))
   },
   numApprovalProgramPages(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).numApprovalProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).numApprovalProgramPages
   },
   clearStateProgramPages(a: StubUint64Compat, b: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction(a).clearStateProgramPages(asUint64(b))
+    return lazyContext.activeGroup.getApplicationCallTransaction(a).clearStateProgramPages(asUint64(b))
   },
   numClearStateProgramPages(t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction(t).numClearStateProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction(t).numClearStateProgramPages
   },
 }
 
@@ -218,4 +217,4 @@ export const KeyRegistrationTxn = (index: uint64) => lazyContext.txn.activeGroup
 export const AssetConfigTxn = (index: uint64) => lazyContext.txn.activeGroup.getAssetConfigTransaction(index)
 export const AssetTransferTxn = (index: uint64) => lazyContext.txn.activeGroup.getAssetTransferTransaction(index)
 export const AssetFreezeTxn = (index: uint64) => lazyContext.txn.activeGroup.getAssetFreezeTransaction(index)
-export const ApplicationTxn = (index: uint64) => lazyContext.txn.activeGroup.getApplicationTransaction(index)
+export const ApplicationCallTxn = (index: uint64) => lazyContext.txn.activeGroup.getApplicationCallTransaction(index)

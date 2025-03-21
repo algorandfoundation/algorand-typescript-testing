@@ -1,5 +1,5 @@
 import type { bytes, Contract, uint64 } from '@algorandfoundation/algorand-typescript'
-import { TransactionType } from '@algorandfoundation/algorand-typescript'
+import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
 import { getContractAbiMetadata, type AbiMetadata } from '../abi-metadata'
 import { TRANSACTION_GROUP_MAX_SIZE } from '../constants'
 import { checkRoutingConditions } from '../context-helpers/context-util'
@@ -8,7 +8,7 @@ import type { DecodedLogs, LogDecoding } from '../decode-logs'
 import { decodeLogs } from '../decode-logs'
 import { InternalError, testInvariant } from '../errors'
 import type {
-  ApplicationInnerTxn,
+  ApplicationCallInnerTxn,
   AssetConfigInnerTxn,
   AssetFreezeInnerTxn,
   AssetTransferInnerTxn,
@@ -20,7 +20,7 @@ import type { InnerTxn, InnerTxnFields } from '../impl/itxn'
 import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
 import type {
   AllTransactionFields,
-  ApplicationTransaction,
+  ApplicationCallTransaction,
   AssetConfigTransaction,
   AssetFreezeTransaction,
   AssetTransferTransaction,
@@ -266,7 +266,7 @@ export class TransactionGroup {
       throw new InternalError('No transactions in the group')
     }
     testInvariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No app_id found in the active transaction')
-    return (this.activeTransaction as ApplicationTransaction).backingAppId.id
+    return (this.activeTransaction as ApplicationCallTransaction).backingAppId.id
   }
 
   /* @internal */
@@ -323,7 +323,7 @@ export class TransactionGroup {
       throw new InternalError('itxn begin without itxn submit')
     }
     testInvariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No active application call transaction')
-    if (this.activeTransaction.onCompletion === 'ClearState') {
+    if (this.activeTransaction.onCompletion === OnCompleteAction.ClearState) {
       throw new InternalError('Cannot begin inner transaction group in a clear state call')
     }
     this.constructingItxnGroup.push({} as InnerTxnFields)
@@ -391,8 +391,8 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The application transaction.
    */
-  getApplicationTransaction(index?: StubUint64Compat): ApplicationTransaction {
-    return this.getTransactionImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationTransaction
+  getApplicationCallTransaction(index?: StubUint64Compat): ApplicationCallTransaction {
+    return this.getTransactionImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationCallTransaction
   }
 
   /**
@@ -462,7 +462,7 @@ export class TransactionGroup {
     }
     switch (type) {
       case TransactionType.ApplicationCall:
-        return transaction as ApplicationTransaction
+        return transaction as ApplicationCallTransaction
       case TransactionType.Payment:
         return transaction as PaymentTransaction
       case TransactionType.AssetConfig:
@@ -493,8 +493,8 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The application inner transaction.
    */
-  getApplicationInnerTxn(index?: StubUint64Compat): ApplicationInnerTxn {
-    return this.getInnerTxnImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationInnerTxn
+  getApplicationCallInnerTxn(index?: StubUint64Compat): ApplicationCallInnerTxn {
+    return this.getInnerTxnImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationCallInnerTxn
   }
 
   /**
@@ -566,7 +566,7 @@ export class ItxnGroup {
     }
     switch (type) {
       case TransactionType.ApplicationCall:
-        return transaction as ApplicationInnerTxn
+        return transaction as ApplicationCallInnerTxn
       case TransactionType.Payment:
         return transaction as PaymentInnerTxn
       case TransactionType.AssetConfig:

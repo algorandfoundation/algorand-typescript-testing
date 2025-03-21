@@ -57,7 +57,7 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | arc4.abimethod          | Emulated            |
 | arc4.methodSelector     | Native              |
 | arc4.baremethod         | Emulated            |
-| gtxn.ApplicationTxn     | Emulated            |
+| gtxn.ApplicationCallTxn | Emulated            |
 | gtxn.AssetConfigTxn     | Emulated            |
 | gtxn.AssetFreezeTxn     | Emulated            |
 | gtxn.AssetTransferTxn   | Emulated            |

@@ -6,6 +6,6 @@
 
 # test-transformer/vitest-transformer
 
-## Functions
+## Variables
 
-- [puyaTsTransformer](functions/puyaTsTransformer.md)
+- [puyaTsTransformer](variables/puyaTsTransformer.md)
