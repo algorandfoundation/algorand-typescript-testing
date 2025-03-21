@@ -8,9 +8,6 @@
 
 ## Variables
 
+- [factory](variables/factory.md)
 - [name](variables/name.md)
 - [version](variables/version.md)
-
-## Functions
-
-- [factory](functions/factory.md)

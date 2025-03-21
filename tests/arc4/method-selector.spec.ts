@@ -42,7 +42,7 @@ describe('methodSelector', async () => {
     contract.sink(arg1, arg2)
 
     // assert
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))
@@ -64,7 +64,7 @@ describe('methodSelector', async () => {
     contract.sink2(arg1, arg2)
 
     // assert
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))
@@ -92,7 +92,7 @@ describe('methodSelector', async () => {
     contract.withTxn(arg1, ctx.any.txn.payment({ amount: Uint64(123) }), arg3)
 
     // asset
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))
@@ -120,7 +120,7 @@ describe('methodSelector', async () => {
     contract.withAsset(arg1, ctx.any.asset({ total: 123 }), arg3)
 
     // assert
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))
@@ -154,7 +154,7 @@ describe('methodSelector', async () => {
     await getAvmResult({ appClient }, 'withAcc', 'hello', account.publicKey, [1, 2])
 
     // assert
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))
@@ -184,7 +184,7 @@ describe('methodSelector', async () => {
     contract.withApp(arg1, ctx.ledger.getApplication(otherAppId), new arc4.UintN64(otherAppId), arg4)
 
     // assert
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))
@@ -229,7 +229,7 @@ describe('methodSelector', async () => {
     const result = contract.complexSig(struct, payment, account, five)
 
     // assert
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))
@@ -288,7 +288,7 @@ describe('methodSelector', async () => {
     })
 
     // assert
-    const txn = ctx.txn.lastActive as gtxn.ApplicationTxn
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
     const appArgs = Array(Number(txn.numAppArgs))
       .fill(0)
       .map((_, i) => txn.appArgs(i))

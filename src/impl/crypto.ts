@@ -48,10 +48,8 @@ export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: Stu
 }
 
 export const ed25519verify = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
-  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationTxn
-  const programBytes = asBytesCls(
-    txn.onCompletion == OnCompleteAction[OnCompleteAction.ClearState] ? txn.clearStateProgram : txn.approvalProgram,
-  )
+  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationCallTxn
+  const programBytes = asBytesCls(txn.onCompletion == OnCompleteAction.ClearState ? txn.clearStateProgram : txn.approvalProgram)
 
   const logicSig = conactUint8Arrays(asUint8Array(PROGRAM_TAG), programBytes.asUint8Array())
   const logicSigAddress = js_sha512.sha512_256.array(logicSig)

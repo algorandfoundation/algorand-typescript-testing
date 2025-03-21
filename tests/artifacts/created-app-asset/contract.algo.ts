@@ -5,7 +5,7 @@ import { interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-ty
 
 export class AppExpectingEffects extends arc4.Contract {
   @arc4.abimethod()
-  public create_group(assetCreate: gtxn.AssetConfigTxn, appCreate: gtxn.ApplicationTxn): readonly [uint64, uint64] {
+  public create_group(assetCreate: gtxn.AssetConfigTxn, appCreate: gtxn.ApplicationCallTxn): readonly [uint64, uint64] {
     assert(assetCreate.createdAsset.id, 'expected asset created')
     assert(op.gaid(assetCreate.groupIndex) === assetCreate.createdAsset.id, 'expected correct asset id')
     assert(appCreate.createdApp.id, 'expected app created')
@@ -15,7 +15,7 @@ export class AppExpectingEffects extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  public log_group(appCall: gtxn.ApplicationTxn): void {
+  public log_group(appCall: gtxn.ApplicationCallTxn): void {
     assert(appCall.appArgs(0) === methodSelector('some_value()uint64'), 'expected correct method called')
     assert(appCall.numLogs === 1, 'expected logs')
     assert(interpretAsArc4<UintN64>(appCall.lastLog, 'log').native === (appCall.groupIndex + 1) * Global.groupSize)

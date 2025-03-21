@@ -28,12 +28,6 @@ A uint64 value to convert
 
 The uint64 value as a bigint
 
-The biguint value as a bigint
-
-The bytes value as a Uint8Array
-
-The original string value unchanged
-
 ### Example
 
 ```ts
@@ -65,12 +59,6 @@ A uint64 value to convert
 `bigint`
 
 The uint64 value as a bigint
-
-The biguint value as a bigint
-
-The bytes value as a Uint8Array
-
-The original string value unchanged
 
 ### Example
 
@@ -104,12 +92,6 @@ A uint64 value to convert
 
 The uint64 value as a bigint
 
-The biguint value as a bigint
-
-The bytes value as a Uint8Array
-
-The original string value unchanged
-
 ### Example
 
 ```ts
@@ -141,12 +123,6 @@ A uint64 value to convert
 `string`
 
 The uint64 value as a bigint
-
-The biguint value as a bigint
-
-The bytes value as a Uint8Array
-
-The original string value unchanged
 
 ### Example
 

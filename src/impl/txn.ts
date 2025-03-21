@@ -1,5 +1,5 @@
 import type { Account, Application, Asset, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
-import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
+import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
 import { asNumber, asUint64, asUint64Cls } from '../util'
@@ -187,57 +187,57 @@ export const Txn: typeof op.Txn = {
    * ApplicationID from ApplicationCall transaction
    */
   get applicationId(): Application {
-    return lazyContext.activeGroup.getApplicationTransaction().appId
+    return lazyContext.activeGroup.getApplicationCallTransaction().appId
   },
 
   /**
    * ApplicationCall transaction on completion action
    */
   get onCompletion(): uint64 {
-    const onCompletionStr = lazyContext.activeGroup.getApplicationTransaction().onCompletion
-    return asUint64(OnCompleteAction[onCompletionStr])
+    const onCompletion = lazyContext.activeGroup.getApplicationCallTransaction().onCompletion
+    return asUint64(onCompletion)
   },
 
   /**
    * Arguments passed to the application in the ApplicationCall transaction
    */
   applicationArgs(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().appArgs(asUint64(a))
+    return lazyContext.activeGroup.getApplicationCallTransaction().appArgs(asUint64(a))
   },
 
   /**
    * Number of ApplicationArgs
    */
   get numAppArgs(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numAppArgs
+    return lazyContext.activeGroup.getApplicationCallTransaction().numAppArgs
   },
 
   /**
    * Accounts listed in the ApplicationCall transaction
    */
   accounts(a: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getApplicationTransaction().accounts(asUint64(a))
+    return lazyContext.activeGroup.getApplicationCallTransaction().accounts(asUint64(a))
   },
 
   /**
    * Number of Accounts
    */
   get numAccounts(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numAccounts
+    return lazyContext.activeGroup.getApplicationCallTransaction().numAccounts
   },
 
   /**
    * Approval program
    */
   get approvalProgram(): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().approvalProgram
+    return lazyContext.activeGroup.getApplicationCallTransaction().approvalProgram
   },
 
   /**
    * Clear state program
    */
   get clearStateProgram(): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().clearStateProgram
+    return lazyContext.activeGroup.getApplicationCallTransaction().clearStateProgram
   },
 
   /**
@@ -356,63 +356,63 @@ export const Txn: typeof op.Txn = {
    * Foreign Assets listed in the ApplicationCall transaction
    */
   assets(a: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getApplicationTransaction().assets(asUint64(a))
+    return lazyContext.activeGroup.getApplicationCallTransaction().assets(asUint64(a))
   },
 
   /**
    * Number of Assets
    */
   get numAssets(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numAssets
+    return lazyContext.activeGroup.getApplicationCallTransaction().numAssets
   },
 
   /**
    * Foreign Apps listed in the ApplicationCall transaction
    */
   applications(a: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getApplicationTransaction().apps(asUint64(a))
+    return lazyContext.activeGroup.getApplicationCallTransaction().apps(asUint64(a))
   },
 
   /**
    * Number of Applications
    */
   get numApplications(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numApps
+    return lazyContext.activeGroup.getApplicationCallTransaction().numApps
   },
 
   /**
    * Number of global state integers in ApplicationCall
    */
   get globalNumUint(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().globalNumUint
+    return lazyContext.activeGroup.getApplicationCallTransaction().globalNumUint
   },
 
   /**
    * Number of global state byteslices in ApplicationCall
    */
   get globalNumByteSlice(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().globalNumBytes
+    return lazyContext.activeGroup.getApplicationCallTransaction().globalNumBytes
   },
 
   /**
    * Number of local state integers in ApplicationCall
    */
   get localNumUint(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().localNumUint
+    return lazyContext.activeGroup.getApplicationCallTransaction().localNumUint
   },
 
   /**
    * Number of local state byteslices in ApplicationCall
    */
   get localNumByteSlice(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().localNumBytes
+    return lazyContext.activeGroup.getApplicationCallTransaction().localNumBytes
   },
 
   /**
    * Number of additional pages for each of the application's approval and clear state programs. An ExtraProgramPages of 1 means 2048 more total bytes, or 1024 for each program.
    */
   get extraProgramPages(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().extraProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction().extraProgramPages
   },
 
   /**
@@ -426,14 +426,14 @@ export const Txn: typeof op.Txn = {
    * Log messages emitted by an application call (only with `itxn` in v5). Application mode only
    */
   logs(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().logs(asUint64(a))
+    return lazyContext.activeGroup.getApplicationCallTransaction().logs(asUint64(a))
   },
 
   /**
    * Number of Logs (only with `itxn` in v5). Application mode only
    */
   get numLogs(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numLogs
+    return lazyContext.activeGroup.getApplicationCallTransaction().numLogs
   },
 
   /**
@@ -447,14 +447,14 @@ export const Txn: typeof op.Txn = {
    * ApplicationID allocated by the creation of an application (only with `itxn` in v5). Application mode only
    */
   get createdApplicationId(): Application {
-    return lazyContext.activeGroup.getApplicationTransaction().createdApp
+    return lazyContext.activeGroup.getApplicationCallTransaction().createdApp
   },
 
   /**
    * The last message emitted. Empty bytes if none were emitted. Application mode only
    */
   get lastLog(): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().lastLog
+    return lazyContext.activeGroup.getApplicationCallTransaction().lastLog
   },
 
   /**
@@ -468,27 +468,27 @@ export const Txn: typeof op.Txn = {
    * Approval Program as an array of pages
    */
   approvalProgramPages(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().approvalProgramPages(asUint64(a))
+    return lazyContext.activeGroup.getApplicationCallTransaction().approvalProgramPages(asUint64(a))
   },
 
   /**
    * Number of Approval Program pages
    */
   get numApprovalProgramPages(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numApprovalProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction().numApprovalProgramPages
   },
 
   /**
    * ClearState Program as an array of pages
    */
   clearStateProgramPages(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().clearStateProgramPages(asUint64(a))
+    return lazyContext.activeGroup.getApplicationCallTransaction().clearStateProgramPages(asUint64(a))
   },
 
   /**
    * Number of ClearState Program pages
    */
   get numClearStateProgramPages(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numClearStateProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction().numClearStateProgramPages
   },
 }
