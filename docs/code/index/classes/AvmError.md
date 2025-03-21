@@ -21,9 +21,9 @@ the AVM to fail.
 
 ## Constructors
 
-### new AvmError()
+### Constructor
 
-> **new AvmError**(`message`): [`AvmError`](AvmError.md)
+> **new AvmError**(`message`): `AvmError`
 
 Defined in: [src/errors.ts:6](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/errors.ts#L6)
 
@@ -35,7 +35,7 @@ Defined in: [src/errors.ts:6](https://github.com/algorandfoundation/algorand-typ
 
 #### Returns
 
-[`AvmError`](AvmError.md)
+`AvmError`
 
 #### Overrides
 

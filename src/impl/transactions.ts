@@ -4,10 +4,9 @@ import type {
   Asset as AssetType,
   bytes,
   gtxn,
-  OnCompleteActionStr,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { TransactionType } from '@algorandfoundation/algorand-typescript'
+import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_ITEMS_IN_LOG } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes } from '../encoders'
@@ -219,7 +218,7 @@ export class AssetFreezeTransaction extends TransactionBase implements gtxn.Asse
   readonly typeBytes: bytes = asUint64Cls(TransactionType.AssetFreeze).toBytes().asAlgoTs()
 }
 
-export type ApplicationTransactionFields = TxnFields<gtxn.ApplicationTxn> &
+export type ApplicationCallTransactionFields = TxnFields<gtxn.ApplicationCallTxn> &
   Partial<{
     appArgs: Array<unknown>
     accounts: Array<AccountType>
@@ -231,10 +230,10 @@ export type ApplicationTransactionFields = TxnFields<gtxn.ApplicationTxn> &
     scratchSpace: Record<number, bytes | uint64>
   }>
 
-export class ApplicationTransaction extends TransactionBase implements gtxn.ApplicationTxn {
+export class ApplicationCallTransaction extends TransactionBase implements gtxn.ApplicationCallTxn {
   /* @internal */
-  static create(fields: ApplicationTransactionFields) {
-    return new ApplicationTransaction(fields)
+  static create(fields: ApplicationCallTransactionFields) {
+    return new ApplicationCallTransaction(fields)
   }
   #appArgs: Array<unknown>
   #accounts: Array<AccountType>
@@ -245,10 +244,10 @@ export class ApplicationTransaction extends TransactionBase implements gtxn.Appl
   #appLogs: Array<bytes>
   #appId: ApplicationType
 
-  protected constructor(fields: ApplicationTransactionFields) {
+  protected constructor(fields: ApplicationCallTransactionFields) {
     super(fields)
     this.#appId = fields.appId ?? Application()
-    this.onCompletion = fields.onCompletion ?? 'NoOp'
+    this.onCompletion = fields.onCompletion ?? OnCompleteAction.NoOp
     this.globalNumUint = fields.globalNumUint ?? Uint64(0)
     this.globalNumBytes = fields.globalNumBytes ?? Uint64(0)
     this.localNumUint = fields.localNumUint ?? Uint64(0)
@@ -279,7 +278,7 @@ export class ApplicationTransaction extends TransactionBase implements gtxn.Appl
     }
     return this.#appId
   }
-  readonly onCompletion: OnCompleteActionStr
+  readonly onCompletion: OnCompleteAction
   readonly globalNumUint: uint64
   readonly globalNumBytes: uint64
   readonly localNumUint: uint64
@@ -373,11 +372,11 @@ export type Transaction =
   | AssetConfigTransaction
   | AssetTransferTransaction
   | AssetFreezeTransaction
-  | ApplicationTransaction
+  | ApplicationCallTransaction
 
 export type AllTransactionFields = TxnFields<gtxn.PaymentTxn> &
   TxnFields<gtxn.KeyRegistrationTxn> &
   TxnFields<gtxn.AssetConfigTxn> &
   TxnFields<gtxn.AssetTransferTxn> &
   TxnFields<gtxn.AssetFreezeTxn> &
-  ApplicationTransactionFields
+  ApplicationCallTransactionFields

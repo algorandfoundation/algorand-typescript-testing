@@ -12,13 +12,13 @@ Manages transaction contexts and groups.
 
 ## Constructors
 
-### new TransactionContext()
+### Constructor
 
-> **new TransactionContext**(): [`TransactionContext`](TransactionContext.md)
+> **new TransactionContext**(): `TransactionContext`
 
 #### Returns
 
-[`TransactionContext`](TransactionContext.md)
+`TransactionContext`
 
 ## Properties
 
@@ -160,11 +160,17 @@ Defers an application call.
 
 #### Type Parameters
 
-• **TContract** *extends* `Contract`
+##### TContract
 
-• **TParams** *extends* `unknown`[]
+`TContract` *extends* `Contract`
 
-• **TReturn**
+##### TParams
+
+`TParams` *extends* `unknown`[]
+
+##### TReturn
+
+`TReturn`
 
 #### Parameters
 
@@ -242,7 +248,9 @@ Exports logs for the given application ID.
 
 #### Type Parameters
 
-• **T** *extends* `LogDecoding`[]
+##### T
+
+`T` *extends* `LogDecoding`[]
 
 #### Parameters
 

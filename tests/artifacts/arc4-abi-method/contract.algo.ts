@@ -21,7 +21,7 @@ export class MyStruct extends arc4.Struct<{
 export class SignaturesContract extends arc4.Contract {
   @arc4.abimethod({ onCreate: 'require' })
   create() {
-    const appTxn = gtxn.ApplicationTxn(0)
+    const appTxn = gtxn.ApplicationCallTxn(0)
     assert(op.Global.currentApplicationId.id !== 0, 'expected global to have app id')
     assert(op.Global.currentApplicationAddress !== op.Global.zeroAddress, 'expected global to have app address')
     assert(appTxn.appId.id === 0, 'expected txn to have 0')
@@ -63,7 +63,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(arr.length)
     assert(app.id === appId.native, 'expected app id to match provided app id')
     assert(app.creator === op.Global.creatorAddress, 'expected other app to have same creator')
-    const appTxn = gtxn.ApplicationTxn(0)
+    const appTxn = gtxn.ApplicationCallTxn(0)
     assert(appTxn.apps(0) === op.Global.currentApplicationId)
     assert(Txn.applications(0) === op.Global.currentApplicationId)
     assert(appTxn.apps(1) === app)

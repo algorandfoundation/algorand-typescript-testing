@@ -16,7 +16,15 @@ export { urangeImpl as urange } from '../impl/urange'
 export { assert, err } from '../util'
 export * as arc4 from './arc4'
 export * as op from './op'
-import { ApplicationTxn, AssetConfigTxn, AssetFreezeTxn, AssetTransferTxn, KeyRegistrationTxn, PaymentTxn, Transaction } from '../impl/gtxn'
+import {
+  ApplicationCallTxn,
+  AssetConfigTxn,
+  AssetFreezeTxn,
+  AssetTransferTxn,
+  KeyRegistrationTxn,
+  PaymentTxn,
+  Transaction,
+} from '../impl/gtxn'
 export const gtxn = {
   Transaction,
   PaymentTxn,
@@ -24,7 +32,7 @@ export const gtxn = {
   AssetConfigTxn,
   AssetTransferTxn,
   AssetFreezeTxn,
-  ApplicationTxn,
+  ApplicationCallTxn,
 }
 
 import { applicationCall, assetConfig, assetFreeze, assetTransfer, keyRegistration, payment, submitGroup } from '../impl/inner-transactions'

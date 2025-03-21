@@ -16,7 +16,7 @@ const resolveAppIndex = (appIdOrIndex: StubUint64Compat): uint64 => {
   if (input >= 1001) {
     return input
   }
-  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationTxn
+  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationCallTxn
   return txn.apps(input).id
 }
 

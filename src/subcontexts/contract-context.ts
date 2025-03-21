@@ -1,4 +1,11 @@
-import type { Account, Application, Asset, contract, LocalState } from '@algorandfoundation/algorand-typescript'
+import {
+  OnCompleteAction,
+  type Account,
+  type Application,
+  type Asset,
+  type contract,
+  type LocalState,
+} from '@algorandfoundation/algorand-typescript'
 import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import type { AbiMetadata } from '../abi-metadata'
 import { getArc4Selector, getContractAbiMetadata, getContractMethodAbiMetadata } from '../abi-metadata'
@@ -15,7 +22,7 @@ import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
 import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
 import type { Transaction } from '../impl/transactions'
 import {
-  ApplicationTransaction,
+  ApplicationCallTransaction,
   AssetConfigTransaction,
   AssetFreezeTransaction,
   AssetTransferTransaction,
@@ -127,7 +134,7 @@ function isTransaction(obj: unknown): obj is Transaction {
     obj instanceof AssetConfigTransaction ||
     obj instanceof AssetTransferTransaction ||
     obj instanceof AssetFreezeTransaction ||
-    obj instanceof ApplicationTransaction
+    obj instanceof ApplicationCallTransaction
   )
 }
 
@@ -181,7 +188,7 @@ export class ContractContext {
       appId: app,
       ...appCallArgs,
       // TODO: This needs to be specifiable by the test code
-      onCompletion: (abiMetadata?.allowActions ?? [])[0],
+      onCompletion: OnCompleteAction[(abiMetadata?.allowActions ?? [])[0]],
     })
     const txns = [...(transactions ?? []), appTxn]
     return txns
@@ -246,7 +253,7 @@ export class ContractContext {
                   }
                   const returnValue = (orig as DeliberateAny).apply(target, args)
                   if (!isProgramMethod && isAbiMethod && returnValue !== undefined) {
-                    ;(txns.at(-1) as ApplicationTransaction).logArc4ReturnValue(returnValue)
+                    ;(txns.at(-1) as ApplicationCallTransaction).logArc4ReturnValue(returnValue)
                   }
                   appData.isCreating = false
                   return returnValue

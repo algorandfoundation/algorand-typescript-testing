@@ -1,4 +1,4 @@
-import { Bytes } from '@algorandfoundation/algorand-typescript'
+import { Bytes, OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { describe, expect, it } from 'vitest'
 import LocalStorage from './contract.algo'
@@ -25,9 +25,11 @@ describe('LocalStorage contract', () => {
     const contract = ctx.contract.create(LocalStorage)
     const account = ctx.any.account({ optedApplications: [ctx.ledger.getApplicationForContract(contract)] })
 
-    ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: 'OptIn' })]).execute(() => {
-      contract.optInToApplication()
-    })
+    ctx.txn
+      .createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: OnCompleteAction.OptIn })])
+      .execute(() => {
+        contract.optInToApplication()
+      })
 
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account })]).execute(() => {
       contract.writeLocalState('New String', false, account)
@@ -44,9 +46,11 @@ describe('LocalStorage contract', () => {
     const contract = ctx.contract.create(LocalStorage)
     const account = ctx.any.account({ optedApplications: [ctx.ledger.getApplicationForContract(contract)] })
 
-    ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: 'OptIn' })]).execute(() => {
-      contract.optInToApplication()
-    })
+    ctx.txn
+      .createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: OnCompleteAction.OptIn })])
+      .execute(() => {
+        contract.optInToApplication()
+      })
 
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account })]).execute(() => {
       const testKey = 'testKey'
@@ -63,9 +67,11 @@ describe('LocalStorage contract', () => {
   it('should clear all local state values', () => {
     const contract = ctx.contract.create(LocalStorage)
     const account = ctx.any.account({ optedApplications: [ctx.ledger.getApplicationForContract(contract)] })
-    ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: 'OptIn' })]).execute(() => {
-      contract.optInToApplication()
-    })
+    ctx.txn
+      .createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: OnCompleteAction.OptIn })])
+      .execute(() => {
+        contract.optInToApplication()
+      })
 
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account })]).execute(() => {
       contract.clearLocalState()
@@ -84,9 +90,11 @@ describe('LocalStorage contract', () => {
   it('should fail to read dynamic local state for non-existent key', () => {
     const contract = ctx.contract.create(LocalStorage)
     const account = ctx.any.account({ optedApplications: [ctx.ledger.getApplicationForContract(contract)] })
-    ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: 'OptIn' })]).execute(() => {
-      contract.optInToApplication()
-    })
+    ctx.txn
+      .createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account, onCompletion: OnCompleteAction.OptIn })])
+      .execute(() => {
+        contract.optInToApplication()
+      })
 
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, sender: account })]).execute(() => {
       expect(() => contract.readDynamicLocalState('nonexistentKey')).toThrow('Key not found')
