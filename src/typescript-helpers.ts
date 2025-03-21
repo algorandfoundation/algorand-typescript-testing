@@ -43,3 +43,10 @@ export const nameOfType = (x: unknown) => {
   }
   return typeof x
 }
+
+export type Overloads<T> = T extends {
+  (...args: infer P1): infer R1
+  (...args: infer P2): infer R2
+}
+  ? ((...args: P1) => R1) | ((...args: P2) => R2)
+  : never
