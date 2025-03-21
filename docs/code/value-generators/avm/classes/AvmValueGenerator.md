@@ -14,13 +14,13 @@ Defined in: [src/value-generators/avm.ts:31](https://github.com/algorandfoundati
 
 ## Constructors
 
-### new AvmValueGenerator()
+### Constructor
 
-> **new AvmValueGenerator**(): [`AvmValueGenerator`](AvmValueGenerator.md)
+> **new AvmValueGenerator**(): `AvmValueGenerator`
 
 #### Returns
 
-[`AvmValueGenerator`](AvmValueGenerator.md)
+`AvmValueGenerator`
 
 ## Methods
 

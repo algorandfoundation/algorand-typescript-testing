@@ -14,9 +14,9 @@ for generating values, managing accounts, and handling logic signatures.
 
 ## Constructors
 
-### new TestExecutionContext()
+### Constructor
 
-> **new TestExecutionContext**(`defaultSenderAddress`?): [`TestExecutionContext`](TestExecutionContext.md)
+> **new TestExecutionContext**(`defaultSenderAddress`?): `TestExecutionContext`
 
 Defined in: [src/test-execution-context.ts:36](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L36)
 
@@ -32,7 +32,7 @@ The default sender address.
 
 #### Returns
 
-[`TestExecutionContext`](TestExecutionContext.md)
+`TestExecutionContext`
 
 ## Accessors
 
@@ -206,7 +206,9 @@ Exports logs for a given application ID and decoding.
 
 #### Type Parameters
 
-• **T** *extends* `LogDecoding`[]
+##### T
+
+`T` *extends* `LogDecoding`[]
 
 #### Parameters
 

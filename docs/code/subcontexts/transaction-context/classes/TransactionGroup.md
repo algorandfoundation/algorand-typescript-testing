@@ -12,9 +12,9 @@ Represents a group of transactions.
 
 ## Constructors
 
-### new TransactionGroup()
+### Constructor
 
-> **new TransactionGroup**(`transactions`, `activeTransactionIndex`?): [`TransactionGroup`](TransactionGroup.md)
+> **new TransactionGroup**(`transactions`, `activeTransactionIndex`?): `TransactionGroup`
 
 Defined in: [src/subcontexts/transaction-context.ts:240](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L240)
 
@@ -30,7 +30,7 @@ Defined in: [src/subcontexts/transaction-context.ts:240](https://github.com/algo
 
 #### Returns
 
-[`TransactionGroup`](TransactionGroup.md)
+`TransactionGroup`
 
 ## Properties
 
@@ -192,9 +192,9 @@ If there is already an inner transaction group being constructed or the active t
 
 ***
 
-### getApplicationTransaction()
+### getApplicationCallTransaction()
 
-> **getApplicationTransaction**(`index`?): `ApplicationTransaction`
+> **getApplicationCallTransaction**(`index`?): `ApplicationCallTransaction`
 
 Defined in: [src/subcontexts/transaction-context.ts:394](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L394)
 
@@ -210,7 +210,7 @@ The index of the transaction.
 
 #### Returns
 
-`ApplicationTransaction`
+`ApplicationCallTransaction`
 
 The application transaction.
 

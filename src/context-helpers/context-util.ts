@@ -1,7 +1,8 @@
-import type { uint64 } from '@algorandfoundation/algorand-typescript'
+import type { OnCompleteActionStr, uint64 } from '@algorandfoundation/algorand-typescript'
+import { OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import type { AbiMetadata } from '../abi-metadata'
 import { AssertError } from '../errors'
-import { ApplicationTransaction } from '../impl/transactions'
+import { ApplicationCallTransaction } from '../impl/transactions'
 import { lazyContext } from './internal-context'
 
 export const checkRoutingConditions = (appId: uint64, metadata: AbiMetadata) => {
@@ -14,7 +15,11 @@ export const checkRoutingConditions = (appId: uint64, metadata: AbiMetadata) => 
     throw new AssertError('method can only be called while creating')
   }
   const txn = lazyContext.activeGroup.activeTransaction
-  if (txn instanceof ApplicationTransaction && metadata.allowActions && !metadata.allowActions.includes(txn.onCompletion)) {
+  if (
+    txn instanceof ApplicationCallTransaction &&
+    metadata.allowActions &&
+    !metadata.allowActions.includes(OnCompleteAction[txn.onCompletion] as OnCompleteActionStr)
+  ) {
     throw new AssertError(`method can only be called with one of the following on_completion values: ${metadata.allowActions.join(', ')}`)
   }
 }

@@ -4,7 +4,11 @@
 
 [@algorandfoundation/algorand-typescript-testing](../../../README.md) / [test-transformer/vitest-transformer](../README.md) / puyaTsTransformer
 
-# Function: puyaTsTransformer()
+# Variable: puyaTsTransformer
+
+> `const` **puyaTsTransformer**: `ts.TransformerFactory`\<`ts.SourceFile`\> & (`config`) => `ts.TransformerFactory`\<`ts.SourceFile`\>
+
+Defined in: [src/test-transformer/vitest-transformer.ts:54](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-transformer/vitest-transformer.ts#L54)
 
 TypeScript transformer for Algorand TypeScript smart contracts and testing files
 which is mainly responsilbe for swapping in stub implementations of op codes,
@@ -44,35 +48,3 @@ export default defineConfig({
   ],
 })
 ```
-
-## Call Signature
-
-> **puyaTsTransformer**(`context`): `Transformer`\<`SourceFile`\>
-
-Defined in: [src/test-transformer/vitest-transformer.ts:54](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-transformer/vitest-transformer.ts#L54)
-
-### Parameters
-
-#### context
-
-`TransformationContext`
-
-### Returns
-
-`Transformer`\<`SourceFile`\>
-
-## Call Signature
-
-> **puyaTsTransformer**(`config`): `TransformerFactory`\<`SourceFile`\>
-
-Defined in: [src/test-transformer/vitest-transformer.ts:55](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-transformer/vitest-transformer.ts#L55)
-
-### Parameters
-
-#### config
-
-`Partial`\<`TransformerConfig`\>
-
-### Returns
-
-`TransformerFactory`\<`SourceFile`\>

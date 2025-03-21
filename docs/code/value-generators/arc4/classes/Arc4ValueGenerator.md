@@ -10,13 +10,13 @@ Defined in: [src/value-generators/arc4.ts:7](https://github.com/algorandfoundati
 
 ## Constructors
 
-### new Arc4ValueGenerator()
+### Constructor
 
-> **new Arc4ValueGenerator**(): [`Arc4ValueGenerator`](Arc4ValueGenerator.md)
+> **new Arc4ValueGenerator**(): `Arc4ValueGenerator`
 
 #### Returns
 
-[`Arc4ValueGenerator`](Arc4ValueGenerator.md)
+`Arc4ValueGenerator`
 
 ## Methods
 
