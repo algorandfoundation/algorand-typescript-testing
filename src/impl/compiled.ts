@@ -11,7 +11,7 @@ import { lazyContext } from '../context-helpers/internal-context'
 import type { ConstructorFor } from '../typescript-helpers'
 import type { ApplicationData } from './reference'
 
-export function compileImpl(
+export function compile(
   artefact: ConstructorFor<BaseContract> | ConstructorFor<LogicSig>,
   options?: CompileContractOptions | CompileLogicSigOptions,
 ): CompiledLogicSig | CompiledContract {

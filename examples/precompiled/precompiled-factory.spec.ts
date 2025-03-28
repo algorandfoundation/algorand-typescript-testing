@@ -1,8 +1,8 @@
 import { arc4, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, it } from 'vitest'
-import { HelloFactory } from './contract.algo'
 import { Hello, HelloTemplate, HelloTemplateCustomPrefix, LargeProgram, TerribleCustodialAccount } from './precompiled-apps.algo'
+import { HelloFactory } from './precompiled-factory.algo'
 
 const MAX_BYTES_SIZE = 4096
 const ABI_RETURN_VALUE_LOG_PREFIX = Bytes.fromHex('151F7C75')

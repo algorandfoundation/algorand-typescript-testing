@@ -1,4 +1,13 @@
-import type { Account as AccountType, BaseContract, bytes, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
+import type {
+  Account as AccountType,
+  Application,
+  BaseContract,
+  bytes,
+  Contract,
+  LogicSig,
+  uint64,
+} from '@algorandfoundation/algorand-typescript'
+import type { ContractProxy, TypedApplicationCallFields, TypedApplicationCallResponse } from '@algorandfoundation/algorand-typescript/arc4'
 import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
 import { ContextManager } from './context-helpers/context-manager'
 import type { DecodedLogs, LogDecoding } from './decode-logs'
@@ -6,7 +15,7 @@ import { Account, AccountCls } from './impl/reference'
 import { ContractContext } from './subcontexts/contract-context'
 import { LedgerContext } from './subcontexts/ledger-context'
 import { TransactionContext } from './subcontexts/transaction-context'
-import type { ConstructorFor, DeliberateAny } from './typescript-helpers'
+import type { ConstructorFor, DeliberateAny, InstanceMethod, PickPartial } from './typescript-helpers'
 import { getRandomBytes } from './util'
 import { ValueGenerator } from './value-generators'
 
@@ -26,6 +35,15 @@ export class TestExecutionContext {
   #activeLogicSigArgs: bytes[]
   #template_vars: Record<string, DeliberateAny> = {}
   #compiledApps: Array<[ConstructorFor<BaseContract>, uint64]> = []
+  #compiledAppProxies: Array<
+    [ConstructorFor<Contract>, Partial<Application & PickPartial<ContractProxy<Contract>, 'call' | 'bareCreate'>>]
+  > = []
+  #abiCallResponses: Array<
+    [
+      InstanceMethod<Contract, DeliberateAny[], DeliberateAny>,
+      (args: TypedApplicationCallFields<DeliberateAny[]> | undefined) => TypedApplicationCallResponse<DeliberateAny>,
+    ]
+  > = []
   #compiledLogicSigs: Array<[ConstructorFor<LogicSig>, AccountType]> = []
 
   /**
@@ -176,6 +194,68 @@ export class TestExecutionContext {
       existing[1] = appId
     } else {
       this.#compiledApps.push([c, appId])
+    }
+  }
+
+  /**
+   * Gets a compiled application proxy by contract.
+   *
+   * @param {ConstructorFor<Contract>} contract - The contract class.
+   * @returns {[ConstructorFor<Contract>, Partial<Application & PickPartial<ContractProxy<Contract>, 'call' | 'bareCreate'>>] | undefined}
+   */
+  getCompiledAppProxy<TContract extends Contract>(contract: ConstructorFor<TContract>) {
+    return this.#compiledAppProxies.find(([c, _]) => c === contract)
+  }
+
+  /**
+   * Sets a compiled application proxy.
+   *
+   * @param {ConstructorFor<Contract>} c - The contract class.
+   * @param {Partial<Application & PickPartial<ContractProxy<Contract>, 'call' | 'bareCreate'>>} compiledProxy - The compiled proxy.
+   */
+  setCompiledAppProxy<TContract extends Contract>(
+    c: ConstructorFor<TContract>,
+    compiledProxy: Partial<Application & PickPartial<ContractProxy<TContract>, 'call' | 'bareCreate'>>,
+  ) {
+    const existing = this.getCompiledAppProxy(c)
+    if (existing) {
+      existing[1] = compiledProxy
+    } else {
+      this.#compiledAppProxies.push([c, compiledProxy])
+    }
+  }
+
+  /**
+   * Gets an ABI call response for a given method.
+   *
+   * @param {InstanceMethod<Contract, TArgs, TReturn>} method - The method to get the ABI call response for.
+   * @returns {[
+     InstanceMethod<Contract, TArgs, TReturn>,
+     (args: TypedApplicationCallFields<TArgs> | undefined) => TypedApplicationCallResponse<TReturn>
+   ] | undefined}
+   */
+  getAbiCallResponse<TArgs extends DeliberateAny[], TReturn>(method: InstanceMethod<Contract, TArgs, TReturn>) {
+    return this.#abiCallResponses.find(([m, _]) => m === method)
+  }
+
+  /**
+   * Sets an ABI call response for a given method.
+   *
+   * @param {InstanceMethod<Contract, TArgs, TReturn>} method - The method to set the ABI call response for.
+   * @param {(args: TypedApplicationCallFields<TArgs> | undefined) => TypedApplicationCallResponse<TReturn>} call - The mock call function.
+   */
+  setAbiCallResponse<TArgs extends DeliberateAny[], TReturn>(
+    method: InstanceMethod<Contract, TArgs, TReturn>,
+    call: (args: TypedApplicationCallFields<TArgs> | undefined) => TypedApplicationCallResponse<TReturn>,
+  ) {
+    const existing = this.getAbiCallResponse(method)
+    if (existing) {
+      existing[1] = call as (args: TypedApplicationCallFields<DeliberateAny[]> | undefined) => TypedApplicationCallResponse<DeliberateAny>
+    } else {
+      this.#abiCallResponses.push([
+        method,
+        call as (args: TypedApplicationCallFields<DeliberateAny[]> | undefined) => TypedApplicationCallResponse<DeliberateAny>,
+      ])
     }
   }
 
