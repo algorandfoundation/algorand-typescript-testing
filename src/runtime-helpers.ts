@@ -7,7 +7,7 @@ import { Uint64BackedCls } from './impl/base'
 import { AlgoTsPrimitiveCls, BigUintCls, BytesCls, checkBigUint, checkBytes, Uint64Cls } from './impl/primitives'
 import { AccountCls } from './impl/reference'
 import type { DeliberateAny } from './typescript-helpers'
-import { nameOfType } from './util'
+import { flattenAsBytes, nameOfType } from './util'
 
 export { attachAbiMetadata } from './abi-metadata'
 export { emitImpl } from './impl/emit'
@@ -227,8 +227,8 @@ function bigUintBinaryOp(left: DeliberateAny, right: DeliberateAny, op: BinaryOp
 }
 
 function bytesBinaryOp(left: DeliberateAny, right: DeliberateAny, op: BinaryOps): DeliberateAny {
-  const lbb = checkBytes(BytesCls.fromCompat(left).asUint8Array())
-  const rbb = checkBytes(BytesCls.fromCompat(right).asUint8Array())
+  const lbb = checkBytes(BytesCls.fromCompat(flattenAsBytes(left)).asUint8Array())
+  const rbb = checkBytes(BytesCls.fromCompat(flattenAsBytes(right)).asUint8Array())
   const lbi = encodingUtil.uint8ArrayToBigInt(lbb)
   const rbi = encodingUtil.uint8ArrayToBigInt(rbb)
 
