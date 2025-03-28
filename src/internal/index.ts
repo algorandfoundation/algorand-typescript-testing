@@ -1,6 +1,6 @@
 export * from '@algorandfoundation/algorand-typescript'
 export { BaseContract, contract } from '../impl/base-contract'
-export { compileImpl as compile } from '../impl/compiled'
+export { compile } from '../impl/compiled'
 export { abimethod, baremethod, Contract } from '../impl/contract'
 export { ensureBudgetImpl as ensureBudget } from '../impl/ensure-budget'
 export { Global } from '../impl/global'

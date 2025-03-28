@@ -8,6 +8,7 @@
 
 ## Classes
 
+- [ApplicationSpy](classes/ApplicationSpy.md)
 - [AssertError](classes/AssertError.md)
 - [AvmError](classes/AvmError.md)
 - [CodeError](classes/CodeError.md)

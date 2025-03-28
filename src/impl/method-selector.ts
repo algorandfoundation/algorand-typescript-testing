@@ -8,12 +8,15 @@ import { Bytes } from './primitives'
 
 export const methodSelector = <TContract extends Contract>(
   methodSignature: Parameters<Overloads<typeof arc4.methodSelector>>[0],
-  contract?: TContract,
+  contract?: TContract | { new (): TContract },
 ): bytes => {
-  if (typeof methodSignature === 'string') {
+  if (typeof methodSignature === 'string' && contract === undefined) {
     return sha512_256(Bytes(encodingUtil.utf8ToUint8Array(methodSignature))).slice(0, 4)
   } else {
-    const abiMetadata = getContractMethodAbiMetadata(contract!, methodSignature.name)
+    const abiMetadata = getContractMethodAbiMetadata(
+      contract!,
+      typeof methodSignature === 'string' ? methodSignature : methodSignature.name,
+    )
     return Bytes(getArc4Selector(abiMetadata))
   }
 }

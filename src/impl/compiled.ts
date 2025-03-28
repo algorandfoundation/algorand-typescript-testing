@@ -11,19 +11,19 @@ import { lazyContext } from '../context-helpers/internal-context'
 import type { ConstructorFor } from '../typescript-helpers'
 import type { ApplicationData } from './reference'
 
-export function compileImpl(
+export function compile(
   artefact: ConstructorFor<BaseContract> | ConstructorFor<LogicSig>,
   options?: CompileContractOptions | CompileLogicSigOptions,
 ): CompiledLogicSig | CompiledContract {
   let app: ApplicationData | undefined
   let account: Account | undefined
-  const compiledApp = lazyContext.value.getCompiledApp(artefact as ConstructorFor<BaseContract>)
-  const compiledLogicSig = lazyContext.value.getCompiledLogicSig(artefact as ConstructorFor<LogicSig>)
-  if (compiledApp !== undefined) {
-    app = lazyContext.ledger.applicationDataMap.get(compiledApp[1])
+  const compiledAppEntry = lazyContext.value.getCompiledAppEntry(artefact as ConstructorFor<BaseContract>)
+  const compiledLogicSigEntry = lazyContext.value.getCompiledLogicSigEntry(artefact as ConstructorFor<LogicSig>)
+  if (compiledAppEntry !== undefined) {
+    app = lazyContext.ledger.applicationDataMap.get(compiledAppEntry.value)
   }
-  if (compiledLogicSig !== undefined) {
-    account = compiledLogicSig[1]
+  if (compiledLogicSigEntry !== undefined) {
+    account = compiledLogicSigEntry.value
   }
   if (options?.templateVars) {
     Object.entries(options.templateVars).forEach(([key, value]) => {
