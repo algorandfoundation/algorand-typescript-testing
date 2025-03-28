@@ -1,13 +1,19 @@
-import type { Account as AccountType, BaseContract, bytes, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, arc4, BaseContract, bytes, Contract, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { ApplicationSpy } from './application-spy'
+import { BytesMap } from './collections/custom-key-map'
 import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
 import { ContextManager } from './context-helpers/context-manager'
 import type { DecodedLogs, LogDecoding } from './decode-logs'
+import type { ApplicationCallInnerTxnContext } from './impl/inner-transactions'
+import { methodSelector } from './impl/method-selector'
+import type { StubBytesCompat } from './impl/primitives'
+import { BytesCls } from './impl/primitives'
 import { Account, AccountCls } from './impl/reference'
 import { ContractContext } from './subcontexts/contract-context'
 import { LedgerContext } from './subcontexts/ledger-context'
 import { TransactionContext } from './subcontexts/transaction-context'
-import type { ConstructorFor, DeliberateAny } from './typescript-helpers'
-import { getRandomBytes } from './util'
+import type { ConstructorFor, DeliberateAny, FunctionKeys, InstanceMethod, Overloads } from './typescript-helpers'
+import { asBytes, getRandomBytes } from './util'
 import { ValueGenerator } from './value-generators'
 
 /**
@@ -24,9 +30,10 @@ export class TestExecutionContext {
   #valueGenerator: ValueGenerator
   #defaultSender: AccountType
   #activeLogicSigArgs: bytes[]
-  #template_vars: Record<string, DeliberateAny> = {}
-  #compiledApps: Array<[ConstructorFor<BaseContract>, uint64]> = []
-  #compiledLogicSigs: Array<[ConstructorFor<LogicSig>, AccountType]> = []
+  #templateVars: Record<string, DeliberateAny> = {}
+  #compiledApps: Array<{ key: ConstructorFor<BaseContract>; value: uint64 }> = []
+  #compiledLogicSigs: Array<{ key: ConstructorFor<LogicSig>; value: AccountType }> = []
+  #abiCallHooks: BytesMap<((innerTxnContext: ApplicationCallInnerTxnContext) => void)[]> = new BytesMap()
 
   /**
    * Creates an instance of `TestExecutionContext`.
@@ -124,7 +131,7 @@ export class TestExecutionContext {
    * @type {Record<string, DeliberateAny>}
    */
   get templateVars(): Record<string, DeliberateAny> {
-    return this.#template_vars
+    return this.#templateVars
   }
 
   /**
@@ -151,7 +158,7 @@ export class TestExecutionContext {
    * @param {string} [prefix] - The prefix for the template variable.
    */
   setTemplateVar(name: string, value: DeliberateAny, prefix?: string) {
-    this.#template_vars[(prefix ?? DEFAULT_TEMPLATE_VAR_PREFIX) + name] = value
+    this.#templateVars[(prefix ?? DEFAULT_TEMPLATE_VAR_PREFIX) + name] = value
   }
 
   /**
@@ -160,8 +167,8 @@ export class TestExecutionContext {
    * @param {ConstructorFor<BaseContract>} contract - The contract class.
    * @returns {[ConstructorFor<BaseContract>, uint64] | undefined}
    */
-  getCompiledApp(contract: ConstructorFor<BaseContract>) {
-    return this.#compiledApps.find(([c, _]) => c === contract)
+  getCompiledAppEntry(contract: ConstructorFor<BaseContract>) {
+    return this.#compiledApps.find(({ key: k }) => k === contract)
   }
 
   /**
@@ -171,12 +178,38 @@ export class TestExecutionContext {
    * @param {uint64} appId - The application ID.
    */
   setCompiledApp(c: ConstructorFor<BaseContract>, appId: uint64) {
-    const existing = this.getCompiledApp(c)
+    const existing = this.getCompiledAppEntry(c)
     if (existing) {
-      existing[1] = appId
+      existing.value = appId
     } else {
-      this.#compiledApps.push([c, appId])
+      this.#compiledApps.push({ key: c, value: appId })
     }
+  }
+
+  /* @internal */
+  getOnAbiCall<TContract extends Contract>(
+    methodSignature: FunctionKeys<TContract> | InstanceMethod<TContract> | StubBytesCompat | 'bareCreate',
+    contract?: TContract | ConstructorFor<TContract>,
+  ) {
+    const selector =
+      methodSignature === 'bareCreate'
+        ? asBytes(methodSignature)
+        : methodSignature instanceof BytesCls
+          ? asBytes(methodSignature)
+          : methodSelector(methodSignature as Parameters<Overloads<typeof arc4.methodSelector>>[0], contract)
+
+    return { key: selector, value: this.#abiCallHooks.get(selector) }
+  }
+
+  addApplicationSpy<TContract extends Contract>(spy: ApplicationSpy<TContract>) {
+    spy.abiCallHooks.forEach((value, key) => {
+      const existing = this.getOnAbiCall(key, spy.contract)
+      if (existing.value) {
+        existing.value.push(...value)
+      } else {
+        this.#abiCallHooks.set(key, value)
+      }
+    })
   }
 
   /**
@@ -185,8 +218,8 @@ export class TestExecutionContext {
    * @param {ConstructorFor<LogicSig>} logicsig - The logic signature class.
    * @returns {[ConstructorFor<LogicSig>, Account] | undefined}
    */
-  getCompiledLogicSig(logicsig: ConstructorFor<LogicSig>) {
-    return this.#compiledLogicSigs.find(([c, _]) => c === logicsig)
+  getCompiledLogicSigEntry(logicsig: ConstructorFor<LogicSig>) {
+    return this.#compiledLogicSigs.find(({ key: k }) => k === logicsig)
   }
 
   /**
@@ -196,11 +229,11 @@ export class TestExecutionContext {
    * @param {Account} account - The account associated with the logic signature.
    */
   setCompiledLogicSig(c: ConstructorFor<LogicSig>, account: AccountType) {
-    const existing = this.getCompiledLogicSig(c)
+    const existing = this.getCompiledLogicSigEntry(c)
     if (existing) {
-      existing[1] = account
+      existing.value = account
     } else {
-      this.#compiledLogicSigs.push([c, account])
+      this.#compiledLogicSigs.push({ key: c, value: account })
     }
   }
 
@@ -213,8 +246,10 @@ export class TestExecutionContext {
     this.#ledgerContext = new LedgerContext()
     this.#txnContext = new TransactionContext()
     this.#activeLogicSigArgs = []
-    this.#template_vars = {}
+    this.#templateVars = {}
     this.#compiledApps = []
+    this.#compiledLogicSigs = []
+    this.#abiCallHooks = new BytesMap()
     ContextManager.reset()
     ContextManager.instance = this
   }

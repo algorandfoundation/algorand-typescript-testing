@@ -1278,7 +1278,7 @@ export function decodeArc4Impl<T>(sourceTypeInfoString: string, bytes: StubBytes
   return getNativeValue(source) as T
 }
 
-export function encodeArc4Impl<T>(_targetTypeInfoString: string, source: T): bytes {
+export function encodeArc4Impl<T>(_targetTypeInfoString: string | undefined, source: T): bytes {
   const arc4Encoded = getArc4Encoded(source)
   return arc4Encoded.bytes
 }

@@ -6,7 +6,7 @@
 
 # Class: TestExecutionContext
 
-Defined in: [src/test-execution-context.ts:20](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L20)
+Defined in: [src/test-execution-context.ts:26](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L26)
 
 The `TestExecutionContext` class provides a context for executing tests in an Algorand environment.
 It manages various contexts such as contract, ledger, and transaction contexts, and provides utilities
@@ -18,7 +18,7 @@ for generating values, managing accounts, and handling logic signatures.
 
 > **new TestExecutionContext**(`defaultSenderAddress`?): `TestExecutionContext`
 
-Defined in: [src/test-execution-context.ts:36](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L36)
+Defined in: [src/test-execution-context.ts:43](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L43)
 
 Creates an instance of `TestExecutionContext`.
 
@@ -42,7 +42,7 @@ The default sender address.
 
 > **get** **activeLogicSigArgs**(): `bytes`[]
 
-Defined in: [src/test-execution-context.ts:117](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L117)
+Defined in: [src/test-execution-context.ts:124](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L124)
 
 Returns the active logic signature arguments.
 
@@ -58,7 +58,7 @@ Returns the active logic signature arguments.
 
 > **get** **any**(): [`ValueGenerator`](../../value-generators/classes/ValueGenerator.md)
 
-Defined in: [src/test-execution-context.ts:90](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L90)
+Defined in: [src/test-execution-context.ts:97](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L97)
 
 Returns the value generator.
 
@@ -74,7 +74,7 @@ Returns the value generator.
 
 > **get** **contract**(): [`ContractContext`](../../subcontexts/contract-context/classes/ContractContext.md)
 
-Defined in: [src/test-execution-context.ts:63](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L63)
+Defined in: [src/test-execution-context.ts:70](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L70)
 
 Returns the contract context.
 
@@ -90,7 +90,7 @@ Returns the contract context.
 
 > **get** **defaultSender**(): `Account`
 
-Defined in: [src/test-execution-context.ts:99](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L99)
+Defined in: [src/test-execution-context.ts:106](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L106)
 
 Returns the default sender account.
 
@@ -102,7 +102,7 @@ Returns the default sender account.
 
 > **set** **defaultSender**(`val`): `void`
 
-Defined in: [src/test-execution-context.ts:108](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L108)
+Defined in: [src/test-execution-context.ts:115](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L115)
 
 Sets the default sender account.
 
@@ -126,7 +126,7 @@ The default sender account.
 
 > **get** **ledger**(): [`LedgerContext`](../../subcontexts/ledger-context/classes/LedgerContext.md)
 
-Defined in: [src/test-execution-context.ts:72](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L72)
+Defined in: [src/test-execution-context.ts:79](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L79)
 
 Returns the ledger context.
 
@@ -142,7 +142,7 @@ Returns the ledger context.
 
 > **get** **templateVars**(): `Record`\<`string`, `any`\>
 
-Defined in: [src/test-execution-context.ts:126](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L126)
+Defined in: [src/test-execution-context.ts:133](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L133)
 
 Returns the template variables.
 
@@ -158,7 +158,7 @@ Returns the template variables.
 
 > **get** **txn**(): [`TransactionContext`](../../subcontexts/transaction-context/classes/TransactionContext.md)
 
-Defined in: [src/test-execution-context.ts:81](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L81)
+Defined in: [src/test-execution-context.ts:88](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L88)
 
 Returns the transaction context.
 
@@ -168,11 +168,35 @@ Returns the transaction context.
 
 ## Methods
 
+### addApplicationSpy()
+
+> **addApplicationSpy**\<`TContract`\>(`spy`): `void`
+
+Defined in: [src/test-execution-context.ts:204](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L204)
+
+#### Type Parameters
+
+##### TContract
+
+`TContract` *extends* `Contract`
+
+#### Parameters
+
+##### spy
+
+[`ApplicationSpy`](ApplicationSpy.md)\<`TContract`\>
+
+#### Returns
+
+`void`
+
+***
+
 ### executeLogicSig()
 
 > **executeLogicSig**(`logicSig`, ...`args`): `boolean` \| `uint64`
 
-Defined in: [src/test-execution-context.ts:137](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L137)
+Defined in: [src/test-execution-context.ts:144](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L144)
 
 Executes a logic signature with the given arguments.
 
@@ -200,7 +224,7 @@ The arguments for the logic signature.
 
 > **exportLogs**\<`T`\>(`appId`, ...`decoding`): `DecodedLogs`\<`T`\>
 
-Defined in: [src/test-execution-context.ts:54](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L54)
+Defined in: [src/test-execution-context.ts:61](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L61)
 
 Exports logs for a given application ID and decoding.
 
@@ -230,11 +254,11 @@ The log decoding.
 
 ***
 
-### getCompiledApp()
+### getCompiledAppEntry()
 
-> **getCompiledApp**(`contract`): `undefined` \| \[`ConstructorFor`\<`BaseContract`\>, `uint64`\]
+> **getCompiledAppEntry**(`contract`): `undefined` \| \{ `key`: `ConstructorFor`\<`BaseContract`\>; `value`: `uint64`; \}
 
-Defined in: [src/test-execution-context.ts:163](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L163)
+Defined in: [src/test-execution-context.ts:170](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L170)
 
 Gets a compiled application by contract.
 
@@ -248,15 +272,15 @@ The contract class.
 
 #### Returns
 
-`undefined` \| \[`ConstructorFor`\<`BaseContract`\>, `uint64`\]
+`undefined` \| \{ `key`: `ConstructorFor`\<`BaseContract`\>; `value`: `uint64`; \}
 
 ***
 
-### getCompiledLogicSig()
+### getCompiledLogicSigEntry()
 
-> **getCompiledLogicSig**(`logicsig`): `undefined` \| \[`ConstructorFor`\<`LogicSig`\>, `Account`\]
+> **getCompiledLogicSigEntry**(`logicsig`): `undefined` \| \{ `key`: `ConstructorFor`\<`LogicSig`\>; `value`: `Account`; \}
 
-Defined in: [src/test-execution-context.ts:188](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L188)
+Defined in: [src/test-execution-context.ts:221](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L221)
 
 Gets a compiled logic signature.
 
@@ -270,7 +294,43 @@ The logic signature class.
 
 #### Returns
 
-`undefined` \| \[`ConstructorFor`\<`LogicSig`\>, `Account`\]
+`undefined` \| \{ `key`: `ConstructorFor`\<`LogicSig`\>; `value`: `Account`; \}
+
+***
+
+### getOnAbiCall()
+
+> **getOnAbiCall**\<`TContract`\>(`methodSignature`, `contract`?): `object`
+
+Defined in: [src/test-execution-context.ts:190](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L190)
+
+#### Type Parameters
+
+##### TContract
+
+`TContract` *extends* `Contract`
+
+#### Parameters
+
+##### methodSignature
+
+`StubBytesCompat` | `KeyIsFunction`\<keyof `TContract`, `TContract`\> | `InstanceMethod`\<`TContract`\>
+
+##### contract?
+
+`TContract` | `ConstructorFor`\<`TContract`\>
+
+#### Returns
+
+`object`
+
+##### key
+
+> **key**: `bytes` = `selector`
+
+##### value
+
+> **value**: `undefined` \| (`innerTxnContext`) => `void`[]
 
 ***
 
@@ -278,7 +338,7 @@ The logic signature class.
 
 > **reset**(): `void`
 
-Defined in: [src/test-execution-context.ts:211](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L211)
+Defined in: [src/test-execution-context.ts:244](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L244)
 
 Reinitializes the execution context, clearing all state variables and resetting internal components.
 Invoked between test cases to ensure isolation.
@@ -293,7 +353,7 @@ Invoked between test cases to ensure isolation.
 
 > **setCompiledApp**(`c`, `appId`): `void`
 
-Defined in: [src/test-execution-context.ts:173](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L173)
+Defined in: [src/test-execution-context.ts:180](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L180)
 
 Sets a compiled application.
 
@@ -321,7 +381,7 @@ The application ID.
 
 > **setCompiledLogicSig**(`c`, `account`): `void`
 
-Defined in: [src/test-execution-context.ts:198](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L198)
+Defined in: [src/test-execution-context.ts:231](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L231)
 
 Sets a compiled logic signature.
 
@@ -349,7 +409,7 @@ The account associated with the logic signature.
 
 > **setTemplateVar**(`name`, `value`, `prefix`?): `void`
 
-Defined in: [src/test-execution-context.ts:153](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L153)
+Defined in: [src/test-execution-context.ts:160](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-execution-context.ts#L160)
 
 Sets a template variable.
 

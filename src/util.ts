@@ -98,6 +98,10 @@ export const getRandomBigInt = (min: number | bigint, max: number | bigint): big
 
 export const getRandomBytes = (length: number): BytesCls => asBytesCls(Bytes(randomBytes(length)))
 
+export const flattenAsBytes = (arr: StubBytesCompat | StubBytesCompat[]): bytes => {
+  return (Array.isArray(arr) ? arr : [arr]).map((x) => asBytes(x)).reduce((acc, x) => acc.concat(x), Bytes())
+}
+
 const NoValue = Symbol('no-value')
 type LazyInstance<T> = () => T
 export const Lazy = <T>(factory: () => T): LazyInstance<T> => {

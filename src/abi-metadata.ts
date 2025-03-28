@@ -57,7 +57,7 @@ export const getContractAbiMetadata = <T extends Contract>(contract: T | { new (
   return result
 }
 
-export const getContractMethodAbiMetadata = <T extends Contract>(contract: T, methodName: string): AbiMetadata => {
+export const getContractMethodAbiMetadata = <T extends Contract>(contract: T | { new (): T }, methodName: string): AbiMetadata => {
   const metadatas = getContractAbiMetadata(contract)
   return metadatas[methodName]
 }
