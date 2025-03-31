@@ -1,20 +1,10 @@
-import { Account, Bytes, bytes, internal } from '@algorandfoundation/algorand-typescript'
-import { encodingUtil } from '@algorandfoundation/puya-ts'
+import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { randomBytes } from 'crypto'
-import { sha512_256 as js_sha512_256 } from 'js-sha512'
-import {
-  ALGORAND_ADDRESS_BYTE_LENGTH,
-  ALGORAND_ADDRESS_LENGTH,
-  ALGORAND_CHECKSUM_BYTE_LENGTH,
-  APP_ID_PREFIX,
-  BITS_IN_BYTE,
-  HASH_BYTES_LENGTH,
-  MAX_BYTES_SIZE,
-  MAX_UINT512,
-  MAX_UINT8,
-  UINT512_SIZE,
-} from './constants'
-import { DeliberateAny } from './typescript-helpers'
+import { BITS_IN_BYTE, MAX_BYTES_SIZE, MAX_UINT512, MAX_UINT8, UINT512_SIZE } from './constants'
+import { AssertError, AvmError, InternalError } from './errors'
+import type { StubBigUintCompat, StubBytesCompat, StubUint64Compat } from './impl/primitives'
+import { BigUintCls, Bytes, BytesCls, Uint64Cls } from './impl/primitives'
+import type { DeliberateAny } from './typescript-helpers'
 
 export const nameOfType = (x: unknown) => {
   if (typeof x === 'object') {
@@ -33,32 +23,30 @@ export function* iterBigInt(start: bigint, end: bigint): Generator<bigint> {
   }
 }
 
-export const asBigInt = (v: internal.primitives.StubUint64Compat): bigint => asUint64Cls(v).asBigInt()
+export const asBigInt = (v: StubUint64Compat): bigint => asUint64Cls(v).asBigInt()
 
-export const asNumber = (v: internal.primitives.StubUint64Compat): number => asUint64Cls(v).asNumber()
+export const asNumber = (v: StubUint64Compat): number => asUint64Cls(v).asNumber()
 
-export const asUint64Cls = (val: internal.primitives.StubUint64Compat) => internal.primitives.Uint64Cls.fromCompat(val)
+export const asUint64Cls = (val: StubUint64Compat) => Uint64Cls.fromCompat(val)
 
-export const asBigUintCls = (val: internal.primitives.StubBigUintCompat | Uint8Array) =>
-  internal.primitives.BigUintCls.fromCompat(
-    val instanceof Uint8Array ? asBytes(val) : Array.isArray(val) ? asBytes(new Uint8Array(val)) : val,
-  )
+export const asBigUintCls = (val: StubBigUintCompat | Uint8Array) =>
+  BigUintCls.fromCompat(val instanceof Uint8Array ? asBytes(val) : Array.isArray(val) ? asBytes(new Uint8Array(val)) : val)
 
-export const asBytesCls = (val: internal.primitives.StubBytesCompat | Uint8Array) => internal.primitives.BytesCls.fromCompat(val)
+export const asBytesCls = (val: StubBytesCompat | Uint8Array) => BytesCls.fromCompat(val)
 
-export const asUint64 = (val: internal.primitives.StubUint64Compat) => asUint64Cls(val).asAlgoTs()
+export const asUint64 = (val: StubUint64Compat) => asUint64Cls(val).asAlgoTs()
 
-export const asBigUint = (val: internal.primitives.StubBigUintCompat | Uint8Array) => asBigUintCls(val).asAlgoTs()
+export const asBigUint = (val: StubBigUintCompat | Uint8Array) => asBigUintCls(val).asAlgoTs()
 
-export const asBytes = (val: internal.primitives.StubBytesCompat | Uint8Array) => asBytesCls(val).asAlgoTs()
+export const asBytes = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).asAlgoTs()
 
-export const asUint8Array = (val: internal.primitives.StubBytesCompat | Uint8Array) => asBytesCls(val).asUint8Array()
+export const asUint8Array = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).asUint8Array()
 
 export const asMaybeUint64Cls = (val: DeliberateAny) => {
   try {
-    return internal.primitives.Uint64Cls.fromCompat(val)
+    return Uint64Cls.fromCompat(val)
   } catch (e) {
-    if (e instanceof internal.errors.InternalError) {
+    if (e instanceof InternalError) {
       // swallow error and return undefined
     } else {
       throw e
@@ -69,9 +57,9 @@ export const asMaybeUint64Cls = (val: DeliberateAny) => {
 
 export const asMaybeBigUintCls = (val: DeliberateAny) => {
   try {
-    return internal.primitives.BigUintCls.fromCompat(val)
+    return BigUintCls.fromCompat(val)
   } catch (e) {
-    if (e instanceof internal.errors.InternalError) {
+    if (e instanceof InternalError) {
       // swallow error and return undefined
     } else {
       throw e
@@ -81,9 +69,9 @@ export const asMaybeBigUintCls = (val: DeliberateAny) => {
 }
 export const asMaybeBytesCls = (val: DeliberateAny) => {
   try {
-    return internal.primitives.BytesCls.fromCompat(val)
+    return BytesCls.fromCompat(val)
   } catch (e) {
-    if (e instanceof internal.errors.InternalError) {
+    if (e instanceof InternalError) {
       // swallow error and return undefined
     } else {
       throw e
@@ -92,8 +80,8 @@ export const asMaybeBytesCls = (val: DeliberateAny) => {
   return undefined
 }
 
-export const binaryStringToBytes = (s: string): internal.primitives.BytesCls =>
-  internal.primitives.BytesCls.fromCompat(new Uint8Array(s.match(/.{1,8}/g)!.map((x) => parseInt(x, 2))))
+export const binaryStringToBytes = (s: string): BytesCls =>
+  BytesCls.fromCompat(new Uint8Array(s.match(/.{1,8}/g)!.map((x) => parseInt(x, 2))))
 
 export const getRandomNumber = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min
@@ -108,7 +96,7 @@ export const getRandomBigInt = (min: number | bigint, max: number | bigint): big
   return (randomValue % (bigIntMax - bigIntMin)) + bigIntMin
 }
 
-export const getRandomBytes = (length: number): internal.primitives.BytesCls => asBytesCls(Bytes(randomBytes(length)))
+export const getRandomBytes = (length: number): BytesCls => asBytesCls(Bytes(randomBytes(length)))
 
 const NoValue = Symbol('no-value')
 type LazyInstance<T> = () => T
@@ -171,24 +159,42 @@ export const uint8ArrayToNumber = (value: Uint8Array): number => {
   return value.reduce((acc, x) => acc * 256 + x, 0)
 }
 
-export const checksumFromPublicKey = (pk: Uint8Array): Uint8Array => {
-  return Uint8Array.from(js_sha512_256.array(pk).slice(HASH_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, HASH_BYTES_LENGTH))
+/**
+ * Runtime assertion function that throws if condition is falsy.
+ *
+ * @param {unknown} condition - The condition to assert
+ * @param {string} [message] - Optional error message if assertion fails
+ * @throws {AssertError} Throws if condition is falsy
+ *
+ * @example
+ * ```ts
+ * const value: string | undefined = "test";
+ * assert(value !== undefined);
+ *
+ * assert(false, "This will throw"); // throws AssertError: This will throw
+ * ```
+ */
+export function assert(condition: unknown, message?: string): asserts condition {
+  if (!condition) {
+    throw new AssertError(message ?? 'Assertion failed')
+  }
 }
 
-export const getApplicationAddress = (appId: internal.primitives.StubUint64Compat): Account => {
-  const toBeSigned = conactUint8Arrays(asUint8Array(APP_ID_PREFIX), encodingUtil.bigIntToUint8Array(asBigInt(appId), 8))
-  const appIdHash = js_sha512_256.array(toBeSigned)
-  const publicKey = Uint8Array.from(appIdHash)
-  const address = encodeAddress(publicKey)
-  return Account(Bytes.fromBase32(address))
-}
-
-export const encodeAddress = (address: Uint8Array): string => {
-  const checksum = checksumFromPublicKey(address)
-  return encodingUtil.uint8ArrayToBase32(conactUint8Arrays(address, checksum)).slice(0, ALGORAND_ADDRESS_LENGTH)
-}
-
-export const decodePublicKey = (address: string): Uint8Array => {
-  const decoded = encodingUtil.base32ToUint8Array(address)
-  return decoded.slice(0, ALGORAND_ADDRESS_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)
+/**
+ * Simulates Algorand Virtual Machine's 'err' opcode by throwing an error.
+ * Used to halt program execution with an optional error message.
+ *
+ * @param {string} [message] - Optional error message. Defaults to "err opcode executed"
+ * @throws {AvmError} Always throws an AvmError
+ * @returns {never} Function never returns normally
+ *
+ * @example
+ * ```ts
+ * if (amount < 0) {
+ *   err("Invalid amount"); // Throws AvmError: Invalid amount
+ * }
+ * ```
+ */
+export function err(message?: string): never {
+  throw new AvmError(message ?? 'err opcode executed')
 }

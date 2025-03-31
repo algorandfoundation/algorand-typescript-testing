@@ -1,4 +1,5 @@
-import { assertMatch, biguint, BigUint, Bytes, match, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { biguint } from '@algorandfoundation/algorand-typescript'
+import { assertMatch, BigUint, Bytes, match, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, test } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../src/constants'
@@ -6,7 +7,7 @@ import { StrImpl } from '../src/impl/encoded-types'
 describe('match', () => {
   const ctx = new TestExecutionContext()
 
-  afterEach(async () => {
+  afterEach(() => {
     ctx.reset()
   })
 

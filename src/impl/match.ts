@@ -1,8 +1,10 @@
-import { assert, assertMatch, internal, match } from '@algorandfoundation/algorand-typescript'
+import type { assertMatch, match } from '@algorandfoundation/algorand-typescript'
 import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
-import { DeliberateAny } from '../typescript-helpers'
-import { asBytes, asMaybeBigUintCls } from '../util'
+import type { DeliberateAny } from '../typescript-helpers'
+import { asBytes, asMaybeBigUintCls, assert } from '../util'
 import { BytesBackedCls, Uint64BackedCls } from './base'
+import type { StubBytesCompat, Uint64Cls } from './primitives'
+import { BytesCls } from './primitives'
 
 export const matchImpl: typeof match = (subject, test): boolean => {
   const bigIntSubjectValue = getBigIntValue(subject)
@@ -22,16 +24,16 @@ export const matchImpl: typeof match = (subject, test): boolean => {
       const [start, end] = (test as DeliberateAny).between
       return bigIntSubjectValue >= getBigIntValue(start)! && bigIntSubjectValue <= getBigIntValue(end)!
     }
-  } else if (subject instanceof internal.primitives.BytesCls) {
-    return subject.equals(asBytes(test as unknown as internal.primitives.StubBytesCompat))
+  } else if (subject instanceof BytesCls) {
+    return subject.equals(asBytes(test as unknown as StubBytesCompat))
   } else if (typeof subject === 'string') {
     return subject === test
   } else if (subject instanceof BytesBackedCls) {
     return subject.bytes.equals((test as unknown as BytesBackedCls).bytes)
   } else if (subject instanceof Uint64BackedCls) {
     return (
-      getBigIntValue(subject.uint64 as unknown as internal.primitives.Uint64Cls) ===
-      getBigIntValue((test as unknown as Uint64BackedCls).uint64 as unknown as internal.primitives.Uint64Cls)
+      getBigIntValue(subject.uint64 as unknown as Uint64Cls) ===
+      getBigIntValue((test as unknown as Uint64BackedCls).uint64 as unknown as Uint64Cls)
     )
   } else if (test instanceof ARC4Encoded) {
     return (subject as unknown as ARC4Encoded).bytes.equals(test.bytes)

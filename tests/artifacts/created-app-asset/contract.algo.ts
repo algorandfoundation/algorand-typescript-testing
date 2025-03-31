@@ -1,5 +1,7 @@
-import { arc4, assert, Global, gtxn, op, uint64 } from '@algorandfoundation/algorand-typescript'
-import { interpretAsArc4, methodSelector, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+import type { gtxn, uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, assert, Global, op } from '@algorandfoundation/algorand-typescript'
+import type { UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+import { interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class AppExpectingEffects extends arc4.Contract {
   @arc4.abimethod()

@@ -1,11 +1,7 @@
-import { internal } from '@algorandfoundation/algorand-typescript'
 import { asBigInt, asUint64 } from '../util'
+import type { StubUint64Compat } from './primitives'
 
-export function* urangeImpl(
-  a: internal.primitives.StubUint64Compat,
-  b?: internal.primitives.StubUint64Compat,
-  c?: internal.primitives.StubUint64Compat,
-) {
+export function* urangeImpl(a: StubUint64Compat, b?: StubUint64Compat, c?: StubUint64Compat) {
   const start = b ? asBigInt(a) : BigInt(0)
   const end = b ? asBigInt(b) : asBigInt(a)
   const step = c ? asBigInt(c) : BigInt(1)

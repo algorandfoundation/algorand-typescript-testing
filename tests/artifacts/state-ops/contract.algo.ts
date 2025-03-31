@@ -1,21 +1,19 @@
+import type { Account, Application, Asset, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import {
-  Account,
-  Application,
   arc4,
   assert,
-  Asset,
   BaseContract,
   Bytes,
-  bytes,
+  contract,
   Global,
   GlobalState,
   itxn,
   LocalState,
+  OnCompleteAction,
   op,
   TransactionType,
   Txn,
   Uint64,
-  uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { Address, Bool, Byte, DynamicBytes, Str, UintN128, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
 
@@ -23,6 +21,7 @@ function get_1st_ref_index(): uint64 {
   return op.btoi(Txn.applicationArgs(1))
 }
 
+@contract({ name: 'StateAcctParamsGetContract', avmVersion: 11 })
 export class StateAcctParamsGetContract extends arc4.Contract {
   @arc4.abimethod()
   public verify_acct_balance(a: Account): uint64 {
@@ -133,6 +132,15 @@ export class StateAcctParamsGetContract extends arc4.Contract {
   public verify_acct_total_box_bytes(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalBoxBytes(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalBoxBytes(get_1st_ref_index())
+    assert(value === value_index, 'expected value by index to match')
+    assert(funded === funded_index, 'expected funded by index to match')
+    return value
+  }
+
+  @arc4.abimethod()
+  public verify_acct_incentive_eligible(a: Account): boolean {
+    const [value, funded] = op.AcctParams.acctIncentiveEligible(a)
+    const [value_index, funded_index] = op.AcctParams.acctIncentiveEligible(get_1st_ref_index())
     assert(value === value_index, 'expected value by index to match')
     assert(funded === funded_index, 'expected funded by index to match')
     return value
@@ -471,7 +479,7 @@ export class ITxnOpsContract extends arc4.Contract {
   public verify_itxn_ops() {
     op.ITxnCreate.begin()
     op.ITxnCreate.setTypeEnum(TransactionType.ApplicationCall)
-    op.ITxnCreate.setOnCompletion(arc4.OnCompleteAction.DeleteApplication)
+    op.ITxnCreate.setOnCompletion(OnCompleteAction.DeleteApplication)
     op.ITxnCreate.setApprovalProgram(Bytes.fromHex('068101'))
 
     // pages essentially appends
@@ -485,7 +493,7 @@ export class ITxnOpsContract extends arc4.Contract {
     op.ITxnCreate.submit()
 
     assert(op.ITxn.receiver === op.Global.creatorAddress)
-    assert(op.ITxn.amount === Uint64(1000))
+    assert(op.ITxn.amount === 1000)
     assert(op.ITxn.typeEnum === TransactionType.Payment)
 
     assert(op.GITxn.typeEnum(0) === TransactionType.ApplicationCall)
@@ -570,7 +578,7 @@ export class ItxnDemoContract extends BaseContract {
         approvalProgram: APPROVE,
         clearStateProgram: APPROVE,
         appArgs: args,
-        onCompletion: arc4.OnCompleteAction.NoOp,
+        onCompletion: OnCompleteAction.NoOp,
         note: 'with args param set',
       })
     } else {

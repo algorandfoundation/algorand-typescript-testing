@@ -1,4 +1,5 @@
-import { arc4, Base64, BigUint, Bytes, bytes, err, op, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, Base64, BigUint, Bytes, err, op } from '@algorandfoundation/algorand-typescript'
 
 export class MiscellaneousOpsContract extends arc4.Contract {
   @arc4.abimethod()
@@ -95,10 +96,9 @@ export class MiscellaneousOpsContract extends arc4.Contract {
     return result
   }
 
-  // TODO: recompile to check if this results in correct TEAL code
   @arc4.abimethod()
   public verify_extract_from_2(a: bytes): bytes {
-    const result = op.extract(a, 2, 0)
+    const result = op.extract(a, 2)
     return result
   }
 

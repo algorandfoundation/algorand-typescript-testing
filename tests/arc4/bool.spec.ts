@@ -1,49 +1,66 @@
-import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { Bool, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, describe, expect, test } from 'vitest'
+import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
 import { asUint8Array } from '../../src/util'
-import appSpecJson from '../artifacts/arc4-primitive-ops/data/Arc4PrimitiveOpsContract.arc32.json'
-import { getAlgorandAppClient, getAvmResult } from '../avm-invoker'
+import { getAvmResult } from '../avm-invoker'
+import { createArc4TestFixture } from '../test-fixture'
 
 describe('arc4.Bool', async () => {
-  const appClient = await getAlgorandAppClient(appSpecJson as AppSpec)
+  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
+    Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  })
   const ctx = new TestExecutionContext()
 
-  afterEach(async () => {
+  beforeAll(async () => {
+    await localnetFixture.newScope()
+  })
+
+  afterEach(() => {
     ctx.reset()
   })
 
-  test.each([true, false])('should be able to get bytes representation of %s', async (value) => {
-    const avmResult = await getAvmResult({ appClient }, 'verify_bool_bytes', value)
-    const result = new Bool(value)
-    expect(result.bytes).toEqual(avmResult)
-  })
+  test.for([true, false])(
+    'should be able to get bytes representation of %s',
+    async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+      const avmResult = await getAvmResult({ appClient }, 'verify_bool_bytes', value)
+      const result = new Bool(value)
+      expect(result.bytes).toEqual(avmResult)
+    },
+  )
 
-  test.each([asUint8Array(Bytes.fromHex('00')), asUint8Array(Bytes.fromHex('80'))])('create Bool from bytes', async (value) => {
-    const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_bytes', value)
-    const result = interpretAsArc4<Bool>(Bytes(value))
-    expect(result.native).toEqual(avmResult)
-  })
+  test.for([asUint8Array(Bytes.fromHex('00')), asUint8Array(Bytes.fromHex('80'))])(
+    'create Bool from bytes',
+    async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+      const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_bytes', value)
+      const result = interpretAsArc4<Bool>(Bytes(value))
+      expect(result.native).toEqual(avmResult)
+    },
+  )
 
-  test.each([asUint8Array(Bytes.fromHex('00')), asUint8Array(Bytes.fromHex('80'))])('create Bool from log', async (value) => {
-    const paddedValue = new Uint8Array([...asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX), ...value])
-    const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)
-    const result = interpretAsArc4<Bool>(Bytes(paddedValue), 'log')
-    expect(result.native).toEqual(avmResult)
-  })
+  test.for([asUint8Array(Bytes.fromHex('00')), asUint8Array(Bytes.fromHex('80'))])(
+    'create Bool from log',
+    async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+      const paddedValue = new Uint8Array([...asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX), ...value])
+      const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)
+      const result = interpretAsArc4<Bool>(Bytes(paddedValue), 'log')
+      expect(result.native).toEqual(avmResult)
+    },
+  )
 
-  test.each([
+  test.for([
     [asUint8Array(Bytes.fromHex('00')), asUint8Array('')],
     [asUint8Array(Bytes.fromHex('80')), asUint8Array(Bytes.fromHex('ff000102'))],
     [asUint8Array(Bytes.fromHex('00')), asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.slice(0, 3))],
-  ])('should throw error when log prefix is invalid for Bool', async (value, prefix) => {
-    const paddedValue = new Uint8Array([...prefix, ...value])
-    await expect(() => getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)).rejects.toThrowError(
-      new RegExp('(assert failed)|(extraction start \\d+ is beyond length)'),
-    )
-    expect(() => interpretAsArc4<Bool>(Bytes(paddedValue), 'log')).toThrowError('ABI return prefix not found')
-  })
+  ])(
+    'should throw error when log prefix is invalid for Bool',
+    async ([value, prefix], { appClientArc4PrimitiveOpsContract: appClient }) => {
+      const paddedValue = new Uint8Array([...prefix, ...value])
+      await expect(() => getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)).rejects.toThrowError(
+        new RegExp('(has valid prefix)|(extraction start \\d+ is beyond length)'),
+      )
+      expect(() => interpretAsArc4<Bool>(Bytes(paddedValue), 'log')).toThrowError('ABI return prefix not found')
+    },
+  )
 })

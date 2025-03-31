@@ -1,5 +1,7 @@
-import { Account, internal } from '@algorandfoundation/algorand-typescript'
-import { DeliberateAny } from '../typescript-helpers'
+import type { Account } from '@algorandfoundation/algorand-typescript'
+import { InternalError } from '../errors'
+import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
+import type { DeliberateAny } from '../typescript-helpers'
 import { asBytesCls, asUint64Cls } from '../util'
 
 type Primitive = number | bigint | string | boolean
@@ -28,7 +30,7 @@ export abstract class CustomKeyMap<TKey, TValue> implements Map<TKey, TValue> {
   getOrFail(key: TKey): TValue {
     const value = this.get(key)
     if (value === undefined) {
-      throw internal.errors.internalError('Key not found')
+      throw new InternalError('Key not found')
     }
     return value
   }
@@ -73,13 +75,13 @@ export class AccountMap<TValue> extends CustomKeyMap<Account, TValue> {
   }
 }
 
-export class BytesMap<TValue> extends CustomKeyMap<internal.primitives.StubBytesCompat, TValue> {
+export class BytesMap<TValue> extends CustomKeyMap<StubBytesCompat, TValue> {
   constructor() {
     super((bytes) => asBytesCls(bytes).valueOf())
   }
 }
 
-export class Uint64Map<TValue> extends CustomKeyMap<internal.primitives.StubUint64Compat, TValue> {
+export class Uint64Map<TValue> extends CustomKeyMap<StubUint64Compat, TValue> {
   constructor() {
     super((uint64) => asUint64Cls(uint64).valueOf())
   }

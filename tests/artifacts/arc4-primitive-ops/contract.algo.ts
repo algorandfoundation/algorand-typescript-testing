@@ -1,5 +1,7 @@
-import { arc4, BigUint, bytes, emit } from '@algorandfoundation/algorand-typescript'
-import { Bool, Byte, Contract, interpretAsArc4, Str, UFixedNxM, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import type { bytes } from '@algorandfoundation/algorand-typescript'
+import { arc4, BigUint, emit } from '@algorandfoundation/algorand-typescript'
+import type { Bool, UFixedNxM } from '@algorandfoundation/algorand-typescript/arc4'
+import { Byte, Contract, interpretAsArc4, Str, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class Arc4PrimitiveOpsContract extends Contract {
   @arc4.abimethod()

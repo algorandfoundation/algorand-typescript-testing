@@ -1,29 +1,33 @@
-import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import {
+import type {
   AddressImpl,
   BoolImpl,
   ByteImpl,
   DynamicBytesImpl,
   StrImpl,
-  UintNImpl,
 } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
-import { Address, ARC4Encoded, BitSize, Bool, Byte, DynamicBytes, Str, UintN } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, describe, expect, test } from 'vitest'
-import { DeliberateAny, FunctionKeys } from '../src/typescript-helpers'
+import { UintNImpl } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
+import type { ARC4Encoded, BitSize } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, Bool, Byte, DynamicBytes, Str, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import { afterEach, beforeAll, describe, expect } from 'vitest'
+import type { DeliberateAny, FunctionKeys } from '../src/typescript-helpers'
 import { asUint8Array } from '../src/util'
 import { GlobalStateContract } from './artifacts/state-ops/contract.algo'
-import arc4AppGlobalAppSpecJson from './artifacts/state-ops/data/GlobalStateContract.arc32.json'
-import { getAlgorandAppClient, getAvmResult, getLocalNetDefaultAccount } from './avm-invoker'
+import { getAvmResult } from './avm-invoker'
+import { createArc4TestFixture } from './test-fixture'
 
 describe('ARC4 AppGlobal values', async () => {
-  const appClient = await getAlgorandAppClient(arc4AppGlobalAppSpecJson as AppSpec)
-  const localNetAccount = await getLocalNetDefaultAccount()
-  const defaultSenderAccountAddress = Bytes.fromBase32(localNetAccount.addr.toString())
-  const ctx = new TestExecutionContext(defaultSenderAccountAddress)
+  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/state-ops/contract.algo.ts', {
+    GlobalStateContract: {},
+  })
+  const ctx = new TestExecutionContext()
 
-  afterEach(async () => {
+  beforeAll(async () => {
+    await localnetFixture.newScope()
+  })
+
+  afterEach(() => {
     ctx.reset()
   })
 
@@ -104,14 +108,16 @@ describe('ARC4 AppGlobal values', async () => {
     },
   ])
 
-  test.each(testData)('should be able to get arc4 state values', async (data) => {
+  test.for(testData)('should be able to get arc4 state values', async (data, { appClientGlobalStateContract: appClient, testAccount }) => {
+    ctx.defaultSender = Bytes.fromBase32(testAccount.addr.toString())
     const avmResult = await getAvmResult({ appClient }, data.methodName)
     const contract = ctx.contract.create(GlobalStateContract)
     const result = contract[data.methodName as FunctionKeys<GlobalStateContract>](undefined as never) as ARC4Encoded
     data.assert(result, avmResult)
   })
 
-  test.each(testData)('should be able to set arc4 state values', async (data) => {
+  test.for(testData)('should be able to set arc4 state values', async (data, { appClientGlobalStateContract: appClient, testAccount }) => {
+    ctx.defaultSender = Bytes.fromBase32(testAccount.addr.toString())
     const setMethodName = data.methodName.replace('get', 'set')
     await getAvmResult({ appClient }, setMethodName, data.nativeValue)
     const contract = ctx.contract.create(GlobalStateContract)

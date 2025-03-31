@@ -1,5 +1,0 @@
-#pragma version 10
-
-tests/artifacts/state-ops/contract.algo.ts::StateAppGlobalContract.clearStateProgram:
-    pushint 1 // 1
-    return

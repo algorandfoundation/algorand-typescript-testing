@@ -1,7 +1,7 @@
-import { Account, Bytes, Global, LogicSig, op, TransactionType, Txn, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
+import { Account, Bytes, Global, LogicSig, op, TransactionType, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
 
 export default class HashedTimeLockedLogicSig extends LogicSig {
-  program(): boolean | uint64 {
+  program(): boolean {
     // Participants
     const sellerAddress = Bytes.fromBase32('6ZHGHH5Z5CTPCF5WCESXMGRSVK7QJETR63M3NY5FJCUYDHO57VTC')
     const buyerAddress = Bytes.fromBase32('7Z5PWO2C6LFNQFGHWKSK5H47IQP5OJW2M3HA2QPXTY3WTNP5NU2M')

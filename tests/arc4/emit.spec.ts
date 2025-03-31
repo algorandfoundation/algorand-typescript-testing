@@ -1,12 +1,12 @@
-import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
-import { arc4, BigUint, biguint, Bytes, bytes, emit, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, BigUint, Bytes, emit, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../../src/constants'
-import appSpecJson from '../artifacts/arc4-primitive-ops/data/Arc4PrimitiveOpsContract.arc32.json'
-import { getAlgorandAppClient, getAvmResultLog } from '../avm-invoker'
+import { getAvmResultLog } from '../avm-invoker'
 
 import { asBigUintCls, asNumber, asUint8Array } from '../../src/util'
+import { createArc4TestFixture } from '../test-fixture'
 
 class Swapped {
   a: string
@@ -41,14 +41,20 @@ class SwappedArc4 extends arc4.Struct<{
 }> {}
 
 describe('arc4.emit', async () => {
-  const appClient = await getAlgorandAppClient(appSpecJson as AppSpec)
+  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
+    Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  })
   const ctx = new TestExecutionContext()
 
-  afterEach(async () => {
+  beforeAll(async () => {
+    await localnetFixture.newScope()
+  })
+
+  afterEach(() => {
     ctx.reset()
   })
 
-  it('should emit the correct values', async () => {
+  test('should emit the correct values', async ({ appClientArc4PrimitiveOpsContract: appClient }) => {
     const test_data = new Swapped('hello', BigUint(MAX_UINT512), Uint64(MAX_UINT64), Bytes('world'), 16, false, Bytes('test'), 'greetings')
 
     const test_data_arc4 = new SwappedArc4({

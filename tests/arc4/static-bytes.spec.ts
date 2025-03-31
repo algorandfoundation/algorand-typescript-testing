@@ -36,6 +36,12 @@ describe('arc4.StaticBytes', async () => {
     expect(result).toEqual(Bytes(sdkResult))
   })
 
+  test.each(testData)('should be able to concat', async (data) => {
+    const sdkResult = getABIEncodedValue([...data.nativeValue(), ...data.nativeValue()], 'byte[]', {})
+    const result = data.staticBytes().concat(data.staticBytes()).bytes
+    expect(result).toEqual(Bytes(sdkResult))
+  })
+
   test.each(testData)('get item from static bytes', async (data) => {
     const staticArray = data.staticBytes()
     const nativeValue = data.nativeValue()

@@ -1,4 +1,5 @@
-import { Account, Application, Bytes, bytes, internal, op, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, Application as ApplicationType, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
+import { encodingUtil } from '@algorandfoundation/puya-ts'
 import {
   DEFAULT_ACCOUNT_MIN_BALANCE,
   DEFAULT_ASSET_CREATE_MIN_BALANCE,
@@ -9,13 +10,17 @@ import {
   ZERO_ADDRESS,
 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { getApplicationAddress, getObjectReference } from '../util'
+import { InternalError } from '../errors'
+import { getObjectReference } from '../util'
+import { sha256 } from './crypto'
+import { Bytes, Uint64 } from './primitives'
+import { Account, getApplicationAddress } from './reference'
 
 export class GlobalData {
   minTxnFee: uint64
   minBalance: uint64
   maxTxnLife: uint64
-  zeroAddress: Account
+  zeroAddress: AccountType
   logicSigVersion?: uint64
   round?: uint64
   latestTimestamp?: uint64
@@ -25,6 +30,10 @@ export class GlobalData {
   assetOptInMinBalance: uint64
   genesisHash: bytes
   opcodeBudget?: uint64
+  payoutsEnabled: boolean
+  payoutsGoOnlineFee: uint64
+  payoutsPercent: uint64
+  payoutsMinBalance: uint64
 
   constructor() {
     this.minTxnFee = Uint64(MIN_TXN_FEE)
@@ -35,6 +44,10 @@ export class GlobalData {
     this.assetCreateMinBalance = Uint64(DEFAULT_ASSET_CREATE_MIN_BALANCE)
     this.assetOptInMinBalance = Uint64(DEFAULT_ASSET_OPT_IN_MIN_BALANCE)
     this.genesisHash = DEFAULT_GLOBAL_GENESIS_HASH
+    this.payoutsEnabled = false
+    this.payoutsGoOnlineFee = Uint64(0)
+    this.payoutsPercent = Uint64(0)
+    this.payoutsMinBalance = Uint64(0)
   }
 }
 const getGlobalData = (): GlobalData => {
@@ -44,7 +57,7 @@ const getGlobalData = (): GlobalData => {
 const getMissingValueErrorMessage = (name: keyof GlobalData) =>
   `'Global' object has no value set for attribute named '${name}'. Use \`context.ledger.patchGlobalData({${name}: your_value})\` to set the value in your test setup."`
 
-export const Global: internal.opTypes.GlobalType = {
+export const Global: typeof op.Global = {
   /**
    * microalgos
    */
@@ -69,7 +82,7 @@ export const Global: internal.opTypes.GlobalType = {
   /**
    * 32 byte address of all zero bytes
    */
-  get zeroAddress(): Account {
+  get zeroAddress(): AccountType {
     return getGlobalData().zeroAddress
   },
 
@@ -87,11 +100,11 @@ export const Global: internal.opTypes.GlobalType = {
   get logicSigVersion(): uint64 {
     const data = getGlobalData()
     if (data.logicSigVersion !== undefined) return data.logicSigVersion
-    throw new internal.errors.InternalError(getMissingValueErrorMessage('logicSigVersion'))
+    throw new InternalError(getMissingValueErrorMessage('logicSigVersion'))
   },
 
   /**
-   * Current round number. Application mode only.
+   * Current round number. ApplicationType mode only.
    */
   get round(): uint64 {
     const data = getGlobalData()
@@ -100,7 +113,7 @@ export const Global: internal.opTypes.GlobalType = {
   },
 
   /**
-   * Last confirmed block UNIX timestamp. Fails if negative. Application mode only.
+   * Last confirmed block UNIX timestamp. Fails if negative. ApplicationType mode only.
    */
   get latestTimestamp(): uint64 {
     const data = getGlobalData()
@@ -109,24 +122,24 @@ export const Global: internal.opTypes.GlobalType = {
   },
 
   /**
-   * ID of current application executing. Application mode only.
+   * ID of current application executing. ApplicationType mode only.
    */
-  get currentApplicationId(): Application {
+  get currentApplicationId(): ApplicationType {
     return lazyContext.activeApplication
   },
 
   /**
-   * Address of the creator of the current application. Application mode only.
+   * Address of the creator of the current application. ApplicationType mode only.
    */
-  get creatorAddress(): Account {
+  get creatorAddress(): AccountType {
     const app = lazyContext.activeApplication
     return app.creator
   },
 
   /**
-   * Address that the current application controls. Application mode only.
+   * Address that the current application controls. ApplicationType mode only.
    */
-  get currentApplicationAddress(): Account {
+  get currentApplicationAddress(): AccountType {
     return this.currentApplicationId.address
   },
 
@@ -137,8 +150,8 @@ export const Global: internal.opTypes.GlobalType = {
     const data = getGlobalData()
     if (data.groupId !== undefined) return data.groupId
     const reference = getObjectReference(lazyContext.activeGroup)
-    const referenceBytes = Bytes(internal.encodingUtil.bigIntToUint8Array(reference))
-    return op.sha256(referenceBytes)
+    const referenceBytes = Bytes(encodingUtil.bigIntToUint8Array(reference))
+    return sha256(referenceBytes)
   },
 
   /**
@@ -147,20 +160,20 @@ export const Global: internal.opTypes.GlobalType = {
   get opcodeBudget(): uint64 {
     const data = getGlobalData()
     if (data.opcodeBudget !== undefined) return data.opcodeBudget
-    throw new internal.errors.InternalError(getMissingValueErrorMessage('opcodeBudget'))
+    throw new InternalError(getMissingValueErrorMessage('opcodeBudget'))
   },
 
   /**
-   * The application ID of the application that called this application. 0 if this application is at the top-level. Application mode only.
+   * The application ID of the application that called this application. 0 if this application is at the top-level. ApplicationType mode only.
    */
   get callerApplicationId(): uint64 {
     return getGlobalData().callerApplicationId
   },
 
   /**
-   * The application address of the application that called this application. ZeroAddress if this application is at the top-level. Application mode only.
+   * The application address of the application that called this application. ZeroAddress if this application is at the top-level. ApplicationType mode only.
    */
-  get callerApplicationAddress(): Account {
+  get callerApplicationAddress(): AccountType {
     return getApplicationAddress(this.callerApplicationId)
   },
 
@@ -184,10 +197,44 @@ export const Global: internal.opTypes.GlobalType = {
   get genesisHash(): bytes {
     return getGlobalData().genesisHash
   },
-  payoutsEnabled: false,
-  // TODO: implement v11 fields
-  payoutsGoOnlineFee: 0,
-  payoutsPercent: 0,
-  payoutsMinBalance: 0,
-  payoutsMaxBalance: 0,
+
+  /**
+   * Whether block proposal payouts are enabled.
+   * Min AVM version: 11
+   */
+  get payoutsEnabled(): boolean {
+    return getGlobalData().payoutsEnabled
+  },
+
+  /**
+   * The fee required in a keyreg transaction to make an account incentive eligible.
+   * Min AVM version: 11
+   */
+  get payoutsGoOnlineFee(): uint64 {
+    return getGlobalData().payoutsGoOnlineFee
+  },
+
+  /**
+   * The percentage of transaction fees in a block that can be paid to the block proposer.
+   * Min AVM version: 11
+   */
+  get payoutsPercent(): uint64 {
+    return getGlobalData().payoutsPercent
+  },
+
+  /**
+   * The minimum algo balance an account must have in the agreement round to receive block payouts in the proposal round.
+   * Min AVM version: 11
+   */
+  get payoutsMinBalance(): uint64 {
+    return getGlobalData().payoutsMinBalance
+  },
+
+  /**
+   * The maximum algo balance an account can have in the agreement round to receive block payouts in the proposal round.
+   * Min AVM version: 11
+   */
+  get payoutsMaxBalance(): uint64 {
+    return getGlobalData().payoutsMinBalance
+  },
 }

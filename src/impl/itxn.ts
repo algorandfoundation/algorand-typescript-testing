@@ -1,8 +1,10 @@
-import { Account, Application, arc4, Asset, bytes, internal, itxn, TransactionType, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account, Application, Asset, bytes, itxn, op, TransactionType, uint64 } from '@algorandfoundation/algorand-typescript'
+import { OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
-import { asBytes, asBytesCls, asUint64, asUint64Cls } from '../util'
+import { asBytes, asBytesCls, asNumber, asUint64, asUint64Cls } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
+import type { StubBytesCompat, StubUint64Compat } from './primitives'
 
 export type InnerTxn =
   | itxn.PaymentInnerTxn
@@ -21,214 +23,214 @@ export type InnerTxnFields = (
   | itxn.ApplicationCallFields
 ) & { type?: TransactionType }
 
-export const GITxn: internal.opTypes.GITxnType = {
-  sender: function (t: internal.primitives.StubUint64Compat): Account {
+export const GITxn: typeof op.GITxn = {
+  sender: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).sender
   },
-  fee: function (t: internal.primitives.StubUint64Compat): uint64 {
+  fee: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).fee
   },
-  firstValid: function (t: internal.primitives.StubUint64Compat): uint64 {
+  firstValid: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).firstValid
   },
-  firstValidTime: function (t: internal.primitives.StubUint64Compat): uint64 {
+  firstValidTime: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).firstValidTime
   },
-  lastValid: function (t: internal.primitives.StubUint64Compat): uint64 {
+  lastValid: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).lastValid
   },
-  note: function (t: internal.primitives.StubUint64Compat): bytes {
+  note: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).note
   },
-  lease: function (t: internal.primitives.StubUint64Compat): bytes {
+  lease: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).lease
   },
-  receiver: function (t: internal.primitives.StubUint64Compat): Account {
+  receiver: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(t).receiver
   },
-  amount: function (t: internal.primitives.StubUint64Compat): uint64 {
+  amount: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(t).amount
   },
-  closeRemainderTo: function (t: internal.primitives.StubUint64Compat): Account {
+  closeRemainderTo: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(t).closeRemainderTo
   },
-  votePk: function (t: internal.primitives.StubUint64Compat): bytes {
+  votePk: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteKey
   },
-  selectionPk: function (t: internal.primitives.StubUint64Compat): bytes {
+  selectionPk: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).selectionKey
   },
-  voteFirst: function (t: internal.primitives.StubUint64Compat): uint64 {
+  voteFirst: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteFirst
   },
-  voteLast: function (t: internal.primitives.StubUint64Compat): uint64 {
+  voteLast: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteLast
   },
-  voteKeyDilution: function (t: internal.primitives.StubUint64Compat): uint64 {
+  voteKeyDilution: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteKeyDilution
   },
-  type: function (t: internal.primitives.StubUint64Compat): bytes {
+  type: function (t: StubUint64Compat): bytes {
     return asUint64Cls(lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).type).toBytes().asAlgoTs()
   },
-  typeEnum: function (t: internal.primitives.StubUint64Compat): uint64 {
+  typeEnum: function (t: StubUint64Compat): uint64 {
     return asUint64(lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).type)
   },
-  xferAsset: function (t: internal.primitives.StubUint64Compat): Asset {
+  xferAsset: function (t: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).xferAsset
   },
-  assetAmount: function (t: internal.primitives.StubUint64Compat): uint64 {
+  assetAmount: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetAmount
   },
-  assetSender: function (t: internal.primitives.StubUint64Compat): Account {
+  assetSender: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetSender
   },
-  assetReceiver: function (t: internal.primitives.StubUint64Compat): Account {
+  assetReceiver: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetReceiver
   },
-  assetCloseTo: function (t: internal.primitives.StubUint64Compat): Account {
+  assetCloseTo: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetCloseTo
   },
-  groupIndex: function (t: internal.primitives.StubUint64Compat): uint64 {
+  groupIndex: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).groupIndex
   },
-  txId: function (t: internal.primitives.StubUint64Compat): bytes {
+  txId: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).txnId
   },
-  applicationId: function (t: internal.primitives.StubUint64Compat): Application {
+  applicationId: function (t: StubUint64Compat): Application {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).appId
   },
-  onCompletion: function (t: internal.primitives.StubUint64Compat): uint64 {
+  onCompletion: function (t: StubUint64Compat): uint64 {
     const onCompletionStr = lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).onCompletion
-    return asUint64(arc4.OnCompleteAction[onCompletionStr])
+    return asUint64(OnCompleteAction[onCompletionStr])
   },
-  applicationArgs: function (t: internal.primitives.StubUint64Compat, a: internal.primitives.StubUint64Compat): bytes {
+  applicationArgs: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).appArgs(asUint64(a))
   },
-  numAppArgs: function (t: internal.primitives.StubUint64Compat): uint64 {
+  numAppArgs: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numAppArgs
   },
-  accounts: function (t: internal.primitives.StubUint64Compat, a: internal.primitives.StubUint64Compat): Account {
+  accounts: function (t: StubUint64Compat, a: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).accounts(asUint64(a))
   },
-  numAccounts: function (t: internal.primitives.StubUint64Compat): uint64 {
+  numAccounts: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numAccounts
   },
-  approvalProgram: function (t: internal.primitives.StubUint64Compat): bytes {
+  approvalProgram: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).approvalProgram
   },
-  clearStateProgram: function (t: internal.primitives.StubUint64Compat): bytes {
+  clearStateProgram: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).clearStateProgram
   },
-  rekeyTo: function (t: internal.primitives.StubUint64Compat): Account {
+  rekeyTo: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).rekeyTo
   },
-  configAsset: function (t: internal.primitives.StubUint64Compat): Asset {
+  configAsset: function (t: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).configAsset
   },
-  configAssetTotal: function (t: internal.primitives.StubUint64Compat): uint64 {
+  configAssetTotal: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).total
   },
-  configAssetDecimals: function (t: internal.primitives.StubUint64Compat): uint64 {
+  configAssetDecimals: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).decimals
   },
-  configAssetDefaultFrozen: function (t: internal.primitives.StubUint64Compat): boolean {
+  configAssetDefaultFrozen: function (t: StubUint64Compat): boolean {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).defaultFrozen
   },
-  configAssetUnitName: function (t: internal.primitives.StubUint64Compat): bytes {
+  configAssetUnitName: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).unitName
   },
-  configAssetName: function (t: internal.primitives.StubUint64Compat): bytes {
+  configAssetName: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).assetName
   },
-  configAssetUrl: function (t: internal.primitives.StubUint64Compat): bytes {
+  configAssetUrl: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).url
   },
-  configAssetMetadataHash: function (t: internal.primitives.StubUint64Compat): bytes {
+  configAssetMetadataHash: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).metadataHash
   },
-  configAssetManager: function (t: internal.primitives.StubUint64Compat): Account {
+  configAssetManager: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).manager
   },
-  configAssetReserve: function (t: internal.primitives.StubUint64Compat): Account {
+  configAssetReserve: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).reserve
   },
-  configAssetFreeze: function (t: internal.primitives.StubUint64Compat): Account {
+  configAssetFreeze: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).freeze
   },
-  configAssetClawback: function (t: internal.primitives.StubUint64Compat): Account {
+  configAssetClawback: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).clawback
   },
-  freezeAsset: function (t: internal.primitives.StubUint64Compat): Asset {
+  freezeAsset: function (t: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(t).freezeAsset
   },
-  freezeAssetAccount: function (t: internal.primitives.StubUint64Compat): Account {
+  freezeAssetAccount: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(t).freezeAccount
   },
-  freezeAssetFrozen: function (t: internal.primitives.StubUint64Compat): boolean {
+  freezeAssetFrozen: function (t: StubUint64Compat): boolean {
     return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(t).frozen
   },
-  assets: function (t: internal.primitives.StubUint64Compat, a: internal.primitives.StubUint64Compat): Asset {
+  assets: function (t: StubUint64Compat, a: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).assets(asUint64(a))
   },
-  numAssets: function (t: internal.primitives.StubUint64Compat): uint64 {
+  numAssets: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numAssets
   },
-  applications: function (t: internal.primitives.StubUint64Compat, a: internal.primitives.StubUint64Compat): Application {
+  applications: function (t: StubUint64Compat, a: StubUint64Compat): Application {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).apps(asUint64(a))
   },
-  numApplications: function (t: internal.primitives.StubUint64Compat): uint64 {
+  numApplications: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numApps
   },
-  globalNumUint: function (t: internal.primitives.StubUint64Compat): uint64 {
+  globalNumUint: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).globalNumUint
   },
-  globalNumByteSlice: function (t: internal.primitives.StubUint64Compat): uint64 {
+  globalNumByteSlice: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).globalNumBytes
   },
-  localNumUint: function (t: internal.primitives.StubUint64Compat): uint64 {
+  localNumUint: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).localNumUint
   },
-  localNumByteSlice: function (t: internal.primitives.StubUint64Compat): uint64 {
+  localNumByteSlice: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).localNumBytes
   },
-  extraProgramPages: function (t: internal.primitives.StubUint64Compat): uint64 {
+  extraProgramPages: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).extraProgramPages
   },
-  nonparticipation: function (t: internal.primitives.StubUint64Compat): boolean {
+  nonparticipation: function (t: StubUint64Compat): boolean {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).nonparticipation
   },
-  logs: function (t: internal.primitives.StubUint64Compat, a: internal.primitives.StubUint64Compat): bytes {
+  logs: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).logs(asUint64(a))
   },
-  numLogs: function (t: internal.primitives.StubUint64Compat): uint64 {
+  numLogs: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numLogs
   },
-  createdAssetId: function (t: internal.primitives.StubUint64Compat): Asset {
+  createdAssetId: function (t: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).createdAsset
   },
-  createdApplicationId: function (t: internal.primitives.StubUint64Compat): Application {
+  createdApplicationId: function (t: StubUint64Compat): Application {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).createdApp
   },
-  lastLog: function (t: internal.primitives.StubUint64Compat): bytes {
+  lastLog: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).lastLog
   },
-  stateProofPk: function (t: internal.primitives.StubUint64Compat): bytes {
+  stateProofPk: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).stateProofKey
   },
-  approvalProgramPages: function (t: internal.primitives.StubUint64Compat, a: internal.primitives.StubUint64Compat): bytes {
+  approvalProgramPages: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).approvalProgramPages(asUint64(a))
   },
-  numApprovalProgramPages: function (t: internal.primitives.StubUint64Compat): uint64 {
+  numApprovalProgramPages: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numApprovalProgramPages
   },
-  clearStateProgramPages: function (t: internal.primitives.StubUint64Compat, a: internal.primitives.StubUint64Compat): bytes {
+  clearStateProgramPages: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).clearStateProgramPages(asUint64(a))
   },
-  numClearStateProgramPages: function (t: internal.primitives.StubUint64Compat): uint64 {
+  numClearStateProgramPages: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numClearStateProgramPages
   },
 }
-export const ITxn: internal.opTypes.ITxnType = {
+export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte address
    */
@@ -384,12 +386,12 @@ export const ITxn: internal.opTypes.ITxnType = {
    */
   get onCompletion(): uint64 {
     const onCompletionStr = lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().onCompletion
-    return asUint64(arc4.OnCompleteAction[onCompletionStr])
+    return asUint64(OnCompleteAction[onCompletionStr])
   },
   /**
    * Arguments passed to the application in the ApplicationCall transaction
    */
-  applicationArgs(a: internal.primitives.StubUint64Compat): bytes {
+  applicationArgs(a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().appArgs(asUint64(a))
   },
   /**
@@ -401,7 +403,7 @@ export const ITxn: internal.opTypes.ITxnType = {
   /**
    * Accounts listed in the ApplicationCall transaction
    */
-  accounts(a: internal.primitives.StubUint64Compat): Account {
+  accounts(a: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().accounts(asUint64(a))
   },
   /**
@@ -521,7 +523,7 @@ export const ITxn: internal.opTypes.ITxnType = {
   /**
    * Foreign Assets listed in the ApplicationCall transaction
    */
-  assets(a: internal.primitives.StubUint64Compat): Asset {
+  assets(a: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().assets(asUint64(a))
   },
   /**
@@ -533,7 +535,7 @@ export const ITxn: internal.opTypes.ITxnType = {
   /**
    * Foreign Apps listed in the ApplicationCall transaction
    */
-  applications(a: internal.primitives.StubUint64Compat): Application {
+  applications(a: StubUint64Compat): Application {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().apps(asUint64(a))
   },
   /**
@@ -581,7 +583,7 @@ export const ITxn: internal.opTypes.ITxnType = {
   /**
    * Log messages emitted by an application call (only with `itxn` in v5). Application mode only
    */
-  logs(a: internal.primitives.StubUint64Compat): bytes {
+  logs(a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().logs(asUint64(a))
   },
   /**
@@ -617,7 +619,7 @@ export const ITxn: internal.opTypes.ITxnType = {
   /**
    * Approval Program as an array of pages
    */
-  approvalProgramPages(a: internal.primitives.StubUint64Compat): bytes {
+  approvalProgramPages(a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().approvalProgramPages(asUint64(a))
   },
   /**
@@ -629,7 +631,7 @@ export const ITxn: internal.opTypes.ITxnType = {
   /**
    * ClearState Program as an array of pages
    */
-  clearStateProgramPages(a: internal.primitives.StubUint64Compat): bytes {
+  clearStateProgramPages(a: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().clearStateProgramPages(asUint64(a))
   },
   /**
@@ -648,53 +650,53 @@ const getConstructingItxn = <T extends InnerTxnFields>(): T => {
   return lazyContext.activeGroup.constructingItxn as T
 }
 
-export const ITxnCreate: internal.opTypes.ITxnCreateType = {
+export const ITxnCreate: typeof op.ITxnCreate = {
   begin: function (): void {
     lazyContext.activeGroup.beginInnerTransactionGroup()
   },
   setSender: function (a: Account): void {
     setConstructingItxnField({ sender: a })
   },
-  setFee: function (a: internal.primitives.StubUint64Compat): void {
+  setFee: function (a: StubUint64Compat): void {
     setConstructingItxnField({ fee: asUint64(a) })
   },
-  setNote: function (a: internal.primitives.StubBytesCompat): void {
+  setNote: function (a: StubBytesCompat): void {
     setConstructingItxnField({ note: asBytes(a) })
   },
   setReceiver: function (a: Account): void {
     setConstructingItxnField({ receiver: a })
   },
-  setAmount: function (a: internal.primitives.StubUint64Compat): void {
+  setAmount: function (a: StubUint64Compat): void {
     setConstructingItxnField({ amount: asUint64(a) })
   },
   setCloseRemainderTo: function (a: Account): void {
     setConstructingItxnField({ closeRemainderTo: a })
   },
-  setVotePk: function (a: internal.primitives.StubBytesCompat): void {
+  setVotePk: function (a: StubBytesCompat): void {
     setConstructingItxnField({ voteKey: asBytes(a) })
   },
-  setSelectionPk: function (a: internal.primitives.StubBytesCompat): void {
+  setSelectionPk: function (a: StubBytesCompat): void {
     setConstructingItxnField({ selectionKey: asBytes(a) })
   },
-  setVoteFirst: function (a: internal.primitives.StubUint64Compat): void {
+  setVoteFirst: function (a: StubUint64Compat): void {
     setConstructingItxnField({ voteFirst: asUint64(a) })
   },
-  setVoteLast: function (a: internal.primitives.StubUint64Compat): void {
+  setVoteLast: function (a: StubUint64Compat): void {
     setConstructingItxnField({ voteLast: asUint64(a) })
   },
-  setVoteKeyDilution: function (a: internal.primitives.StubUint64Compat): void {
+  setVoteKeyDilution: function (a: StubUint64Compat): void {
     setConstructingItxnField({ voteKeyDilution: asUint64(a) })
   },
-  setType: function (a: internal.primitives.StubBytesCompat): void {
+  setType: function (a: StubBytesCompat): void {
     setConstructingItxnField({ type: asBytesCls(a).toUint64().asNumber() as TransactionType })
   },
-  setTypeEnum: function (a: internal.primitives.StubUint64Compat): void {
+  setTypeEnum: function (a: StubUint64Compat): void {
     setConstructingItxnField({ type: asUint64Cls(a).asNumber() as TransactionType })
   },
-  setXferAsset: function (a: Asset | internal.primitives.StubUint64Compat): void {
+  setXferAsset: function (a: Asset | StubUint64Compat): void {
     setConstructingItxnField({ xferAsset: getAsset(a) })
   },
-  setAssetAmount: function (a: internal.primitives.StubUint64Compat): void {
+  setAssetAmount: function (a: StubUint64Compat): void {
     setConstructingItxnField({ assetAmount: asUint64(a) })
   },
   setAssetSender: function (a: Account): void {
@@ -706,13 +708,13 @@ export const ITxnCreate: internal.opTypes.ITxnCreateType = {
   setAssetCloseTo: function (a: Account): void {
     setConstructingItxnField({ assetCloseTo: a })
   },
-  setApplicationId: function (a: Application | internal.primitives.StubUint64Compat): void {
+  setApplicationId: function (a: Application | StubUint64Compat): void {
     setConstructingItxnField({ appId: getApp(a) })
   },
-  setOnCompletion: function (a: internal.primitives.StubUint64Compat): void {
-    setConstructingItxnField({ onCompletion: asUint64(a) })
+  setOnCompletion: function (a: StubUint64Compat): void {
+    setConstructingItxnField({ onCompletion: asNumber(a) })
   },
-  setApplicationArgs: function (a: internal.primitives.StubBytesCompat): void {
+  setApplicationArgs: function (a: StubBytesCompat): void {
     const appArgs = (getConstructingItxn<itxn.ApplicationCallFields>().appArgs ?? []) as bytes[]
     appArgs.push(asBytes(a))
     setConstructingItxnField({ appArgs })
@@ -722,37 +724,37 @@ export const ITxnCreate: internal.opTypes.ITxnCreateType = {
     accounts.push(a)
     setConstructingItxnField({ accounts })
   },
-  setApprovalProgram: function (a: internal.primitives.StubBytesCompat): void {
+  setApprovalProgram: function (a: StubBytesCompat): void {
     setConstructingItxnField({ approvalProgram: asBytes(a) })
   },
-  setClearStateProgram: function (a: internal.primitives.StubBytesCompat): void {
+  setClearStateProgram: function (a: StubBytesCompat): void {
     setConstructingItxnField({ clearStateProgram: asBytes(a) })
   },
   setRekeyTo: function (a: Account): void {
     setConstructingItxnField({ rekeyTo: a })
   },
-  setConfigAsset: function (a: Asset | internal.primitives.StubUint64Compat): void {
+  setConfigAsset: function (a: Asset | StubUint64Compat): void {
     setConstructingItxnField({ configAsset: getAsset(a) })
   },
-  setConfigAssetTotal: function (a: internal.primitives.StubUint64Compat): void {
+  setConfigAssetTotal: function (a: StubUint64Compat): void {
     setConstructingItxnField({ total: asUint64(a) })
   },
-  setConfigAssetDecimals: function (a: internal.primitives.StubUint64Compat): void {
+  setConfigAssetDecimals: function (a: StubUint64Compat): void {
     setConstructingItxnField({ decimals: asUint64(a) })
   },
   setConfigAssetDefaultFrozen: function (a: boolean): void {
     setConstructingItxnField({ defaultFrozen: a })
   },
-  setConfigAssetUnitName: function (a: internal.primitives.StubBytesCompat): void {
+  setConfigAssetUnitName: function (a: StubBytesCompat): void {
     setConstructingItxnField({ unitName: asBytes(a) })
   },
-  setConfigAssetName: function (a: internal.primitives.StubBytesCompat): void {
+  setConfigAssetName: function (a: StubBytesCompat): void {
     setConstructingItxnField({ assetName: asBytes(a) })
   },
-  setConfigAssetUrl: function (a: internal.primitives.StubBytesCompat): void {
+  setConfigAssetUrl: function (a: StubBytesCompat): void {
     setConstructingItxnField({ url: asBytes(a) })
   },
-  setConfigAssetMetadataHash: function (a: internal.primitives.StubBytesCompat): void {
+  setConfigAssetMetadataHash: function (a: StubBytesCompat): void {
     setConstructingItxnField({ metadataHash: asBytes(a) })
   },
   setConfigAssetManager: function (a: Account): void {
@@ -767,7 +769,7 @@ export const ITxnCreate: internal.opTypes.ITxnCreateType = {
   setConfigAssetClawback: function (a: Account): void {
     setConstructingItxnField({ clawback: a })
   },
-  setFreezeAsset: function (a: Asset | internal.primitives.StubUint64Compat): void {
+  setFreezeAsset: function (a: Asset | StubUint64Compat): void {
     setConstructingItxnField({ freezeAsset: getAsset(a) })
   },
   setFreezeAssetAccount: function (a: Account): void {
@@ -776,7 +778,7 @@ export const ITxnCreate: internal.opTypes.ITxnCreateType = {
   setFreezeAssetFrozen: function (a: boolean): void {
     setConstructingItxnField({ frozen: a })
   },
-  setAssets: function (a: internal.primitives.StubUint64Compat): void {
+  setAssets: function (a: StubUint64Compat): void {
     const asset = getAsset(a)
     if (asset) {
       const assets = (getConstructingItxn<itxn.ApplicationCallFields>().assets ?? []) as Asset[]
@@ -784,7 +786,7 @@ export const ITxnCreate: internal.opTypes.ITxnCreateType = {
       setConstructingItxnField({ assets })
     }
   },
-  setApplications: function (a: internal.primitives.StubUint64Compat): void {
+  setApplications: function (a: StubUint64Compat): void {
     const app = getApp(a)
     if (app) {
       const apps = (getConstructingItxn<itxn.ApplicationCallFields>().apps ?? []) as Application[]
@@ -792,28 +794,28 @@ export const ITxnCreate: internal.opTypes.ITxnCreateType = {
       setConstructingItxnField({ apps })
     }
   },
-  setGlobalNumUint: function (a: internal.primitives.StubUint64Compat): void {
+  setGlobalNumUint: function (a: StubUint64Compat): void {
     setConstructingItxnField({ globalNumUint: asUint64(a) })
   },
-  setGlobalNumByteSlice: function (a: internal.primitives.StubUint64Compat): void {
+  setGlobalNumByteSlice: function (a: StubUint64Compat): void {
     setConstructingItxnField({ globalNumBytes: asUint64(a) })
   },
-  setLocalNumUint: function (a: internal.primitives.StubUint64Compat): void {
+  setLocalNumUint: function (a: StubUint64Compat): void {
     setConstructingItxnField({ localNumUint: asUint64(a) })
   },
-  setLocalNumByteSlice: function (a: internal.primitives.StubUint64Compat): void {
+  setLocalNumByteSlice: function (a: StubUint64Compat): void {
     setConstructingItxnField({ localNumBytes: asUint64(a) })
   },
-  setExtraProgramPages: function (a: internal.primitives.StubUint64Compat): void {
+  setExtraProgramPages: function (a: StubUint64Compat): void {
     setConstructingItxnField({ extraProgramPages: asUint64(a) })
   },
   setNonparticipation: function (a: boolean): void {
     setConstructingItxnField({ nonparticipation: a })
   },
-  setStateProofPk: function (a: internal.primitives.StubBytesCompat): void {
+  setStateProofPk: function (a: StubBytesCompat): void {
     setConstructingItxnField({ stateProofKey: asBytes(a) })
   },
-  setApprovalProgramPages: function (a: internal.primitives.StubBytesCompat): void {
+  setApprovalProgramPages: function (a: StubBytesCompat): void {
     let pages = (getConstructingItxn<itxn.ApplicationCallFields>().approvalProgram ?? []) as bytes[]
     if (!Array.isArray(pages)) {
       pages = [pages]
@@ -821,7 +823,7 @@ export const ITxnCreate: internal.opTypes.ITxnCreateType = {
     pages.push(asBytes(a))
     setConstructingItxnField({ approvalProgram: pages })
   },
-  setClearStateProgramPages: function (a: internal.primitives.StubBytesCompat): void {
+  setClearStateProgramPages: function (a: StubBytesCompat): void {
     let pages = (getConstructingItxn<itxn.ApplicationCallFields>().clearStateProgram ?? []) as bytes[]
     if (!Array.isArray(pages)) {
       pages = [pages]

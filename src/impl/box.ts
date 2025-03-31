@@ -1,15 +1,17 @@
-import { bytes, internal, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { MAX_BOX_SIZE } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { toBytes } from '../encoders'
+import { AvmError, InternalError } from '../errors'
 import { asBytes, asBytesCls, asNumber, asUint8Array, conactUint8Arrays } from '../util'
+import type { StubBytesCompat, StubUint64Compat } from './primitives'
 
-export const Box: internal.opTypes.BoxType = {
-  create(a: internal.primitives.StubBytesCompat, b: internal.primitives.StubUint64Compat): boolean {
+export const Box: typeof op.Box = {
+  create(a: StubBytesCompat, b: StubUint64Compat): boolean {
     const name = asBytes(a)
     const size = asNumber(b)
     if (name.length === 0 || size > MAX_BOX_SIZE) {
-      throw new internal.errors.InternalError('Invalid box name or size')
+      throw new AvmError('Invalid box name or size')
     }
     const app = lazyContext.activeApplication
     if (lazyContext.ledger.boxExists(app, name)) {
@@ -18,7 +20,7 @@ export const Box: internal.opTypes.BoxType = {
     lazyContext.ledger.setBox(app, name, new Uint8Array(size))
     return true
   },
-  delete(a: internal.primitives.StubBytesCompat): boolean {
+  delete(a: StubBytesCompat): boolean {
     const name = asBytes(a)
     const app = lazyContext.activeApplication
     if (!lazyContext.ledger.boxExists(app, name)) {
@@ -27,31 +29,31 @@ export const Box: internal.opTypes.BoxType = {
     lazyContext.ledger.deleteBox(app, name)
     return true
   },
-  extract(a: internal.primitives.StubBytesCompat, b: internal.primitives.StubUint64Compat, c: internal.primitives.StubUint64Compat): bytes {
+  extract(a: StubBytesCompat, b: StubUint64Compat, c: StubUint64Compat): bytes {
     const name = asBytes(a)
     const start = asNumber(b)
     const length = asNumber(c)
     const app = lazyContext.activeApplication
     if (!lazyContext.ledger.boxExists(app, name)) {
-      throw new internal.errors.InternalError('Box does not exist')
+      throw new InternalError('Box does not exist')
     }
     const boxContent = lazyContext.ledger.getBox(app, name)
     return toBytes(boxContent.slice(start, start + length))
   },
-  get(a: internal.primitives.StubBytesCompat): readonly [bytes, boolean] {
+  get(a: StubBytesCompat): readonly [bytes, boolean] {
     const name = asBytes(a)
     const app = lazyContext.activeApplication
     const boxContent = lazyContext.ledger.getBox(app, name)
     return [toBytes(boxContent), lazyContext.ledger.boxExists(app, name)]
   },
-  length(a: internal.primitives.StubBytesCompat): readonly [uint64, boolean] {
+  length(a: StubBytesCompat): readonly [uint64, boolean] {
     const name = asBytes(a)
     const app = lazyContext.activeApplication
     const boxContent = lazyContext.ledger.getBox(app, name)
     const exists = lazyContext.ledger.boxExists(app, name)
     return [boxContent.length, exists]
   },
-  put(a: internal.primitives.StubBytesCompat, b: internal.primitives.StubBytesCompat): void {
+  put(a: StubBytesCompat, b: StubBytesCompat): void {
     const name = asBytes(a)
     const app = lazyContext.activeApplication
     const newContent = asBytesCls(b)
@@ -59,32 +61,32 @@ export const Box: internal.opTypes.BoxType = {
       const boxContent = lazyContext.ledger.getBox(app, name)
       const length = boxContent.length
       if (asNumber(length) !== asNumber(newContent.length)) {
-        throw new internal.errors.InternalError('New content length does not match existing box length')
+        throw new InternalError('New content length does not match existing box length')
       }
     }
     lazyContext.ledger.setBox(app, name, newContent.asUint8Array())
   },
-  replace(a: internal.primitives.StubBytesCompat, b: internal.primitives.StubUint64Compat, c: internal.primitives.StubBytesCompat): void {
+  replace(a: StubBytesCompat, b: StubUint64Compat, c: StubBytesCompat): void {
     const name = asBytes(a)
     const start = asNumber(b)
     const newContent = asUint8Array(c)
     const app = lazyContext.activeApplication
     if (!lazyContext.ledger.boxExists(app, name)) {
-      throw new internal.errors.InternalError('Box does not exist')
+      throw new InternalError('Box does not exist')
     }
     const boxContent = lazyContext.ledger.getBox(app, name)
     if (start + newContent.length > boxContent.length) {
-      throw new internal.errors.InternalError('Replacement content exceeds box size')
+      throw new InternalError('Replacement content exceeds box size')
     }
     const updatedContent = conactUint8Arrays(boxContent.slice(0, start), newContent, boxContent.slice(start + newContent.length))
     lazyContext.ledger.setBox(app, name, updatedContent)
   },
-  resize(a: internal.primitives.StubBytesCompat, b: internal.primitives.StubUint64Compat): void {
+  resize(a: StubBytesCompat, b: StubUint64Compat): void {
     const name = asBytes(a)
     const newSize = asNumber(b)
     const app = lazyContext.activeApplication
     if (!lazyContext.ledger.boxExists(app, name)) {
-      throw new internal.errors.InternalError('Box does not exist')
+      throw new InternalError('Box does not exist')
     }
     const boxContent = lazyContext.ledger.getBox(app, name)
     const size = boxContent.length
@@ -96,24 +98,19 @@ export const Box: internal.opTypes.BoxType = {
     }
     lazyContext.ledger.setBox(app, name, updatedContent)
   },
-  splice(
-    a: internal.primitives.StubBytesCompat,
-    b: internal.primitives.StubUint64Compat,
-    c: internal.primitives.StubUint64Compat,
-    d: internal.primitives.StubBytesCompat,
-  ): void {
+  splice(a: StubBytesCompat, b: StubUint64Compat, c: StubUint64Compat, d: StubBytesCompat): void {
     const name = asBytes(a)
     const start = asNumber(b)
     const length = asNumber(c)
     const newContent = asUint8Array(d)
     const app = lazyContext.activeApplication
     if (!lazyContext.ledger.boxExists(app, name)) {
-      throw new internal.errors.InternalError('Box does not exist')
+      throw new InternalError('Box does not exist')
     }
     const boxContent = lazyContext.ledger.getBox(app, name)
     const size = boxContent.length
     if (start > size) {
-      throw new internal.errors.InternalError('Start index exceeds box size')
+      throw new InternalError('Start index exceeds box size')
     }
     const end = Math.min(start + length, size)
     let updatedContent = conactUint8Arrays(boxContent.slice(0, start), newContent, boxContent.slice(end))

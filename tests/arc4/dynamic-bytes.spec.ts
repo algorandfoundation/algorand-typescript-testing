@@ -31,6 +31,12 @@ describe('arc4.DynamicBytes', async () => {
     expect(result).toEqual(Bytes(sdkResult))
   })
 
+  test.each(testData)('should be able to concat', async (data) => {
+    const sdkResult = getABIEncodedValue([...data.nativeValue(), ...data.nativeValue()], abiTypeString, {})
+    const result = data.dynamicBytes().concat(data.dynamicBytes()).bytes
+    expect(result).toEqual(Bytes(sdkResult))
+  })
+
   test.each(testData)('get item from dynamic bytes', async (data) => {
     const dynamicArray = data.dynamicBytes()
     const nativeValue = data.nativeValue()

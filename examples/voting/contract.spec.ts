@@ -1,5 +1,5 @@
 import { Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
-import { encodingUtil, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { TestExecutionContext, toExternalValue } from '@algorandfoundation/algorand-typescript-testing'
 import { DynamicArray, UintN8 } from '@algorandfoundation/algorand-typescript/arc4'
 import nacl from 'tweetnacl'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -50,7 +50,7 @@ describe('VotingRoundApp', () => {
     contract.bootstrap(ctx.any.txn.payment({ receiver: app.address, amount: boostrapMinBalanceReq }))
 
     const account = ctx.any.account()
-    const signature = nacl.sign.detached(encodingUtil.toExternalValue(account.bytes), keyPair.secretKey)
+    const signature = nacl.sign.detached(toExternalValue(account.bytes), keyPair.secretKey)
     ctx.txn.createScope([ctx.any.txn.applicationCall({ sender: account })]).execute(() => {
       const preconditions = contract.getPreconditions(Bytes(signature))
 
@@ -67,7 +67,7 @@ describe('VotingRoundApp', () => {
     contract.bootstrap(ctx.any.txn.payment({ receiver: app.address, amount: boostrapMinBalanceReq }))
 
     const account = ctx.any.account()
-    const signature = nacl.sign.detached(encodingUtil.toExternalValue(account.bytes), keyPair.secretKey)
+    const signature = nacl.sign.detached(toExternalValue(account.bytes), keyPair.secretKey)
     const answerIds = new DynamicArray<UintN8>(
       ...Array(13)
         .fill(0)
@@ -77,7 +77,7 @@ describe('VotingRoundApp', () => {
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: app, sender: account })]).execute(() => {
       contract.vote(ctx.any.txn.payment({ receiver: app.address, amount: voteMinBalanceReq }), Bytes(signature), answerIds)
 
-      expect(contract.votesByAccount.get(account).bytes).toEqual(answerIds.bytes)
+      expect(contract.votesByAccount(account).value.bytes).toEqual(answerIds.bytes)
       expect(contract.voterCount.value).toEqual(13)
     })
   })

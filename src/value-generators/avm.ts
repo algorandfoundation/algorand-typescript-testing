@@ -1,42 +1,83 @@
-import { Account, Application, Asset, bytes, Bytes, internal, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
+import type {
+  Account as AccountType,
+  Application as ApplicationType,
+  Asset as AssetType,
+  biguint,
+  bytes,
+  uint64,
+} from '@algorandfoundation/algorand-typescript'
 import { randomBytes } from 'crypto'
-import { MAX_BYTES_SIZE, MAX_UINT64, ZERO_ADDRESS } from '../constants'
+import { MAX_BYTES_SIZE, MAX_UINT512, MAX_UINT64 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { AccountData } from '../impl/account'
-import { ApplicationCls, ApplicationData } from '../impl/application'
-import { AssetCls, AssetData } from '../impl/asset'
-import { asBigInt, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
+import { InternalError } from '../errors'
+import { BigUint, Bytes, Uint64, type StubBigUintCompat, type StubUint64Compat } from '../impl/primitives'
+import type { AssetData } from '../impl/reference'
+import { Account, AccountData, ApplicationCls, ApplicationData, AssetCls, getDefaultAssetData } from '../impl/reference'
+import { asBigInt, asBigUintCls, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
 
 type AccountContextData = Partial<AccountData['account']> & {
-  address?: Account
-  optedAssetBalances?: Map<internal.primitives.StubUint64Compat, internal.primitives.StubUint64Compat>
-  optedApplications?: Application[]
+  address?: bytes
+  incentiveEligible?: boolean
+  lastProposed?: uint64
+  lastHeartbeat?: uint64
+  optedAssetBalances?: Map<StubUint64Compat, StubUint64Compat>
+  optedApplications?: ApplicationType[]
 }
 
-type AssetContextData = Partial<AssetData> & { assetId?: internal.primitives.StubUint64Compat }
+type AssetContextData = Partial<AssetData> & { assetId?: StubUint64Compat }
 
-type ApplicationContextData = Partial<ApplicationData['application']> & { applicationId?: internal.primitives.StubUint64Compat }
+type ApplicationContextData = Partial<ApplicationData['application']> & { applicationId?: StubUint64Compat }
 
 export class AvmValueGenerator {
-  uint64(minValue: internal.primitives.StubUint64Compat = 0n, maxValue: internal.primitives.StubUint64Compat = MAX_UINT64): uint64 {
+  /**
+   * Generates a random uint64 value within the specified range.
+   * @param {StubUint64Compat} [minValue=0n] - The minimum value (inclusive).
+   * @param {StubUint64Compat} [maxValue=MAX_UINT64] - The maximum value (inclusive).
+   * @returns {uint64} - A random uint64 value.
+   */
+  uint64(minValue: StubUint64Compat = 0n, maxValue: StubUint64Compat = MAX_UINT64): uint64 {
     const min = asBigInt(minValue)
     const max = asBigInt(maxValue)
     if (max > MAX_UINT64) {
-      internal.errors.internalError('maxValue must be less than or equal to MAX_UINT64')
+      throw new InternalError('maxValue must be less than or equal to 2n ** 64n - 1n')
     }
     if (min > max) {
-      internal.errors.internalError('minValue must be less than or equal to maxValue')
+      throw new InternalError('minValue must be less than or equal to maxValue')
     }
     if (min < 0n || max < 0n) {
-      internal.errors.internalError('minValue and maxValue must be greater than or equal to 0')
+      throw new InternalError('minValue and maxValue must be greater than or equal to 0')
     }
     return Uint64(getRandomBigInt(min, max))
   }
 
+  /**
+   * Generates a random biguint value within the specified range.
+   * @param {StubBigUintCompat} [minValue=0n] - The minimum value (inclusive).
+   * @returns {biguint} - A random biguint value.
+   */
+  biguint(minValue: StubBigUintCompat = 0n): biguint {
+    const min = asBigUintCls(minValue).asBigInt()
+    if (min < 0n) {
+      throw new InternalError('minValue must be greater than or equal to 0')
+    }
+
+    return BigUint(getRandomBigInt(min, MAX_UINT512))
+  }
+
+  /**
+   * Generates a random bytes of the specified length.
+   * @param {number} [length=MAX_BYTES_SIZE] - The length of the bytes.
+   * @returns {bytes} - A random bytes.
+   */
   bytes(length = MAX_BYTES_SIZE): bytes {
     return Bytes(new Uint8Array(randomBytes(length)))
   }
 
+  /**
+   * Generates a random string of the specified length.
+   * @param {number} [length=11] - The length of the string.
+   * @returns {string} - A random string.
+   */
   string(length = 11): string {
     const setLength = 11
     return Array(Math.ceil(length / setLength))
@@ -46,17 +87,25 @@ export class AvmValueGenerator {
       .substring(0, length)
   }
 
-  account(input?: AccountContextData): Account {
-    const account = input?.address ?? Account(getRandomBytes(32).asAlgoTs())
+  /**
+   * Generates a random account with the specified context data.
+   * @param {AccountContextData} [input] - The context data for the account.
+   * @returns {Account} - A random account.
+   */
+  account(input?: AccountContextData): AccountType {
+    const account = input?.address ? Account(input.address) : Account(getRandomBytes(32).asAlgoTs())
 
     if (input?.address && lazyContext.ledger.accountDataMap.has(account)) {
-      internal.errors.internalError(
+      throw new InternalError(
         'Account with such address already exists in testing context. Use `context.ledger.getAccount(address)` to retrieve the existing account.',
       )
     }
 
     const data = new AccountData()
-    const { address, optedAssetBalances, optedApplications, ...accountData } = input ?? {}
+    const { address, optedAssetBalances, optedApplications, incentiveEligible, lastProposed, lastHeartbeat, ...accountData } = input ?? {}
+    data.incentiveEligible = incentiveEligible ?? false
+    data.lastProposed = lastProposed
+    data.lastHeartbeat = lastHeartbeat
     data.account = {
       ...data.account,
       ...accountData,
@@ -76,26 +125,18 @@ export class AvmValueGenerator {
     return account
   }
 
-  asset(input?: AssetContextData): Asset {
+  /**
+   * Generates a random asset with the specified context data.
+   * @param {AssetContextData} [input] - The context data for the asset.
+   * @returns {Asset} - A random asset.
+   */
+  asset(input?: AssetContextData): AssetType {
     const id = input?.assetId
     if (id && lazyContext.ledger.assetDataMap.has(id)) {
-      internal.errors.internalError('Asset with such ID already exists in testing context!')
+      throw new InternalError('Asset with such ID already exists in testing context!')
     }
     const assetId = asUint64Cls(id ?? lazyContext.ledger.assetIdIter.next().value)
-    const defaultAssetData = {
-      total: lazyContext.any.uint64(),
-      decimals: lazyContext.any.uint64(1, 6),
-      defaultFrozen: false,
-      unitName: lazyContext.any.bytes(4),
-      name: lazyContext.any.bytes(32),
-      url: lazyContext.any.bytes(10),
-      metadataHash: lazyContext.any.bytes(32),
-      manager: Account(ZERO_ADDRESS),
-      freeze: Account(ZERO_ADDRESS),
-      clawback: Account(ZERO_ADDRESS),
-      creator: lazyContext.defaultSender,
-      reserve: Account(ZERO_ADDRESS),
-    }
+    const defaultAssetData = getDefaultAssetData()
     const { assetId: _, ...assetData } = input ?? {}
     lazyContext.ledger.assetDataMap.set(assetId, {
       ...defaultAssetData,
@@ -104,10 +145,15 @@ export class AvmValueGenerator {
     return new AssetCls(assetId.asAlgoTs())
   }
 
-  application(input?: ApplicationContextData): Application {
+  /**
+   * Generates a random application with the specified context data.
+   * @param {ApplicationContextData} [input] - The context data for the application.
+   * @returns {Application} - A random application.
+   */
+  application(input?: ApplicationContextData): ApplicationType {
     const id = input?.applicationId
     if (id && lazyContext.ledger.applicationDataMap.has(id)) {
-      internal.errors.internalError('Application with such ID already exists in testing context!')
+      throw new InternalError('Application with such ID already exists in testing context!')
     }
     const applicationId = asUint64Cls(id ?? lazyContext.ledger.appIdIter.next().value)
     const data = new ApplicationData()

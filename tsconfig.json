@@ -11,8 +11,19 @@
     "paths": {
       "@algorandfoundation/algorand-typescript-testing": ["./src/index.ts"],
       "@algorandfoundation/algorand-typescript-testing/runtime-helpers": ["./src/runtime-helpers.ts"],
+      "@algorandfoundation/algorand-typescript-testing/internal": ["./src/internal/index.ts"],
+      "@algorandfoundation/algorand-typescript-testing/internal/arc4": ["./src/internal/arc4.ts"],
+      "@algorandfoundation/algorand-typescript-testing/internal/op": ["./src/internal/op.ts"]
     }
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "examples/**/*.ts", "rollup.config.ts", "tests/**/*.ts", "vitest.config.mts", "eslint.config.mjs" ],
+  "include": [
+    "src/**/*.ts",
+    "scripts/**/*.ts",
+    "examples/**/*.ts",
+    "rollup.config.ts",
+    "tests/**/*.ts",
+    "vitest.config.mts",
+    "eslint.config.mjs"
+  ],
   "exclude": []
 }

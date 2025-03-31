@@ -1,31 +1,19 @@
-import {
-  Account,
-  Application,
-  Asset,
-  BaseContract,
-  Bytes,
-  bytes,
-  Contract,
-  contract,
-  internal,
-  LocalState,
-} from '@algorandfoundation/algorand-typescript'
-import {
-  AbiMetadata,
-  copyAbiMetadatas,
-  getArc4Selector,
-  getContractAbiMetadata,
-  getContractMethodAbiMetadata,
-  isContractProxy,
-} from '../abi-metadata'
+import type { Account, Application, Asset, contract, LocalState } from '@algorandfoundation/algorand-typescript'
+import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
+import type { AbiMetadata } from '../abi-metadata'
+import { getArc4Selector, getContractAbiMetadata, getContractMethodAbiMetadata } from '../abi-metadata'
 import { BytesMap } from '../collections/custom-key-map'
 import { checkRoutingConditions } from '../context-helpers/context-util'
 import { lazyContext } from '../context-helpers/internal-context'
-import { toBytes, type TypeInfo } from '../encoders'
-import { AccountCls } from '../impl/account'
-import { ApplicationCls } from '../impl/application'
-import { AssetCls } from '../impl/asset'
+import { type TypeInfo } from '../encoders'
+import { CodeError } from '../errors'
+import { BaseContract, ContractOptionsSymbol } from '../impl/base-contract'
+import { Contract } from '../impl/contract'
+import { getArc4Encoded, UintNImpl } from '../impl/encoded-types'
+import { Bytes } from '../impl/primitives'
+import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
 import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
+import type { Transaction } from '../impl/transactions'
 import {
   ApplicationTransaction,
   AssetConfigTransaction,
@@ -33,11 +21,9 @@ import {
   AssetTransferTransaction,
   KeyRegistrationTransaction,
   PaymentTransaction,
-  Transaction,
 } from '../impl/transactions'
 import { getGenericTypeInfo } from '../runtime-helpers'
-import { DeliberateAny, IConstructor } from '../typescript-helpers'
-
+import type { DeliberateAny, IConstructor } from '../typescript-helpers'
 type ContractOptionsParameter = Parameters<typeof contract>[0]
 
 type StateTotals = Pick<Application, 'globalNumBytes' | 'globalNumUint' | 'localNumBytes' | 'localNumUint'>
@@ -95,28 +81,43 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
   return states
 }
 
+const getUintN8Impl = (value: number) => new UintNImpl({ name: 'UintN<8>', genericArgs: [{ name: '8' }] }, value)
+
 const extractArraysFromArgs = (app: Application, methodSelector: Uint8Array, args: DeliberateAny[]) => {
   const transactions: Transaction[] = []
-  const accounts: Account[] = []
+  const accounts: Account[] = [lazyContext.defaultSender]
   const apps: Application[] = [app]
   const assets: Asset[] = []
-  const appArgs: bytes[] = []
+  let appArgs: ARC4Encoded[] = []
 
   for (const arg of args) {
     if (isTransaction(arg)) {
       transactions.push(arg)
     } else if (arg instanceof AccountCls) {
-      appArgs.push(toBytes(accounts.length))
+      appArgs.push(getUintN8Impl(accounts.length))
       accounts.push(arg as Account)
     } else if (arg instanceof ApplicationCls) {
-      appArgs.push(toBytes(apps.length))
+      appArgs.push(getUintN8Impl(apps.length))
       apps.push(arg as Application)
     } else if (arg instanceof AssetCls) {
-      appArgs.push(toBytes(assets.length))
+      appArgs.push(getUintN8Impl(assets.length))
       assets.push(arg as Asset)
+    } else {
+      appArgs.push(arg)
     }
   }
-  return { accounts, apps, assets, transactions, appArgs: [Bytes(methodSelector), ...appArgs] }
+
+  if (appArgs.length > 15) {
+    const packed = getArc4Encoded(appArgs.slice(14))
+    appArgs = [...appArgs.slice(0, 14), packed]
+  }
+  return {
+    accounts,
+    apps,
+    assets,
+    transactions,
+    appArgs: [Bytes(methodSelector), ...appArgs.filter((a) => a !== undefined).map((a) => a.bytes)],
+  }
 }
 
 function isTransaction(obj: unknown): obj is Transaction {
@@ -130,12 +131,44 @@ function isTransaction(obj: unknown): obj is Transaction {
   )
 }
 
+/**
+ * Provides a context for creating contracts and registering created contract instances
+ * with test execution context.
+ */
 export class ContractContext {
+  /**
+   * Creates a new contract instance and register the created instance with test execution context.
+   *
+   * @template T Type of contract extending BaseContract
+   * @param {IConstructor<T>} type The contract class constructor
+   * @param {...any[]} args Constructor arguments for the contract
+   * @returns {T} Proxied instance of the contract
+   * @example
+   * const ctx = new TestExecutionContext();
+   * const contract = ctx.contract.create(MyContract);
+   */
   create<T extends BaseContract>(type: IConstructor<T>, ...args: DeliberateAny[]): T {
     const proxy = new Proxy(type, this.getContractProxyHandler<T>(this.isArc4(type)))
     return new proxy(...args)
   }
 
+  /**
+   * Creates an array of transactions for calling a contract method.
+   *
+   * @internal
+   * @template TParams Array of parameter types
+   * @param {BaseContract} contract The contract instance
+   * @param {AbiMetadata | undefined} abiMetadata ABI metadata for the method
+   * @param {...TParams} args Method arguments
+   * @returns {Transaction[]} Array of transactions needed to execute the method
+   * @example
+   * const txns = ContractContext.createMethodCallTxns(
+   *   myContract,
+   *   methodAbiMetadata,
+   *   arg1,
+   *   arg2
+   * );
+   */
   static createMethodCallTxns<TParams extends unknown[]>(
     contract: BaseContract,
     abiMetadata: AbiMetadata | undefined,
@@ -155,13 +188,20 @@ export class ContractContext {
   }
 
   private isArc4<T extends BaseContract>(type: IConstructor<T>): boolean {
+    const result = (type as DeliberateAny as typeof BaseContract).isArc4
+    if (result !== undefined && result !== null) {
+      return result
+    }
+    // TODO: uncomment the following line once version puya-ts 1.0.0 is released and delete the rest of the function
+    // throw new internal.errors.CodeError('Cannot create a contract for class as it does not extend Contract or BaseContract')
+
     const proto = Object.getPrototypeOf(type)
     if (proto === BaseContract) {
       return false
     } else if (proto === Contract) {
       return true
-    } else if (proto === Object) {
-      throw new Error('Cannot create a contract for class as it does not extend Contract or BaseContract')
+    } else if (proto === Object || proto === null) {
+      throw new CodeError('Cannot create a contract for class as it does not extend Contract or BaseContract')
     }
     return this.isArc4(proto)
   }
@@ -189,14 +229,12 @@ export class ContractContext {
         lazyContext.txn.ensureScope([txn]).execute(() => {
           t = new target(...args)
         })
-        appData.isCreating = hasCreateMethods(t!)
+        appData.isCreating = isArc4 && hasCreateMethods(t! as Contract)
         const instance = new Proxy(t!, {
           get(target, prop, receiver) {
-            if (prop === isContractProxy) {
-              return true
-            }
             const orig = Reflect.get(target, prop, receiver)
-            const abiMetadata = getContractMethodAbiMetadata(target, prop as string)
+            const abiMetadata =
+              isArc4 && typeof orig === 'function' ? getContractMethodAbiMetadata(target as Contract, orig.name) : undefined
             const isProgramMethod = prop === 'approvalProgram' || prop === 'clearStateProgram'
             const isAbiMethod = isArc4 && abiMetadata
             if (isAbiMethod || isProgramMethod) {
@@ -221,8 +259,6 @@ export class ContractContext {
 
         onConstructed(application, instance, getContractOptions(t!))
 
-        copyAbiMetadatas(t!, instance)
-
         return instance
       },
     }
@@ -231,10 +267,10 @@ export class ContractContext {
 
 const getContractOptions = (contract: BaseContract): ContractOptionsParameter | undefined => {
   const contractClass = contract.constructor as DeliberateAny
-  return contractClass[internal.ContractOptionsSymbol] as ContractOptionsParameter
+  return contractClass[ContractOptionsSymbol] as ContractOptionsParameter
 }
 
-const hasCreateMethods = (contract: BaseContract) => {
+const hasCreateMethods = (contract: Contract) => {
   const metadatas = getContractAbiMetadata(contract)
   return Object.values(metadatas).some((metadata) => (metadata.onCreate ?? 'disallow') !== 'disallow')
 }

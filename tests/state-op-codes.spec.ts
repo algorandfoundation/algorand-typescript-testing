@@ -1,18 +1,20 @@
 import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
-import { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
-import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
-import { Account, arc4, bytes, Bytes, internal, op, TransactionType, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
+import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { Account, arc4, Bytes, Global, OnCompleteAction, op, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { DynamicBytes, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, describe, expect, it, test } from 'vitest'
+import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MIN_TXN_FEE, OnApplicationComplete, ZERO_ADDRESS } from '../src/constants'
+import { lazyContext } from '../src/context-helpers/internal-context'
 import { testInvariant } from '../src/errors'
 import { Block, gloadBytes, gloadUint64 } from '../src/impl'
-import { AccountCls } from '../src/impl/account'
-import { InnerTxn } from '../src/impl/itxn'
-import { ApplicationTransaction } from '../src/impl/transactions'
-import { DeliberateAny } from '../src/typescript-helpers'
-import { asBigInt, asNumber, asUint64Cls, asUint8Array } from '../src/util'
+import type { InnerTxn } from '../src/impl/itxn'
+import { BytesCls, Uint64Cls } from '../src/impl/primitives'
+import { AccountCls, encodeAddress } from '../src/impl/reference'
+import type { ApplicationTransaction } from '../src/impl/transactions'
+import type { DeliberateAny } from '../src/typescript-helpers'
+import { asBigInt, asBigUintCls, asNumber, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
 import { AppExpectingEffects } from './artifacts/created-app-asset/contract.algo'
 import {
   ItxnDemoContract,
@@ -26,35 +28,33 @@ import {
   StateAssetHoldingContract,
   StateAssetParamsContract,
 } from './artifacts/state-ops/contract.algo'
-import acctParamsAppSpecJson from './artifacts/state-ops/data/StateAcctParamsGetContract.arc32.json'
-import appGlobalAppSpecJson from './artifacts/state-ops/data/StateAppGlobalContract.arc32.json'
-import appGlobalExAppSpecJson from './artifacts/state-ops/data/StateAppGlobalExContract.arc32.json'
-import appLocalAppSpecJson from './artifacts/state-ops/data/StateAppLocalContract.arc32.json'
-import appLocalExAppSpecJson from './artifacts/state-ops/data/StateAppLocalExContract.arc32.json'
-import appParamsAppSpecJson from './artifacts/state-ops/data/StateAppParamsContract.arc32.json'
-import assetHoldingAppSpecJson from './artifacts/state-ops/data/StateAssetHoldingContract.arc32.json'
-import assetParamsAppSpecJson from './artifacts/state-ops/data/StateAssetParamsContract.arc32.json'
-import {
-  generateTestAccount,
-  generateTestAsset,
-  getAlgorandAppClient,
-  getAlgorandAppClientWithApp,
-  getAvmResult,
-  getLocalNetDefaultAccount,
-  INITIAL_BALANCE_MICRO_ALGOS,
-} from './avm-invoker'
+import { generateTestAsset, getAvmResult, INITIAL_BALANCE_MICRO_ALGOS } from './avm-invoker'
+import { createArc4TestFixture } from './test-fixture'
 
 describe('State op codes', async () => {
+  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/state-ops/contract.algo.ts', {
+    ItxnDemoContract: {},
+    ITxnOpsContract: {},
+    StateAcctParamsGetContract: {},
+    StateAppGlobalContract: {},
+    StateAppGlobalExContract: {},
+    StateAppLocalContract: {},
+    StateAppLocalExContract: {},
+    StateAppParamsContract: {},
+    StateAssetHoldingContract: {},
+    StateAssetParamsContract: {},
+  })
   const ctx = new TestExecutionContext()
 
-  afterEach(async () => {
+  beforeAll(async () => {
+    await localnetFixture.newScope()
+  })
+  afterEach(() => {
     ctx.reset()
   })
 
   describe('AcctParams', async () => {
-    const [appClient, dummyAccount] = await Promise.all([getAlgorandAppClient(acctParamsAppSpecJson as AppSpec), generateTestAccount()])
-
-    test.each([
+    test.for([
       ['verify_acct_balance', INITIAL_BALANCE_MICRO_ALGOS + 100_000],
       ['verify_acct_min_balance', 100_000],
       ['verify_acct_auth_addr', ZERO_ADDRESS],
@@ -67,27 +67,31 @@ describe('State op codes', async () => {
       ['verify_acct_total_assets', 0],
       ['verify_acct_total_boxes', 0],
       ['verify_acct_total_box_bytes', 0],
-    ])('%s should return %s', async (methodName, expectedValue) => {
+    ])('%s should return %s', async ([methodName, expectedValue], { appClientStateAcctParamsGetContract: appClient }) => {
+      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+        initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS + 100_000),
+      })
+      const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())
       const mockAccount = ctx.any.account({
         address: dummyAccount,
-        balance: Uint64(INITIAL_BALANCE_MICRO_ALGOS + 100000),
-        minBalance: Uint64(100000),
+        balance: INITIAL_BALANCE_MICRO_ALGOS + 100_000,
+        minBalance: 100_000,
         authAddress: Account(ZERO_ADDRESS),
-        totalNumUint: Uint64(0),
-        totalNumByteSlice: Uint64(0),
-        totalExtraAppPages: Uint64(0),
-        totalAppsCreated: Uint64(0),
-        totalAppsOptedIn: Uint64(0),
-        totalAssetsCreated: Uint64(0),
-        totalAssets: Uint64(0),
-        totalBoxes: Uint64(0),
-        totalBoxBytes: Uint64(0),
+        totalNumUint: 0,
+        totalNumByteSlice: 0,
+        totalExtraAppPages: 0,
+        totalAppsCreated: 0,
+        totalAppsOptedIn: 0,
+        totalAssetsCreated: 0,
+        totalAssets: 0,
+        totalBoxes: 0,
+        totalBoxBytes: 0,
       })
 
       const avmResult = await getAvmResult(
         { appClient, sendParams: { staticFee: AlgoAmount.Algos(1000) } },
-        methodName,
-        asUint8Array(dummyAccount.bytes),
+        methodName as string,
+        asUint8Array(mockAccount.bytes),
       )
       testInvariant(avmResult !== undefined, 'There must be an AVM result')
       const mockContract = ctx.contract.create(StateAcctParamsGetContract)
@@ -96,15 +100,80 @@ describe('State op codes', async () => {
       expect(mockResult).toEqual(avmResult)
       expect(mockResult).toEqual(expectedValue)
     })
+
+    test('should return true when account is eligible for incentive', async ({ appClientStateAcctParamsGetContract: appClient }) => {
+      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+        initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS),
+      })
+      const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())
+      const mockAccount = ctx.any.account({
+        address: dummyAccount,
+        balance: INITIAL_BALANCE_MICRO_ALGOS + 100000,
+        minBalance: 100000,
+      })
+      ctx.ledger.patchGlobalData({ payoutsEnabled: true, payoutsGoOnlineFee: 10 })
+      ctx.txn.createScope([ctx.any.txn.keyRegistration({ sender: mockAccount, fee: 10 })]).execute(() => {
+        expect(op.AcctParams.acctIncentiveEligible(mockAccount)).toEqual([true, true])
+      })
+
+      await appClient.algorand.send.onlineKeyRegistration({
+        sender: encodeAddress(asUint8Array(dummyAccount)),
+        voteKey: getRandomBytes(32).asUint8Array(),
+        selectionKey: getRandomBytes(32).asUint8Array(),
+        voteFirst: 1n,
+        voteLast: 1000000n,
+        voteKeyDilution: 1000000n,
+        stateProofKey: getRandomBytes(64).asUint8Array(),
+        staticFee: AlgoAmount.Algos(10),
+      })
+      const avmResult = await getAvmResult(
+        { appClient, sendParams: { staticFee: AlgoAmount.Algos(10) } },
+        'verify_acct_incentive_eligible',
+        asUint8Array(mockAccount.bytes),
+      )
+      expect(avmResult).toEqual(true)
+    })
+
+    test('should return last round as last proposed and last hearbeat by default', async () => {
+      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+        initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS),
+      })
+      const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())
+      const mockAccount = ctx.any.account({
+        address: dummyAccount,
+        balance: INITIAL_BALANCE_MICRO_ALGOS + 100000,
+      })
+      const incentiveEligible = op.AcctParams.acctIncentiveEligible(mockAccount)
+      const lastProposed = op.AcctParams.acctLastProposed(mockAccount)
+      const lastHeartbeat = op.AcctParams.acctLastHeartbeat(mockAccount)
+      expect(incentiveEligible).toEqual([false, true])
+      expect(lastProposed).toEqual([Global.round, true])
+      expect(lastHeartbeat).toEqual([Global.round, true])
+    })
+
+    test('should return configured round as last proposed and last hearbeat', async () => {
+      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+        initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS),
+      })
+      const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())
+      const mockAccount = ctx.any.account({
+        address: dummyAccount,
+        balance: INITIAL_BALANCE_MICRO_ALGOS + 100000,
+        incentiveEligible: true,
+        lastProposed: 100,
+        lastHeartbeat: 200,
+      })
+      const incentiveEligible = op.AcctParams.acctIncentiveEligible(mockAccount)
+      const lastProposed = op.AcctParams.acctLastProposed(mockAccount)
+      const lastHeartbeat = op.AcctParams.acctLastHeartbeat(mockAccount)
+      expect(incentiveEligible).toEqual([true, true])
+      expect(lastProposed).toEqual([100, true])
+      expect(lastHeartbeat).toEqual([200, true])
+    })
   })
 
   describe('AppParams', async () => {
-    const [[appClient, app], dummyAccount] = await Promise.all([
-      getAlgorandAppClientWithApp(appParamsAppSpecJson as AppSpec),
-      getLocalNetDefaultAccount(),
-    ])
-
-    test.each([
+    test.for([
       ['verify_app_params_get_approval_program', undefined],
       ['verify_app_params_get_clear_state_program', undefined],
       ['verify_app_params_get_global_num_uint', 0],
@@ -114,19 +183,24 @@ describe('State op codes', async () => {
       ['verify_app_params_get_extra_program_pages', 0],
       ['verify_app_params_get_creator', 'app.creator'],
       ['verify_app_params_get_address', 'app.address'],
-    ])('%s should return %s', async (methodName, expectedValue) => {
+    ])('%s should return %s', async ([methodName, expectedValue], { appFactoryStateAppParamsContract, testAccount }) => {
+      const { result: app, appClient } = await appFactoryStateAppParamsContract.deploy({})
       const application = ctx.any.application({
         applicationId: app.appId,
         approvalProgram: Bytes(app.compiledApproval!.compiledBase64ToBytes),
         clearStateProgram: Bytes(app.compiledClear!.compiledBase64ToBytes),
-        globalNumUint: Uint64(0),
-        globalNumBytes: Uint64(0),
-        localNumUint: Uint64(0),
-        localNumBytes: Uint64(0),
-        extraProgramPages: Uint64(0),
-        creator: Account(Bytes.fromBase32(dummyAccount.addr.toString())),
+        globalNumUint: 0,
+        globalNumBytes: 0,
+        localNumUint: 0,
+        localNumBytes: 0,
+        extraProgramPages: 0,
+        creator: Account(Bytes.fromBase32(testAccount.addr.toString())),
       })
-      const avmResult = await getAvmResult({ appClient, sendParams: { staticFee: AlgoAmount.Algos(1000) } }, methodName, app.appId)
+      const avmResult = await getAvmResult(
+        { appClient, sendParams: { staticFee: AlgoAmount.Algos(1000) } },
+        methodName as string,
+        app.appId,
+      )
 
       const mockContract = ctx.contract.create(StateAppParamsContract)
       const mockResult = mockContract[methodName as keyof StateAppParamsContract](application)
@@ -144,47 +218,40 @@ describe('State op codes', async () => {
   })
 
   describe('AssetHolding', async () => {
-    const [appClient, dummyAccount] = await Promise.all([
-      getAlgorandAppClient(assetHoldingAppSpecJson as AppSpec),
-      getLocalNetDefaultAccount(),
-    ])
-
-    test.each([
+    test.for([
       ['verify_asset_holding_get', 100],
       ['verify_asset_frozen_get', false],
-    ])('should return the correct field value of the asset holding', async (methodName, expectedValue) => {
-      const dummyAsset = await generateTestAsset({
-        sender: dummyAccount.addr,
-        total: 100n,
-        decimals: 0,
-        defaultFrozen: false,
-      })
-      const avmResult = await getAvmResult({ appClient }, methodName, dummyAccount.addr.toString(), asBigInt(dummyAsset))
+    ])(
+      'should return the correct field value of the asset holding',
+      async ([methodName, expectedValue], { appClientStateAssetHoldingContract: appClient, testAccount, assetFactory }) => {
+        const dummyAsset = await generateTestAsset(assetFactory, {
+          sender: testAccount.addr,
+          total: 100n,
+          decimals: 0,
+          defaultFrozen: false,
+        })
+        const avmResult = await getAvmResult({ appClient }, methodName as string, testAccount.addr.toString(), dummyAsset)
 
-      const mockAsset = ctx.any.asset()
-      const mockAccount = ctx.any.account({
-        optedAssetBalances: new Map([[mockAsset.id, 100]]),
-      })
-      const mockContract = ctx.contract.create(StateAssetHoldingContract)
-      const mockResult = mockContract[methodName as keyof StateAssetHoldingContract](mockAccount, mockAsset)
+        const mockAsset = ctx.any.asset()
+        const mockAccount = ctx.any.account({
+          optedAssetBalances: new Map([[mockAsset.id, 100]]),
+        })
+        const mockContract = ctx.contract.create(StateAssetHoldingContract)
+        const mockResult = mockContract[methodName as keyof StateAssetHoldingContract](mockAccount, mockAsset)
 
-      if (typeof mockResult === 'boolean') {
-        expect(mockResult).toEqual(avmResult)
-        expect(mockResult).toEqual(expectedValue)
-      } else {
-        expect(mockResult.valueOf()).toEqual(avmResult)
-        expect(asNumber(mockResult as uint64)).toEqual(expectedValue)
-      }
-    })
+        if (typeof mockResult === 'boolean') {
+          expect(mockResult).toEqual(avmResult)
+          expect(mockResult).toEqual(expectedValue)
+        } else {
+          expect(mockResult.valueOf()).toEqual(avmResult)
+          expect(asNumber(mockResult as uint64)).toEqual(expectedValue)
+        }
+      },
+    )
   })
 
   describe('AssetParams', async () => {
-    const [appClient, dummyAccount] = await Promise.all([
-      getAlgorandAppClient(assetParamsAppSpecJson as AppSpec),
-      getLocalNetDefaultAccount(),
-    ])
-
-    test.each([
+    test.for([
       ['verify_asset_params_get_total', 100n],
       ['verify_asset_params_get_decimals', 0n],
       ['verify_asset_params_get_default_frozen', false],
@@ -197,46 +264,68 @@ describe('State op codes', async () => {
       ['verify_asset_params_get_freeze', ZERO_ADDRESS],
       ['verify_asset_params_get_clawback', ZERO_ADDRESS],
       ['verify_asset_params_get_creator', 'creator'],
-    ])('should return the correct field value of the asset', async (methodName, expectedValue) => {
-      const creator = Account(Bytes.fromBase32(dummyAccount.addr.toString()))
-      const metadataHash = Bytes(`test${' '.repeat(28)}`)
-      const mockAsset = ctx.any.asset({
-        total: Uint64(100),
-        decimals: Uint64(0),
-        name: Bytes('TEST'),
-        unitName: Bytes('UNIT'),
-        url: Bytes('https://algorand.co'),
-        metadataHash: metadataHash,
-        creator,
-      })
+    ])(
+      'should return the correct field value of the asset',
+      async ([methodName, expectedValue], { appClientStateAssetParamsContract: appClient, testAccount, assetFactory }) => {
+        const creator = Account(Bytes.fromBase32(testAccount.addr.toString()))
+        const metadataHash = Bytes(`test${' '.repeat(28)}`)
+        const mockAsset = ctx.any.asset({
+          total: 100,
+          decimals: 0,
+          name: Bytes('TEST'),
+          unitName: Bytes('UNIT'),
+          url: Bytes('https://algorand.co'),
+          metadataHash: metadataHash,
+          creator,
+        })
 
-      const dummyAsset = await generateTestAsset({
-        sender: dummyAccount.addr,
-        total: 100n,
-        decimals: 0,
-        defaultFrozen: false,
-        assetName: 'TEST',
-        unitName: 'UNIT',
-        url: 'https://algorand.co',
-        metadataHash: metadataHash.toString(),
-      })
+        const dummyAsset = await generateTestAsset(assetFactory, {
+          sender: testAccount.addr,
+          total: 100n,
+          decimals: 0,
+          defaultFrozen: false,
+          assetName: 'TEST',
+          unitName: 'UNIT',
+          url: 'https://algorand.co',
+          metadataHash: metadataHash.toString(),
+        })
 
-      const avmResult = await getAvmResult({ appClient }, methodName, asBigInt(dummyAsset))
+        const avmResult = await getAvmResult({ appClient }, methodName as string, dummyAsset)
 
-      const mockContract = ctx.contract.create(StateAssetParamsContract)
-      const mockResult = mockContract[methodName as keyof StateAssetParamsContract](mockAsset)
+        const mockContract = ctx.contract.create(StateAssetParamsContract)
+        const mockResult = mockContract[methodName as keyof StateAssetParamsContract](mockAsset)
 
-      expect(mockResult).toEqual(avmResult)
-      if (expectedValue === 'creator') {
-        expect(mockResult).toEqual(creator)
-      } else {
-        expect(mockResult).toEqual(expectedValue)
-      }
+        expect(mockResult).toEqual(avmResult)
+        if (expectedValue === 'creator') {
+          expect(mockResult).toEqual(creator)
+        } else {
+          expect(mockResult).toEqual(expectedValue)
+        }
+      },
+    )
+  })
+
+  describe('VoterParams', async () => {
+    test('should return the configured balance and incentive eligibility', async () => {
+      const mockAccount = ctx.any.account()
+      ctx.ledger.patchVoterData(mockAccount, { balance: 100, incentiveEligible: true })
+      const balance = op.VoterParams.voterBalance(mockAccount)
+      const incentiveEligible = op.VoterParams.voterIncentiveEligible(mockAccount)
+      expect(balance).toEqual([100, true])
+      expect(incentiveEligible).toEqual([true, true])
+    })
+  })
+
+  describe('onlineStake', async () => {
+    test('should return the configured online stake', async () => {
+      lazyContext.ledger.onlineStake = Uint64(42)
+      const result = op.onlineStake()
+      expect(result).toEqual(42)
     })
   })
 
   describe('Global', async () => {
-    it('should return the correct global field value', async () => {
+    test('should return the correct global field value', async () => {
       const creator = ctx.any.account()
       const app = ctx.any.application({ creator })
       const txn1 = ctx.any.txn.applicationCall({ appId: app })
@@ -272,11 +361,23 @@ describe('State op codes', async () => {
       })
       expect([...asUint8Array(firstGroupId)]).not.toEqual([...asUint8Array(secondGroupId)])
       expect(firstTimestamp.valueOf()).not.toEqual(secondTimestamp.valueOf())
+
+      ctx.ledger.patchGlobalData({
+        payoutsEnabled: true,
+        payoutsGoOnlineFee: 12,
+        payoutsPercent: 2,
+        payoutsMinBalance: 42,
+      })
+
+      expect(op.Global.payoutsEnabled).toEqual(true)
+      expect(op.Global.payoutsGoOnlineFee).toEqual(12)
+      expect(op.Global.payoutsPercent).toEqual(2)
+      expect(op.Global.payoutsMinBalance).toEqual(42)
     })
   })
 
   describe('gaid', async () => {
-    it('should return the correct ID of the asset or application created', async () => {
+    test('should return the correct ID of the asset or application created', async () => {
       const createdAsset = ctx.any.asset()
       const createdApp = ctx.any.application()
       const assetCreateTxn = ctx.any.txn.assetConfig({ createdAsset })
@@ -289,7 +390,7 @@ describe('State op codes', async () => {
       expect(appId.valueOf()).toEqual(createdApp.id.valueOf())
     })
 
-    it('should be able to pass app call txn as app arg', async () => {
+    test('should be able to pass app call txn as app arg', async () => {
       const appCallTxn = ctx.any.txn.applicationCall({
         appArgs: [arc4.methodSelector('some_value()uint64')],
         appLogs: [ABI_RETURN_VALUE_LOG_PREFIX.concat(new UintN64(2).bytes)],
@@ -300,7 +401,7 @@ describe('State op codes', async () => {
   })
 
   describe('itxn', async () => {
-    it('should return the correct field value of the transaction', async () => {
+    test('should return the correct field value of the transaction', async () => {
       // arrange
       const contract = ctx.contract.create(ITxnOpsContract)
 
@@ -319,7 +420,7 @@ describe('State op codes', async () => {
         .fill(0)
         .map((_, i) => [...asUint8Array(appItxn.approvalProgramPages(i))])
       expect(approvalPages).toEqual([[...asUint8Array(appItxn.approvalProgram)]])
-      expect(appItxn.onCompletion).toEqual(arc4.OnCompleteAction[arc4.OnCompleteAction['DeleteApplication']])
+      expect(appItxn.onCompletion).toEqual(OnCompleteAction[OnCompleteAction['DeleteApplication']])
       expect(asNumber(appItxn.fee)).toEqual(MIN_TXN_FEE)
       expect(appItxn.sender).toEqual(ctx.ledger.getApplicationForContract(contract).address)
       // NOTE: would implementing emulation for this behavior be useful
@@ -339,12 +440,12 @@ describe('State op codes', async () => {
       // Test common fields for both transactions
       ;[appItxn, paymentItxn].forEach((t: InnerTxn) => {
         expect(t.sender instanceof AccountCls)
-        expect((t.fee as unknown) instanceof internal.primitives.Uint64Cls)
-        expect((t.firstValid as unknown) instanceof internal.primitives.Uint64Cls)
-        expect((t.lastValid as unknown) instanceof internal.primitives.Uint64Cls)
-        expect(t.note instanceof internal.primitives.BytesCls)
-        expect(t.lease instanceof internal.primitives.BytesCls)
-        expect(t.txnId instanceof internal.primitives.BytesCls)
+        expect((t.fee as unknown) instanceof Uint64Cls)
+        expect((t.firstValid as unknown) instanceof Uint64Cls)
+        expect((t.lastValid as unknown) instanceof Uint64Cls)
+        expect(t.note instanceof BytesCls)
+        expect(t.lease instanceof BytesCls)
+        expect(t.txnId instanceof BytesCls)
       })
 
       // Test logs (should be empty for newly created transactions as its a void method)
@@ -355,12 +456,12 @@ describe('State op codes', async () => {
       expect(appItxn.createdApp).toBeTruthy()
     })
 
-    it('should be able to invoke demo contract', async () => {
+    test('should be able to invoke demo contract', async () => {
       const contract = ctx.contract.create(ItxnDemoContract)
-      ctx.txn.createScope([ctx.any.txn.applicationCall({ appArgs: [Bytes('test1')] })]).execute(() => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, appArgs: [Bytes('test1')] })]).execute(() => {
         contract.approvalProgram()
       })
-      ctx.txn.createScope([ctx.any.txn.applicationCall({ appArgs: [Bytes('test2')] })]).execute(() => {
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: contract, appArgs: [Bytes('test2')] })]).execute(() => {
         contract.approvalProgram()
       })
     })
@@ -383,7 +484,7 @@ describe('State op codes', async () => {
   })
 
   describe('gloadBytes', async () => {
-    it('should return the correct field value of the scratch slot', async () => {
+    test('should return the correct field value of the scratch slot', async () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(0), Bytes('hello'), Bytes('world')] })]).execute(() => {
         const slot1 = gloadBytes(0, 1)
         const slot2 = gloadBytes(0, 2)
@@ -391,12 +492,12 @@ describe('State op codes', async () => {
         expect(slot2).toStrictEqual('world')
       })
     })
-    it('should throw error if the scratch slot is not a bytes type', async () => {
+    test('should throw error if the scratch slot is not a bytes type', async () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(0), Bytes('hello'), Bytes('world')] })]).execute(() => {
         expect(() => gloadBytes(0, 0)).toThrow('invalid scratch slot type')
       })
     })
-    it('should throw error if the scratch slot is out of range', async () => {
+    test('should throw error if the scratch slot is out of range', async () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(0), Bytes('hello'), Bytes('world')] })]).execute(() => {
         expect(() => gloadBytes(0, 256)).toThrow('invalid scratch slot')
       })
@@ -404,7 +505,7 @@ describe('State op codes', async () => {
   })
 
   describe('gloadUint64', async () => {
-    it('should return the correct field value of the scratch slot', async () => {
+    test('should return the correct field value of the scratch slot', async () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(7), Uint64(42), Bytes('world')] })]).execute(() => {
         const slot0 = gloadUint64(0, 0)
         const slot1 = gloadUint64(0, 1)
@@ -412,12 +513,12 @@ describe('State op codes', async () => {
         expect(slot1).toStrictEqual(42n)
       })
     })
-    it('should throw error if the scratch slot is not a uint64 type', async () => {
+    test('should throw error if the scratch slot is not a uint64 type', async () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(7), Uint64(42), Bytes('world')] })]).execute(() => {
         expect(() => gloadUint64(0, 2)).toThrow('invalid scratch slot type')
       })
     })
-    it('should throw error if the scratch slot is out of range', async () => {
+    test('should throw error if the scratch slot is out of range', async () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall({ scratchSpace: [Uint64(7), Uint64(42), Bytes('world')] })]).execute(() => {
         expect(() => gloadUint64(0, 256)).toThrow('invalid scratch slot')
       })
@@ -425,18 +526,44 @@ describe('State op codes', async () => {
   })
 
   describe('Block', async () => {
-    it('should return the correct field value of the block', async () => {
+    test('should return the correct field value of the block', async () => {
       const index = 42
-      const seed = 123
+      const seed = asBigUintCls(123n).toBytes().asAlgoTs()
       const timestamp = 1234567890
-      ctx.ledger.setBlock(index, seed, timestamp)
-      const seedResult = op.btoi(Block.blkSeed(Uint64(index)))
-      const timestampResult = Block.blkTimestamp(Uint64(index))
+      const proposer = ctx.any.account()
+      const feesCollected = 1000
+      const bonus = 12
+      const branch = getRandomBytes(32).asAlgoTs()
+      const feeSink = ctx.any.account()
+      const protocol = getRandomBytes(32).asAlgoTs()
+      const txnCounter = 32
+      const proposerPayout = 42
 
-      expect(seedResult).toEqual(Uint64(seed))
-      expect(timestampResult).toEqual(Uint64(timestamp))
+      ctx.ledger.patchBlockData(index, {
+        seed,
+        timestamp,
+        proposer,
+        feesCollected,
+        bonus,
+        branch,
+        feeSink,
+        protocol,
+        txnCounter,
+        proposerPayout,
+      })
+
+      expect(Block.blkSeed(index)).toEqual(seed)
+      expect(Block.blkTimestamp(index)).toEqual(timestamp)
+      expect(Block.blkProposer(index)).toEqual(proposer)
+      expect(Block.blkFeesCollected(index)).toEqual(feesCollected)
+      expect(Block.blkBonus(index)).toEqual(bonus)
+      expect(Block.blkBranch(index)).toEqual(branch)
+      expect(Block.blkFeeSink(index)).toEqual(feeSink)
+      expect(Block.blkProtocol(index)).toEqual(protocol)
+      expect(Block.blkTxnCounter(index)).toEqual(txnCounter)
+      expect(Block.blkProposerPayout(index)).toEqual(proposerPayout)
     })
-    it('should throw error if the block is not set', async () => {
+    test('should throw error if the block is not set', async () => {
       const index = 42
       expect(() => Block.blkSeed(Uint64(index))).toThrow('Block 42 not set')
       expect(() => Block.blkTimestamp(Uint64(index))).toThrow('Block 42 not set')
@@ -444,12 +571,7 @@ describe('State op codes', async () => {
   })
 
   describe('AppGlobal', async () => {
-    const [appClient, [_exAppClient, exApp]] = await Promise.all([
-      getAlgorandAppClient(appGlobalAppSpecJson as AppSpec),
-      getAlgorandAppClientWithApp(appGlobalExAppSpecJson as AppSpec),
-    ])
-
-    it('should be able to put, get and delete app global state', async () => {
+    test('should be able to put, get and delete app global state', async ({ appClientStateAppGlobalContract: appClient }) => {
       const bytesKey = 'global_bytes'
       const uint64Key = 'global_uint64'
       const bytesValue = 'test_bytes'
@@ -486,7 +608,11 @@ describe('State op codes', async () => {
       expect(asBigInt(uint64Result2)).toEqual(uint64AvmResult2)
     })
 
-    it('should be able to use _ex methods to get state of another app', async () => {
+    test('should be able to use _ex methods to get state of another app', async ({
+      appClientStateAppGlobalContract: appClient,
+      appFactoryStateAppGlobalExContract,
+    }) => {
+      const { result: exApp } = await appFactoryStateAppGlobalExContract.deploy({})
       const key = 'global_bytes_explicit'
       const secondContract = ctx.contract.create(StateAppGlobalExContract)
       const secondApp = ctx.ledger.getApplicationForContract(secondContract)
@@ -501,9 +627,10 @@ describe('State op codes', async () => {
       expect(bytesResult).toEqual(bytesAvmResult)
     })
 
-    test.each(['global_arc4_bytes_explicit', 'global_arc4_bytes'])(
+    test.for(['global_arc4_bytes_explicit', 'global_arc4_bytes'])(
       'should be able to use _ex methods to get arc4 state values of another app',
-      async (key) => {
+      async (key, { appClientStateAppGlobalContract: appClient, appFactoryStateAppGlobalExContract }) => {
+        const { result: exApp } = await appFactoryStateAppGlobalExContract.deploy({})
         const secondContract = ctx.contract.create(StateAppGlobalExContract)
         const secondApp = ctx.ledger.getApplicationForContract(secondContract)
         expect(secondApp.globalNumUint.valueOf()).toEqual(2)
@@ -520,15 +647,13 @@ describe('State op codes', async () => {
   })
 
   describe('AppLocal', async () => {
-    const [appClient, [exAppClient, exApp]] = await Promise.all([
-      getAlgorandAppClient(appLocalAppSpecJson as AppSpec),
-      getAlgorandAppClientWithApp(appLocalExAppSpecJson as AppSpec),
-    ])
-
-    await Promise.all([tryOptIn(appClient), tryOptIn(exAppClient)])
-
-    it('should be able to put, get and delete app local state', async () => {
-      const localNetAccount = await getLocalNetDefaultAccount()
+    test('should be able to put, get and delete app local state', async ({
+      appClientStateAppLocalContract: appClient,
+      appFactoryStateAppLocalExContract,
+      testAccount: localNetAccount,
+    }) => {
+      const { appClient: exAppClient } = await appFactoryStateAppLocalExContract.deploy({})
+      await Promise.all([tryOptIn(appClient), tryOptIn(exAppClient)])
       const account = Account(Bytes.fromBase32(localNetAccount.addr.toString()))
       const bytesKey = 'local_bytes'
       const uint64Key = 'local_uint64'
@@ -584,9 +709,14 @@ describe('State op codes', async () => {
       expect(asBigInt(uint64Result2)).toEqual(uint64AvmResult2)
     })
 
-    it('should be able to use _ex methods to get state of another app', async () => {
+    test('should be able to use _ex methods to get state of another app', async ({
+      appClientStateAppLocalContract: appClient,
+      appFactoryStateAppLocalExContract,
+      testAccount: localNetAccount,
+    }) => {
+      const { result: exApp, appClient: exAppClient } = await appFactoryStateAppLocalExContract.deploy({})
+      await Promise.all([tryOptIn(appClient), tryOptIn(exAppClient)])
       const key = 'local_bytes'
-      const localNetAccount = await getLocalNetDefaultAccount()
       const account = Account(Bytes.fromBase32(localNetAccount.addr.toString()))
       const secondContract = ctx.contract.create(StateAppLocalExContract)
       const secondApp = ctx.ledger.getApplicationForContract(secondContract)
@@ -608,9 +738,14 @@ describe('State op codes', async () => {
       expect(bytesResult).toEqual(bytesAvmResult)
     })
 
-    it('should be able to use _ex methods to get arc4 state values of another app', async () => {
+    test('should be able to use _ex methods to get arc4 state values of another app', async ({
+      appClientStateAppLocalContract: appClient,
+      appFactoryStateAppLocalExContract,
+      testAccount: localNetAccount,
+    }) => {
+      const { result: exApp, appClient: exAppClient } = await appFactoryStateAppLocalExContract.deploy({})
+      await Promise.all([tryOptIn(appClient), tryOptIn(exAppClient)])
       const key = 'local_arc4_bytes'
-      const localNetAccount = await getLocalNetDefaultAccount()
       const account = Account(Bytes.fromBase32(localNetAccount.addr.toString()))
       const secondContract = ctx.contract.create(StateAppLocalExContract)
       const secondApp = ctx.ledger.getApplicationForContract(secondContract)

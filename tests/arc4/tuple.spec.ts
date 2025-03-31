@@ -1,11 +1,12 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
-import { Bytes, internal } from '@algorandfoundation/algorand-typescript'
+import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { Address, Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, test } from 'vitest'
-import { AccountCls } from '../../src/impl/account'
-import { DeliberateAny } from '../../src/typescript-helpers'
+import type { StubBytesCompat } from '../../src/impl/primitives'
+import { AccountCls } from '../../src/impl/reference'
+import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes, asUint8Array } from '../../src/util'
 
 const nativeString = 'hello'
@@ -26,6 +27,29 @@ const otherAbiUint8 = new UintN<8>(42)
 
 const testData = [
   {
+    abiTypeString: '(bool[10],bool,bool)',
+    nativeValues() {
+      return [
+        [nativeBool, nativeBool, nativeBool, nativeBool, nativeBool, nativeBool, nativeBool, nativeBool, nativeBool, nativeBool],
+        nativeBool,
+        nativeBool,
+      ]
+    },
+    abiValues() {
+      return [
+        new StaticArray(abiBool, abiBool, abiBool, abiBool, abiBool, abiBool, abiBool, abiBool, abiBool, abiBool),
+        abiBool,
+        abiBool,
+      ] as readonly [StaticArray<Bool, 10>, Bool, Bool]
+    },
+    tuple() {
+      return new Tuple<[StaticArray<Bool, 10>, Bool, Bool]>(...this.abiValues())
+    },
+    create(value: StubBytesCompat) {
+      return interpretAsArc4<Tuple<[StaticArray<Bool, 10>, Bool, Bool]>>(asBytes(value))
+    },
+  },
+  {
     abiTypeString: '(uint8,bool,bool,address)',
     nativeValues() {
       return [nativeNumber, nativeBool, nativeBool, nativeAddress]
@@ -36,7 +60,7 @@ const testData = [
     tuple() {
       return new Tuple<[UintN<8>, Bool, Bool, Address]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[UintN<8>, Bool, Bool, Address]>>(asBytes(value))
     },
   },
@@ -51,7 +75,7 @@ const testData = [
     tuple() {
       return new Tuple<[Str, UintN<8>, Bool]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Str, UintN<8>, Bool]>>(asBytes(value))
     },
   },
@@ -72,7 +96,7 @@ const testData = [
     tuple() {
       return new Tuple<[Tuple<[UintN<8>, Bool, Bool]>, Tuple<[UintN<8>, Bool, Bool]>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[UintN<8>, Bool, Bool]>, Tuple<[UintN<8>, Bool, Bool]>]>>(asBytes(value))
     },
   },
@@ -101,7 +125,7 @@ const testData = [
     tuple() {
       return new Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>>(asBytes(value))
     },
   },
@@ -120,7 +144,7 @@ const testData = [
     tuple() {
       return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>>(asBytes(value))
     },
   },
@@ -141,7 +165,7 @@ const testData = [
     tuple() {
       return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>(...this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>>(asBytes(value))
     },
   },
@@ -167,7 +191,7 @@ const testData = [
         ...this.abiValues(),
       )
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>>(
         asBytes(value),
       )
@@ -291,19 +315,19 @@ const testDataWithArray = [
   },
 ]
 
-describe('arc4.Tuple', async () => {
+describe('arc4.Tuple', () => {
   const ctx = new TestExecutionContext()
-  afterEach(async () => {
+  afterEach(() => {
     ctx.reset()
   })
 
-  test.each(testData)('should be able to get bytes representation', async (data) => {
+  test.each(testData)('should be able to get bytes representation', (data) => {
     const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
     const result = data.tuple().bytes
     expect(result).toEqual(Bytes(sdkResult))
   })
 
-  test.each(testData)('should be able to get native representation', async (data) => {
+  test.each(testData)('should be able to get native representation', (data) => {
     const nativeValues = data.nativeValues()
     const result = data.tuple().native
     for (let i = 0; i < nativeValues.length; i++) {
@@ -312,7 +336,7 @@ describe('arc4.Tuple', async () => {
     expect(result.length).toEqual(nativeValues.length)
   })
 
-  test.each(testData)('create tuple from bytes', async (data) => {
+  test.each(testData)('create tuple from bytes', (data) => {
     const nativeValues = data.nativeValues()
     const sdkEncodedBytes = getABIEncodedValue(nativeValues, data.abiTypeString, {})
 
@@ -324,7 +348,7 @@ describe('arc4.Tuple', async () => {
     }
   })
 
-  test.each(testDataWithArray)('update array values in tuple', async (data) => {
+  test.each(testDataWithArray)('update array values in tuple', (data) => {
     const sdkResult = getABIEncodedValue(data.updatedNativeValues(), data.abiTypeString, {})
     const tuple = data.tuple()
     data.update(tuple as DeliberateAny)

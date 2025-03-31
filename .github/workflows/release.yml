@@ -22,7 +22,8 @@ jobs:
     with:
       pre-test-script: |
         pipx install algokit
-        algokit localnet start
+        algokit localnet reset --update
+        pipx install puyapy
       node-version: 20.x
       run-build: true
       run-commit-lint: true
@@ -63,3 +64,5 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           package: artifacts/algo-ts-testing/package.json
           access: 'public'
+          # Tagging 'main' branch with latest for now, even though it's beta because we don't have a non-beta
+          tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'latest' || github.ref_name == 'release' && 'latest' || 'pre-release' }}

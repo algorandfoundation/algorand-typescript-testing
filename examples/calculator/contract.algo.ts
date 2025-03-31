@@ -1,4 +1,5 @@
-import { assert, BaseContract, Bytes, err, log, op, Txn, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { uint64 } from '@algorandfoundation/algorand-typescript'
+import { assert, BaseContract, Bytes, err, log, op, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
 
 const ADD = Uint64(1)
 const SUB = Uint64(2)

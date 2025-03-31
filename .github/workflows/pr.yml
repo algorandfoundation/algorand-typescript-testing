@@ -9,7 +9,6 @@ on:
       - 'docs/**'
       - 'scripts/**'
 
-
 permissions:
   contents: read
 
@@ -19,8 +18,9 @@ jobs:
     uses: ./.github/workflows/node-ci.yml
     with:
       pre-test-script: |
-        pipx install algokit
-        algokit localnet start
+        pipx install algokit --python 3.12.6
+        algokit localnet reset --update
+        pipx install puyapy --python 3.12.6
       node-version: 20.x
       run-build: true
       run-commit-lint: true

@@ -1,5 +1,5 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
-import { Bytes, internal } from '@algorandfoundation/algorand-typescript'
+import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import {
   Address,
@@ -15,8 +15,9 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, it, test } from 'vitest'
-import { AccountCls } from '../../src/impl/account'
-import { DeliberateAny } from '../../src/typescript-helpers'
+import type { StubBytesCompat } from '../../src/impl/primitives'
+import { AccountCls } from '../../src/impl/reference'
+import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes, asUint8Array } from '../../src/util'
 
 const addressDynamicArray = {
@@ -41,8 +42,14 @@ const addressDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Address>() : new DynamicArray<Address>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Address>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const boolDynamicArray = {
@@ -56,8 +63,14 @@ const boolDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Bool>() : new DynamicArray<Bool>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Bool>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const uint256DynamicArray = {
@@ -71,8 +84,14 @@ const uint256DynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<UintN<256>>() : new DynamicArray<UintN<256>>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<UintN<256>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const ufixednxmDynamicArray = {
@@ -97,8 +116,14 @@ const ufixednxmDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<UFixedNxM<256, 16>>() : new DynamicArray<UFixedNxM<256, 16>>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<UFixedNxM<256, 16>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const stringDynamicArray = {
@@ -123,8 +148,14 @@ const stringDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Str>() : new DynamicArray<Str>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Str>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const boolDynamicArrayOfArray = {
@@ -140,8 +171,14 @@ const boolDynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<Bool>>()
       : new DynamicArray<DynamicArray<Bool>>(...this.abiValues().map((a) => new DynamicArray<Bool>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<Bool>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const addressDynamicArrayOfArray = {
@@ -157,8 +194,14 @@ const addressDynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<Address>>()
       : new DynamicArray<DynamicArray<Address>>(...this.abiValues().map((a) => new DynamicArray<Address>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<Address>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const uint256DynamicArrayOfArray = {
@@ -174,8 +217,14 @@ const uint256DynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<UintN<256>>>()
       : new DynamicArray<DynamicArray<UintN<256>>>(...this.abiValues().map((a) => new DynamicArray<UintN<256>>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<UintN<256>>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const uint256DynamicArrayOfStaticArray = {
@@ -184,15 +233,23 @@ const uint256DynamicArrayOfStaticArray = {
     return [uint256DynamicArray.nativeValues(), uint256DynamicArray.nativeValues().reverse()]
   },
   abiValues() {
-    return this.nativeValues().map((a) => new StaticArray<UintN<256>, 10>(...a.map((v) => new UintN<256>(v))))
+    return this.nativeValues().map((a) => new StaticArray<UintN<256>, 10>(...(a.map((v) => new UintN<256>(v)) as [])))
   },
   array(isEmpty = false) {
     return isEmpty
       ? new DynamicArray<StaticArray<UintN<256>, 10>>()
-      : new DynamicArray<StaticArray<UintN<256>, 10>>(...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...a)))
+      : new DynamicArray<StaticArray<UintN<256>, 10>>(
+          ...this.abiValues().map((a) => new StaticArray<UintN<256>, 10>(...(a as DeliberateAny))),
+        )
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<StaticArray<UintN<256>, 10>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const stringDynamicArrayOfArray = {
@@ -208,8 +265,14 @@ const stringDynamicArrayOfArray = {
       ? new DynamicArray<DynamicArray<Str>>()
       : new DynamicArray<DynamicArray<Str>>(...this.abiValues().map((a) => new DynamicArray<Str>(...a)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<Str>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const stringDynamicArrayOfArrayOfArray = {
@@ -230,8 +293,14 @@ const stringDynamicArrayOfArrayOfArray = {
       ? new DynamicArray<DynamicArray<DynamicArray<Str>>>()
       : new DynamicArray<DynamicArray<DynamicArray<Str>>>(...this.abiValues().map((x) => new DynamicArray<DynamicArray<Str>>(...x)))
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<DynamicArray<DynamicArray<Str>>>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 const tupleDynamicArray = {
@@ -261,7 +330,7 @@ const tupleDynamicArray = {
             addressDynamicArray.abiValues()[5],
           ),
           boolDynamicArray.abiValues()[3],
-          new StaticArray<UintN<256>, 3>(...uint256DynamicArray.abiValues().slice(4, 7)),
+          new StaticArray<UintN<256>, 3>(...(uint256DynamicArray.abiValues().slice(4, 7) as [])),
         ],
       ),
     )
@@ -275,10 +344,16 @@ const tupleDynamicArray = {
           Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>
         >(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<
       DynamicArray<Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>>
     >(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 class Swapped extends Struct<{
@@ -328,14 +403,20 @@ const structDynamicArray = {
   array(isEmpty = false) {
     return isEmpty ? new DynamicArray<Swapped>() : new DynamicArray<Swapped>(...this.abiValues())
   },
-  create(value: internal.primitives.StubBytesCompat) {
+  create(value: StubBytesCompat) {
     return interpretAsArc4<DynamicArray<Swapped>>(asBytes(value))
+  },
+  concat() {
+    return this.array().concat(this.array())
+  },
+  concatABIValue() {
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
 }
 
-describe('arc4.DynamicArray', async () => {
+describe('arc4.DynamicArray', () => {
   const ctx = new TestExecutionContext()
-  afterEach(async () => {
+  afterEach(() => {
     ctx.reset()
   })
 
@@ -353,7 +434,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('should be able to get bytes representation', async (data) => {
+  ])('should be able to get bytes representation', (data) => {
     const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
     const result = data.array().bytes
     expect(result).toEqual(sdkResult)
@@ -373,7 +454,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('copy dynamic array', async (data) => {
+  ])('copy dynamic array', (data) => {
     const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
     const original = data.array()
     const copy = original.copy()
@@ -396,7 +477,31 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('get item from dynamic array', async (data) => {
+  ])('concat dynamic array', (data) => {
+    const sdkResult = data.concatABIValue()
+    const original = data.array()
+    const concatenated = data.concat()
+    const result = concatenated.bytes
+
+    expect(concatenated.length).toEqual(original.length * 2)
+    expect(result).toEqual(asBytes(sdkResult))
+  })
+
+  test.each([
+    addressDynamicArray,
+    boolDynamicArray,
+    uint256DynamicArray,
+    ufixednxmDynamicArray,
+    stringDynamicArray,
+    addressDynamicArrayOfArray,
+    boolDynamicArrayOfArray,
+    uint256DynamicArrayOfArray,
+    uint256DynamicArrayOfStaticArray,
+    stringDynamicArrayOfArray,
+    stringDynamicArrayOfArrayOfArray,
+    tupleDynamicArray,
+    structDynamicArray,
+  ])('get item from dynamic array', (data) => {
     const dynamicArray = data.array()
     const nativeValues = data.nativeValues()
     for (let i = 0; i < dynamicArray.length; i++) {
@@ -419,7 +524,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('set item in dynamic array', async (data) => {
+  ])('set item in dynamic array', (data) => {
     const nativeValues = data.nativeValues()
     const nativeValuesCopy = [...nativeValues]
     const nativeTemp = nativeValuesCopy.at(-1)!
@@ -451,7 +556,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('create dynamic array from bytes', async (data) => {
+  ])('create dynamic array from bytes', (data) => {
     const sdkEncodedBytes = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
     const result = data.create(Bytes(sdkEncodedBytes))
     const nativeValues = data.nativeValues()
@@ -474,7 +579,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('push item to dynamic array', async (data) => {
+  ])('push item to dynamic array', (data) => {
     const nativeValues = data.nativeValues()
     const nativeValuesCopy = [...nativeValues]
     nativeValuesCopy.push(nativeValues.at(-1)!)
@@ -503,7 +608,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('push item to empty dynamic array', async (data) => {
+  ])('push item to empty dynamic array', (data) => {
     const nativeValues = data.nativeValues()
     const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
 
@@ -527,7 +632,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('push item to empty dynamic array created from bytes', async (data) => {
+  ])('push item to empty dynamic array created from bytes', (data) => {
     const nativeValues = data.nativeValues()
     const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
 
@@ -551,7 +656,7 @@ describe('arc4.DynamicArray', async () => {
     stringDynamicArrayOfArrayOfArray,
     tupleDynamicArray,
     structDynamicArray,
-  ])('pop item from dynamic array', async (data) => {
+  ])('pop item from dynamic array', (data) => {
     const nativeValues = data.nativeValues()
     const nativeValuesCopy = [...nativeValues]
     const nativeValue1 = nativeValuesCopy.pop()
@@ -570,7 +675,7 @@ describe('arc4.DynamicArray', async () => {
     expect(result).toEqual(Bytes(sdkResult))
   })
 
-  it('set item in nested dynamic array', async () => {
+  it('set item in nested dynamic array', () => {
     const data = stringDynamicArrayOfArrayOfArray
     const nativeValues = data.nativeValues()
     nativeValues[0][0][0] = 'new value'
@@ -583,7 +688,7 @@ describe('arc4.DynamicArray', async () => {
     expect(result).toEqual(Bytes(sdkResult))
   })
 
-  it('set item in nested dynamic array created from bytes', async () => {
+  it('set item in nested dynamic array created from bytes', () => {
     const data = stringDynamicArrayOfArrayOfArray
     const nativeValues = data.nativeValues()
     nativeValues[0][0][0] = 'new value'

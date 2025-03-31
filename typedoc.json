@@ -1,0 +1,19 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/value-generators/*.ts",
+    "./src/subcontexts/*.ts",
+    "./src/test-transformer/jest-transformer.ts",
+    "./src/test-transformer/vitest-transformer.ts"
+  ],
+  "exclude": ["types/*.spec.ts"],
+  "entryPointStrategy": "expand",
+  "out": "docs/code",
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
+  "cleanOutputDir": true,
+  "githubPages": false,
+  "readme": "none",
+  "gitRevision": "main"
+}

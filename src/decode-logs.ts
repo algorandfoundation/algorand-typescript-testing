@@ -1,5 +1,6 @@
-import { bytes, op } from '@algorandfoundation/algorand-typescript'
+import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from './constants'
+import { btoi } from './impl/pure'
 import { asNumber } from './util'
 
 export type LogDecoding = 'i' | 's' | 'b'
@@ -17,7 +18,7 @@ export function decodeLogs<const T extends [...LogDecoding[]]>(logs: bytes[], de
       : log
     switch (decoding[i]) {
       case 'i':
-        return op.btoi(value)
+        return btoi(value)
       case 's':
         return value.toString()
       default:

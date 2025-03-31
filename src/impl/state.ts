@@ -1,25 +1,26 @@
-import {
+import type {
   Account,
   Application,
   BoxMap as BoxMapType,
   BoxRef as BoxRefType,
   Box as BoxType,
-  Bytes,
   bytes,
   GlobalStateOptions,
   GlobalState as GlobalStateType,
-  internal,
   LocalStateForAccount,
   LocalState as LocalStateType,
   uint64,
-  Uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { AccountMap } from '../collections/custom-key-map'
 import { MAX_BOX_SIZE } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { getEncoder, toBytes, TypeInfo } from '../encoders'
+import type { TypeInfo } from '../encoders'
+import { getEncoder, toBytes } from '../encoders'
+import { AssertError, InternalError } from '../errors'
 import { getGenericTypeInfo } from '../runtime-helpers'
 import { asBytes, asBytesCls, asNumber, asUint8Array, conactUint8Arrays } from '../util'
+import type { StubBytesCompat, StubUint64Compat } from './primitives'
+import { Bytes, Uint64, Uint64Cls } from './primitives'
 
 export class GlobalStateCls<ValueType> {
   private readonly _type: string = GlobalStateCls.name
@@ -32,7 +33,7 @@ export class GlobalStateCls<ValueType> {
   }
 
   delete: () => void = () => {
-    if (this.#value instanceof internal.primitives.Uint64Cls) {
+    if (this.#value instanceof Uint64Cls) {
       this.#value = Uint64(0) as ValueType
     } else {
       this.#value = undefined
@@ -45,7 +46,7 @@ export class GlobalStateCls<ValueType> {
 
   get value(): ValueType {
     if (this.#value === undefined) {
-      throw new internal.errors.AssertError('value is not set')
+      throw new AssertError('value is not set')
     }
     return this.#value
   }
@@ -67,7 +68,7 @@ export class GlobalStateCls<ValueType> {
 export class LocalStateCls<ValueType> {
   #value: ValueType | undefined
   delete: () => void = () => {
-    if (this.#value instanceof internal.primitives.Uint64Cls) {
+    if (this.#value instanceof Uint64Cls) {
       this.#value = Uint64(0) as ValueType
     } else {
       this.#value = undefined
@@ -75,7 +76,7 @@ export class LocalStateCls<ValueType> {
   }
   get value(): ValueType {
     if (this.#value === undefined) {
-      throw new internal.errors.AssertError('value is not set')
+      throw new AssertError('value is not set')
     }
     return this.#value
   }
@@ -90,13 +91,27 @@ export class LocalStateCls<ValueType> {
 }
 
 export class LocalStateMapCls<ValueType> {
-  #value = new AccountMap<LocalStateCls<ValueType>>()
+  private applicationId: uint64
 
-  getValue(account: Account): LocalStateCls<ValueType> {
-    if (!this.#value.has(account)) {
-      this.#value.set(account, new LocalStateCls<ValueType>())
+  constructor() {
+    this.applicationId = lazyContext.activeGroup.activeApplicationId
+  }
+
+  getValue(key: string | bytes | undefined, account: Account): LocalStateCls<ValueType> {
+    const bytesKey = key === undefined ? Bytes() : asBytes(key)
+    const localStateMap = this.ensureApplicationLocalStateMap(bytesKey)
+    if (!localStateMap.has(account)) {
+      localStateMap.set(account, new LocalStateCls())
     }
-    return this.#value.getOrFail(account)!
+    return localStateMap.getOrFail(account) as LocalStateCls<ValueType>
+  }
+
+  private ensureApplicationLocalStateMap(key: bytes | string) {
+    const applicationData = lazyContext.ledger.applicationDataMap.getOrFail(this.applicationId)!.application
+    if (!applicationData.localStateMaps.has(key)) {
+      applicationData.localStateMaps.set(key, new AccountMap<LocalStateCls<ValueType>>())
+    }
+    return applicationData.localStateMaps.getOrFail(key)
   }
 }
 
@@ -106,7 +121,7 @@ export function GlobalState<ValueType>(options?: GlobalStateOptions<ValueType>):
 
 export function LocalState<ValueType>(options?: { key?: bytes | string }): LocalStateType<ValueType> {
   function localStateInternal(account: Account): LocalStateForAccount<ValueType> {
-    return localStateInternal.map.getValue(account)
+    return localStateInternal.map.getValue(localStateInternal.key, account)
   }
   localStateInternal.key = options?.key
   localStateInternal.hasKey = options?.key !== undefined && options.key.length > 0
@@ -117,6 +132,7 @@ export function LocalState<ValueType>(options?: { key?: bytes | string }): Local
 export class BoxCls<TValue> {
   #key: bytes | undefined
   #app: Application
+  #valueType?: TypeInfo
 
   private readonly _type: string = BoxCls.name
 
@@ -124,26 +140,33 @@ export class BoxCls<TValue> {
     return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === BoxCls.name
   }
 
-  constructor(key?: internal.primitives.StubBytesCompat) {
+  constructor(key?: StubBytesCompat, app?: Application, valueType?: TypeInfo) {
     this.#key = key ? asBytes(key) : undefined
-    this.#app = lazyContext.activeApplication
+    this.#app = app ?? lazyContext.activeApplication
+    this.#valueType = valueType
   }
 
   private get fromBytes() {
-    const typeInfo = getGenericTypeInfo(this)
-    const valueType = (typeInfo!.genericArgs! as TypeInfo[])[0]
+    const valueType = this.#valueType ?? (getGenericTypeInfo(this)!.genericArgs! as TypeInfo[])[0]
     return (val: Uint8Array) => getEncoder<TValue>(valueType)(val, valueType)
   }
 
   get value(): TValue {
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
-
-    return this.fromBytes(lazyContext.ledger.getBox(this.#app, this.key))
+    let materialised = lazyContext.ledger.getMaterialisedBox<TValue>(this.#app, this.key)
+    if (materialised !== undefined) {
+      return materialised
+    }
+    const original = lazyContext.ledger.getBox(this.#app, this.key)
+    materialised = this.fromBytes(original)
+    lazyContext.ledger.setMatrialisedBox(this.#app, this.key, materialised)
+    return materialised
   }
   set value(v: TValue) {
     lazyContext.ledger.setBox(this.#app, this.key, asUint8Array(toBytes(v)))
+    lazyContext.ledger.setMatrialisedBox(this.#app, this.key, v)
   }
 
   get hasKey(): boolean {
@@ -152,12 +175,12 @@ export class BoxCls<TValue> {
 
   get key(): bytes {
     if (this.#key === undefined || this.#key.length === 0) {
-      throw new internal.errors.InternalError('Box key is empty')
+      throw new InternalError('Box key is empty')
     }
     return this.#key
   }
 
-  set key(key: internal.primitives.StubBytesCompat) {
+  set key(key: StubBytesCompat) {
     this.#key = asBytes(key)
   }
 
@@ -167,7 +190,7 @@ export class BoxCls<TValue> {
 
   get length(): uint64 {
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
     return toBytes(this.value).length
   }
@@ -188,7 +211,7 @@ export class BoxCls<TValue> {
 }
 
 export class BoxMapCls<TKey, TValue> {
-  #keyPrefix: bytes | undefined
+  private _keyPrefix: bytes | undefined
   #app: Application
 
   private readonly _type: string = BoxMapCls.name
@@ -197,60 +220,30 @@ export class BoxMapCls<TKey, TValue> {
     return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === BoxMapCls.name
   }
 
-  private get fromBytes() {
-    const typeInfo = getGenericTypeInfo(this)
-    const valueType = (typeInfo!.genericArgs! as TypeInfo[])[1]
-    return (val: Uint8Array) => getEncoder<TValue>(valueType)(val, valueType)
-  }
-
-  constructor(keyPrefix?: internal.primitives.StubBytesCompat) {
-    this.#keyPrefix = keyPrefix ? asBytes(keyPrefix) : undefined
+  constructor() {
     this.#app = lazyContext.activeApplication
   }
 
   get hasKeyPrefix(): boolean {
-    return this.#keyPrefix !== undefined && this.#keyPrefix.length > 0
+    return this._keyPrefix !== undefined && this._keyPrefix.length > 0
   }
 
   get keyPrefix(): bytes {
-    if (this.#keyPrefix === undefined || this.#keyPrefix.length === 0) {
-      throw new internal.errors.InternalError('Box key prefix is empty')
+    if (this._keyPrefix === undefined || this._keyPrefix.length === 0) {
+      throw new InternalError('Box key prefix is empty')
     }
-    return this.#keyPrefix
+    return this._keyPrefix
   }
 
-  set keyPrefix(keyPrefix: internal.primitives.StubBytesCompat) {
-    this.#keyPrefix = asBytes(keyPrefix)
+  set keyPrefix(keyPrefix: StubBytesCompat) {
+    this._keyPrefix = asBytes(keyPrefix)
   }
 
-  get(key: TKey, options?: { default: TValue }): TValue {
-    const [value, exists] = this.maybe(key)
-    if (!exists && options === undefined) {
-      throw new internal.errors.InternalError('Box has not been created')
-    }
-    return exists ? value : options!.default
-  }
-
-  set(key: TKey, value: TValue): void {
-    lazyContext.ledger.setBox(this.#app, this.getFullKey(key), asUint8Array(toBytes(value)))
-  }
-
-  delete(key: TKey): boolean {
-    return lazyContext.ledger.deleteBox(this.#app, this.getFullKey(key))
-  }
-
-  has(key: TKey): boolean {
-    return lazyContext.ledger.boxExists(this.#app, this.getFullKey(key))
-  }
-
-  maybe(key: TKey): readonly [TValue, boolean] {
-    const fullKey = this.getFullKey(key)
-    const value = this.fromBytes(lazyContext.ledger.getBox(this.#app, fullKey))
-    return [value, lazyContext.ledger.boxExists(this.#app, fullKey)]
-  }
-
-  length(key: TKey): uint64 {
-    return toBytes(this.get(key)).length
+  call(key: TKey, proxy: (key: TKey) => BoxType<TValue>): BoxType<TValue> {
+    const typeInfo = getGenericTypeInfo(proxy)
+    const valueType = (typeInfo!.genericArgs! as TypeInfo[])[1]
+    const box = new BoxCls<TValue>(this.getFullKey(key), this.#app, valueType)
+    return box
   }
 
   private getFullKey(key: TKey): bytes {
@@ -268,7 +261,7 @@ export class BoxRefCls {
     return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === BoxRefCls.name
   }
 
-  constructor(key?: internal.primitives.StubBytesCompat) {
+  constructor(key?: StubBytesCompat) {
     this.#key = key ? asBytes(key) : undefined
     this.#app = lazyContext.activeApplication
   }
@@ -279,27 +272,27 @@ export class BoxRefCls {
 
   get key(): bytes {
     if (this.#key === undefined || this.#key.length === 0) {
-      throw new internal.errors.InternalError('Box key is empty')
+      throw new InternalError('Box key is empty')
     }
     return this.#key
   }
 
-  set key(key: internal.primitives.StubBytesCompat) {
+  set key(key: StubBytesCompat) {
     this.#key = asBytes(key)
   }
 
   get value(): bytes {
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
     return toBytes(this.backingValue)
   }
 
-  set value(v: internal.primitives.StubBytesCompat) {
+  set value(v: StubBytesCompat) {
     const bytesValue = asBytesCls(v)
     const content = this.backingValue
     if (this.exists && content.length !== bytesValue.length.asNumber()) {
-      throw new internal.errors.InternalError('Box already exists with a different size')
+      throw new InternalError('Box already exists with a different size')
     }
     this.backingValue = bytesValue.asUint8Array()
   }
@@ -308,14 +301,14 @@ export class BoxRefCls {
     return lazyContext.ledger.boxExists(this.#app, this.key)
   }
 
-  create(options: { size: internal.primitives.StubUint64Compat }): boolean {
+  create(options: { size: StubUint64Compat }): boolean {
     const size = asNumber(options.size)
     if (size > MAX_BOX_SIZE) {
-      throw new internal.errors.InternalError(`Box size cannot exceed ${MAX_BOX_SIZE}`)
+      throw new InternalError(`Box size cannot exceed ${MAX_BOX_SIZE}`)
     }
     const content = this.backingValue
     if (this.exists && content.length !== size) {
-      throw new internal.errors.InternalError('Box already exists with a different size')
+      throw new InternalError('Box already exists with a different size')
     }
     if (this.exists) {
       return false
@@ -324,29 +317,25 @@ export class BoxRefCls {
     return true
   }
 
-  get(options: { default: internal.primitives.StubBytesCompat }): bytes {
+  get(options: { default: StubBytesCompat }): bytes {
     const [value, exists] = this.maybe()
     return exists ? value : asBytes(options.default)
   }
 
-  put(value: internal.primitives.StubBytesCompat): void {
+  put(value: StubBytesCompat): void {
     this.value = value
   }
 
-  splice(
-    start: internal.primitives.StubUint64Compat,
-    length: internal.primitives.StubUint64Compat,
-    value: internal.primitives.StubBytesCompat,
-  ): void {
+  splice(start: StubUint64Compat, length: StubUint64Compat, value: StubBytesCompat): void {
     const content = this.backingValue
     const startNumber = asNumber(start)
     const lengthNumber = asNumber(length)
     const valueBytes = asBytesCls(value)
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
     if (startNumber > content.length) {
-      throw new internal.errors.InternalError('Start index exceeds box size')
+      throw new InternalError('Start index exceeds box size')
     }
     const end = Math.min(startNumber + lengthNumber, content.length)
     let updatedContent = conactUint8Arrays(content.slice(0, startNumber), valueBytes.asUint8Array(), content.slice(end))
@@ -359,15 +348,15 @@ export class BoxRefCls {
     this.backingValue = updatedContent
   }
 
-  replace(start: internal.primitives.StubUint64Compat, value: internal.primitives.StubBytesCompat): void {
+  replace(start: StubUint64Compat, value: StubBytesCompat): void {
     const content = this.backingValue
     const startNumber = asNumber(start)
     const valueBytes = asBytesCls(value)
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
     if (startNumber + asNumber(valueBytes.length) > content.length) {
-      throw new internal.errors.InternalError('Replacement content exceeds box size')
+      throw new InternalError('Replacement content exceeds box size')
     }
     const updatedContent = conactUint8Arrays(
       content.slice(0, startNumber),
@@ -377,15 +366,15 @@ export class BoxRefCls {
     this.backingValue = updatedContent
   }
 
-  extract(start: internal.primitives.StubUint64Compat, length: internal.primitives.StubUint64Compat): bytes {
+  extract(start: StubUint64Compat, length: StubUint64Compat): bytes {
     const content = this.backingValue
     const startNumber = asNumber(start)
     const lengthNumber = asNumber(length)
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
     if (startNumber + lengthNumber > content.length) {
-      throw new internal.errors.InternalError('Index out of bounds')
+      throw new InternalError('Index out of bounds')
     }
     return toBytes(content.slice(startNumber, startNumber + lengthNumber))
   }
@@ -396,11 +385,11 @@ export class BoxRefCls {
   resize(newSize: uint64): void {
     const newSizeNumber = asNumber(newSize)
     if (newSizeNumber > MAX_BOX_SIZE) {
-      throw new internal.errors.InternalError(`Box size cannot exceed ${MAX_BOX_SIZE}`)
+      throw new InternalError(`Box size cannot exceed ${MAX_BOX_SIZE}`)
     }
     const content = this.backingValue
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
     let updatedContent
     if (newSizeNumber > content.length) {
@@ -417,7 +406,7 @@ export class BoxRefCls {
 
   get length(): uint64 {
     if (!this.exists) {
-      throw new internal.errors.InternalError('Box has not been created')
+      throw new InternalError('Box has not been created')
     }
     return this.backingValue.length
   }
@@ -436,7 +425,13 @@ export function Box<TValue>(options?: { key: bytes | string }): BoxType<TValue> 
 }
 
 export function BoxMap<TKey, TValue>(options?: { keyPrefix: bytes | string }): BoxMapType<TKey, TValue> {
-  return new BoxMapCls<TKey, TValue>(options?.keyPrefix)
+  const boxMap = new BoxMapCls<TKey, TValue>()
+  if (options?.keyPrefix !== undefined) {
+    boxMap.keyPrefix = options.keyPrefix
+  }
+
+  const x = (key: TKey): BoxType<TValue> => boxMap.call(key, x)
+  return Object.setPrototypeOf(x, boxMap)
 }
 
 export function BoxRef(options?: { key: bytes | string }): BoxRefType {

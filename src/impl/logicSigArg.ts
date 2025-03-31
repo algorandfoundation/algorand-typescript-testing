@@ -1,8 +1,9 @@
-import { bytes, internal } from '@algorandfoundation/algorand-typescript'
+import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asNumber } from '../util'
+import type { StubUint64Compat } from './primitives'
 
-export const arg = (a: internal.primitives.StubUint64Compat): bytes => {
+export const arg = (a: StubUint64Compat): bytes => {
   const index = asNumber(a)
   return lazyContext.value.activeLogicSigArgs[index]
 }

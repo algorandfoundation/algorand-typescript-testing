@@ -1,10 +1,11 @@
-import { BigUint, biguint, Box, bytes, Bytes, op, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { BigUint, Box, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
 import { itob } from '@algorandfoundation/algorand-typescript/op'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { toBytes } from '../../src/encoders'
-import { DeliberateAny } from '../../src/typescript-helpers'
+import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
 import { BoxContract } from '../artifacts/box-contract/contract.algo'
 
@@ -202,6 +203,30 @@ describe('Box', () => {
       } else {
         expect(box.value).toEqual(newValue)
       }
+    })
+  })
+
+  it('can maintain the mutations to the box value', () => {
+    ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+      const box = Box<DynamicArray<UintN64>>({ key })
+      const value = new DynamicArray(new UintN64(100), new UintN64(200))
+      box.value = value
+      expect(box.value.length).toEqual(2)
+      expect(box.value.at(-1).native).toEqual(200)
+
+      // newly pushed value should be retained
+      box.value.push(new UintN64(300))
+      expect(box.value.length).toEqual(3)
+      expect(box.value.at(-1).native).toEqual(300)
+
+      // setting bytes value through op should be reflected in the box value.
+      const copy = box.value.copy()
+      copy[2] = new UintN64(400)
+      expect(box.value.at(-1).native).toEqual(300)
+
+      op.Box.put(key, toBytes(copy))
+      expect(box.value.length).toEqual(3)
+      expect(box.value.at(-1).native).toEqual(400)
     })
   })
 })

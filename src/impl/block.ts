@@ -1,38 +1,64 @@
-import { Account, bytes, internal, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
-import { asUint64 } from '../util'
-import { itob } from './pure'
+import { asUint64, getRandomBytes } from '../util'
+import { Uint64, type StubUint64Compat } from './primitives'
+import { Account } from './reference'
 
-export const Block: internal.opTypes.BlockType = {
-  blkSeed: function (a: internal.primitives.StubUint64Compat): bytes {
-    return itob(lazyContext.ledger.getBlockContent(a).seed)
+export class BlockData {
+  seed: bytes
+  timestamp: uint64
+  proposer: AccountType
+  feesCollected: uint64
+  bonus: uint64
+  branch: bytes
+  feeSink: AccountType
+  protocol: bytes
+  txnCounter: uint64
+  proposerPayout: uint64
+
+  constructor() {
+    this.seed = getRandomBytes(32).asAlgoTs()
+    this.timestamp = asUint64(Date.now())
+    this.proposer = Account()
+    this.feesCollected = Uint64(0)
+    this.bonus = Uint64(0)
+    this.branch = getRandomBytes(32).asAlgoTs()
+    this.feeSink = Account()
+    this.protocol = getRandomBytes(32).asAlgoTs()
+    this.txnCounter = Uint64(0)
+    this.proposerPayout = Uint64(0)
+  }
+}
+
+export const Block: typeof op.Block = {
+  blkSeed: function (a: StubUint64Compat): bytes {
+    return lazyContext.ledger.getBlockData(a).seed
   },
-  blkTimestamp: function (a: internal.primitives.StubUint64Compat): uint64 {
-    return asUint64(lazyContext.ledger.getBlockContent(a).timestamp)
+  blkTimestamp: function (a: StubUint64Compat): uint64 {
+    return lazyContext.ledger.getBlockData(a).timestamp
   },
-  // TODO: implement v11 methods
-  blkProposer: function (_a: uint64): Account {
-    throw new Error('Function not implemented.')
+  blkProposer: function (a: uint64): AccountType {
+    return lazyContext.ledger.getBlockData(a).proposer
   },
-  blkFeesCollected: function (_a: uint64): uint64 {
-    throw new Error('Function not implemented.')
+  blkFeesCollected: function (a: uint64): uint64 {
+    return lazyContext.ledger.getBlockData(a).feesCollected
   },
-  blkBonus: function (_a: uint64): uint64 {
-    throw new Error('Function not implemented.')
+  blkBonus: function (a: uint64): uint64 {
+    return lazyContext.ledger.getBlockData(a).bonus
   },
-  blkBranch: function (_a: uint64): bytes {
-    throw new Error('Function not implemented.')
+  blkBranch: function (a: uint64): bytes {
+    return lazyContext.ledger.getBlockData(a).branch
   },
-  blkFeeSink: function (_a: uint64): Account {
-    throw new Error('Function not implemented.')
+  blkFeeSink: function (a: uint64): AccountType {
+    return lazyContext.ledger.getBlockData(a).feeSink
   },
-  blkProtocol: function (_a: uint64): bytes {
-    throw new Error('Function not implemented.')
+  blkProtocol: function (a: uint64): bytes {
+    return lazyContext.ledger.getBlockData(a).protocol
   },
-  blkTxnCounter: function (_a: uint64): uint64 {
-    throw new Error('Function not implemented.')
+  blkTxnCounter: function (a: uint64): uint64 {
+    return lazyContext.ledger.getBlockData(a).txnCounter
   },
-  blkProposerPayout: function (_a: uint64): uint64 {
-    throw new Error('Function not implemented.')
+  blkProposerPayout: function (a: uint64): uint64 {
+    return lazyContext.ledger.getBlockData(a).proposerPayout
   },
 }

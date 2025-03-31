@@ -1,8 +1,9 @@
 import { arc4, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, it } from 'vitest'
-import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
 import ZkWhitelistContract from './contract.algo'
+
+const ABI_RETURN_VALUE_LOG_PREFIX = Bytes.fromHex('151F7C75')
 
 describe('ZK Whitelist', () => {
   const ctx = new TestExecutionContext()

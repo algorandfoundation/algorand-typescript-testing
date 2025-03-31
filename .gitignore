@@ -65,3 +65,4 @@ out/
 
 
 examples/debug-out/
+examples/**/data/

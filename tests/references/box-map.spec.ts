@@ -1,10 +1,10 @@
-import { biguint, BigUint, BoxMap, Bytes, bytes, op, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
+import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { BigUint, BoxMap, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, it, test } from 'vitest'
 import { MAX_UINT64 } from '../../src/constants'
 import { toBytes } from '../../src/encoders'
-import { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
@@ -109,34 +109,34 @@ describe('BoxMap', () => {
 
       expect(box.keyPrefix.length.valueOf()).toBeGreaterThan(0)
       expect(box.keyPrefix).toEqual(asBytes(keyPrefix))
-      expect(() => box.get(Bytes(''))).toThrow(BOX_NOT_CREATED_ERROR)
-      expect(() => box.length(Bytes(''))).toThrow(BOX_NOT_CREATED_ERROR)
+      expect(() => box(Bytes('')).value).toThrow(BOX_NOT_CREATED_ERROR)
+      expect(() => box(Bytes('')).length).toThrow(BOX_NOT_CREATED_ERROR)
     })
   })
 
   test.each(testData)('key %s and value %s can be set as value', ({ key, value, withBoxContext }) => {
     withBoxContext((boxMap) => {
-      boxMap.set(key as never, value as never)
+      boxMap(key as never).value = value
 
-      const boxContent = (boxMap as DeliberateAny).get(key)
+      const boxContent = boxMap(key as never).value
       const fullKey = keyPrefix.concat(toBytes(key))
 
       const [opBoxContent, opExists] = op.Box.get(fullKey)
       const [opLength, _] = op.Box.length(fullKey)
 
       expect(opExists).toBe(true)
-      expect(boxMap.length(key as never)).toEqual(opLength)
+      expect(boxMap(key as never).length).toEqual(opLength)
       expect(toBytes(boxContent)).toEqual(opBoxContent)
     })
   })
 
   test.each(testData)('key %s and value %s can be delete', ({ key, value, withBoxContext }) => {
     withBoxContext((boxMap) => {
-      boxMap.set(key as never, value as never)
+      boxMap(key as never).value = value
 
-      boxMap.delete(key as never)
+      boxMap(key as never).delete()
 
-      expect(() => (boxMap as DeliberateAny).get(key)).toThrow(BOX_NOT_CREATED_ERROR)
+      expect(() => boxMap(key as never).value).toThrow(BOX_NOT_CREATED_ERROR)
       const fullKey = keyPrefix.concat(toBytes(key))
       const [opBoxContent, opExists] = op.Box.get(fullKey)
       expect(opExists).toBe(false)
@@ -146,9 +146,9 @@ describe('BoxMap', () => {
 
   test.each(testData)('can retrieve existing key %s and value %s using maybe', ({ key, value, withBoxContext }) => {
     withBoxContext((boxMap) => {
-      boxMap.set(key as never, value as never)
+      boxMap(key as never).value = value
 
-      const [content, exists] = boxMap.maybe(key as never)
+      const [content, exists] = boxMap(key as never).maybe()
 
       const fullKey = keyPrefix.concat(toBytes(key))
       const [opContent, opExists] = op.Box.get(fullKey)
@@ -156,17 +156,17 @@ describe('BoxMap', () => {
 
       expect(exists).toBe(true)
       expect(opExists).toBe(true)
-      expect(boxMap.length(key as never)).toEqual(opLength)
+      expect(boxMap(key as never).length).toEqual(opLength)
       expect(toBytes(content)).toEqual(opContent)
     })
   })
 
   test.each(testData)('can retrieve non-existing value using maybe', ({ key, value, emptyValue, withBoxContext }) => {
     withBoxContext((boxMap) => {
-      boxMap.set(key as never, value as never)
-      boxMap.delete(key as never)
+      boxMap(key as never).value = value
+      boxMap(key as never).delete()
 
-      const [content, exists] = boxMap.maybe(key as never)
+      const [content, exists] = boxMap(key as never).maybe()
 
       expect(exists).toBe(false)
       if (content instanceof ARC4Encoded) {
@@ -184,11 +184,11 @@ describe('BoxMap', () => {
 
   test.each(testData)('can get typed value after using op.Box.put', ({ key, value, newValue, withBoxContext }) => {
     withBoxContext((boxMap) => {
-      boxMap.set(key as never, value as never)
+      boxMap(key as never).value = value
       if (value instanceof ARC4Encoded) {
-        expect((boxMap as DeliberateAny).get(key).bytes).toEqual(value.bytes)
+        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(value.bytes)
       } else {
-        expect((boxMap as DeliberateAny).get(key)).toEqual(value)
+        expect(boxMap(key as never).value).toEqual(value)
       }
 
       const newBytesValue = toBytes(newValue)
@@ -198,10 +198,36 @@ describe('BoxMap', () => {
 
       expect(opContent).toEqual(newBytesValue)
       if (newValue instanceof ARC4Encoded) {
-        expect((boxMap as DeliberateAny).get(key).bytes).toEqual(newValue.bytes)
+        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(newValue.bytes)
       } else {
-        expect((boxMap as DeliberateAny).get(key)).toEqual(newValue)
+        expect(boxMap(key as never).value).toEqual(newValue)
       }
+    })
+  })
+
+  it('can maintain the mutations to the array box value', () => {
+    ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+      const boxMap = BoxMap<Str, DynamicArray<UintN64>>({ keyPrefix })
+      const key = new Str('jkl')
+      const value = new DynamicArray(new UintN64(100), new UintN64(200))
+      boxMap(key).value = value
+      expect(boxMap(key).value.length).toEqual(2)
+      expect(boxMap(key).value.at(-1).native).toEqual(200)
+
+      // newly pushed value should be retained
+      boxMap(key).value.push(new UintN64(300))
+      expect(boxMap(key).value.length).toEqual(3)
+      expect(boxMap(key).value.at(-1).native).toEqual(300)
+
+      // setting bytes value through op should be reflected in the box value.
+      const copy = boxMap(key).value.copy()
+      copy[2] = new UintN64(400)
+      expect(boxMap(key).value.at(-1).native).toEqual(300)
+
+      const fullKey = keyPrefix.concat(toBytes(key))
+      op.Box.put(fullKey, toBytes(copy))
+      expect(boxMap(key).value.length).toEqual(3)
+      expect(boxMap(key).value.at(-1).native).toEqual(400)
     })
   })
 })

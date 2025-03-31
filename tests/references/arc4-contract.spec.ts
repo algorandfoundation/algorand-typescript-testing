@@ -1,17 +1,5 @@
-import {
-  Account,
-  arc4,
-  assert,
-  BaseContract,
-  bytes,
-  Bytes,
-  contract,
-  Contract,
-  Global,
-  Txn,
-  uint64,
-  Uint64,
-} from '@algorandfoundation/algorand-typescript'
+import type { Account, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, assert, BaseContract, Bytes, contract, Contract, Global, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, it } from 'vitest'
 import { lazyContext } from '../../src/context-helpers/internal-context'

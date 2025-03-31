@@ -1,10 +1,11 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
-import { Bytes, internal } from '@algorandfoundation/algorand-typescript'
+import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Struct, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { describe, expect, it, test } from 'vitest'
-import { AccountCls } from '../../src/impl/account'
-import { DeliberateAny } from '../../src/typescript-helpers'
+import type { StubBytesCompat } from '../../src/impl/primitives'
+import { AccountCls } from '../../src/impl/reference'
+import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
 
 const nativeString = 'hello'
@@ -69,7 +70,7 @@ const testData = [
     struct() {
       return new Swapped1(this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Swapped1>(asBytes(value))
     },
   },
@@ -97,7 +98,7 @@ const testData = [
     struct() {
       return new Swapped2(this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Swapped2>(asBytes(value))
     },
   },
@@ -136,7 +137,7 @@ const testData = [
     struct() {
       return new Swapped3(this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Swapped3>(asBytes(value))
     },
   },
@@ -165,7 +166,7 @@ const testData = [
     struct() {
       return new Swapped4(this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Swapped4>(asBytes(value))
     },
   },
@@ -196,7 +197,7 @@ const testData = [
     struct() {
       return new Swapped5(this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Swapped5>(asBytes(value))
     },
   },
@@ -227,7 +228,7 @@ const testData = [
     struct() {
       return new Swapped6(this.abiValues())
     },
-    create(value: internal.primitives.StubBytesCompat) {
+    create(value: StubBytesCompat) {
       return interpretAsArc4<Swapped6>(asBytes(value))
     },
   },
@@ -254,12 +255,14 @@ describe('arc4.Struct', async () => {
 
   it('set item in struct', async () => {
     const data = testData[5]
+
     const nativeValues = data.nativeValues() as DeliberateAny
     nativeValues[0] = 43
     nativeValues[2] = 'world'
     nativeValues[3][0][1][0][1] = 'hello, world'
     nativeValues[3][0][1][0].push('test')
     nativeValues[3][1][1][0] = 24
+
     const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
 
     const abiValues = data.struct() as Swapped6
@@ -281,9 +284,10 @@ describe('arc4.Struct', async () => {
     nativeValues[3][0][1][0][1] = 'hello, world'
     nativeValues[3][0][1][0].push('test')
     nativeValues[3][1][1][0] = 24
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
 
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
     const bytes = Bytes(getABIEncodedValue(data.nativeValues(), data.abiTypeString, {}))
+
     const abiValues = data.create(bytes) as Swapped6
     abiValues.b = new UintN<64>(43)
     abiValues.d = new Str('world')

@@ -1,10 +1,10 @@
-import { ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
+import { LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
 import path from 'path'
 import ts from 'typescript'
 import type { TypeInfo } from '../encoders'
 import { instanceOfAny } from '../typescript-helpers'
-import { TransformerConfig } from './index'
 import { nodeFactory } from './node-factory'
+import type { TransformerConfig } from './program-factory'
 import {
   supportedAugmentedAssignmentBinaryOpString,
   supportedBinaryOpString,
@@ -13,8 +13,12 @@ import {
 
 const { factory } = ts
 
+const algotsModuleRegExp = new RegExp(/^("|')@algorandfoundation\/algorand-typescript(\/|"|')/)
+const algotsModuleSpecifier = '@algorandfoundation/algorand-typescript'
+const testingInternalModuleSpecifier = (testingPackageName: string) => `${testingPackageName}/internal`
 const algotsModulePaths = [
-  `@algorandfoundation${path.sep}algorand-typescript`,
+  algotsModuleSpecifier,
+  '/puya-ts/packages/algo-ts/',
   `${path.sep}puya-ts${path.sep}packages${path.sep}algo-ts${path.sep}`,
 ]
 
@@ -28,6 +32,7 @@ type VisitorHelper = {
 
 export class SourceFileVisitor {
   private helper: VisitorHelper
+
   constructor(
     private context: ts.TransformationContext,
     private sourceFile: ts.SourceFile,
@@ -35,18 +40,19 @@ export class SourceFileVisitor {
     private config: TransformerConfig,
   ) {
     const typeChecker = program.getTypeChecker()
+    const loggingContext = LoggingContext.create()
     const typeResolver = new TypeResolver(typeChecker, program.getCurrentDirectory())
     this.helper = {
       additionalStatements: [],
       resolveType(node: ts.Node): ptypes.PType {
         try {
-          return typeResolver.resolve(node, this.sourceLocation(node))
+          return loggingContext.run(() => typeResolver.resolve(node, this.sourceLocation(node)))
         } catch {
           return ptypes.anyPType
         }
       },
       resolveTypeParameters(node: ts.CallExpression) {
-        return typeResolver.resolveTypeParameters(node, this.sourceLocation(node))
+        return loggingContext.run(() => typeResolver.resolveTypeParameters(node, this.sourceLocation(node)))
       },
       tryGetSymbol(node: ts.Node): ts.Symbol | undefined {
         const s = typeChecker.getSymbolAtLocation(node)
@@ -68,6 +74,9 @@ export class SourceFileVisitor {
   }
 
   private visit = (node: ts.Node): ts.Node => {
+    if (ts.isImportDeclaration(node)) {
+      return new ImportDeclarationVisitor(this.context, this.helper, this.config, node).result()
+    }
     if (ts.isFunctionLike(node)) {
       return new FunctionLikeDecVisitor(this.context, this.helper, node).result()
     }
@@ -82,6 +91,37 @@ export class SourceFileVisitor {
     }
 
     return ts.visitEachChild(node, this.visit, this.context)
+  }
+}
+
+class ImportDeclarationVisitor {
+  constructor(
+    private context: ts.TransformationContext,
+    private helper: VisitorHelper,
+    private config: TransformerConfig,
+    private declarationNode: ts.ImportDeclaration,
+  ) {}
+
+  public result(): ts.ImportDeclaration {
+    const moduleSpecifier = this.declarationNode.moduleSpecifier.getText()
+    if (this.declarationNode.importClause?.isTypeOnly || !algotsModuleRegExp.test(moduleSpecifier)) return this.declarationNode
+
+    const namedBindings = this.declarationNode.importClause?.namedBindings
+    const nonTypeNamedBindings =
+      namedBindings && ts.isNamedImports(namedBindings) ? (namedBindings as ts.NamedImports).elements.filter((e) => !e.isTypeOnly) : []
+    return factory.createImportDeclaration(
+      this.declarationNode.modifiers,
+      nonTypeNamedBindings.length
+        ? factory.createImportClause(false, this.declarationNode.importClause?.name, factory.createNamedImports(nonTypeNamedBindings))
+        : this.declarationNode.importClause,
+      factory.createStringLiteral(
+        moduleSpecifier
+          .replace(algotsModuleSpecifier, testingInternalModuleSpecifier(this.config.testingPackageName))
+          .replace(/^("|')/, '')
+          .replace(/("|')$/, ''),
+      ),
+      this.declarationNode.attributes,
+    )
   }
 }
 
@@ -122,13 +162,19 @@ class ExpressionVisitor {
         let infoArg = info
         if (isCallingEmit(stubbedFunctionName)) {
           infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
-        }
-        if (isCallingDecodeArc4(stubbedFunctionName)) {
+        } else if (isCallingDecodeArc4(stubbedFunctionName)) {
           const targetType = ptypes.ptypeToArc4EncodedType(type, this.helper.sourceLocation(node))
           const targetTypeInfo = getGenericTypeInfo(targetType)
           infoArg = targetTypeInfo
+        } else if (isCallingArc4EncodedLength(stubbedFunctionName)) {
+          infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
         }
-        updatedNode = stubbedFunctionName ? nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg) : updatedNode
+
+        updatedNode = stubbedFunctionName
+          ? isCallingMethodSelector(stubbedFunctionName)
+            ? nodeFactory.callMethodSelectorFunction(updatedNode)
+            : nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
+          : updatedNode
       }
       return needsToCaptureTypeInfo
         ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
@@ -164,7 +210,6 @@ class FunctionOrMethodVisitor {
   constructor(
     protected context: ts.TransformationContext,
     protected helper: VisitorHelper,
-    private isFunction?: boolean,
   ) {}
   protected visit = (node: ts.Node): ts.Node => {
     return ts.visitEachChild(this.updateNode(node), this.visit, this.context)
@@ -239,7 +284,7 @@ class FunctionLikeDecVisitor extends FunctionOrMethodVisitor {
     helper: VisitorHelper,
     private funcNode: ts.SignatureDeclaration,
   ) {
-    super(context, helper, true)
+    super(context, helper)
   }
 
   public result(): ts.SignatureDeclaration {
@@ -325,8 +370,8 @@ const isArc4EncodedType = (type: ptypes.PType): boolean =>
     ptypes.UFixedNxMType,
     ptypes.UintNType,
   ) ||
-  type === ptypes.ARC4StringType ||
-  type === ptypes.ARC4BooleanType
+  type === ptypes.arc4StringType ||
+  type === ptypes.arc4BooleanType
 
 const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
   let typeName = type?.name ?? type?.toString() ?? 'unknown'
@@ -377,20 +422,11 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     if (sourceFileName && !algotsModulePaths.some((s) => sourceFileName.includes(s))) return undefined
   }
   const functionName = functionSymbol?.getName() ?? identityExpression.text
-  const stubbedFunctionNames = [
-    'interpretAsArc4',
-    'decodeArc4',
-    'encodeArc4',
-    'TemplateVar',
-    'ensureBudget',
-    'emit',
-    'compile',
-    'urange',
-    'match',
-    'assertMatch',
-  ]
+  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'arc4EncodedLength']
   return stubbedFunctionNames.includes(functionName) ? functionName : undefined
 }
 
 const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['decodeArc4', 'encodeArc4'].includes(functionName ?? '')
+const isCallingArc4EncodedLength = (functionName: string | undefined): boolean => 'arc4EncodedLength' === (functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
+const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')

@@ -1,5 +1,0 @@
-#pragma version 10
-
-tests/artifacts/miscellaneous-ops/contract.algo.ts::MiscellaneousOpsContract.clearStateProgram:
-    pushint 1 // 1
-    return

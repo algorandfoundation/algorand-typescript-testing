@@ -1,4 +1,3 @@
-import { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
 import { Bytes, log, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import {
@@ -14,23 +13,28 @@ import {
   UintN64,
   UintN8,
 } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../src/constants'
-import { ApplicationTransaction } from '../src/impl/transactions'
+import type { ApplicationTransaction } from '../src/impl/transactions'
 import { asBigUint, asBigUintCls, asUint8Array } from '../src/util'
 import { PrimitiveOpsContract } from './artifacts/primitive-ops/contract.algo'
-import appSpecJson from './artifacts/primitive-ops/data/PrimitiveOpsContract.arc32.json'
-import { getAlgorandAppClient, getAvmResultLog } from './avm-invoker'
+import { getAvmResultLog } from './avm-invoker'
+import { createArc4TestFixture } from './test-fixture'
 
 describe('log', async () => {
-  const appClient = await getAlgorandAppClient(appSpecJson as AppSpec)
+  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
+    PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  })
   const ctx = new TestExecutionContext()
 
-  afterEach(async () => {
+  beforeAll(async () => {
+    await localnetFixture.newScope()
+  })
+  afterEach(() => {
     ctx.reset()
   })
 
-  it('should log different data types', async () => {
+  test('should log different data types', async ({ appClientPrimitiveOpsContract: appClient }) => {
     const a = 'hello'
     const b = Uint64(MAX_UINT64)
     const c = Bytes('world')

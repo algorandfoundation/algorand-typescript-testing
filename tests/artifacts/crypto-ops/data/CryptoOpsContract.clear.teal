@@ -1,5 +1,0 @@
-#pragma version 10
-
-tests/artifacts/crypto-ops/contract.algo.ts::CryptoOpsContract.clearStateProgram:
-    pushint 1 // 1
-    return

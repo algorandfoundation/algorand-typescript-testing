@@ -1,3 +1,4 @@
+import type { uint64 } from '@algorandfoundation/algorand-typescript'
 import {
   abimethod,
   Account,
@@ -7,26 +8,28 @@ import {
   Bytes,
   ensureBudget,
   Global,
+  GlobalState,
   itxn,
   LocalState,
+  OnCompleteAction,
   op,
   OpUpFeeSource,
   TemplateVar,
   Txn,
-  uint64,
+  Uint64,
 } from '@algorandfoundation/algorand-typescript'
 
-const curveMod = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
-const verifierBudget = 145000
+const curveMod = BigUint(21888242871839275222246405745257275088548364400416034343698204186575808495617n)
+const verifierBudget = Uint64(145000)
 
 export default class ZkWhitelistContract extends arc4.Contract {
-  appName: arc4.Str | undefined
+  appName = GlobalState<arc4.Str>({})
   whiteList = LocalState<boolean>()
 
   @abimethod({ onCreate: 'require' })
   create(name: arc4.Str) {
     // Create the application
-    this.appName = name
+    this.appName.value = name
   }
 
   @abimethod({ allowActions: ['UpdateApplication', 'DeleteApplication'] })
@@ -86,7 +89,7 @@ export default class ZkWhitelistContract extends arc4.Contract {
         appId: appId,
         fee: 0,
         appArgs: [arc4.methodSelector('verify(byte[32][],byte[32][])bool'), proof.copy(), publicInputs.copy()],
-        onCompletion: arc4.OnCompleteAction.NoOp,
+        onCompletion: OnCompleteAction.NoOp,
       })
       .submit().lastLog
     return arc4.interpretAsArc4<arc4.Bool>(verified, 'log')

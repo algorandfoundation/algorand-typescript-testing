@@ -1,8 +1,8 @@
-import { arc4, biguint, BigUint, Bytes, bytes, log, op, uint64 } from '@algorandfoundation/algorand-typescript'
-import {
+import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, BigUint, Bytes, log, op } from '@algorandfoundation/algorand-typescript'
+import type {
   Bool,
   DynamicArray,
-  interpretAsArc4,
   StaticArray,
   Str,
   Tuple,
@@ -13,6 +13,7 @@ import {
   UintN64,
   UintN8,
 } from '@algorandfoundation/algorand-typescript/arc4'
+import { interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class PrimitiveOpsContract extends arc4.Contract {
   @arc4.abimethod()

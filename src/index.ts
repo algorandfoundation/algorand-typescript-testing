@@ -1,7 +1,4 @@
-import { internal } from '@algorandfoundation/algorand-typescript'
-
+export { AssertError, AvmError, CodeError, InternalError, NotImplementedError } from './errors'
+export { toExternalValue } from './impl/primitives'
+export { addEqualityTesters } from './set-up'
 export { TestExecutionContext } from './test-execution-context'
-export const encodingUtil = {
-  ...internal.encodingUtil,
-  toExternalValue: internal.primitives.toExternalValue,
-}
