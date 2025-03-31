@@ -145,7 +145,8 @@ describe('arc4EncodedLength', () => {
   test('should return the correct length', () => {
     expect(arc4EncodedLength<uint64>()).toEqual(8)
     expect(arc4EncodedLength<biguint>()).toEqual(64)
-    expect(arc4EncodedLength<boolean>()).toEqual(1)
+    expect(arc4EncodedLength<Bool>()).toEqual(1)
+    expect(arc4EncodedLength<boolean>()).toEqual(8)
     expect(arc4EncodedLength<UintN<512>>()).toEqual(64)
     expect(arc4EncodedLength<[uint64, uint64, boolean]>()).toEqual(17)
     expect(arc4EncodedLength<[uint64, uint64, boolean, boolean]>()).toEqual(17)
