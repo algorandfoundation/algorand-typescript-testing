@@ -2,6 +2,7 @@ import type {
   Account as AccountType,
   BigUintCompat,
   bytes,
+  NTuple,
   StringCompat,
   uint64,
   Uint64Compat,
@@ -127,14 +128,14 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
   private precision: M
   typeInfo: TypeInfo
 
-  constructor(typeInfo: TypeInfo | string, v: `${number}.${number}`) {
+  constructor(typeInfo: TypeInfo | string, v?: `${number}.${number}`) {
     super(v)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     const genericArgs = this.typeInfo.genericArgs as uFixedNxMGenericArgs
     this.bitSize = UFixedNxMImpl.getMaxBitsLength(this.typeInfo) as N
     this.precision = parseInt(genericArgs.m.name, 10) as M
 
-    const trimmedValue = trimTrailingDecimalZeros(v)
+    const trimmedValue = trimTrailingDecimalZeros(v ?? '0.0')
     assert(regExpNxM(this.precision).test(trimmedValue), `expected positive decimal literal with max of ${this.precision} decimal places`)
 
     const bigIntValue = BigInt(trimmedValue.replace('.', ''))
@@ -308,7 +309,7 @@ const checkItemTypeName = (type: TypeInfo, value: ARC4Encoded) => {
 }
 type StaticArrayGenericArgs = { elementType: TypeInfo; size: TypeInfo }
 const arrayProxyHandler = <TItem>() => ({
-  get(target: { items: TItem[] }, prop: PropertyKey) {
+  get(target: { items: readonly TItem[] }, prop: PropertyKey) {
     const idx = prop ? parseInt(prop.toString(), 10) : NaN
     if (!isNaN(idx)) {
       if (idx >= 0 && idx < target.items.length) return target.items[idx]
@@ -337,8 +338,9 @@ const arrayProxyHandler = <TItem>() => ({
     return Reflect.set(target, prop, value)
   },
 })
+const isInitialisingFromBytesSymbol = Symbol('IsInitialisingFromBytes')
 export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> extends StaticArray<TItem, TLength> {
-  private value?: TItem[]
+  private value?: NTuple<TItem, TLength>
   private uint8ArrayValue?: Uint8Array
   private size: number
   typeInfo: TypeInfo
@@ -347,23 +349,33 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
   constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength })
   constructor(typeInfo: TypeInfo | string, ...items: TItem[])
   constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength }) {
-    super(...(items as DeliberateAny))
+    // if first item is the symbol, we are initialising from bytes
+    // so we don't need to pass the items to the super constructor
+    const isInitialisingFromBytes = items.length === 1 && (items[0] as DeliberateAny) === isInitialisingFromBytesSymbol
+    super(...(isInitialisingFromBytes ? [] : (items as DeliberateAny)))
+
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = this.typeInfo.genericArgs as StaticArrayGenericArgs
-
     this.size = parseInt(this.genericArgs.size.name, 10)
-    if (items.length && items.length !== this.size) {
-      throw new CodeError(`expected ${this.size} items, not ${items.length}`)
+
+    // if we are not initialising from bytes, we need to check and set the items
+    if (!isInitialisingFromBytes) {
+      if (items.length && items.length !== this.size) {
+        throw new CodeError(`expected ${this.size} items, not ${items.length}`)
+      }
+
+      assert(areAllARC4Encoded(items), 'expected ARC4 type')
+
+      items.forEach((item) => {
+        checkItemTypeName(this.genericArgs.elementType, item)
+      })
+
+      if (items.length) {
+        this.value = items as NTuple<TItem, TLength>
+      } else {
+        this.uint8ArrayValue = new Uint8Array(StaticArrayImpl.getMaxBytesLength(this.typeInfo))
+      }
     }
-
-    assert(areAllARC4Encoded(items), 'expected ARC4 type')
-
-    items.forEach((item) => {
-      checkItemTypeName(this.genericArgs.elementType, item)
-    })
-
-    this.value = items.length ? items : undefined
-
     return new Proxy(this, arrayProxyHandler<TItem>()) as StaticArrayImpl<TItem, TLength>
   }
 
@@ -382,10 +394,10 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     return this.size
   }
 
-  get items(): TItem[] {
+  get items(): NTuple<TItem, TLength> {
     if (this.uint8ArrayValue) {
       const childTypes = Array(this.size).fill(this.genericArgs.elementType)
-      this.value = decode(this.uint8ArrayValue, childTypes) as TItem[]
+      this.value = decode(this.uint8ArrayValue, childTypes) as NTuple<TItem, TLength>
       this.uint8ArrayValue = undefined
       return this.value
     } else if (this.value) {
@@ -417,7 +429,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     )
   }
 
-  get native(): TItem[] {
+  get native(): NTuple<TItem, TLength> {
     return this.items
   }
 
@@ -431,7 +443,8 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new StaticArrayImpl(typeInfo)
+    // pass the symbol to the constructor to let it know we are initialising from bytes
+    const result = new StaticArrayImpl<ARC4Encoded, number>(typeInfo, isInitialisingFromBytesSymbol as DeliberateAny)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
@@ -504,7 +517,7 @@ export class AddressImpl extends Address {
     return Account(this.value.bytes)
   }
 
-  get items(): ByteImpl[] {
+  get items(): readonly ByteImpl[] {
     return this.value.items
   }
 
@@ -646,18 +659,27 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
   typeInfo: TypeInfo
   genericArgs: TypeInfo[]
 
-  constructor(typeInfo: TypeInfo | string)
   constructor(typeInfo: TypeInfo | string, ...items: TTuple) {
-    super(...items)
+    // if first item is the symbol, we are initialising from bytes
+    // so we don't need to pass the items to the super constructor
+    const isInitialisingFromBytes = items.length === 1 && (items[0] as DeliberateAny) === isInitialisingFromBytesSymbol
+    super(...(isInitialisingFromBytes ? ([] as DeliberateAny) : items))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = Object.values(this.typeInfo.genericArgs as Record<string, TypeInfo>)
 
-    assert(areAllARC4Encoded(items), 'expected ARC4 type')
+    // if we are not initialising from bytes, we need to check and set the items
+    if (!isInitialisingFromBytes) {
+      assert(areAllARC4Encoded(items), 'expected ARC4 type')
 
-    items.forEach((item, index) => {
-      checkItemTypeName(this.genericArgs[index], item)
-    })
-    this.value = items.length ? items : undefined
+      items.forEach((item, index) => {
+        checkItemTypeName(this.genericArgs[index], item)
+      })
+      if (items.length) {
+        this.value = items
+      } else {
+        this.uint8ArrayValue = new Uint8Array(TupleImpl.getMaxBytesLength(this.typeInfo))
+      }
+    }
   }
 
   get bytes(): bytes {
@@ -705,7 +727,8 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new TupleImpl(typeInfo)
+    // pass the symbol to the constructor to let it know we are initialising from bytes
+    const result = new TupleImpl(typeInfo, isInitialisingFromBytesSymbol as DeliberateAny)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
@@ -920,9 +943,9 @@ export class StaticBytesImpl extends StaticBytes {
 
   constructor(typeInfo: TypeInfo | string, value?: bytes | string) {
     super(value)
-    const uint8ArrayValue = asUint8Array(value ?? new Uint8Array())
-    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as StaticArrayImpl<ByteImpl, number>
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
+    const uint8ArrayValue = asUint8Array(value ?? new Uint8Array(StaticBytesImpl.getMaxBytesLength(this.typeInfo)))
+    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as StaticArrayImpl<ByteImpl, number>
     return new Proxy(this, arrayProxyHandler<ByteImpl>()) as StaticBytesImpl
   }
 
@@ -1086,6 +1109,8 @@ const getMaxLengthOfStaticContentType = (type: TypeInfo): number => {
     case 'biguint':
       return UINT512_SIZE / BITS_IN_BYTE
     case 'boolean':
+      return 8
+    case 'Bool':
       return 1
     case 'Address':
       return AddressImpl.getMaxBytesLength(type)
@@ -1103,8 +1128,9 @@ const getMaxLengthOfStaticContentType = (type: TypeInfo): number => {
       return TupleImpl.getMaxBytesLength(type)
     case 'Struct':
       return StructImpl.getMaxBytesLength(type)
+    default:
+      throw new CodeError(`unsupported type ${type.name}`)
   }
-  throw new CodeError(`unsupported type ${type.name}`)
 }
 
 const encode = (values: ARC4Encoded[]) => {
@@ -1338,7 +1364,7 @@ export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
     }, [])
     const genericArgs: TypeInfo[] = result.map((x) => (x as DeliberateAny).typeInfo)
     const typeInfo = { name: `Tuple<[${genericArgs.map((x) => x.name).join(',')}]>`, genericArgs }
-    return new TupleImpl(typeInfo, ...(result as []))
+    return new TupleImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
   }
   if (typeof value === 'object') {
     const result = Object.values(value).reduce((acc: ARC4Encoded[], cur: DeliberateAny) => {
@@ -1358,4 +1384,16 @@ export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
 export const arc4EncodedLengthImpl = (typeInfoString: string): uint64 => {
   const typeInfo = JSON.parse(typeInfoString)
   return getMaxLengthOfStaticContentType(typeInfo)
+}
+
+export const tryArc4EncodedLengthImpl = (typeInfoString: string | TypeInfo): uint64 | undefined => {
+  const typeInfo = typeof typeInfoString === 'string' ? JSON.parse(typeInfoString) : typeInfoString
+  try {
+    return getMaxLengthOfStaticContentType(typeInfo)
+  } catch (e) {
+    if (e instanceof CodeError && e.message.startsWith('unsupported type')) {
+      return undefined
+    }
+    throw e
+  }
 }
