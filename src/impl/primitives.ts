@@ -564,9 +564,9 @@ export class BytesCls extends AlgoTsPrimitiveCls {
 
 export const arrayUtil = new (class ArrayUtil {
   arrayAt(arrayLike: Uint8Array, index: StubUint64Compat): Uint8Array
-  arrayAt<T>(arrayLike: T[], index: StubUint64Compat): T
-  arrayAt<T>(arrayLike: T[] | Uint8Array, index: StubUint64Compat): T | Uint8Array
-  arrayAt<T>(arrayLike: T[] | Uint8Array, index: StubUint64Compat): T | Uint8Array {
+  arrayAt<T>(arrayLike: readonly T[], index: StubUint64Compat): T
+  arrayAt<T>(arrayLike: readonly T[] | Uint8Array, index: StubUint64Compat): T | Uint8Array
+  arrayAt<T>(arrayLike: readonly T[] | Uint8Array, index: StubUint64Compat): T | Uint8Array {
     const indexNum = getNumber(index)
     if (arrayLike instanceof Uint8Array) {
       const res = arrayLike.slice(indexNum, indexNum === -1 ? undefined : indexNum + 1)
@@ -576,9 +576,13 @@ export const arrayUtil = new (class ArrayUtil {
     return arrayLike.at(indexNum) ?? avmError('Index out of bounds')
   }
   arraySlice(arrayLike: Uint8Array, start: undefined | StubUint64Compat, end: undefined | StubUint64Compat): Uint8Array
-  arraySlice<T>(arrayLike: T[], start: undefined | StubUint64Compat, end: undefined | StubUint64Compat): T[]
-  arraySlice<T>(arrayLike: T[] | Uint8Array, start: undefined | StubUint64Compat, end: undefined | StubUint64Compat): Uint8Array | T[]
-  arraySlice<T>(arrayLike: T[] | Uint8Array, start: undefined | StubUint64Compat, end: undefined | StubUint64Compat) {
+  arraySlice<T>(arrayLike: readonly T[], start: undefined | StubUint64Compat, end: undefined | StubUint64Compat): T[]
+  arraySlice<T>(
+    arrayLike: readonly T[] | Uint8Array,
+    start: undefined | StubUint64Compat,
+    end: undefined | StubUint64Compat,
+  ): Uint8Array | T[]
+  arraySlice<T>(arrayLike: readonly T[] | Uint8Array, start: undefined | StubUint64Compat, end: undefined | StubUint64Compat) {
     const startNum = start === undefined ? undefined : getNumber(start)
     const endNum = end === undefined ? undefined : getNumber(end)
     if (arrayLike instanceof Uint8Array) {
