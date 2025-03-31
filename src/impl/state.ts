@@ -151,6 +151,10 @@ export class BoxCls<TValue> {
     return (val: Uint8Array) => getEncoder<TValue>(valueType)(val, valueType)
   }
 
+  create(_options?: { size?: StubUint64Compat }): boolean {
+    return true
+  }
+
   get value(): TValue {
     if (!this.exists) {
       throw new InternalError('Box has not been created')
