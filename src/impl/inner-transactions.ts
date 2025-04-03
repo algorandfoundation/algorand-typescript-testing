@@ -6,7 +6,6 @@ import type {
   itxn,
 } from '@algorandfoundation/algorand-typescript'
 import { TransactionType } from '@algorandfoundation/algorand-typescript'
-import type { BareCreateApplicationCallFields, TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
@@ -15,7 +14,7 @@ import { asBytes, asNumber } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
 import type { InnerTxn, InnerTxnFields } from './itxn'
-import { BytesCls, Uint64Cls } from './primitives'
+import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
 import {
   ApplicationCallTransaction,
@@ -243,22 +242,12 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
     return this.#fields.type === TransactionType.ApplicationCall
   }
 
-  private getMethodSelector(): bytes | 'bareCreate' | undefined {
-    const applicationCallFields = this.#fields as itxn.ApplicationCallFields
-    return applicationCallFields.appArgs?.length && applicationCallFields.appArgs[0] instanceof BytesCls
-      ? asBytes(applicationCallFields.appArgs[0])
-      : !applicationCallFields.appArgs?.length
-        ? 'bareCreate'
-        : undefined
-  }
   submit(): TTransaction {
     let itxnContext: ApplicationCallInnerTxnContext | undefined
 
     if (this.isApplicationCall()) {
-      const methodSelector = this.getMethodSelector()
-      const onAbiCall = methodSelector && lazyContext.value.getOnAbiCall(methodSelector)
       itxnContext = ApplicationCallInnerTxnContext(this.#fields)
-      onAbiCall?.value?.forEach((cb) => cb(itxnContext!))
+      lazyContext.value.notifyApplicationSpies(itxnContext)
     }
     const innerTxn = createInnerTxn<InnerTxnFields>(itxnContext ?? this.#fields) as unknown as TTransaction
     lazyContext.txn.activeGroup.addInnerTransactionGroup(innerTxn)
@@ -273,23 +262,21 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
     return new ItxnParams<TFields, TTransaction>(this.#fields, this.#fields.type)
   }
 }
-
+// TODO: Not sure it makes sense to have a typed args property here as the context won't always be created from a typed context.
 export type ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown> = Omit<
   ApplicationCallFields,
   'appArgs'
 > & {
   args: TArgs
+  // TODO: Return value might be better off as a function that writes an extra log entry, we might also want a way to write logs
   returnValue?: TReturn
 }
 
 export function ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown>(
   fields: Partial<itxn.ApplicationCallFields>,
-  methodArgs?: TypedApplicationCallFields<TArgs> | BareCreateApplicationCallFields,
 ): ApplicationCallInnerTxnContext<TArgs, TReturn> {
   const itxn = {
     ...fields,
-    args: fields.appArgs?.slice(1),
-    ...(methodArgs ?? {}),
   }
   return new Proxy(itxn, {
     get: (target, prop) => {

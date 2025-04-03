@@ -1,6 +1,6 @@
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type { Str } from '@algorandfoundation/algorand-typescript/arc4'
-import { decodeArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { decodeArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, it } from 'vitest'
 import { Hello, HelloTemplate, HelloTemplateCustomPrefix, LargeProgram, TerribleCustodialAccount } from './precompiled-apps.algo'
 import { HelloFactory } from './precompiled-factory.algo'
@@ -18,13 +18,13 @@ describe('pre compiled app calls', () => {
     })
     ctx.setCompiledApp(Hello, helloApp.id)
 
-    const spy = new ApplicationSpy(Hello)
-    spy.onAbiCall(Hello.prototype.create, (itxnContext) => {
+    const spy = new ApplicationSpy()
+    spy.onAbiCall(methodSelector(Hello.prototype.create), (itxnContext) => {
       if (itxnContext.approvalProgram === helloApp.approvalProgram) {
         itxnContext.createdApp = helloApp
       }
     })
-    spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+    spy.onAbiCall(methodSelector(Hello.prototype.greet), (itxnContext) => {
       if (itxnContext.appId === helloApp) {
         itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
       }
@@ -44,13 +44,13 @@ describe('pre compiled app calls', () => {
     })
     ctx.setCompiledApp(HelloTemplate, helloTemplateApp.id)
 
-    const spy = new ApplicationSpy(HelloTemplate)
-    spy.onAbiCall(HelloTemplate.prototype.create, (itxnContext) => {
+    const spy = new ApplicationSpy()
+    spy.onAbiCall(methodSelector(HelloTemplate.prototype.create), (itxnContext) => {
       if (itxnContext.approvalProgram === helloTemplateApp.approvalProgram) {
         itxnContext.createdApp = helloTemplateApp
       }
     })
-    spy.onAbiCall(HelloTemplate.prototype.greet, (itxnContext) => {
+    spy.onAbiCall(methodSelector(HelloTemplate.prototype.greet), (itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
         itxnContext.returnValue = `hey ${decodeArc4<Str>(itxnContext.args[0])}`
       }
@@ -69,13 +69,13 @@ describe('pre compiled app calls', () => {
       approvalProgram: ctx.any.bytes(),
     })
     ctx.setCompiledApp(HelloTemplateCustomPrefix, helloTemplateCustomPrefixApp.id)
-    const spy = new ApplicationSpy(HelloTemplateCustomPrefix)
-    spy.onAbiCall(HelloTemplateCustomPrefix.prototype.create, (itxnContext) => {
+    const spy = new ApplicationSpy()
+    spy.onAbiCall(methodSelector(HelloTemplateCustomPrefix.prototype.create), (itxnContext) => {
       if (itxnContext.approvalProgram === helloTemplateCustomPrefixApp.approvalProgram) {
         itxnContext.createdApp = helloTemplateCustomPrefixApp
       }
     })
-    spy.onAbiCall(HelloTemplateCustomPrefix.prototype.greet, (itxnContext) => {
+    spy.onAbiCall(methodSelector(HelloTemplateCustomPrefix.prototype.greet), (itxnContext) => {
       if (itxnContext.appId === helloTemplateCustomPrefixApp) {
         itxnContext.returnValue = `bonjour ${decodeArc4<Str>(itxnContext.args[0])}`
       }
@@ -95,13 +95,13 @@ describe('pre compiled app calls', () => {
     })
     ctx.setCompiledApp(LargeProgram, largeProgramApp.id)
 
-    const spy = new ApplicationSpy(LargeProgram)
-    spy.onAbiCall('bareCreate', (itxnContext) => {
+    const spy = new ApplicationSpy()
+    spy.onBareCall((itxnContext) => {
       if (itxnContext.approvalProgram === largeProgramApp.approvalProgram) {
         itxnContext.createdApp = largeProgramApp
       }
     })
-    spy.onAbiCall(LargeProgram.prototype.getBigBytesLength, (itxnContext) => {
+    spy.onAbiCall(methodSelector(LargeProgram.prototype.getBigBytesLength), (itxnContext) => {
       if (itxnContext.appId === largeProgramApp) {
         itxnContext.returnValue = 4096
       }

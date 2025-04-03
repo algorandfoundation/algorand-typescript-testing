@@ -1,19 +1,15 @@
-import type { Account as AccountType, arc4, BaseContract, bytes, Contract, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, BaseContract, bytes, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
 import type { ApplicationSpy } from './application-spy'
-import { BytesMap } from './collections/custom-key-map'
 import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
 import { ContextManager } from './context-helpers/context-manager'
 import type { DecodedLogs, LogDecoding } from './decode-logs'
 import type { ApplicationCallInnerTxnContext } from './impl/inner-transactions'
-import { methodSelector } from './impl/method-selector'
-import type { StubBytesCompat } from './impl/primitives'
-import { BytesCls } from './impl/primitives'
 import { Account, AccountCls } from './impl/reference'
 import { ContractContext } from './subcontexts/contract-context'
 import { LedgerContext } from './subcontexts/ledger-context'
 import { TransactionContext } from './subcontexts/transaction-context'
-import type { ConstructorFor, DeliberateAny, FunctionKeys, InstanceMethod, Overloads } from './typescript-helpers'
-import { asBytes, getRandomBytes } from './util'
+import type { ConstructorFor, DeliberateAny } from './typescript-helpers'
+import { getRandomBytes } from './util'
 import { ValueGenerator } from './value-generators'
 
 /**
@@ -33,7 +29,7 @@ export class TestExecutionContext {
   #templateVars: Record<string, DeliberateAny> = {}
   #compiledApps: Array<{ key: ConstructorFor<BaseContract>; value: uint64 }> = []
   #compiledLogicSigs: Array<{ key: ConstructorFor<LogicSig>; value: AccountType }> = []
-  #abiCallHooks: BytesMap<((innerTxnContext: ApplicationCallInnerTxnContext) => void)[]> = new BytesMap()
+  #applicationSpies: Array<ApplicationSpy> = []
 
   /**
    * Creates an instance of `TestExecutionContext`.
@@ -186,30 +182,14 @@ export class TestExecutionContext {
     }
   }
 
-  /* @internal */
-  getOnAbiCall<TContract extends Contract>(
-    methodSignature: FunctionKeys<TContract> | InstanceMethod<TContract> | StubBytesCompat | 'bareCreate',
-    contract?: TContract | ConstructorFor<TContract>,
-  ) {
-    const selector =
-      methodSignature === 'bareCreate'
-        ? asBytes(methodSignature)
-        : methodSignature instanceof BytesCls
-          ? asBytes(methodSignature)
-          : methodSelector(methodSignature as Parameters<Overloads<typeof arc4.methodSelector>>[0], contract)
-
-    return { key: selector, value: this.#abiCallHooks.get(selector) }
+  notifyApplicationSpies(itxn: ApplicationCallInnerTxnContext) {
+    for (const spy of this.#applicationSpies) {
+      spy.notify(itxn)
+    }
   }
 
-  addApplicationSpy<TContract extends Contract>(spy: ApplicationSpy<TContract>) {
-    spy.abiCallHooks.forEach((value, key) => {
-      const existing = this.getOnAbiCall(key, spy.contract)
-      if (existing.value) {
-        existing.value.push(...value)
-      } else {
-        this.#abiCallHooks.set(key, value)
-      }
-    })
+  addApplicationSpy(spy: ApplicationSpy) {
+    this.#applicationSpies.push(spy)
   }
 
   /**
@@ -249,7 +229,7 @@ export class TestExecutionContext {
     this.#templateVars = {}
     this.#compiledApps = []
     this.#compiledLogicSigs = []
-    this.#abiCallHooks = new BytesMap()
+    this.#applicationSpies = []
     ContextManager.reset()
     ContextManager.instance = this
   }

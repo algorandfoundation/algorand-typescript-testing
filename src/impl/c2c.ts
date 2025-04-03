@@ -6,6 +6,7 @@ import type {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
+import { methodSelector } from '../internal/arc4'
 import type { ConstructorFor, DeliberateAny, FunctionKeys, InstanceMethod } from '../typescript-helpers'
 import { ApplicationCallInnerTxn, ApplicationCallInnerTxnContext } from './inner-transactions'
 import type { ApplicationData } from './reference'
@@ -85,10 +86,13 @@ export function abiCall<TArgs extends DeliberateAny[], TReturn>(
   methodArgs: TypedApplicationCallFields<TArgs>,
   contract?: Contract | { new (): Contract },
 ): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
-  const onAbiCall = lazyContext.value.getOnAbiCall(method, contract)
-  if (!onAbiCall.value) {
-    throw new InternalError('Unknown method, check correct testing context is active')
-  }
-  const itxnContext = ApplicationCallInnerTxnContext<TArgs, TReturn>({}, methodArgs)
+  // const onAbiCall = lazyContext.value.getOnAbiCall(method, contract)
+  // if (!onAbiCall.value) {
+  //   throw new InternalError('Unknown method, check correct testing context is active')
+  // }
+  // TODO: methodArgs.args should be converted to bytes
+  const args = [methodSelector(method, contract), ...(methodArgs.args ?? [])]
+  const itxnContext = ApplicationCallInnerTxnContext<TArgs, TReturn>({}, {})
+
   return invokeCallback<TReturn>(onAbiCall.value, itxnContext)
 }
