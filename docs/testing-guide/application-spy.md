@@ -61,7 +61,7 @@ const spy = new ApplicationSpy(Hello)
 // which are used to construct `itxn.ApplicationCall` transaction when `.submit()` is called.
 // it also maps `appArgs` to `args` property and provides consistent access to parameters passed
 // to the contract method.
-spy.onAbiCall(Hello.prototype.create, (itxnContext) => {
+spy.on.create((itxnContext) => {
   itxnContext.createdApp = helloApp
 })
 ````
@@ -100,7 +100,7 @@ const spy = new ApplicationSpy(Hello)
 // the mock setup is the same as using explicit create method except
 // the literal string keyword 'bareCreate' is used instead of a method signature
 // to register the callback
-spy.onAbiCall('bareCreate', (itxnContext) => {
+spy.onBareCall((itxnContext) => {
   itxnContext.createdApp = helloApp
 })
 ```
@@ -136,7 +136,7 @@ Mock result can be setup for the snippet above as
 //   itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
 // }
 // ```
-spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+spy.on.greet((itxnContext) => {
   itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
 })
 ````
@@ -156,7 +156,7 @@ Mock result can be setup for the snippet above as
 ```ts
 // the setup is the same as in `itxn.applicationCall`, except the `itxnContext.args` contains
 // the values passed in `args` array in their original format with being encoded into bytes.
-spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+spy.on.greet((itxnContext) => {
   itxnContext.returnValue = `hello ${itxnContext.args[0]}`
 })
 ```
@@ -174,7 +174,7 @@ Mock result can be setup for the snippet above as
 
 ```ts
 // the setup is the same as the previous case
-spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+spy.on.greet((itxnContext) => {
   itxnContext.returnValue = `hello ${itxnContext.args[0]}`
 })
 ```
@@ -184,7 +184,7 @@ spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
 1. **Type-safe Method Mocking**
 
    ```ts
-   spy.onAbiCall(Counter.prototype.increment, (itxnContext) => {
+   spy.on.increment((itxnContext) => {
      // itxnContext.args is properly typed based on method signature
      itxnContext.returnValue = 1n // Type checked against method return type
    })
@@ -193,7 +193,7 @@ spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
 2. **Creation Handling**
 
    ```ts
-   spy.onAbiCall(Counter.prototype.create, (itxnContext) => {
+   spy.on.create((itxnContext) => {
      // Handle contract creation
      itxnContext.createdApp = counterApp
    })
@@ -223,7 +223,7 @@ spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
 2. **Validate App IDs or approvalProgram**
 
    ```ts
-   spy.onAbiCall(Counter.prototype.increment, (itxnContext) => {
+   spy.on.increment((itxnContext) => {
      // Only handle calls to specific app instance
      if (itxnContext.appId === counterApp) {
        itxnContext.returnValue = 1n
@@ -233,7 +233,7 @@ spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
 
 3. **Handle Method Arguments**
    ```ts
-   spy.onAbiCall(Counter.prototype.setValue, (itxnContext) => {
+   spy.on.setValue((itxnContext) => {
      //`itxnContext.args` could be encoded as bytes if `itxn.applicationCall` is used to make the call
      itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
    })

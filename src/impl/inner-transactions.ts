@@ -15,7 +15,7 @@ import { asBytes, asNumber } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
 import type { InnerTxn, InnerTxnFields } from './itxn'
-import { BytesCls, Uint64Cls } from './primitives'
+import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
 import {
   ApplicationCallTransaction,
@@ -243,22 +243,12 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
     return this.#fields.type === TransactionType.ApplicationCall
   }
 
-  private getMethodSelector(): bytes | 'bareCreate' | undefined {
-    const applicationCallFields = this.#fields as itxn.ApplicationCallFields
-    return applicationCallFields.appArgs?.length && applicationCallFields.appArgs[0] instanceof BytesCls
-      ? asBytes(applicationCallFields.appArgs[0])
-      : !applicationCallFields.appArgs?.length
-        ? 'bareCreate'
-        : undefined
-  }
   submit(): TTransaction {
     let itxnContext: ApplicationCallInnerTxnContext | undefined
 
     if (this.isApplicationCall()) {
-      const methodSelector = this.getMethodSelector()
-      const onAbiCall = methodSelector && lazyContext.value.getOnAbiCall(methodSelector)
       itxnContext = ApplicationCallInnerTxnContext(this.#fields)
-      onAbiCall?.value?.forEach((cb) => cb(itxnContext!))
+      lazyContext.value.notifyApplicationSpies(itxnContext)
     }
     const innerTxn = createInnerTxn<InnerTxnFields>(itxnContext ?? this.#fields) as unknown as TTransaction
     lazyContext.txn.activeGroup.addInnerTransactionGroup(innerTxn)
@@ -274,10 +264,7 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
   }
 }
 
-export type ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown> = Omit<
-  ApplicationCallFields,
-  'appArgs'
-> & {
+export type ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown> = ApplicationCallFields & {
   args: TArgs
   returnValue?: TReturn
 }
@@ -285,11 +272,15 @@ export type ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[],
 export function ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown>(
   fields: Partial<itxn.ApplicationCallFields>,
   methodArgs?: TypedApplicationCallFields<TArgs> | BareCreateApplicationCallFields,
+  methodSelector?: bytes,
 ): ApplicationCallInnerTxnContext<TArgs, TReturn> {
   const itxn = {
     ...fields,
     args: fields.appArgs?.slice(1),
     ...(methodArgs ?? {}),
+  }
+  if (!itxn.appArgs?.length && methodSelector) {
+    itxn.appArgs = [methodSelector]
   }
   return new Proxy(itxn, {
     get: (target, prop) => {

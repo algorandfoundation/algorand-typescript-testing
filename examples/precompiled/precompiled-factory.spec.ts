@@ -19,12 +19,12 @@ describe('pre compiled app calls', () => {
     ctx.setCompiledApp(Hello, helloApp.id)
 
     const spy = new ApplicationSpy(Hello)
-    spy.onAbiCall(Hello.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       if (itxnContext.approvalProgram === helloApp.approvalProgram) {
         itxnContext.createdApp = helloApp
       }
     })
-    spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloApp) {
         itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
       }
@@ -45,12 +45,12 @@ describe('pre compiled app calls', () => {
     ctx.setCompiledApp(HelloTemplate, helloTemplateApp.id)
 
     const spy = new ApplicationSpy(HelloTemplate)
-    spy.onAbiCall(HelloTemplate.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       if (itxnContext.approvalProgram === helloTemplateApp.approvalProgram) {
         itxnContext.createdApp = helloTemplateApp
       }
     })
-    spy.onAbiCall(HelloTemplate.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
         itxnContext.returnValue = `hey ${decodeArc4<Str>(itxnContext.args[0])}`
       }
@@ -70,12 +70,12 @@ describe('pre compiled app calls', () => {
     })
     ctx.setCompiledApp(HelloTemplateCustomPrefix, helloTemplateCustomPrefixApp.id)
     const spy = new ApplicationSpy(HelloTemplateCustomPrefix)
-    spy.onAbiCall(HelloTemplateCustomPrefix.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       if (itxnContext.approvalProgram === helloTemplateCustomPrefixApp.approvalProgram) {
         itxnContext.createdApp = helloTemplateCustomPrefixApp
       }
     })
-    spy.onAbiCall(HelloTemplateCustomPrefix.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateCustomPrefixApp) {
         itxnContext.returnValue = `bonjour ${decodeArc4<Str>(itxnContext.args[0])}`
       }
@@ -96,12 +96,12 @@ describe('pre compiled app calls', () => {
     ctx.setCompiledApp(LargeProgram, largeProgramApp.id)
 
     const spy = new ApplicationSpy(LargeProgram)
-    spy.onAbiCall('bareCreate', (itxnContext) => {
+    spy.onBareCall((itxnContext) => {
       if (itxnContext.approvalProgram === largeProgramApp.approvalProgram) {
         itxnContext.createdApp = largeProgramApp
       }
     })
-    spy.onAbiCall(LargeProgram.prototype.getBigBytesLength, (itxnContext) => {
+    spy.on.getBigBytesLength((itxnContext) => {
       if (itxnContext.appId === largeProgramApp) {
         itxnContext.returnValue = 4096
       }
