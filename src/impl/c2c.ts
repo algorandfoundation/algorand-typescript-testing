@@ -5,9 +5,9 @@ import type {
   TypedApplicationCallFields,
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { lazyContext } from '../context-helpers/internal-context'
-import { InternalError } from '../errors'
-import type { ConstructorFor, DeliberateAny, FunctionKeys, InstanceMethod } from '../typescript-helpers'
+import type { ConstructorFor, DeliberateAny, InstanceMethod } from '../typescript-helpers'
 import { ApplicationCallInnerTxn, ApplicationCallInnerTxnContext } from './inner-transactions'
+import { methodSelector } from './method-selector'
 import type { ApplicationData } from './reference'
 
 export function compileArc4<TContract extends Contract>(
@@ -30,23 +30,16 @@ export function compileArc4<TContract extends Contract>(
     call: new Proxy({} as unknown as TContract, {
       get: (_target, prop) => {
         return (methodArgs: TypedApplicationCallFields<DeliberateAny[]>) => {
-          const onAbiCall = lazyContext.value.getOnAbiCall(prop as FunctionKeys<TContract>, contract)
-          if (!onAbiCall.value) {
-            throw new InternalError('Unknown method, check correct testing context is active')
-          }
-          const itxnContext = ApplicationCallInnerTxnContext(getCommonApplicationCallFields(app, options), methodArgs)
-          return invokeCallback(onAbiCall.value, itxnContext)
+          const selector = methodSelector(prop as string, contract)
+          const itxnContext = ApplicationCallInnerTxnContext(getCommonApplicationCallFields(app, options), methodArgs, selector)
+          return invokeCallback(itxnContext)
         }
       },
     }),
 
     bareCreate: (methodArgs?: BareCreateApplicationCallFields) => {
-      const onAbiCall = lazyContext.value.getOnAbiCall('bareCreate', contract)
-      if (!onAbiCall.value) {
-        throw new InternalError('Unknown method, check correct testing context is active')
-      }
       const itxnContext = ApplicationCallInnerTxnContext(getCommonApplicationCallFields(app, options), methodArgs)
-      return invokeCallback(onAbiCall.value, itxnContext).itxn
+      return invokeCallback(itxnContext).itxn
     },
     approvalProgram: app?.application.approvalProgram ?? [lazyContext.any.bytes(10), lazyContext.any.bytes(10)],
     clearStateProgram: app?.application.clearStateProgram ?? [lazyContext.any.bytes(10), lazyContext.any.bytes(10)],
@@ -58,11 +51,8 @@ export function compileArc4<TContract extends Contract>(
   } as unknown as ContractProxy<TContract>
 }
 
-const invokeCallback = <TReturn>(
-  onAbiCall: ((innerTxnContext: ApplicationCallInnerTxnContext<DeliberateAny>) => void)[],
-  itxnContext: ApplicationCallInnerTxnContext<DeliberateAny>,
-) => {
-  onAbiCall.forEach((cb) => cb(itxnContext!))
+const invokeCallback = <TReturn>(itxnContext: ApplicationCallInnerTxnContext<DeliberateAny>) => {
+  lazyContext.value.notifyApplicationSpies(itxnContext)
   const innerTxn = new ApplicationCallInnerTxn(itxnContext)
   lazyContext.txn.activeGroup.addInnerTransactionGroup(innerTxn)
   return {
@@ -85,10 +75,7 @@ export function abiCall<TArgs extends DeliberateAny[], TReturn>(
   methodArgs: TypedApplicationCallFields<TArgs>,
   contract?: Contract | { new (): Contract },
 ): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
-  const onAbiCall = lazyContext.value.getOnAbiCall(method, contract)
-  if (!onAbiCall.value) {
-    throw new InternalError('Unknown method, check correct testing context is active')
-  }
-  const itxnContext = ApplicationCallInnerTxnContext<TArgs, TReturn>({}, methodArgs)
-  return invokeCallback<TReturn>(onAbiCall.value, itxnContext)
+  const selector = methodSelector(method, contract)
+  const itxnContext = ApplicationCallInnerTxnContext<TArgs, TReturn>({}, methodArgs, selector)
+  return invokeCallback<TReturn>(itxnContext)
 }

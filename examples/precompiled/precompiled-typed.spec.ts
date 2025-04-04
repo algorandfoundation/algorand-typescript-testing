@@ -25,17 +25,17 @@ describe('pre compiled typed app calls', () => {
     })
     ctx.setCompiledApp(Hello, helloApp.id)
     const spy = new ApplicationSpy(Hello)
-    spy.onAbiCall(Hello.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       if (itxnContext.approvalProgram === helloApp.approvalProgram) {
         itxnContext.createdApp = helloApp
       }
     })
-    spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloApp) {
         itxnContext.returnValue = `hello ${itxnContext.args[0]}`
       }
     })
-    spy.onAbiCall(Hello.prototype.delete, (itxnContext) => {
+    spy.on.delete((itxnContext) => {
       if (itxnContext.appId === helloApp) {
         itxnContext.onCompletion = OnCompleteAction.DeleteApplication
       }
@@ -55,17 +55,17 @@ describe('pre compiled typed app calls', () => {
     })
     ctx.setCompiledApp(HelloTemplate, helloTemplateApp.id)
     const spy = new ApplicationSpy(HelloTemplate)
-    spy.onAbiCall(HelloTemplate.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       if (itxnContext.approvalProgram === helloTemplateApp.approvalProgram) {
         itxnContext.createdApp = helloTemplateApp
       }
     })
-    spy.onAbiCall(HelloTemplate.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
         itxnContext.returnValue = `hey ${itxnContext.args[0]}`
       }
     })
-    spy.onAbiCall(HelloTemplate.prototype.delete, (itxnContext) => {
+    spy.on.delete((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
         itxnContext.onCompletion = OnCompleteAction.DeleteApplication
       }
@@ -85,17 +85,17 @@ describe('pre compiled typed app calls', () => {
     })
     ctx.setCompiledApp(HelloTemplateCustomPrefix, helloTemplateApp.id)
     const spy = new ApplicationSpy(HelloTemplateCustomPrefix)
-    spy.onAbiCall(HelloTemplateCustomPrefix.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       if (itxnContext.approvalProgram === helloTemplateApp.approvalProgram) {
         itxnContext.createdApp = helloTemplateApp
       }
     })
-    spy.onAbiCall(HelloTemplateCustomPrefix.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
         itxnContext.returnValue = `bonjour ${itxnContext.args[0]}`
       }
     })
-    spy.onAbiCall(HelloTemplateCustomPrefix.prototype.delete, (itxnContext) => {
+    spy.on.delete((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
         itxnContext.onCompletion = OnCompleteAction.DeleteApplication
       }
@@ -115,17 +115,17 @@ describe('pre compiled typed app calls', () => {
     })
     ctx.setCompiledApp(LargeProgram, largeProgramApp.id)
     const spy = new ApplicationSpy(LargeProgram)
-    spy.onAbiCall('bareCreate', (itxnContext) => {
+    spy.onBareCall((itxnContext) => {
       if (itxnContext.approvalProgram === largeProgramApp.approvalProgram) {
         itxnContext.createdApp = largeProgramApp
       }
     })
-    spy.onAbiCall(LargeProgram.prototype.getBigBytesLength, (itxnContext) => {
+    spy.on.getBigBytesLength((itxnContext) => {
       if (itxnContext.appId === largeProgramApp) {
         itxnContext.returnValue = 4096
       }
     })
-    spy.onAbiCall(LargeProgram.prototype.delete, (itxnContext) => {
+    spy.on.delete((itxnContext) => {
       if (itxnContext.appId === largeProgramApp) {
         itxnContext.onCompletion = OnCompleteAction.DeleteApplication
       }
@@ -145,22 +145,22 @@ describe('pre compiled typed app calls', () => {
     })
     ctx.setCompiledApp(ReceivesTxns, receivesTxnsApp.id)
     const spy = new ApplicationSpy(ReceivesTxns)
-    spy.onAbiCall('bareCreate', (itxnContext) => {
+    spy.onBareCall((itxnContext) => {
       if (itxnContext.approvalProgram === receivesTxnsApp.approvalProgram) {
         itxnContext.createdApp = receivesTxnsApp
       }
     })
-    spy.onAbiCall(ReceivesTxns.prototype.receivesAnyTxn, (itxnContext) => {
+    spy.on.receivesAnyTxn((itxnContext) => {
       if (itxnContext.appId === receivesTxnsApp) {
         itxnContext.returnValue = 1
       }
     })
-    spy.onAbiCall(ReceivesTxns.prototype.receivesAssetConfig, (itxnContext) => {
+    spy.on.receivesAssetConfig((itxnContext) => {
       if (itxnContext.appId === receivesTxnsApp) {
         itxnContext.returnValue = undefined
       }
     })
-    spy.onAbiCall(ReceivesTxns.prototype.receivesAssetConfigAndPay, () => {})
+    spy.on.receivesAssetConfigAndPay(() => {})
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactoryTyped)
@@ -176,12 +176,12 @@ describe('pre compiled typed app calls', () => {
     })
     ctx.setCompiledApp(ReceivesReferenceTypes, receivesReferenceTypesApp.id)
     const spy = new ApplicationSpy(ReceivesReferenceTypes)
-    spy.onAbiCall('bareCreate', (itxnContext) => {
+    spy.onBareCall((itxnContext) => {
       if (itxnContext.approvalProgram === receivesReferenceTypesApp.approvalProgram) {
         itxnContext.createdApp = receivesReferenceTypesApp
       }
     })
-    spy.onAbiCall(ReceivesReferenceTypes.prototype.receivesReferenceTypes, (itxnContext) => {
+    spy.on.receivesReferenceTypes((itxnContext) => {
       if (itxnContext.appId === receivesReferenceTypesApp) {
         itxnContext.appLogs = [itxnContext.args[0].address.bytes, itxnContext.args[1].bytes, itxnContext.args[2].name]
       }
