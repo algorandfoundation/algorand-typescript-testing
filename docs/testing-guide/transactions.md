@@ -253,10 +253,10 @@ describe('pre compiled app calls', () => {
     ctx.setCompiledApp(Hello, helloApp.id)
 
     const spy = new ApplicationSpy(Hello)
-    spy.onAbiCall(Hello.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       itxnContext.createdApp = helloApp
     })
-    spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
     })
     ctx.addApplicationSpy(spy)
@@ -328,13 +328,13 @@ describe('pre compiled typed app calls', () => {
     ctx.setCompiledApp(Hello, helloApp.id)
 
     const spy = new ApplicationSpy(Hello)
-    spy.onAbiCall(Hello.prototype.create, (itxnContext) => {
+    spy.on.create((itxnContext) => {
       itxnContext.createdApp = helloApp
     })
-    spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       itxnContext.returnValue = `hello ${itxnContext.args[0]}`
     })
-    spy.onAbiCall(Hello.prototype.delete, (itxnContext) => {
+    spy.on.delete((itxnContext) => {
       itxnContext.onCompletion = OnCompleteAction.DeleteApplication
     })
     ctx.addApplicationSpy(spy)
@@ -397,7 +397,7 @@ describe('pre compiled typed app calls', () => {
     const helloApp = ctx.any.application({})
 
     const spy = new ApplicationSpy(Hello)
-    spy.onAbiCall(Hello.prototype.greet, (itxnContext) => {
+    spy.on.greet((itxnContext) => {
       itxnContext.returnValue = `hello ${itxnContext.args[0]}`
     })
     ctx.addApplicationSpy(spy)

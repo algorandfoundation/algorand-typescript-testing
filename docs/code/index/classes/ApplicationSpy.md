@@ -6,7 +6,7 @@
 
 # Class: ApplicationSpy\<TContract\>
 
-Defined in: [src/application-spy.ts:15](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L15)
+Defined in: [src/application-spy.ts:33](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L33)
 
 ## Type Parameters
 
@@ -20,7 +20,7 @@ Defined in: [src/application-spy.ts:15](https://github.com/algorandfoundation/al
 
 > **new ApplicationSpy**\<`TContract`\>(`contract`): `ApplicationSpy`\<`TContract`\>
 
-Defined in: [src/application-spy.ts:26](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L26)
+Defined in: [src/application-spy.ts:45](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L45)
 
 #### Parameters
 
@@ -38,59 +38,54 @@ Defined in: [src/application-spy.ts:26](https://github.com/algorandfoundation/al
 
 > **contract**: `TContract` \| `ConstructorFor`\<`TContract`\>
 
-Defined in: [src/application-spy.ts:19](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L19)
+Defined in: [src/application-spy.ts:43](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L43)
 
-## Accessors
+***
 
-### abiCallHooks
+### on
 
-#### Get Signature
+> `readonly` **on**: `_TypedApplicationSpyCallBacks`\<`TContract`\>
 
-> **get** **abiCallHooks**(): `BytesMap`\<(`innerTxnContext`) => `void`[]\>
+Defined in: [src/application-spy.ts:40](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L40)
 
-Defined in: [src/application-spy.ts:22](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L22)
-
-##### Returns
-
-`BytesMap`\<(`innerTxnContext`) => `void`[]\>
+The `on` property is a proxy that allows you to register callbacks for specific method signatures.
+It dynamically creates methods based on the contract's methods.
 
 ## Methods
 
-### onAbiCall()
+### notify()
 
-> **onAbiCall**\<`TContract`, `TMethod`\>(`methodSignature`, `callback`): `void`
+> **notify**(`itxn`): `void`
 
-Defined in: [src/application-spy.ts:49](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L49)
-
-Registers a callback for a specific method signature.
-
-#### Type Parameters
-
-##### TContract
-
-`TContract` *extends* `Contract`
-
-The type of the contract being spied on.
-
-##### TMethod
-
-`TMethod` *extends* `"bareCreate"` \| `InstanceMethod`\<`TContract`\>
-
-The type of the method being spied on.
+Defined in: [src/application-spy.ts:51](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L51)
 
 #### Parameters
 
-##### methodSignature
+##### itxn
 
-`TMethod`
+`ApplicationCallInnerTxnContext`
 
-The method signature to spy on.
+#### Returns
+
+`void`
+
+***
+
+### onBareCall()
+
+> **onBareCall**(`callback`): `void`
+
+Defined in: [src/application-spy.ts:61](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L61)
+
+Registers a callback for a bare call (no arguments).
+
+#### Parameters
 
 ##### callback
 
-(`itxnContext`) => `void`
+`AppSpyCb`\<\[\], `unknown`\>
 
-The callback function to execute when the method is called.
+The callback to be executed when a bare call is detected.
 
 #### Returns
 

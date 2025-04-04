@@ -1,10 +1,28 @@
-import type { arc4, bytes, Contract } from '@algorandfoundation/algorand-typescript'
-import { BytesMap } from './collections/custom-key-map'
+import type { bytes, Contract } from '@algorandfoundation/algorand-typescript'
 import type { ApplicationCallInnerTxnContext } from './impl/inner-transactions'
 import { methodSelector } from './impl/method-selector'
-import { BytesCls } from './impl/primitives'
-import type { ConstructorFor, DeliberateAny, InstanceMethod, Overloads } from './typescript-helpers'
-import { asBytes } from './util'
+import type { AnyFunction, ConstructorFor } from './typescript-helpers'
+
+export type AppSpyCb<TArgs extends bytes[] | [] = bytes[], TReturn = unknown> = (
+  itxnContext: ApplicationCallInnerTxnContext<TArgs, TReturn>,
+) => void
+
+const predicates = {
+  bareCall: (cb: AppSpyCb<[], unknown>): AppSpyCb => {
+    return (ctx) => {
+      if (!ctx.appArgs?.length) {
+        cb(ctx as ApplicationCallInnerTxnContext<[], unknown>)
+      }
+    }
+  },
+  methodSelector: (cb: AppSpyCb, selectorBytes: bytes): AppSpyCb => {
+    return (ctx) => {
+      if (ctx.appArgs && selectorBytes.equals(ctx.appArgs[0] as bytes)) {
+        cb(ctx)
+      }
+    }
+  },
+}
 
 /*
  * The `ApplicationSpy` class is a utility for testing Algorand smart contracts.
@@ -13,57 +31,74 @@ import { asBytes } from './util'
  * @template TContract - The type of the contract being spied on.
  */
 export class ApplicationSpy<TContract extends Contract> {
-  #abiCallHooks: BytesMap<((innerTxnContext: ApplicationCallInnerTxnContext<DeliberateAny, DeliberateAny>) => void)[]> = new BytesMap()
+  #spyFns: AppSpyCb[] = []
+
+  /**
+   * The `on` property is a proxy that allows you to register callbacks for specific method signatures.
+   * It dynamically creates methods based on the contract's methods.
+   */
+  readonly on: _TypedApplicationSpyCallBacks<TContract>
 
   /* @internal */
   contract: TContract | ConstructorFor<TContract>
 
-  /* @internal */
-  get abiCallHooks() {
-    return this.#abiCallHooks
-  }
-
   constructor(contract: TContract | ConstructorFor<TContract>) {
     this.contract = contract
+    this.on = this.createOnProxy()
   }
 
-  private getOnAbiCall<TContract extends Contract>(methodSignature: InstanceMethod<TContract> | bytes | 'bareCreate') {
-    const selector =
-      methodSignature === 'bareCreate'
-        ? asBytes(methodSignature)
-        : methodSignature instanceof BytesCls
-          ? asBytes(methodSignature)
-          : methodSelector(methodSignature as Parameters<Overloads<typeof arc4.methodSelector>>[0], this.contract)
-
-    return this.#abiCallHooks.get(selector)
+  /* @internal */
+  notify(itxn: ApplicationCallInnerTxnContext) {
+    for (const cb of this.#spyFns) {
+      cb(itxn)
+    }
   }
 
   /**
-   * Registers a callback for a specific method signature.
-   *
-   * @template TContract - The type of the contract being spied on.
-   * @template TMethod - The type of the method being spied on.
-   * @param {TMethod} methodSignature - The method signature to spy on.
-   * @param {function} callback - The callback function to execute when the method is called.
+   * Registers a callback for a bare call (no arguments).
+   * @param callback - The callback to be executed when a bare call is detected.
    */
-  onAbiCall<TContract extends Contract, TMethod extends InstanceMethod<TContract> | 'bareCreate'>(
-    methodSignature: TMethod,
-    callback: (
-      itxnContext: ApplicationCallInnerTxnContext<
-        TMethod extends InstanceMethod<TContract> ? Parameters<TMethod> : [],
-        TMethod extends InstanceMethod<TContract> ? ReturnType<TMethod> : void
-      >,
-    ) => void,
-  ) {
-    const selector =
-      methodSignature === 'bareCreate'
-        ? asBytes(methodSignature)
-        : methodSelector(methodSignature as Parameters<Overloads<typeof arc4.methodSelector>>[0], this.contract)
-    const existing = this.getOnAbiCall(selector)
-    if (existing) {
-      existing.push(callback)
+  onBareCall(callback: AppSpyCb<[], unknown>) {
+    this.#spyFns.push(predicates.bareCall(callback))
+  }
+
+  private onAbiCall(methodSignature: bytes, callback: AppSpyCb) {
+    this.#spyFns.push(predicates.methodSelector(callback, methodSignature))
+  }
+
+  private _tryGetMethod(name: string | symbol) {
+    if (typeof this.contract === 'function') {
+      return this.contract.prototype[name]
     } else {
-      this.#abiCallHooks.set(selector, [callback])
+      return Reflect.get(this.contract, name)
     }
   }
+
+  private createOnProxy(spy: ApplicationSpy<TContract> = this): _TypedApplicationSpyCallBacks<TContract> {
+    return new Proxy({} as _TypedApplicationSpyCallBacks<TContract>, {
+      get(_: _TypedApplicationSpyCallBacks<TContract>, methodName) {
+        const fn = spy._tryGetMethod(methodName)
+        if (fn === undefined) return fn
+        return function (callback: AppSpyCb) {
+          const selector = methodSelector(fn, spy.contract)
+          spy.onAbiCall(selector, callback)
+        }
+      },
+    }) as _TypedApplicationSpyCallBacks<TContract>
+  }
+}
+
+type _TypedApplicationSpyCallBacks<TContract> = {
+  [key in keyof TContract as key extends 'approvalProgram' | 'clearStateProgram'
+    ? never
+    : TContract[key] extends AnyFunction
+      ? key extends string
+        ? key
+        : never
+      : never]: (
+    callback: AppSpyCb<
+      TContract[key] extends AnyFunction ? Parameters<TContract[key]> : bytes[],
+      TContract[key] extends AnyFunction ? ReturnType<TContract[key]> : unknown
+    >,
+  ) => void
 }
