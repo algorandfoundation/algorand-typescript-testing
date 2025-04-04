@@ -4,13 +4,13 @@ import type {
   Asset as AssetType,
   bytes,
   itxn,
-  OnCompleteActionStr,
-  uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
+import { TransactionType } from '@algorandfoundation/algorand-typescript'
+import type { BareCreateApplicationCallFields, TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
+import { ABI_RETURN_VALUE_LOG_PREFIX } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
-import type { Mutable } from '../typescript-helpers'
+import { encodeArc4Impl } from '../runtime-helpers'
 import { asBytes, asNumber } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
@@ -18,7 +18,7 @@ import type { InnerTxn, InnerTxnFields } from './itxn'
 import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
 import {
-  ApplicationTransaction,
+  ApplicationCallTransaction,
   AssetConfigTransaction,
   AssetFreezeTransaction,
   AssetTransferTransaction,
@@ -158,31 +158,25 @@ export class AssetFreezeInnerTxn extends AssetFreezeTransaction implements itxn.
   }
 }
 
-export class ApplicationInnerTxn extends ApplicationTransaction implements itxn.ApplicationInnerTxn {
+export type ApplicationCallFields = itxn.ApplicationCallFields & {
+  createdApp?: ApplicationType
+  appLogs?: Array<bytes>
+}
+
+export class ApplicationCallInnerTxn extends ApplicationCallTransaction implements itxn.ApplicationCallInnerTxn {
   readonly isItxn?: true
 
   /* @internal */
-  static create(
-    fields: Omit<itxn.ApplicationCallFields, 'onCompletion'> & { onCompletion?: OnCompleteAction | uint64 | OnCompleteActionStr },
-  ) {
-    return new ApplicationInnerTxn(fields as itxn.ApplicationCallFields)
+  static create(fields: Partial<ApplicationCallFields>) {
+    return new ApplicationCallInnerTxn(fields)
   }
 
   /* @internal */
-  constructor(fields: Mutable<itxn.ApplicationCallFields>) {
+  constructor(fields: Partial<ApplicationCallFields>) {
     const { appId, approvalProgram, clearStateProgram, onCompletion, appArgs, accounts, assets, apps, ...rest } = mapCommonFields(fields)
-    const compiledApp =
-      appId === undefined && approvalProgram !== undefined
-        ? lazyContext.ledger.getApplicationForApprovalProgram(approvalProgram)
-        : undefined
     super({
-      appId: appId === undefined && compiledApp ? compiledApp : appId instanceof Uint64Cls ? getApp(appId) : (appId as ApplicationType),
-      onCompletion:
-        typeof onCompletion === 'string'
-          ? (onCompletion as OnCompleteActionStr)
-          : onCompletion !== undefined
-            ? (OnCompleteAction[onCompletion] as OnCompleteActionStr)
-            : undefined,
+      appId: appId instanceof Uint64Cls ? getApp(appId) : (appId as ApplicationType),
+      onCompletion,
       approvalProgram: Array.isArray(approvalProgram) ? undefined : (approvalProgram as bytes),
       approvalProgramPages: Array.isArray(approvalProgram) ? approvalProgram : undefined,
       clearStateProgram: Array.isArray(clearStateProgram) ? undefined : (clearStateProgram as bytes),
@@ -191,7 +185,8 @@ export class ApplicationInnerTxn extends ApplicationTransaction implements itxn.
       accounts: accounts?.map((x) => asAccount(x)!),
       assets: assets?.map((x) => asAsset(x)!),
       apps: apps?.map((x) => asApplication(x)!),
-      createdApp: compiledApp,
+      appLogs: fields.appLogs,
+      createdApp: fields.createdApp,
       ...rest,
     })
   }
@@ -204,11 +199,11 @@ export const createInnerTxn = <TFields extends InnerTxnFields>(fields: TFields) 
     case TransactionType.AssetConfig:
       return new AssetConfigInnerTxn(fields)
     case TransactionType.AssetTransfer:
-      return new AssetTransferInnerTxn(fields as itxn.AssetTransferFields)
+      return new AssetTransferInnerTxn(fields)
     case TransactionType.AssetFreeze:
-      return new AssetFreezeInnerTxn(fields as itxn.AssetFreezeFields)
+      return new AssetFreezeInnerTxn(fields)
     case TransactionType.ApplicationCall:
-      return new ApplicationInnerTxn(fields)
+      return new ApplicationCallInnerTxn(fields)
     case TransactionType.KeyRegistration:
       return new KeyRegistrationInnerTxn(fields)
     default:
@@ -216,7 +211,7 @@ export const createInnerTxn = <TFields extends InnerTxnFields>(fields: TFields) 
   }
 }
 
-export function submitGroup<TFields extends itxn.InnerTxnList>(...transactionFields: TFields): itxn.TxnFor<TFields> {
+export function submitGroup<TFields extends [...itxn.ItxnParams[]]>(...transactionFields: TFields): itxn.TxnFor<TFields> {
   return transactionFields.map((f: (typeof transactionFields)[number]) => f.submit()) as itxn.TxnFor<TFields>
 }
 export function payment(fields: itxn.PaymentFields): itxn.PaymentItxnParams {
@@ -235,7 +230,7 @@ export function assetFreeze(fields: itxn.AssetFreezeFields): itxn.AssetFreezeItx
   return new ItxnParams<itxn.AssetFreezeFields, itxn.AssetFreezeInnerTxn>(fields, TransactionType.AssetFreeze)
 }
 export function applicationCall(fields: itxn.ApplicationCallFields): itxn.ApplicationCallItxnParams {
-  return new ItxnParams<itxn.ApplicationCallFields, itxn.ApplicationInnerTxn>(fields, TransactionType.ApplicationCall)
+  return new ItxnParams<itxn.ApplicationCallFields, itxn.ApplicationCallInnerTxn>(fields, TransactionType.ApplicationCall)
 }
 
 export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends InnerTxn> {
@@ -243,8 +238,19 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
   constructor(fields: TFields, type: TransactionType) {
     this.#fields = { ...fields, type }
   }
+
+  private isApplicationCall(): boolean {
+    return this.#fields.type === TransactionType.ApplicationCall
+  }
+
   submit(): TTransaction {
-    const innerTxn = createInnerTxn<InnerTxnFields>(this.#fields) as unknown as TTransaction
+    let itxnContext: ApplicationCallInnerTxnContext | undefined
+
+    if (this.isApplicationCall()) {
+      itxnContext = ApplicationCallInnerTxnContext(this.#fields)
+      lazyContext.value.notifyApplicationSpies(itxnContext)
+    }
+    const innerTxn = createInnerTxn<InnerTxnFields>(itxnContext ?? this.#fields) as unknown as TTransaction
     lazyContext.txn.activeGroup.addInnerTransactionGroup(innerTxn)
     return innerTxn
   }
@@ -256,4 +262,39 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
   copy() {
     return new ItxnParams<TFields, TTransaction>(this.#fields, this.#fields.type)
   }
+}
+
+export type ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown> = ApplicationCallFields & {
+  args: TArgs
+  returnValue?: TReturn
+}
+
+export function ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown>(
+  fields: Partial<itxn.ApplicationCallFields>,
+  methodArgs?: TypedApplicationCallFields<TArgs> | BareCreateApplicationCallFields,
+  methodSelector?: bytes,
+): ApplicationCallInnerTxnContext<TArgs, TReturn> {
+  const itxn = {
+    ...fields,
+    args: fields.appArgs?.slice(1),
+    ...(methodArgs ?? {}),
+  }
+  if (!itxn.appArgs?.length && methodSelector) {
+    itxn.appArgs = [methodSelector]
+  }
+  return new Proxy(itxn, {
+    get: (target, prop) => {
+      if (prop === 'appLogs') {
+        const returnValue = Reflect.get(target, 'returnValue')
+        const appLogs = Reflect.get(target, 'appLogs')
+        return appLogs !== undefined || returnValue !== undefined
+          ? [...(appLogs ?? []), ...(returnValue ? [ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, returnValue))] : [])]
+          : undefined
+      }
+      return Reflect.get(target, prop)
+    },
+    set: (target, prop, value) => {
+      return Reflect.set(target, prop, value)
+    },
+  }) as ApplicationCallInnerTxnContext<TArgs, TReturn>
 }

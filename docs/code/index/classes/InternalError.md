@@ -16,9 +16,9 @@ Raised when testing code errors
 
 ## Constructors
 
-### new InternalError()
+### Constructor
 
-> **new InternalError**(`message`, `options`?): [`InternalError`](InternalError.md)
+> **new InternalError**(`message`, `options`?): `InternalError`
 
 Defined in: [src/errors.ts:32](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/errors.ts#L32)
 
@@ -34,7 +34,7 @@ Defined in: [src/errors.ts:32](https://github.com/algorandfoundation/algorand-ty
 
 #### Returns
 
-[`InternalError`](InternalError.md)
+`InternalError`
 
 #### Overrides
 

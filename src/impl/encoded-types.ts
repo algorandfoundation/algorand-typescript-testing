@@ -50,7 +50,7 @@ import {
 import type { StubBytesCompat } from './primitives'
 import { AlgoTsPrimitiveCls, arrayUtil, BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from './primitives'
 import { Account, AccountCls, ApplicationCls, AssetCls } from './reference'
-import type { ApplicationTransaction } from './transactions'
+import type { ApplicationCallTransaction } from './transactions'
 
 const ABI_LENGTH_SIZE = 2
 const maxBigIntValue = (bitSize: number) => 2n ** BigInt(bitSize) - 1n
@@ -1278,7 +1278,7 @@ export function decodeArc4Impl<T>(sourceTypeInfoString: string, bytes: StubBytes
   return getNativeValue(source) as T
 }
 
-export function encodeArc4Impl<T>(_targetTypeInfoString: string, source: T): bytes {
+export function encodeArc4Impl<T>(_targetTypeInfoString: string | undefined, source: T): bytes {
   const arc4Encoded = getArc4Encoded(source)
   return arc4Encoded.bytes
 }
@@ -1300,15 +1300,15 @@ export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
     return value
   }
   if (value instanceof AccountCls) {
-    const index = (lazyContext.activeGroup.activeTransaction as ApplicationTransaction).apat.indexOf(value)
+    const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apat.indexOf(value)
     return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
   }
   if (value instanceof AssetCls) {
-    const index = (lazyContext.activeGroup.activeTransaction as ApplicationTransaction).apas.indexOf(value)
+    const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apas.indexOf(value)
     return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
   }
   if (value instanceof ApplicationCls) {
-    const index = (lazyContext.activeGroup.activeTransaction as ApplicationTransaction).apfa.indexOf(value)
+    const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apfa.indexOf(value)
     return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
   }
   if (typeof value === 'boolean') {

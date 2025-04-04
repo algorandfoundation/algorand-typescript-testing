@@ -119,4 +119,16 @@ export const nodeFactory = {
     }
     return node
   },
+
+  callAbiCallFunction(node: ts.CallExpression) {
+    if (
+      node.arguments.length === 2 &&
+      ts.isPropertyAccessExpression(node.arguments[0]) &&
+      ts.isPropertyAccessExpression(node.arguments[0].expression)
+    ) {
+      const contractIdenifier = node.arguments[0].expression.expression
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdenifier])
+    }
+    return node
+  },
 } satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>
