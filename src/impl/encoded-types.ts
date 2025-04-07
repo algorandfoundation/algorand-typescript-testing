@@ -48,6 +48,7 @@ import {
   conactUint8Arrays,
   uint8ArrayToNumber,
 } from '../util'
+import { BytesBackedCls, Uint64BackedCls } from './base'
 import type { StubBytesCompat } from './primitives'
 import { AlgoTsPrimitiveCls, arrayUtil, BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from './primitives'
 import { Account, AccountCls, ApplicationCls, AssetCls } from './reference'
@@ -1297,31 +1298,49 @@ export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
   return undefined
 }
 
-export function decodeArc4Impl<T>(sourceTypeInfoString: string, bytes: StubBytesCompat, prefix: 'none' | 'log' = 'none'): T {
+export function decodeArc4Impl<T>(
+  sourceTypeInfoString: string,
+  targetTypeInfoString: string,
+  bytes: StubBytesCompat,
+  prefix: 'none' | 'log' = 'none',
+): T {
   const sourceTypeInfo = JSON.parse(sourceTypeInfoString)
+  const targetTypeInfo = JSON.parse(targetTypeInfoString)
   const encoder = getArc4Encoder(sourceTypeInfo)
-  const source = encoder(bytes, sourceTypeInfo, prefix)
-  return getNativeValue(source) as T
+  const source = encoder(bytes, sourceTypeInfo, prefix) as { typeInfo: TypeInfo }
+  return getNativeValue(source, targetTypeInfo) as T
 }
 
-export function encodeArc4Impl<T>(_targetTypeInfoString: string | undefined, source: T): bytes {
-  const arc4Encoded = getArc4Encoded(source)
+export function encodeArc4Impl<T>(sourceTypeInfoString: string | undefined, source: T): bytes {
+  const arc4Encoded = getArc4Encoded(source, sourceTypeInfoString)
   return arc4Encoded.bytes
 }
 
-const getNativeValue = (value: DeliberateAny): DeliberateAny => {
+const getNativeValue = (value: DeliberateAny, targetTypeInfo: TypeInfo | undefined): DeliberateAny => {
+  if (value.typeInfo && value.typeInfo.name === targetTypeInfo?.name) {
+    return value
+  }
   const native = (value as DeliberateAny).native
   if (Array.isArray(native)) {
-    return native.map((item) => getNativeValue(item))
+    return native.map((item) => getNativeValue(item, (targetTypeInfo?.genericArgs as { elementType: TypeInfo })?.elementType))
   } else if (native instanceof AlgoTsPrimitiveCls) {
     return native
+  } else if (native instanceof BytesBackedCls) {
+    return native.bytes
+  } else if (native instanceof Uint64BackedCls) {
+    return native.uint64
   } else if (typeof native === 'object') {
-    return Object.fromEntries(Object.entries(native).map(([key, value]) => [key, getNativeValue(value)]))
+    return Object.fromEntries(
+      Object.entries(native).map(([key, value], index) => [
+        key,
+        getNativeValue(value, (targetTypeInfo?.genericArgs as TypeInfo[])?.[index]),
+      ]),
+    )
   }
   return native
 }
 
-export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
+export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: string): ARC4Encoded => {
   if (value instanceof ARC4Encoded) {
     return value
   }
@@ -1362,9 +1381,15 @@ export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
     const result: ARC4Encoded[] = value.reduce((acc: ARC4Encoded[], cur: DeliberateAny) => {
       return acc.concat(getArc4Encoded(cur))
     }, [])
+    const sourceTypeInfo = sourceTypeInfoString ? JSON.parse(sourceTypeInfoString) : undefined
     const genericArgs: TypeInfo[] = result.map((x) => (x as DeliberateAny).typeInfo)
-    const typeInfo = { name: `Tuple<[${genericArgs.map((x) => x.name).join(',')}]>`, genericArgs }
-    return new TupleImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
+    if (sourceTypeInfo?.name?.startsWith('Array')) {
+      const typeInfo = { name: `DynamicArray<${genericArgs[0].name}>`, genericArgs: { elementType: genericArgs[0] } }
+      return new DynamicArrayImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
+    } else {
+      const typeInfo = { name: `Tuple<[${genericArgs.map((x) => x.name).join(',')}]>`, genericArgs }
+      return new TupleImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
+    }
   }
   if (typeof value === 'object') {
     const result = Object.values(value).reduce((acc: ARC4Encoded[], cur: DeliberateAny) => {

@@ -85,7 +85,7 @@ export const toBytes = (val: unknown): bytes => {
     return val.bytes
   }
   if (Array.isArray(val) || typeof val === 'object') {
-    return encodeArc4Impl('', val)
+    return encodeArc4Impl(undefined, val)
   }
   throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
 }
