@@ -159,13 +159,16 @@ class ExpressionVisitor {
       if (ts.isCallExpression(updatedNode)) {
         const stubbedFunctionName = this.stubbedFunctionName ?? tryGetStubbedFunctionName(updatedNode, this.helper)
         this.stubbedFunctionName = undefined
-        let infoArg = info
+        let infoArg: TypeInfo | TypeInfo[] | undefined = info
         if (isCallingEmit(stubbedFunctionName)) {
           infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
         } else if (isCallingDecodeArc4(stubbedFunctionName)) {
-          const targetType = ptypes.ptypeToArc4EncodedType(type, this.helper.sourceLocation(node))
-          const targetTypeInfo = getGenericTypeInfo(targetType)
-          infoArg = targetTypeInfo
+          const sourceType = ptypes.ptypeToArc4EncodedType(type, this.helper.sourceLocation(node))
+          const sourceTypeInfo = getGenericTypeInfo(sourceType)
+          const targetTypeInfo = getGenericTypeInfo(type)
+          infoArg = [sourceTypeInfo, targetTypeInfo]
+        } else if (isCallingEncodeArc4(stubbedFunctionName)) {
+          infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
         } else if (isCallingArc4EncodedLength(stubbedFunctionName)) {
           infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
         }
@@ -384,7 +387,7 @@ const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
   } else if (type instanceof ptypes.BoxMapPType) {
     genericArgs.push(getGenericTypeInfo(type.keyType))
     genericArgs.push(getGenericTypeInfo(type.contentType))
-  } else if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.DynamicArrayType)) {
+  } else if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.DynamicArrayType, ptypes.ArrayPType)) {
     const entries = []
     entries.push(['elementType', getGenericTypeInfo(type.elementType)])
     if (instanceOfAny(type, ptypes.StaticArrayType)) {
@@ -428,7 +431,8 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
   return stubbedFunctionNames.includes(functionName) ? functionName : undefined
 }
 
-const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['decodeArc4', 'encodeArc4'].includes(functionName ?? '')
+const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['decodeArc4'].includes(functionName ?? '')
+const isCallingEncodeArc4 = (functionName: string | undefined): boolean => ['encodeArc4'].includes(functionName ?? '')
 const isCallingArc4EncodedLength = (functionName: string | undefined): boolean => 'arc4EncodedLength' === (functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
