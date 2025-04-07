@@ -1,5 +1,4 @@
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { Str } from '@algorandfoundation/algorand-typescript/arc4'
 import { decodeArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, it } from 'vitest'
 import { Hello, HelloTemplate, HelloTemplateCustomPrefix, LargeProgram, TerribleCustodialAccount } from './precompiled-apps.algo'
@@ -26,7 +25,7 @@ describe('pre compiled app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloApp) {
-        itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
+        itxnContext.returnValue = `hello ${decodeArc4<string>(itxnContext.args[0])}`
       }
     })
     ctx.addApplicationSpy(spy)
@@ -52,7 +51,7 @@ describe('pre compiled app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
-        itxnContext.returnValue = `hey ${decodeArc4<Str>(itxnContext.args[0])}`
+        itxnContext.returnValue = `hey ${decodeArc4<string>(itxnContext.args[0])}`
       }
     })
     ctx.addApplicationSpy(spy)
@@ -77,7 +76,7 @@ describe('pre compiled app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateCustomPrefixApp) {
-        itxnContext.returnValue = `bonjour ${decodeArc4<Str>(itxnContext.args[0])}`
+        itxnContext.returnValue = `bonjour ${decodeArc4<string>(itxnContext.args[0])}`
       }
     })
     ctx.addApplicationSpy(spy)
