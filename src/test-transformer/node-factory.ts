@@ -94,8 +94,10 @@ export const nodeFactory = {
     )
   },
 
-  callStubbedFunction(functionName: string, node: ts.CallExpression, typeInfo?: TypeInfo) {
-    const typeInfoArg = typeInfo ? factory.createStringLiteral(JSON.stringify(typeInfo)) : undefined
+  callStubbedFunction(functionName: string, node: ts.CallExpression, typeInfo?: TypeInfo | TypeInfo[]) {
+    const typeInfoArgs = typeInfo
+      ? (Array.isArray(typeInfo) ? typeInfo : [typeInfo]).map((t) => factory.createStringLiteral(JSON.stringify(t)))
+      : undefined
     const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
       factory.createIdentifier('runtimeHelpers'),
       `${functionName}Impl`,
@@ -104,7 +106,7 @@ export const nodeFactory = {
     return factory.createCallExpression(
       updatedPropertyAccessExpression,
       node.typeArguments,
-      [typeInfoArg, ...(node.arguments ?? [])].filter((arg) => !!arg),
+      [...(typeInfoArgs ?? []), ...(node.arguments ?? [])].filter((arg) => !!arg),
     )
   },
 
