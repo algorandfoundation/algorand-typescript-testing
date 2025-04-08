@@ -90,7 +90,7 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
 
 const getUintN8Impl = (value: number) => new UintNImpl({ name: 'UintN<8>', genericArgs: [{ name: '8' }] }, value)
 
-const extractArraysFromArgs = (app: Application, methodSelector: Uint8Array, args: DeliberateAny[]) => {
+export const extractArraysFromArgs = (app: Application, methodSelector: Uint8Array, args: DeliberateAny[]) => {
   const transactions: Transaction[] = []
   const accounts: Account[] = [lazyContext.defaultSender]
   const apps: Application[] = [app]
@@ -109,8 +109,8 @@ const extractArraysFromArgs = (app: Application, methodSelector: Uint8Array, arg
     } else if (arg instanceof AssetCls) {
       appArgs.push(getUintN8Impl(assets.length))
       assets.push(arg as Asset)
-    } else {
-      appArgs.push(arg)
+    } else if (arg !== undefined) {
+      appArgs.push(getArc4Encoded(arg))
     }
   }
 

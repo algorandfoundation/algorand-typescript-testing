@@ -2,22 +2,21 @@ import type { bytes, Contract } from '@algorandfoundation/algorand-typescript'
 import type { ApplicationCallInnerTxnContext } from './impl/inner-transactions'
 import { methodSelector } from './impl/method-selector'
 import type { AnyFunction, ConstructorFor } from './typescript-helpers'
+import { asNumber } from './util'
 
-export type AppSpyCb<TArgs extends bytes[] | [] = bytes[], TReturn = unknown> = (
-  itxnContext: ApplicationCallInnerTxnContext<TArgs, TReturn>,
-) => void
+export type AppSpyCb = (itxnContext: ApplicationCallInnerTxnContext) => void
 
 const predicates = {
-  bareCall: (cb: AppSpyCb<[], unknown>): AppSpyCb => {
+  bareCall: (cb: AppSpyCb): AppSpyCb => {
     return (ctx) => {
-      if (!ctx.appArgs?.length) {
-        cb(ctx as ApplicationCallInnerTxnContext<[], unknown>)
+      if (asNumber(ctx.numAppArgs) === 0) {
+        cb(ctx as ApplicationCallInnerTxnContext)
       }
     }
   },
   methodSelector: (cb: AppSpyCb, selectorBytes: bytes): AppSpyCb => {
     return (ctx) => {
-      if (ctx.appArgs && selectorBytes.equals(ctx.appArgs[0] as bytes)) {
+      if (selectorBytes.equals(ctx.appArgs(0))) {
         cb(ctx)
       }
     }
@@ -30,7 +29,7 @@ const predicates = {
  *
  * @template TContract - The type of the contract being spied on.
  */
-export class ApplicationSpy<TContract extends Contract> {
+export class ApplicationSpy<TContract extends Contract = Contract> {
   #spyFns: AppSpyCb[] = []
 
   /**
@@ -40,9 +39,9 @@ export class ApplicationSpy<TContract extends Contract> {
   readonly on: _TypedApplicationSpyCallBacks<TContract>
 
   /* @internal */
-  contract: TContract | ConstructorFor<TContract>
+  contract?: TContract | ConstructorFor<TContract>
 
-  constructor(contract: TContract | ConstructorFor<TContract>) {
+  constructor(contract?: TContract | ConstructorFor<TContract>) {
     this.contract = contract
     this.on = this.createOnProxy()
   }
@@ -58,15 +57,16 @@ export class ApplicationSpy<TContract extends Contract> {
    * Registers a callback for a bare call (no arguments).
    * @param callback - The callback to be executed when a bare call is detected.
    */
-  onBareCall(callback: AppSpyCb<[], unknown>) {
+  onBareCall(callback: AppSpyCb) {
     this.#spyFns.push(predicates.bareCall(callback))
   }
 
-  private onAbiCall(methodSignature: bytes, callback: AppSpyCb) {
+  onAbiCall(methodSignature: bytes, callback: AppSpyCb) {
     this.#spyFns.push(predicates.methodSelector(callback, methodSignature))
   }
 
   private _tryGetMethod(name: string | symbol) {
+    if (this.contract === undefined) return undefined
     if (typeof this.contract === 'function') {
       return this.contract.prototype[name]
     } else {
@@ -95,10 +95,5 @@ type _TypedApplicationSpyCallBacks<TContract> = {
       ? key extends string
         ? key
         : never
-      : never]: (
-    callback: AppSpyCb<
-      TContract[key] extends AnyFunction ? Parameters<TContract[key]> : bytes[],
-      TContract[key] extends AnyFunction ? ReturnType<TContract[key]> : unknown
-    >,
-  ) => void
+      : never]: (callback: AppSpyCb) => void
 }

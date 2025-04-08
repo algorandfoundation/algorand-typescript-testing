@@ -124,7 +124,7 @@ describe('ARC4 AppGlobal values', async () => {
     contract[setMethodName as FunctionKeys<GlobalStateContract>](data.abiValue as never)
 
     const avmResult = await getAvmResult({ appClient }, data.methodName)
-    const result = contract[data.methodName as FunctionKeys<GlobalStateContract>](undefined as never) as ARC4Encoded
+    const result = (contract[data.methodName as FunctionKeys<GlobalStateContract>] as () => ARC4Encoded)() as ARC4Encoded
     data.assert(result, avmResult)
   })
 })
