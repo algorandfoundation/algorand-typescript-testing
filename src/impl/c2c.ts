@@ -1,4 +1,4 @@
-import { OnCompleteAction, type CompileContractOptions, type Contract } from '@algorandfoundation/algorand-typescript'
+import { type CompileContractOptions, type Contract, OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import type {
   BareCreateApplicationCallFields,
   ContractProxy,
@@ -43,7 +43,11 @@ export function compileArc4<TContract extends Contract>(
             },
             selector,
           )
-          return invokeCallback(itxnContext)
+          invokeCallback(itxnContext)
+          return {
+            itxn: itxnContext,
+            returnValue: itxnContext.loggedReturnValue,
+          }
         }
       },
     }),
@@ -53,7 +57,8 @@ export function compileArc4<TContract extends Contract>(
         ...getCommonApplicationCallFields(app, options),
         ...methodArgs,
       })
-      return invokeCallback(itxnContext).itxn
+      invokeCallback(itxnContext)
+      return itxnContext
     },
     approvalProgram: app?.application.approvalProgram ?? [lazyContext.any.bytes(10), lazyContext.any.bytes(10)],
     clearStateProgram: app?.application.clearStateProgram ?? [lazyContext.any.bytes(10), lazyContext.any.bytes(10)],
@@ -65,13 +70,9 @@ export function compileArc4<TContract extends Contract>(
   } as unknown as ContractProxy<TContract>
 }
 
-const invokeCallback = <TReturn>(itxnContext: ApplicationCallInnerTxnContext) => {
+const invokeCallback = (itxnContext: ApplicationCallInnerTxnContext) => {
   lazyContext.value.notifyApplicationSpies(itxnContext)
   lazyContext.txn.activeGroup.addInnerTransactionGroup(...(itxnContext.itxns ?? []), itxnContext)
-  return {
-    itxn: itxnContext,
-    returnValue: itxnContext.returnValue?.() as TReturn,
-  }
 }
 const getCommonApplicationCallFields = (app: ApplicationData | undefined, options: CompileContractOptions | undefined) => ({
   approvalProgram: app?.application.approvalProgram ?? [lazyContext.any.bytes(10), lazyContext.any.bytes(10)],
@@ -89,6 +90,11 @@ export function abiCall<TArgs extends DeliberateAny[], TReturn>(
   contract?: Contract | { new (): Contract },
 ): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
   const selector = methodSelector(method, contract)
-  const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields(methodArgs, selector)
-  return invokeCallback<TReturn>(itxnContext)
+  const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields<TReturn>(methodArgs, selector)
+  invokeCallback(itxnContext)
+
+  return {
+    itxn: itxnContext,
+    returnValue: itxnContext.loggedReturnValue,
+  }
 }

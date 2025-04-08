@@ -7,6 +7,7 @@ import type {
 } from '@algorandfoundation/algorand-typescript'
 import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import type { BareCreateApplicationCallFields, TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
+import { invariant } from '../../tests/util'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
@@ -17,6 +18,7 @@ import { getApp } from './app-params'
 import { getAsset } from './asset-params'
 import { encodeArc4Impl } from './encoded-types'
 import type { InnerTxn, InnerTxnFields } from './itxn'
+import type { StubBytesCompat } from './primitives'
 import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
 import type { Transaction } from './transactions'
@@ -266,12 +268,15 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
     return new ItxnParams<TFields, TTransaction>(this.#fields, this.#fields.type)
   }
 }
-
+const UNSET = Symbol('UNSET_SYMBOL')
 export class ApplicationCallInnerTxnContext<TReturn = unknown> extends ApplicationCallInnerTxn {
   static createFromFields(fields: ApplicationCallFields) {
     return new ApplicationCallInnerTxnContext(fields)
   }
-  static createFromTypedApplicationCallFields<TArgs>(methodArgs: TypedApplicationCallFields<TArgs>, methodSelector: bytes) {
+  static createFromTypedApplicationCallFields<TReturn = unknown>(
+    methodArgs: TypedApplicationCallFields<DeliberateAny>,
+    methodSelector: bytes,
+  ) {
     const app =
       (methodArgs.appId instanceof Uint64Cls ? getApp(methodArgs.appId) : (methodArgs.appId as ApplicationType | undefined)) ??
       lazyContext.any.application()
@@ -282,24 +287,38 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
       ...methodArgsFields,
       ...appCallArgs,
     }
-    return new ApplicationCallInnerTxnContext(fields, transactions)
+    return new ApplicationCallInnerTxnContext<TReturn>(fields, transactions)
   }
   static createFromBareCreateApplicationCallFields(methodArgs: BareCreateApplicationCallFields) {
     return new ApplicationCallInnerTxnContext(methodArgs)
   }
 
-  returnValue?: () => TReturn
+  #returnValue: TReturn | typeof UNSET = UNSET
+  setReturnValue(value: TReturn) {
+    // Ignore undefined (void) values
+    if (value === undefined) return
+    super.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, value)))
+    this.#returnValue = value
+  }
+  /* @internal */
+  get loggedReturnValue(): TReturn {
+    return this.#returnValue === UNSET ? (undefined as TReturn) : this.#returnValue
+  }
+
+  override appendLog(value: StubBytesCompat) {
+    /*
+    As per https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0004.md#implementing-a-method
+    If the method is non-void, the Application MUST encode the return value as described in the Encoding section and then log it with the
+    prefix 151f7c75. Other values MAY be logged before the return value, but other values MUST NOT be logged after the return value.
+     */
+    invariant(this.#returnValue === UNSET, 'Cannot add logs after a return value has been set')
+    super.appendLog(value)
+  }
+
   private constructor(
     fields: ApplicationCallFields,
     public itxns?: Transaction[],
   ) {
     super(fields)
-  }
-
-  override get appLogs(): bytes[] {
-    return [
-      ...super.appLogs,
-      ...(this.returnValue ? [ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, this.returnValue()))] : []),
-    ]
   }
 }

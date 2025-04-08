@@ -32,7 +32,7 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloApp) {
-        itxnContext.returnValue = () => `hello ${decodeArc4<string>(itxnContext.appArgs(1))}`
+        itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
       }
     })
 
@@ -58,7 +58,7 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
-        itxnContext.returnValue = () => `hey ${decodeArc4<string>(itxnContext.appArgs(1))}`
+        itxnContext.setReturnValue(`hey ${decodeArc4<string>(itxnContext.appArgs(1))}`)
       }
     })
     ctx.addApplicationSpy(spy)
@@ -83,7 +83,7 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
-        itxnContext.returnValue = () => `bonjour ${decodeArc4<string>(itxnContext.appArgs(1))}`
+        itxnContext.setReturnValue(`bonjour ${decodeArc4<string>(itxnContext.appArgs(1))}`)
       }
     })
 
@@ -109,7 +109,7 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.getBigBytesLength((itxnContext) => {
       if (itxnContext.appId === largeProgramApp) {
-        itxnContext.returnValue = () => 4096
+        itxnContext.setReturnValue(4096)
       }
     })
 
@@ -135,12 +135,12 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.receivesAnyTxn((itxnContext) => {
       if (itxnContext.appId === receivesTxnsApp) {
-        itxnContext.returnValue = () => 1
+        itxnContext.setReturnValue(1)
       }
     })
     spy.on.receivesAssetConfig((itxnContext) => {
       if (itxnContext.appId === receivesTxnsApp) {
-        itxnContext.returnValue = undefined
+        itxnContext.setReturnValue(ctx.any.bytes(64))
       }
     })
 
