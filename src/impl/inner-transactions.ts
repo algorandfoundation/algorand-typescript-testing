@@ -10,13 +10,16 @@ import type { BareCreateApplicationCallFields, TypedApplicationCallFields } from
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
-import { encodeArc4Impl } from '../runtime-helpers'
-import { asBytes, asNumber } from '../util'
+import { extractArraysFromArgs } from '../subcontexts/contract-context'
+import type { DeliberateAny } from '../typescript-helpers'
+import { asBytes, asNumber, asUint8Array } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
+import { encodeArc4Impl } from './encoded-types'
 import type { InnerTxn, InnerTxnFields } from './itxn'
 import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
+import type { Transaction } from './transactions'
 import {
   ApplicationCallTransaction,
   AssetConfigTransaction,
@@ -247,10 +250,10 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
     let itxnContext: ApplicationCallInnerTxnContext | undefined
 
     if (this.isApplicationCall()) {
-      itxnContext = ApplicationCallInnerTxnContext(this.#fields)
+      itxnContext = ApplicationCallInnerTxnContext.createFromFields(this.#fields)
       lazyContext.value.notifyApplicationSpies(itxnContext)
     }
-    const innerTxn = createInnerTxn<InnerTxnFields>(itxnContext ?? this.#fields) as unknown as TTransaction
+    const innerTxn = (itxnContext ?? createInnerTxn<InnerTxnFields>(this.#fields)) as unknown as TTransaction
     lazyContext.txn.activeGroup.addInnerTransactionGroup(innerTxn)
     return innerTxn
   }
@@ -264,37 +267,39 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
   }
 }
 
-export type ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown> = ApplicationCallFields & {
-  args: TArgs
-  returnValue?: TReturn
-}
+export class ApplicationCallInnerTxnContext<TReturn = unknown> extends ApplicationCallInnerTxn {
+  static createFromFields(fields: ApplicationCallFields) {
+    return new ApplicationCallInnerTxnContext(fields)
+  }
+  static createFromTypedApplicationCallFields<TArgs>(methodArgs: TypedApplicationCallFields<TArgs>, methodSelector: bytes) {
+    const app =
+      (methodArgs.appId instanceof Uint64Cls ? getApp(methodArgs.appId) : (methodArgs.appId as ApplicationType | undefined)) ??
+      lazyContext.any.application()
+    const args = (methodArgs.args ?? []).map((x: DeliberateAny) => (x instanceof ItxnParams ? x.submit() : x))
+    const { transactions, ...appCallArgs } = extractArraysFromArgs(app, asUint8Array(methodSelector), args)
+    const { args: _, ...methodArgsFields } = methodArgs
+    const fields = {
+      ...methodArgsFields,
+      ...appCallArgs,
+    }
+    return new ApplicationCallInnerTxnContext(fields, transactions)
+  }
+  static createFromBareCreateApplicationCallFields(methodArgs: BareCreateApplicationCallFields) {
+    return new ApplicationCallInnerTxnContext(methodArgs)
+  }
 
-export function ApplicationCallInnerTxnContext<TArgs extends bytes[] | [] = bytes[], TReturn = unknown>(
-  fields: Partial<itxn.ApplicationCallFields>,
-  methodArgs?: TypedApplicationCallFields<TArgs> | BareCreateApplicationCallFields,
-  methodSelector?: bytes,
-): ApplicationCallInnerTxnContext<TArgs, TReturn> {
-  const itxn = {
-    ...fields,
-    args: fields.appArgs?.slice(1),
-    ...(methodArgs ?? {}),
+  returnValue?: () => TReturn
+  private constructor(
+    fields: ApplicationCallFields,
+    public itxns?: Transaction[],
+  ) {
+    super(fields)
   }
-  if (!itxn.appArgs?.length && methodSelector) {
-    itxn.appArgs = [methodSelector]
+
+  override get appLogs(): bytes[] {
+    return [
+      ...super.appLogs,
+      ...(this.returnValue ? [ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, this.returnValue()))] : []),
+    ]
   }
-  return new Proxy(itxn, {
-    get: (target, prop) => {
-      if (prop === 'appLogs') {
-        const returnValue = Reflect.get(target, 'returnValue')
-        const appLogs = Reflect.get(target, 'appLogs')
-        return appLogs !== undefined || returnValue !== undefined
-          ? [...(appLogs ?? []), ...(returnValue ? [ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, returnValue))] : [])]
-          : undefined
-      }
-      return Reflect.get(target, prop)
-    },
-    set: (target, prop, value) => {
-      return Reflect.set(target, prop, value)
-    },
-  }) as ApplicationCallInnerTxnContext<TArgs, TReturn>
 }

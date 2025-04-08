@@ -1,12 +1,14 @@
-import type { CompileContractOptions, Contract } from '@algorandfoundation/algorand-typescript'
+import { OnCompleteAction, type CompileContractOptions, type Contract } from '@algorandfoundation/algorand-typescript'
 import type {
   BareCreateApplicationCallFields,
   ContractProxy,
   TypedApplicationCallFields,
 } from '@algorandfoundation/algorand-typescript/arc4'
+import { getContractMethodAbiMetadata } from '../abi-metadata'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { ConstructorFor, DeliberateAny, InstanceMethod } from '../typescript-helpers'
-import { ApplicationCallInnerTxn, ApplicationCallInnerTxnContext } from './inner-transactions'
+import type { ApplicationCallInnerTxn } from './inner-transactions'
+import { ApplicationCallInnerTxnContext } from './inner-transactions'
 import { methodSelector } from './method-selector'
 import type { ApplicationData } from './reference'
 
@@ -31,14 +33,26 @@ export function compileArc4<TContract extends Contract>(
       get: (_target, prop) => {
         return (methodArgs: TypedApplicationCallFields<DeliberateAny[]>) => {
           const selector = methodSelector(prop as string, contract)
-          const itxnContext = ApplicationCallInnerTxnContext(getCommonApplicationCallFields(app, options), methodArgs, selector)
+          const abiMetadata = getContractMethodAbiMetadata(contract, prop as string)
+          const onCompleteActions = abiMetadata?.allowActions?.map((action) => OnCompleteAction[action])
+          const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields(
+            {
+              ...getCommonApplicationCallFields(app, options),
+              onCompletion: onCompleteActions?.[0],
+              ...methodArgs,
+            },
+            selector,
+          )
           return invokeCallback(itxnContext)
         }
       },
     }),
 
     bareCreate: (methodArgs?: BareCreateApplicationCallFields) => {
-      const itxnContext = ApplicationCallInnerTxnContext(getCommonApplicationCallFields(app, options), methodArgs)
+      const itxnContext = ApplicationCallInnerTxnContext.createFromBareCreateApplicationCallFields({
+        ...getCommonApplicationCallFields(app, options),
+        ...methodArgs,
+      })
       return invokeCallback(itxnContext).itxn
     },
     approvalProgram: app?.application.approvalProgram ?? [lazyContext.any.bytes(10), lazyContext.any.bytes(10)],
@@ -51,13 +65,12 @@ export function compileArc4<TContract extends Contract>(
   } as unknown as ContractProxy<TContract>
 }
 
-const invokeCallback = <TReturn>(itxnContext: ApplicationCallInnerTxnContext<DeliberateAny>) => {
+const invokeCallback = <TReturn>(itxnContext: ApplicationCallInnerTxnContext) => {
   lazyContext.value.notifyApplicationSpies(itxnContext)
-  const innerTxn = new ApplicationCallInnerTxn(itxnContext)
-  lazyContext.txn.activeGroup.addInnerTransactionGroup(innerTxn)
+  lazyContext.txn.activeGroup.addInnerTransactionGroup(...(itxnContext.itxns ?? []), itxnContext)
   return {
-    itxn: innerTxn,
-    returnValue: itxnContext.returnValue as TReturn,
+    itxn: itxnContext,
+    returnValue: itxnContext.returnValue?.() as TReturn,
   }
 }
 const getCommonApplicationCallFields = (app: ApplicationData | undefined, options: CompileContractOptions | undefined) => ({
@@ -76,6 +89,6 @@ export function abiCall<TArgs extends DeliberateAny[], TReturn>(
   contract?: Contract | { new (): Contract },
 ): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
   const selector = methodSelector(method, contract)
-  const itxnContext = ApplicationCallInnerTxnContext<TArgs, TReturn>({}, methodArgs, selector)
+  const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields(methodArgs, selector)
   return invokeCallback<TReturn>(itxnContext)
 }

@@ -235,7 +235,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   static create(fields: ApplicationCallTransactionFields) {
     return new ApplicationCallTransaction(fields)
   }
-  #appArgs: Array<unknown>
+  private args: Array<unknown>
   #accounts: Array<AccountType>
   #assets: Array<AssetType>
   #apps: Array<ApplicationType>
@@ -254,7 +254,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
     this.localNumBytes = fields.localNumBytes ?? Uint64(0)
     this.extraProgramPages = fields.extraProgramPages ?? Uint64(0)
     this.createdApp = fields.createdApp ?? Application()
-    this.#appArgs = fields.appArgs ?? []
+    this.args = fields.appArgs ?? []
     this.#appLogs = fields.appLogs ?? []
     this.#accounts = fields.accounts ?? []
     this.#assets = fields.assets ?? []
@@ -284,7 +284,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   readonly localNumUint: uint64
   readonly localNumBytes: uint64
   readonly extraProgramPages: uint64
-  readonly createdApp: ApplicationType
+  createdApp: ApplicationType
   get approvalProgram() {
     return this.approvalProgramPages(0)
   }
@@ -292,7 +292,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
     return this.clearStateProgramPages(0)
   }
   get numAppArgs() {
-    return Uint64(this.#appArgs.length)
+    return Uint64(this.args.length)
   }
   get numAccounts() {
     return Uint64(this.#accounts.length)
@@ -310,10 +310,10 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
     return Uint64(this.clearStateProgramPages.length)
   }
   get numLogs() {
-    return Uint64(this.#appLogs.length || lazyContext.getApplicationData(this.appId.id).application.appLogs!.length)
+    return Uint64(this.appLogs.length || lazyContext.getApplicationData(this.appId.id).application.appLogs!.length)
   }
   get lastLog() {
-    return this.#appLogs.at(-1) ?? lazyContext.getApplicationData(this.appId.id).application.appLogs!.at(-1) ?? Bytes()
+    return this.appLogs.at(-1) ?? lazyContext.getApplicationData(this.appId.id).application.appLogs!.at(-1) ?? Bytes()
   }
   get apat() {
     return this.#accounts
@@ -325,7 +325,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
     return this.#apps
   }
   appArgs(index: StubUint64Compat): bytes {
-    return toBytes(this.#appArgs[asNumber(index)])
+    return toBytes(this.args[asNumber(index)])
   }
   accounts(index: StubUint64Compat): AccountType {
     return this.#accounts[asNumber(index)]
@@ -344,7 +344,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   }
   logs(index: StubUint64Compat): bytes {
     const i = asNumber(index)
-    return this.#appLogs[i] ?? lazyContext.getApplicationData(this.appId.id).application.appLogs ?? Bytes()
+    return this.appLogs[i] ?? lazyContext.getApplicationData(this.appId.id).application.appLogs ?? Bytes()
   }
   readonly type: TransactionType.ApplicationCall = TransactionType.ApplicationCall
   readonly typeBytes: bytes = asUint64Cls(TransactionType.ApplicationCall).toBytes().asAlgoTs()

@@ -1,5 +1,5 @@
-import { OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { decodeArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, it } from 'vitest'
 import {
   Hello,
@@ -32,14 +32,10 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloApp) {
-        itxnContext.returnValue = `hello ${itxnContext.args[0]}`
+        itxnContext.returnValue = () => `hello ${decodeArc4<string>(itxnContext.appArgs(1))}`
       }
     })
-    spy.on.delete((itxnContext) => {
-      if (itxnContext.appId === helloApp) {
-        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
-      }
-    })
+
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactoryTyped)
@@ -62,12 +58,7 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
-        itxnContext.returnValue = `hey ${itxnContext.args[0]}`
-      }
-    })
-    spy.on.delete((itxnContext) => {
-      if (itxnContext.appId === helloTemplateApp) {
-        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
+        itxnContext.returnValue = () => `hey ${decodeArc4<string>(itxnContext.appArgs(1))}`
       }
     })
     ctx.addApplicationSpy(spy)
@@ -92,14 +83,10 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.greet((itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
-        itxnContext.returnValue = `bonjour ${itxnContext.args[0]}`
+        itxnContext.returnValue = () => `bonjour ${decodeArc4<string>(itxnContext.appArgs(1))}`
       }
     })
-    spy.on.delete((itxnContext) => {
-      if (itxnContext.appId === helloTemplateApp) {
-        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
-      }
-    })
+
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactoryTyped)
@@ -122,14 +109,10 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.getBigBytesLength((itxnContext) => {
       if (itxnContext.appId === largeProgramApp) {
-        itxnContext.returnValue = 4096
+        itxnContext.returnValue = () => 4096
       }
     })
-    spy.on.delete((itxnContext) => {
-      if (itxnContext.appId === largeProgramApp) {
-        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
-      }
-    })
+
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactoryTyped)
@@ -152,7 +135,7 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.receivesAnyTxn((itxnContext) => {
       if (itxnContext.appId === receivesTxnsApp) {
-        itxnContext.returnValue = 1
+        itxnContext.returnValue = () => 1
       }
     })
     spy.on.receivesAssetConfig((itxnContext) => {
@@ -160,7 +143,7 @@ describe('pre compiled typed app calls', () => {
         itxnContext.returnValue = undefined
       }
     })
-    spy.on.receivesAssetConfigAndPay(() => {})
+
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactoryTyped)
@@ -183,9 +166,12 @@ describe('pre compiled typed app calls', () => {
     })
     spy.on.receivesReferenceTypes((itxnContext) => {
       if (itxnContext.appId === receivesReferenceTypesApp) {
-        itxnContext.appLogs = [itxnContext.args[0].address.bytes, itxnContext.args[1].bytes, itxnContext.args[2].name]
+        itxnContext.appendLog(itxnContext.apps(1).address.bytes)
+        itxnContext.appendLog(itxnContext.accounts(1).bytes)
+        itxnContext.appendLog(itxnContext.assets(0).name)
       }
     })
+
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactoryTyped)
