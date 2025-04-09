@@ -46,8 +46,8 @@ const spy = new ApplicationSpy(Hello)
 
 // register a callback for the method of the contract.
 // the callback is registered against the method selector.
-// callbacks for multiple methods with same method selector are kept in an array
-// and all callbacks are invoked when any one of those methods is called.
+// all callbacks for multiple methods with same method selector are invoked
+// when any one of those methods is called.
 // in those cases, you can check for `itxnContext.approvalProgram` or `itxnContext.appId`
 // to see if the callback needs to handle a particular method call.
 // e.g.
@@ -57,10 +57,9 @@ const spy = new ApplicationSpy(Hello)
 // }
 // ```
 // `itxnContext` is provided as a parameter to the callback method and
-// it allows reading and setting of all properties of `itxn.ApplicationCallFields` interface
-// which are used to construct `itxn.ApplicationCall` transaction when `.submit()` is called.
-// it also maps `appArgs` to `args` property and provides consistent access to parameters passed
-// to the contract method.
+// it allows reading and setting of the properties of `itxn.ApplicationCallInnerTxn` interface.
+// it also maps and encodes the arugments to `appArgs` collection as bytes values,
+// and provides consistent access those arguments.
 spy.on.create((itxnContext) => {
   itxnContext.createdApp = helloApp
 })
@@ -98,7 +97,7 @@ ctx.setCompiledApp(Hello, helloApp.id)
 const spy = new ApplicationSpy(Hello)
 
 // the mock setup is the same as using explicit create method except
-// the literal string keyword 'bareCreate' is used instead of a method signature
+// `onBareCall` method is used instead of `on.{methodName}` or `onAbiCall` methods
 // to register the callback
 spy.onBareCall((itxnContext) => {
   itxnContext.createdApp = helloApp
@@ -119,28 +118,6 @@ const txn = itxn
 const result = decodeArc4<string>(txn.lastLog, 'log')
 ```
 
-Mock result can be setup for the snippet above as
-
-````ts
-// `itxnContext.returnValue` is added as the last entry to the logs of the constructed `itxn.ApplicationCall`
-// so that it can be access via `txn.lastLog` property.
-// it is available as `.retrunValue` when using strongly typed method call approach.
-// `returnValue` should only be set as the last statement of the callback and
-// especially no further manipulations of logs should take place afterwards.
-// `appArgs` without the first value (which is the method selector) is available as `itxnContext.args`.
-// since it is encoded as `bytes`, it needs to be decoded to get back the string value.
-// you can check `itxnContext.appId` if there are multiple callback registered for the same method selector
-// e.g.
-// ```
-// if (itxnContext.appId === helloApp) {
-//   itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
-// }
-// ```
-spy.on.greet((itxnContext) => {
-  itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
-})
-````
-
 **2. Strongly typed contract method call**
 
 ```ts
@@ -151,19 +128,44 @@ const result = compiled.call.greet({
 assert(result === 'hello world')
 ```
 
-Mock result can be setup for the snippet above as
+Mock result can be setup for both snippets above as
+
+````ts
+// `itxnContext.setReturnValue` is added as the last entry to the logs of the constructed `itxn.ApplicationCall`
+// so that it can be access via `txn.lastLog` property.
+// `setReturnValue` should only be called as the last statement of the callback and
+// especially no further manipulations of logs should take place afterwards.
+// `appArgs` collection holds method selector and method arguments encoded as `bytes` values.
+// They need to be decoded if the orginal argument values are needed.
+// you can check `itxnContext.appId` if there are multiple callback registered for the same method selector
+// e.g.
+// ```
+// if (itxnContext.appId === helloApp) {
+//   itxnContext.returnValue = `hello ${decodeArc4<string>(itxnContext.appArgs(0))}`
+// }
+// ```
+spy.on.greet((itxnContext) => {
+  itxnContext.returnValue = `hello ${decodeArc4<string>(itxnContext.appArgs(0))}`
+})
+````
+
+You can also use the alternative approach below to setup the mock result. It is especially useful if you do not have `Contract` subclass available and only method signature and application id are availbe to make the method call.
 
 ```ts
-// the setup is the same as in `itxn.applicationCall`, except the `itxnContext.args` contains
-// the values passed in `args` array in their original format with being encoded into bytes.
-spy.on.greet((itxnContext) => {
-  itxnContext.returnValue = `hello ${itxnContext.args[0]}`
+// create a spy without the contract type provided
+const spy = new ApplicationSpy()
+
+spy.onAbiCall(methodSelector('greet(string)string'), (itxnContext) => {
+  // check for a well-known appId or the appId provided to the contract under test in some other manner
+  if (itxnContext.appId === appId) {
+    itxnContext.setReturnValue(`hey ${decodeArc4<string>(itxnContext.appArgs(1))}`)
+  }
 })
 ```
 
 **3. Strongly typed ABI calls**
 
-```
+```ts
 const result = abiCall(Hello.prototype.greet, {
   appId: app,
   args: ['abi'],
@@ -175,40 +177,9 @@ Mock result can be setup for the snippet above as
 ```ts
 // the setup is the same as the previous case
 spy.on.greet((itxnContext) => {
-  itxnContext.returnValue = `hello ${itxnContext.args[0]}`
+  itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(0))}`)
 })
 ```
-
-### Key Features
-
-1. **Type-safe Method Mocking**
-
-   ```ts
-   spy.on.increment((itxnContext) => {
-     // itxnContext.args is properly typed based on method signature
-     itxnContext.returnValue = 1n // Type checked against method return type
-   })
-   ```
-
-2. **Creation Handling**
-
-   ```ts
-   spy.on.create((itxnContext) => {
-     // Handle contract creation
-     itxnContext.createdApp = counterApp
-   })
-   ```
-
-3. **Multiple Contract Support**
-
-   ```ts
-   // Create spies for different contracts
-   const counterSpy = new ApplicationSpy(Counter)
-   const vaultSpy = new ApplicationSpy(Vault)
-
-   ctx.addApplicationSpy(counterSpy)
-   ctx.addApplicationSpy(vaultSpy)
-   ```
 
 ### Best Practices
 
@@ -226,7 +197,7 @@ spy.on.greet((itxnContext) => {
    spy.on.increment((itxnContext) => {
      // Only handle calls to specific app instance
      if (itxnContext.appId === counterApp) {
-       itxnContext.returnValue = 1n
+       itxnContext.setReturnValue(1n)
      }
    })
    ```
@@ -234,7 +205,8 @@ spy.on.greet((itxnContext) => {
 3. **Handle Method Arguments**
    ```ts
    spy.on.setValue((itxnContext) => {
-     //`itxnContext.args` could be encoded as bytes if `itxn.applicationCall` is used to make the call
-     itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
+     // arguments provided to the method are encoded as bytes values
+     // and available via `itxnContext.appArgs` method
+     itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(0))}`)
    })
    ```

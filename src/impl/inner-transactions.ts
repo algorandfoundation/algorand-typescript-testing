@@ -268,10 +268,16 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
   }
 }
 const UNSET = Symbol('UNSET_SYMBOL')
+/**
+ * The ApplicationCallInnerTxnContext class is a specialized version of the ApplicationCallInnerTxn class.
+ * It is used to handle the context of an application call transaction, including managing the return value.
+ */
 export class ApplicationCallInnerTxnContext<TReturn = unknown> extends ApplicationCallInnerTxn {
+  /* @internal */
   static createFromFields(fields: ApplicationCallFields) {
     return new ApplicationCallInnerTxnContext(fields)
   }
+  /* @internal */
   static createFromTypedApplicationCallFields<TReturn = unknown>(
     methodArgs: TypedApplicationCallFields<DeliberateAny>,
     methodSelector: bytes,
@@ -288,11 +294,17 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
     }
     return new ApplicationCallInnerTxnContext<TReturn>(fields, transactions)
   }
+  /* @internal */
   static createFromBareCreateApplicationCallFields(methodArgs: BareCreateApplicationCallFields) {
     return new ApplicationCallInnerTxnContext(methodArgs)
   }
 
   #returnValue: TReturn | typeof UNSET = UNSET
+  /**
+   * Sets the return value for the application call.
+   * @param value
+   * @returns
+   */
   setReturnValue(value: TReturn) {
     // Ignore undefined (void) values
     if (value === undefined) return

@@ -6,25 +6,25 @@
 
 # Class: ApplicationSpy\<TContract\>
 
-Defined in: [src/application-spy.ts:33](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L33)
+Defined in: [src/application-spy.ts:32](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L32)
 
 ## Type Parameters
 
 ### TContract
 
-`TContract` *extends* `Contract`
+`TContract` *extends* `Contract` = `Contract`
 
 ## Constructors
 
 ### Constructor
 
-> **new ApplicationSpy**\<`TContract`\>(`contract`): `ApplicationSpy`\<`TContract`\>
+> **new ApplicationSpy**\<`TContract`\>(`contract`?): `ApplicationSpy`\<`TContract`\>
 
-Defined in: [src/application-spy.ts:45](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L45)
+Defined in: [src/application-spy.ts:44](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L44)
 
 #### Parameters
 
-##### contract
+##### contract?
 
 `TContract` | `ConstructorFor`\<`TContract`\>
 
@@ -34,11 +34,11 @@ Defined in: [src/application-spy.ts:45](https://github.com/algorandfoundation/al
 
 ## Properties
 
-### contract
+### contract?
 
-> **contract**: `TContract` \| `ConstructorFor`\<`TContract`\>
+> `optional` **contract**: `TContract` \| `ConstructorFor`\<`TContract`\>
 
-Defined in: [src/application-spy.ts:43](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L43)
+Defined in: [src/application-spy.ts:42](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L42)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [src/application-spy.ts:43](https://github.com/algorandfoundation/al
 
 > `readonly` **on**: `_TypedApplicationSpyCallBacks`\<`TContract`\>
 
-Defined in: [src/application-spy.ts:40](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L40)
+Defined in: [src/application-spy.ts:39](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L39)
 
 The `on` property is a proxy that allows you to register callbacks for specific method signatures.
 It dynamically creates methods based on the contract's methods.
@@ -57,7 +57,7 @@ It dynamically creates methods based on the contract's methods.
 
 > **notify**(`itxn`): `void`
 
-Defined in: [src/application-spy.ts:51](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L51)
+Defined in: [src/application-spy.ts:50](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L50)
 
 #### Parameters
 
@@ -71,11 +71,35 @@ Defined in: [src/application-spy.ts:51](https://github.com/algorandfoundation/al
 
 ***
 
+### onAbiCall()
+
+> **onAbiCall**(`methodSignature`, `callback`): `void`
+
+Defined in: [src/application-spy.ts:69](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L69)
+
+Registers a callback for a specific method signature.
+
+#### Parameters
+
+##### methodSignature
+
+`bytes`
+
+##### callback
+
+`AppSpyCb`
+
+#### Returns
+
+`void`
+
+***
+
 ### onBareCall()
 
 > **onBareCall**(`callback`): `void`
 
-Defined in: [src/application-spy.ts:61](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L61)
+Defined in: [src/application-spy.ts:60](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/application-spy.ts#L60)
 
 Registers a callback for a bare call (no arguments).
 
@@ -83,7 +107,7 @@ Registers a callback for a bare call (no arguments).
 
 ##### callback
 
-`AppSpyCb`\<\[\], `unknown`\>
+`AppSpyCb`
 
 The callback to be executed when a bare call is detected.
 
