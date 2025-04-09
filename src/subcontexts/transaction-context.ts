@@ -6,7 +6,7 @@ import { checkRoutingConditions } from '../context-helpers/context-util'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { DecodedLogs, LogDecoding } from '../decode-logs'
 import { decodeLogs } from '../decode-logs'
-import { InternalError, testInvariant } from '../errors'
+import { InternalError, invariant } from '../errors'
 import type {
   ApplicationCallInnerTxn,
   AssetConfigInnerTxn,
@@ -265,7 +265,7 @@ export class TransactionGroup {
     if (this.transactions.length === 0) {
       throw new InternalError('No transactions in the group')
     }
-    testInvariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No app_id found in the active transaction')
+    invariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No app_id found in the active transaction')
     return (this.activeTransaction as ApplicationCallTransaction).backingAppId.id
   }
 
@@ -322,7 +322,7 @@ export class TransactionGroup {
     if (this.constructingItxnGroup.length) {
       throw new InternalError('itxn begin without itxn submit')
     }
-    testInvariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No active application call transaction')
+    invariant(this.activeTransaction.type === TransactionType.ApplicationCall, 'No active application call transaction')
     if (this.activeTransaction.onCompletion === OnCompleteAction.ClearState) {
       throw new InternalError('Cannot begin inner transaction group in a clear state call')
     }
@@ -376,12 +376,12 @@ export class TransactionGroup {
   getItxnGroup(index?: StubUint64Compat): ItxnGroup {
     const i = index !== undefined ? asNumber(index) : undefined
 
-    testInvariant(this.itxnGroups.length > 0, 'no previous inner transactions')
+    invariant(this.itxnGroups.length > 0, 'no previous inner transactions')
     if (i !== undefined && i >= this.itxnGroups.length) {
       throw new InternalError('Invalid group index')
     }
     const group = i !== undefined ? this.itxnGroups[i] : this.itxnGroups.at(-1)!
-    testInvariant(group.itxns.length > 0, 'no previous inner transactions')
+    invariant(group.itxns.length > 0, 'no previous inner transactions')
 
     return group
   }
@@ -552,7 +552,7 @@ export class ItxnGroup {
   }
 
   private getInnerTxnImpl({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
-    testInvariant(this.itxns.length > 0, 'no previous inner transactions')
+    invariant(this.itxns.length > 0, 'no previous inner transactions')
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= this.itxns.length) {
       throw new InternalError('Invalid group index')

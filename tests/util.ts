@@ -8,12 +8,6 @@ import type { BytesCls, StubBigUintCompat, StubBytesCompat } from '../src/impl/p
 import { BigUintCls, Bytes } from '../src/impl/primitives'
 import { asUint8Array } from '../src/util'
 
-class InvariantError extends Error {}
-export function invariant(condition: unknown, message: string): asserts condition {
-  if (!condition) {
-    throw new InvariantError(message)
-  }
-}
 export const padUint8Array = (arr: Uint8Array, padSize: number): Uint8Array => {
   const paddedUint8Array = new Uint8Array(arr.length + padSize)
   arr.forEach((v, i) => (paddedUint8Array[padSize + i] = v))

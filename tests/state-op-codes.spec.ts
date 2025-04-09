@@ -7,7 +7,7 @@ import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MIN_TXN_FEE, OnApplicationComplete, ZERO_ADDRESS } from '../src/constants'
 import { lazyContext } from '../src/context-helpers/internal-context'
-import { testInvariant } from '../src/errors'
+import { invariant } from '../src/errors'
 import { Block, gloadBytes, gloadUint64 } from '../src/impl'
 import type { InnerTxn } from '../src/impl/itxn'
 import { BytesCls, Uint64Cls } from '../src/impl/primitives'
@@ -93,7 +93,7 @@ describe('State op codes', async () => {
         methodName as string,
         asUint8Array(mockAccount.bytes),
       )
-      testInvariant(avmResult !== undefined, 'There must be an AVM result')
+      invariant(avmResult !== undefined, 'There must be an AVM result')
       const mockContract = ctx.contract.create(StateAcctParamsGetContract)
       const mockResult = mockContract[methodName as keyof StateAcctParamsGetContract](mockAccount)
 
