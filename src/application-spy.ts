@@ -61,6 +61,11 @@ export class ApplicationSpy<TContract extends Contract = Contract> {
     this.#spyFns.push(predicates.bareCall(callback))
   }
 
+  /**
+   * Registers a callback for a specific method signature.
+   * @param methodSignature
+   * @param callback
+   */
   onAbiCall(methodSignature: bytes, callback: AppSpyCb) {
     this.#spyFns.push(predicates.methodSelector(callback, methodSignature))
   }

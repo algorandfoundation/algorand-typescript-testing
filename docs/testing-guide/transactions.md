@@ -189,7 +189,6 @@ If your contract needs to deploy other contracts then it's likely you will need 
 ```ts
 import { assert, compile, Contract, GlobalState, itxn, OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { Str } from '@algorandfoundation/algorand-typescript/arc4'
 import { abimethod, decodeArc4, encodeArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, it } from 'vitest'
 
@@ -257,7 +256,7 @@ describe('pre compiled app calls', () => {
       itxnContext.createdApp = helloApp
     })
     spy.on.greet((itxnContext) => {
-      itxnContext.returnValue = `hello ${decodeArc4<Str>(itxnContext.args[0])}`
+      itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
     })
     ctx.addApplicationSpy(spy)
 
@@ -274,9 +273,9 @@ describe('pre compiled app calls', () => {
 Assuming the contract you wish to compile extends the ARC4 `Contract` type, you can make use of `compileArc4` to produce a contract proxy object that makes it easy to invoke application methods with compile time type safety. You can use the same `ctx.setCompiledApp` method set up the mock result for `compile` call and `ApplicationSpy` for mocking subsequent calls to the compiled contract.
 
 ```ts
-import { assert, Contract, GlobalState, OnCompleteAction } from '@algorandfoundation/algorand-typescript'
+import { assert, Contract, GlobalState } from '@algorandfoundation/algorand-typescript'
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { abimethod, compileArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { abimethod, compileArc4, decodeArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, it } from 'vitest'
 
 export class Hello extends Contract {
@@ -332,10 +331,7 @@ describe('pre compiled typed app calls', () => {
       itxnContext.createdApp = helloApp
     })
     spy.on.greet((itxnContext) => {
-      itxnContext.returnValue = `hello ${itxnContext.args[0]}`
-    })
-    spy.on.delete((itxnContext) => {
-      itxnContext.onCompletion = OnCompleteAction.DeleteApplication
+      itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
     })
     ctx.addApplicationSpy(spy)
 
@@ -355,7 +351,7 @@ If your use case does not require deploying another contract, and instead you ar
 import type { Application } from '@algorandfoundation/algorand-typescript'
 import { assert, Contract, GlobalState } from '@algorandfoundation/algorand-typescript'
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { abiCall, abimethod } from '@algorandfoundation/algorand-typescript/arc4'
+import { abiCall, abimethod, decodeArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, it } from 'vitest'
 
 export class Hello extends Contract {
@@ -398,7 +394,7 @@ describe('pre compiled typed app calls', () => {
 
     const spy = new ApplicationSpy(Hello)
     spy.on.greet((itxnContext) => {
-      itxnContext.returnValue = `hello ${itxnContext.args[0]}`
+      itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
     })
     ctx.addApplicationSpy(spy)
 
