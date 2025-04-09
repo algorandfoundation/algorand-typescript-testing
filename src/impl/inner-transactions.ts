@@ -7,10 +7,9 @@ import type {
 } from '@algorandfoundation/algorand-typescript'
 import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import type { BareCreateApplicationCallFields, TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
-import { invariant } from '../../tests/util'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { InternalError } from '../errors'
+import { InternalError, invariant } from '../errors'
 import { extractArraysFromArgs } from '../subcontexts/contract-context'
 import type { DeliberateAny } from '../typescript-helpers'
 import { asBytes, asNumber, asUint8Array } from '../util'
@@ -297,7 +296,7 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
   setReturnValue(value: TReturn) {
     // Ignore undefined (void) values
     if (value === undefined) return
-    super.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, value)))
+    this.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, value)))
     this.#returnValue = value
   }
   /* @internal */

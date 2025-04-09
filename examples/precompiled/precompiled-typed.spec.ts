@@ -138,11 +138,6 @@ describe('pre compiled typed app calls', () => {
         itxnContext.setReturnValue(1)
       }
     })
-    spy.on.receivesAssetConfig((itxnContext) => {
-      if (itxnContext.appId === receivesTxnsApp) {
-        itxnContext.setReturnValue(ctx.any.bytes(64))
-      }
-    })
 
     ctx.addApplicationSpy(spy)
 
