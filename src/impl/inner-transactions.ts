@@ -4,6 +4,7 @@ import type {
   Asset as AssetType,
   bytes,
   itxn,
+  OnCompleteAction,
 } from '@algorandfoundation/algorand-typescript'
 import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import type { BareCreateApplicationCallFields, TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
@@ -311,6 +312,15 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
     this.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, value)))
     this.#returnValue = value
   }
+
+  get onCompletion(): OnCompleteAction {
+    return super.onCompletion
+  }
+
+  set onCompletion(value: OnCompleteAction) {
+    super.onCompletion = value
+  }
+
   /* @internal */
   get loggedReturnValue(): TReturn {
     return this.#returnValue === UNSET ? (undefined as TReturn) : this.#returnValue

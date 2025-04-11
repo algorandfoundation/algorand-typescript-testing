@@ -1,3 +1,4 @@
+import { OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { decodeArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, it } from 'vitest'
@@ -28,6 +29,11 @@ describe('pre compiled app calls', () => {
         itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
       }
     })
+    spy.onAbiCall(methodSelector(Hello.prototype.delete), (itxnContext) => {
+      if (itxnContext.appId === helloApp) {
+        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
+      }
+    })
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactory)
@@ -52,6 +58,11 @@ describe('pre compiled app calls', () => {
     spy.onAbiCall(methodSelector('greet(string)string'), (itxnContext) => {
       if (itxnContext.appId === helloTemplateApp) {
         itxnContext.setReturnValue(`hey ${decodeArc4<string>(itxnContext.appArgs(1))}`)
+      }
+    })
+    spy.onAbiCall(methodSelector('delete()void'), (itxnContext) => {
+      if (itxnContext.appId === helloTemplateApp) {
+        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
       }
     })
     ctx.addApplicationSpy(spy)
@@ -79,6 +90,11 @@ describe('pre compiled app calls', () => {
         itxnContext.setReturnValue(`bonjour ${decodeArc4<string>(itxnContext.appArgs(1))}`)
       }
     })
+    spy.onAbiCall(methodSelector('delete()void'), (itxnContext) => {
+      if (itxnContext.appId === helloTemplateCustomPrefixApp) {
+        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
+      }
+    })
     ctx.addApplicationSpy(spy)
 
     const contract = ctx.contract.create(HelloFactory)
@@ -103,6 +119,11 @@ describe('pre compiled app calls', () => {
     spy.onAbiCall(methodSelector(LargeProgram.prototype.getBigBytesLength), (itxnContext) => {
       if (itxnContext.appId === largeProgramApp) {
         itxnContext.setReturnValue(4096)
+      }
+    })
+    spy.onAbiCall(methodSelector('delete()void'), (itxnContext) => {
+      if (itxnContext.appId === largeProgramApp) {
+        itxnContext.onCompletion = OnCompleteAction.DeleteApplication
       }
     })
     ctx.addApplicationSpy(spy)

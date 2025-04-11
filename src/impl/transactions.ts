@@ -243,11 +243,12 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   #clearStateProgramPages: Array<bytes>
   #appLogs: Array<bytes>
   #appId: ApplicationType
+  #onCompletion: OnCompleteAction
 
   protected constructor(fields: ApplicationCallTransactionFields) {
     super(fields)
     this.#appId = fields.appId ?? Application()
-    this.onCompletion = fields.onCompletion ?? OnCompleteAction.NoOp
+    this.#onCompletion = fields.onCompletion ?? OnCompleteAction.NoOp
     this.globalNumUint = fields.globalNumUint ?? Uint64(0)
     this.globalNumBytes = fields.globalNumBytes ?? Uint64(0)
     this.localNumUint = fields.localNumUint ?? Uint64(0)
@@ -278,7 +279,12 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
     }
     return this.#appId
   }
-  readonly onCompletion: OnCompleteAction
+  get onCompletion(): OnCompleteAction {
+    return this.#onCompletion
+  }
+  protected set onCompletion(value: OnCompleteAction) {
+    this.#onCompletion = value
+  }
   readonly globalNumUint: uint64
   readonly globalNumBytes: uint64
   readonly localNumUint: uint64
