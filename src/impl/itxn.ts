@@ -1,5 +1,4 @@
 import type { Account, Application, Asset, bytes, itxn, op, TransactionType, uint64 } from '@algorandfoundation/algorand-typescript'
-import { OnCompleteAction } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asBytes, asBytesCls, asNumber, asUint64, asUint64Cls } from '../util'
 import { getApp } from './app-params'
@@ -12,7 +11,7 @@ export type InnerTxn =
   | itxn.AssetConfigInnerTxn
   | itxn.AssetTransferInnerTxn
   | itxn.AssetFreezeInnerTxn
-  | itxn.ApplicationInnerTxn
+  | itxn.ApplicationCallInnerTxn
 
 export type InnerTxnFields = (
   | itxn.PaymentFields
@@ -97,29 +96,29 @@ export const GITxn: typeof op.GITxn = {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).txnId
   },
   applicationId: function (t: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).appId
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).appId
   },
   onCompletion: function (t: StubUint64Compat): uint64 {
-    const onCompletionStr = lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).onCompletion
-    return asUint64(OnCompleteAction[onCompletionStr])
+    const onCompletion = lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).onCompletion
+    return asUint64(onCompletion)
   },
   applicationArgs: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).appArgs(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).appArgs(asUint64(a))
   },
   numAppArgs: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numAppArgs
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numAppArgs
   },
   accounts: function (t: StubUint64Compat, a: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).accounts(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).accounts(asUint64(a))
   },
   numAccounts: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numAccounts
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numAccounts
   },
   approvalProgram: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).approvalProgram
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).approvalProgram
   },
   clearStateProgram: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).clearStateProgram
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).clearStateProgram
   },
   rekeyTo: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).rekeyTo
@@ -170,64 +169,64 @@ export const GITxn: typeof op.GITxn = {
     return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(t).frozen
   },
   assets: function (t: StubUint64Compat, a: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).assets(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).assets(asUint64(a))
   },
   numAssets: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numAssets
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numAssets
   },
   applications: function (t: StubUint64Compat, a: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).apps(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).apps(asUint64(a))
   },
   numApplications: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numApps
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numApps
   },
   globalNumUint: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).globalNumUint
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).globalNumUint
   },
   globalNumByteSlice: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).globalNumBytes
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).globalNumBytes
   },
   localNumUint: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).localNumUint
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).localNumUint
   },
   localNumByteSlice: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).localNumBytes
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).localNumBytes
   },
   extraProgramPages: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).extraProgramPages
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).extraProgramPages
   },
   nonparticipation: function (t: StubUint64Compat): boolean {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).nonparticipation
   },
   logs: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).logs(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).logs(asUint64(a))
   },
   numLogs: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numLogs
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numLogs
   },
   createdAssetId: function (t: StubUint64Compat): Asset {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).createdAsset
   },
   createdApplicationId: function (t: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).createdApp
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).createdApp
   },
   lastLog: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).lastLog
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).lastLog
   },
   stateProofPk: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).stateProofKey
   },
   approvalProgramPages: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).approvalProgramPages(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).approvalProgramPages(asUint64(a))
   },
   numApprovalProgramPages: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numApprovalProgramPages
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numApprovalProgramPages
   },
   clearStateProgramPages: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).clearStateProgramPages(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).clearStateProgramPages(asUint64(a))
   },
   numClearStateProgramPages: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn(t).numClearStateProgramPages
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numClearStateProgramPages
   },
 }
 export const ITxn: typeof op.ITxn = {
@@ -379,50 +378,50 @@ export const ITxn: typeof op.ITxn = {
    * ApplicationID from ApplicationCall transaction
    */
   get applicationId(): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().appId
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().appId
   },
   /**
    * ApplicationCall transaction on completion action
    */
   get onCompletion(): uint64 {
-    const onCompletionStr = lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().onCompletion
-    return asUint64(OnCompleteAction[onCompletionStr])
+    const onCompletion = lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().onCompletion
+    return asUint64(onCompletion)
   },
   /**
    * Arguments passed to the application in the ApplicationCall transaction
    */
   applicationArgs(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().appArgs(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().appArgs(asUint64(a))
   },
   /**
    * Number of ApplicationArgs
    */
   get numAppArgs(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().numAppArgs
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numAppArgs
   },
   /**
    * Accounts listed in the ApplicationCall transaction
    */
   accounts(a: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().accounts(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().accounts(asUint64(a))
   },
   /**
    * Number of Accounts
    */
   get numAccounts(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().numAccounts
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numAccounts
   },
   /**
    * Approval program
    */
   get approvalProgram(): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().approvalProgram
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().approvalProgram
   },
   /**
    * Clear state program
    */
   get clearStateProgram(): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().clearStateProgram
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().clearStateProgram
   },
   /**
    * 32 byte Sender's new AuthAddr
@@ -524,55 +523,55 @@ export const ITxn: typeof op.ITxn = {
    * Foreign Assets listed in the ApplicationCall transaction
    */
   assets(a: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().assets(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().assets(asUint64(a))
   },
   /**
    * Number of Assets
    */
   get numAssets(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().numAssets
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numAssets
   },
   /**
    * Foreign Apps listed in the ApplicationCall transaction
    */
   applications(a: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().apps(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().apps(asUint64(a))
   },
   /**
    * Number of Applications
    */
   get numApplications(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().numApps
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numApps
   },
   /**
    * Number of global state integers in ApplicationCall
    */
   get globalNumUint(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().globalNumUint
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().globalNumUint
   },
   /**
    * Number of global state byteslices in ApplicationCall
    */
   get globalNumByteSlice(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().globalNumBytes
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().globalNumBytes
   },
   /**
    * Number of local state integers in ApplicationCall
    */
   get localNumUint(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().localNumUint
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().localNumUint
   },
   /**
    * Number of local state byteslices in ApplicationCall
    */
   get localNumByteSlice(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().localNumBytes
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().localNumBytes
   },
   /**
    * Number of additional pages for each of the application's approval and clear state programs. An ExtraProgramPages of 1 means 2048 more total bytes, or 1024 for each program.
    */
   get extraProgramPages(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().extraProgramPages
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().extraProgramPages
   },
   /**
    * Marks an account nonparticipating for rewards
@@ -584,13 +583,13 @@ export const ITxn: typeof op.ITxn = {
    * Log messages emitted by an application call (only with `itxn` in v5). Application mode only
    */
   logs(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().logs(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().logs(asUint64(a))
   },
   /**
    * Number of Logs (only with `itxn` in v5). Application mode only
    */
   get numLogs(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().numLogs
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numLogs
   },
   /**
    * Asset ID allocated by the creation of an ASA (only with `itxn` in v5). Application mode only
@@ -602,13 +601,13 @@ export const ITxn: typeof op.ITxn = {
    * ApplicationID allocated by the creation of an application (only with `itxn` in v5). Application mode only
    */
   get createdApplicationId(): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().createdApp
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().createdApp
   },
   /**
    * The last message emitted. Empty bytes if none were emitted. Application mode only
    */
   get lastLog(): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().lastLog
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().lastLog
   },
   /**
    * 64 byte state proof public key
@@ -620,25 +619,25 @@ export const ITxn: typeof op.ITxn = {
    * Approval Program as an array of pages
    */
   approvalProgramPages(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().approvalProgramPages(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().approvalProgramPages(asUint64(a))
   },
   /**
    * Number of Approval Program pages
    */
   get numApprovalProgramPages(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().numApprovalProgramPages
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numApprovalProgramPages
   },
   /**
    * ClearState Program as an array of pages
    */
   clearStateProgramPages(a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().clearStateProgramPages(asUint64(a))
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().clearStateProgramPages(asUint64(a))
   },
   /**
    * Number of ClearState Program pages
    */
   get numClearStateProgramPages(): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationInnerTxn().numClearStateProgramPages
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numClearStateProgramPages
   },
 }
 

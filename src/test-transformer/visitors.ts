@@ -173,7 +173,9 @@ class ExpressionVisitor {
         updatedNode = stubbedFunctionName
           ? isCallingMethodSelector(stubbedFunctionName)
             ? nodeFactory.callMethodSelectorFunction(updatedNode)
-            : nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
+            : isCallingAbiCall(stubbedFunctionName)
+              ? nodeFactory.callAbiCallFunction(updatedNode)
+              : nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
           : updatedNode
       }
       return needsToCaptureTypeInfo
@@ -422,7 +424,7 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     if (sourceFileName && !algotsModulePaths.some((s) => sourceFileName.includes(s))) return undefined
   }
   const functionName = functionSymbol?.getName() ?? identityExpression.text
-  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'arc4EncodedLength']
+  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'arc4EncodedLength', 'abiCall']
   return stubbedFunctionNames.includes(functionName) ? functionName : undefined
 }
 
@@ -430,3 +432,4 @@ const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['dec
 const isCallingArc4EncodedLength = (functionName: string | undefined): boolean => 'arc4EncodedLength' === (functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
+const isCallingAbiCall = (functionName: string | undefined): boolean => 'abiCall' === (functionName ?? '')

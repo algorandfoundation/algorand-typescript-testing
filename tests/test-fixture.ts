@@ -15,8 +15,9 @@ import { OnApplicationComplete } from 'algosdk'
 import fs from 'fs'
 import type { ExpectStatic } from 'vitest'
 import { test } from 'vitest'
+import { invariant } from '../src/errors'
 import type { DeliberateAny } from '../src/typescript-helpers'
-import { generateTempDir, invariant } from './util'
+import { generateTempDir } from './util'
 
 const algorandTestFixture = (localnetFixture: AlgorandFixture) =>
   test.extend<{

@@ -14,9 +14,9 @@ Defined in: [src/errors.ts:46](https://github.com/algorandfoundation/algorand-ty
 
 ## Constructors
 
-### new NotImplementedError()
+### Constructor
 
-> **new NotImplementedError**(`feature`): [`NotImplementedError`](NotImplementedError.md)
+> **new NotImplementedError**(`feature`): `NotImplementedError`
 
 Defined in: [src/errors.ts:47](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/errors.ts#L47)
 
@@ -28,7 +28,7 @@ Defined in: [src/errors.ts:47](https://github.com/algorandfoundation/algorand-ty
 
 #### Returns
 
-[`NotImplementedError`](NotImplementedError.md)
+`NotImplementedError`
 
 #### Overrides
 

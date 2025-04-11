@@ -12,9 +12,9 @@ Represents a group of inner transactions.
 
 ## Constructors
 
-### new ItxnGroup()
+### Constructor
 
-> **new ItxnGroup**(`itxns`): [`ItxnGroup`](ItxnGroup.md)
+> **new ItxnGroup**(`itxns`): `ItxnGroup`
 
 Defined in: [src/subcontexts/transaction-context.ts:487](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L487)
 
@@ -26,7 +26,7 @@ Defined in: [src/subcontexts/transaction-context.ts:487](https://github.com/algo
 
 #### Returns
 
-[`ItxnGroup`](ItxnGroup.md)
+`ItxnGroup`
 
 ## Properties
 
@@ -38,9 +38,9 @@ Defined in: [src/subcontexts/transaction-context.ts:486](https://github.com/algo
 
 ## Methods
 
-### getApplicationInnerTxn()
+### getApplicationCallInnerTxn()
 
-> **getApplicationInnerTxn**(`index`?): `ApplicationInnerTxn`
+> **getApplicationCallInnerTxn**(`index`?): `ApplicationCallInnerTxn`
 
 Defined in: [src/subcontexts/transaction-context.ts:496](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L496)
 
@@ -56,7 +56,7 @@ The index of the transaction.
 
 #### Returns
 
-`ApplicationInnerTxn`
+`ApplicationCallInnerTxn`
 
 The application inner transaction.
 

@@ -57,7 +57,7 @@ export const getContractAbiMetadata = <T extends Contract>(contract: T | { new (
   return result
 }
 
-export const getContractMethodAbiMetadata = <T extends Contract>(contract: T, methodName: string): AbiMetadata => {
+export const getContractMethodAbiMetadata = <T extends Contract>(contract: T | { new (): T }, methodName: string): AbiMetadata => {
   const metadatas = getContractAbiMetadata(contract)
   return metadatas[methodName]
 }
@@ -95,7 +95,7 @@ const getArc4TypeName = (t: TypeInfo): string => {
     AssetConfigTxn: 'acfg',
     AssetTransferTxn: 'axfer',
     AssetFreezeTxn: 'afrz',
-    ApplicationTxn: 'appl',
+    ApplicationCallTxn: 'appl',
     'Tuple(<.*>)?': (t) =>
       `(${Object.values(t.genericArgs as Record<string, TypeInfo>)
         .map(getArc4TypeName)

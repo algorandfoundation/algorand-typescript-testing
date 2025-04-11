@@ -6,20 +6,20 @@
 
 # Class: ContractContext
 
-Defined in: [src/subcontexts/contract-context.ts:138](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L138)
+Defined in: [src/subcontexts/contract-context.ts:146](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L146)
 
 Provides a context for creating contracts and registering created contract instances
 with test execution context.
 
 ## Constructors
 
-### new ContractContext()
+### Constructor
 
-> **new ContractContext**(): [`ContractContext`](ContractContext.md)
+> **new ContractContext**(): `ContractContext`
 
 #### Returns
 
-[`ContractContext`](ContractContext.md)
+`ContractContext`
 
 ## Methods
 
@@ -27,13 +27,15 @@ with test execution context.
 
 > **create**\<`T`\>(`type`, ...`args`): `T`
 
-Defined in: [src/subcontexts/contract-context.ts:150](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L150)
+Defined in: [src/subcontexts/contract-context.ts:158](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L158)
 
 Creates a new contract instance and register the created instance with test execution context.
 
 #### Type Parameters
 
-• **T** *extends* `BaseContract`
+##### T
+
+`T` *extends* `BaseContract`
 
 Type of contract extending BaseContract
 
@@ -70,7 +72,7 @@ const contract = ctx.contract.create(MyContract);
 
 > `static` **createMethodCallTxns**\<`TParams`\>(`contract`, `abiMetadata`, ...`args`): `Transaction`[]
 
-Defined in: [src/subcontexts/contract-context.ts:172](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L172)
+Defined in: [src/subcontexts/contract-context.ts:180](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L180)
 
 **`Internal`**
 
@@ -78,7 +80,9 @@ Creates an array of transactions for calling a contract method.
 
 #### Type Parameters
 
-• **TParams** *extends* `unknown`[]
+##### TParams
+
+`TParams` *extends* `unknown`[]
 
 Array of parameter types
 

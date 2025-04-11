@@ -7,12 +7,12 @@ import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MIN_TXN_FEE, OnApplicationComplete, ZERO_ADDRESS } from '../src/constants'
 import { lazyContext } from '../src/context-helpers/internal-context'
-import { testInvariant } from '../src/errors'
+import { invariant } from '../src/errors'
 import { Block, gloadBytes, gloadUint64 } from '../src/impl'
 import type { InnerTxn } from '../src/impl/itxn'
 import { BytesCls, Uint64Cls } from '../src/impl/primitives'
 import { AccountCls, encodeAddress } from '../src/impl/reference'
-import type { ApplicationTransaction } from '../src/impl/transactions'
+import type { ApplicationCallTransaction } from '../src/impl/transactions'
 import type { DeliberateAny } from '../src/typescript-helpers'
 import { asBigInt, asBigUintCls, asNumber, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
 import { AppExpectingEffects } from './artifacts/created-app-asset/contract.algo'
@@ -93,7 +93,7 @@ describe('State op codes', async () => {
         methodName as string,
         asUint8Array(mockAccount.bytes),
       )
-      testInvariant(avmResult !== undefined, 'There must be an AVM result')
+      invariant(avmResult !== undefined, 'There must be an AVM result')
       const mockContract = ctx.contract.create(StateAcctParamsGetContract)
       const mockResult = mockContract[methodName as keyof StateAcctParamsGetContract](mockAccount)
 
@@ -410,7 +410,7 @@ describe('State op codes', async () => {
 
       // assert
       const itxnGroup = ctx.txn.lastGroup.getItxnGroup(0)
-      const appItxn = itxnGroup.getApplicationInnerTxn(0)
+      const appItxn = itxnGroup.getApplicationCallInnerTxn(0)
       const paymentItxn = itxnGroup.getPaymentInnerTxn(1)
 
       // Test application call transaction fields
@@ -420,7 +420,7 @@ describe('State op codes', async () => {
         .fill(0)
         .map((_, i) => [...asUint8Array(appItxn.approvalProgramPages(i))])
       expect(approvalPages).toEqual([[...asUint8Array(appItxn.approvalProgram)]])
-      expect(appItxn.onCompletion).toEqual(OnCompleteAction[OnCompleteAction['DeleteApplication']])
+      expect(appItxn.onCompletion).toEqual(OnCompleteAction.DeleteApplication)
       expect(asNumber(appItxn.fee)).toEqual(MIN_TXN_FEE)
       expect(appItxn.sender).toEqual(ctx.ledger.getApplicationForContract(contract).address)
       // NOTE: would implementing emulation for this behavior be useful
@@ -449,8 +449,8 @@ describe('State op codes', async () => {
       })
 
       // Test logs (should be empty for newly created transactions as its a void method)
-      expect(asNumber((ctx.txn.lastActive as ApplicationTransaction).numLogs)).toEqual(0)
-      expect((ctx.txn.lastActive as ApplicationTransaction).lastLog).toEqual(Bytes(''))
+      expect(asNumber((ctx.txn.lastActive as ApplicationCallTransaction).numLogs)).toEqual(0)
+      expect((ctx.txn.lastActive as ApplicationCallTransaction).lastLog).toEqual(Bytes(''))
 
       // Test created_app (should be created for these transactions)
       expect(appItxn.createdApp).toBeTruthy()
