@@ -1,7 +1,7 @@
 import type { biguint, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { Base64 } from '@algorandfoundation/algorand-typescript'
 import { BITS_IN_BYTE, MAX_BYTES_SIZE, MAX_UINT64, MAX_UINT8, UINT64_SIZE } from '../constants'
-import { AvmError, CodeError, NotImplementedError, testInvariant } from '../errors'
+import { AvmError, CodeError, invariant, NotImplementedError } from '../errors'
 import { asBigUint, asBytes, asBytesCls, asMaybeBytesCls, asMaybeUint64Cls, asUint64Cls, binaryStringToBytes } from '../util'
 import type { StubBigUintCompat, StubBytesCompat, StubUint64Compat } from './primitives'
 import { BigUintCls, Bytes, BytesCls, checkBigUint, isUint64, Uint64, Uint64Cls } from './primitives'
@@ -222,7 +222,7 @@ export const setBit = ((a: StubUint64Compat | StubBytesCompat, b: StubUint64Comp
     return newBytes.toUint64().asAlgoTs()
   } else {
     const bytesCls = asMaybeBytesCls(a)
-    testInvariant(bytesCls, 'a must be uint64 or bytes')
+    invariant(bytesCls, 'a must be uint64 or bytes')
     const binaryString = toBinaryString(bytesCls.asAlgoTs())
     const newBytes = doSetBit(binaryString, indexParam, bit)
     return newBytes.asAlgoTs()

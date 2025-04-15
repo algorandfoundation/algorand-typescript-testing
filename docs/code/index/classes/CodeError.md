@@ -16,9 +16,9 @@ Raised when unsupported user code is encountered
 
 ## Constructors
 
-### new CodeError()
+### Constructor
 
-> **new CodeError**(`message`, `options`?): [`CodeError`](CodeError.md)
+> **new CodeError**(`message`, `options`?): `CodeError`
 
 Defined in: [src/errors.ts:41](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/errors.ts#L41)
 
@@ -34,7 +34,7 @@ Defined in: [src/errors.ts:41](https://github.com/algorandfoundation/algorand-ty
 
 #### Returns
 
-[`CodeError`](CodeError.md)
+`CodeError`
 
 #### Overrides
 

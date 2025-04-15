@@ -12,15 +12,19 @@ Represents a deferred application call.
 
 ## Type Parameters
 
-• **TParams** *extends* `unknown`[]
+### TParams
 
-• **TReturn**
+`TParams` *extends* `unknown`[]
+
+### TReturn
+
+`TReturn`
 
 ## Constructors
 
-### new DeferredAppCall()
+### Constructor
 
-> **new DeferredAppCall**\<`TParams`, `TReturn`\>(`appId`, `txns`, `method`, `abiMetadata`, `args`): [`DeferredAppCall`](DeferredAppCall.md)\<`TParams`, `TReturn`\>
+> **new DeferredAppCall**\<`TParams`, `TReturn`\>(`appId`, `txns`, `method`, `abiMetadata`, `args`): `DeferredAppCall`\<`TParams`, `TReturn`\>
 
 Defined in: [src/subcontexts/transaction-context.ts:60](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L60)
 
@@ -48,7 +52,7 @@ Defined in: [src/subcontexts/transaction-context.ts:60](https://github.com/algor
 
 #### Returns
 
-[`DeferredAppCall`](DeferredAppCall.md)\<`TParams`, `TReturn`\>
+`DeferredAppCall`\<`TParams`, `TReturn`\>
 
 ## Properties
 

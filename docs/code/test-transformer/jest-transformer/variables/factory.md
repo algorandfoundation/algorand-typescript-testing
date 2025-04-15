@@ -4,9 +4,9 @@
 
 [@algorandfoundation/algorand-typescript-testing](../../../README.md) / [test-transformer/jest-transformer](../README.md) / factory
 
-# Function: factory()
+# Variable: factory()
 
-> **factory**(`compilerInstance`): `TransformerFactory`\<`SourceFile`\>
+> `const` **factory**: (`compilerInstance`) => `TransformerFactory`\<`SourceFile`\>
 
 Defined in: [src/test-transformer/jest-transformer.ts:49](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/test-transformer/jest-transformer.ts#L49)
 

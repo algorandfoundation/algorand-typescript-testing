@@ -16,9 +16,9 @@ Raised when an assertion fails
 
 ## Constructors
 
-### new AssertError()
+### Constructor
 
-> **new AssertError**(`message`): [`AssertError`](AssertError.md)
+> **new AssertError**(`message`): `AssertError`
 
 Defined in: [src/errors.ts:23](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/errors.ts#L23)
 
@@ -30,11 +30,11 @@ Defined in: [src/errors.ts:23](https://github.com/algorandfoundation/algorand-ty
 
 #### Returns
 
-[`AssertError`](AssertError.md)
+`AssertError`
 
 #### Overrides
 
-[`AvmError`](AvmError.md).[`constructor`](AvmError.md#constructors)
+[`AvmError`](AvmError.md).[`constructor`](AvmError.md#constructor)
 
 ## Properties
 
@@ -58,7 +58,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Inherited from
 
-[`AvmError`](AvmError.md).[`message`](AvmError.md#message-1)
+[`AvmError`](AvmError.md).[`message`](AvmError.md#message)
 
 ***
 

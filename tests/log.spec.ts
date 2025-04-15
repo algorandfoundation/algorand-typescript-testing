@@ -15,7 +15,7 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../src/constants'
-import type { ApplicationTransaction } from '../src/impl/transactions'
+import type { ApplicationCallTransaction } from '../src/impl/transactions'
 import { asBigUint, asBigUintCls, asUint8Array } from '../src/util'
 import { PrimitiveOpsContract } from './artifacts/primitive-ops/contract.algo'
 import { getAvmResultLog } from './avm-invoker'
@@ -74,12 +74,12 @@ describe('log', async () => {
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: dummyApp })]).execute(() => {
       log(a, b, c, d, e, f, g, h, i, j, k, m, n)
     })
-    let lastTxn = ctx.txn.lastActive as ApplicationTransaction
+    let lastTxn = ctx.txn.lastActive as ApplicationCallTransaction
     expect(lastTxn.appLogs).toEqual(avmResult)
 
     const contract = ctx.contract.create(PrimitiveOpsContract)
     contract.verify_log(a, b, c, asBigUintCls(d).toBytes().asAlgoTs(), e, f, g, h, i, j, k.bytes, m.bytes, n.bytes)
-    lastTxn = ctx.txn.lastActive as ApplicationTransaction
+    lastTxn = ctx.txn.lastActive as ApplicationCallTransaction
     expect(lastTxn.appLogs).toEqual(avmResult)
   })
 })

@@ -182,10 +182,235 @@ To access the submitted inner transactions:
 
 These methods provide type validation and will raise an error if the requested transaction type doesn't match the actual type of the inner transaction.
 
+## Pre-compiled contracts
+
+If your contract needs to deploy other contracts then it's likely you will need access to the compiled approval and clear state programs. The `compile` method takes a contract class and returns the compiled byte code along with some basic schema information. You can use `ctx.setCompiledApp` method set up the mock result for `compile` call and `ApplicationSpy` for mocking subsequent calls to the compiled contract.
+
+```ts
+import { assert, compile, Contract, GlobalState, itxn, OnCompleteAction } from '@algorandfoundation/algorand-typescript'
+import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { abimethod, decodeArc4, encodeArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { afterEach, describe, it } from 'vitest'
+
+export class Hello extends Contract {
+  greeting = GlobalState({ initialValue: '' })
+
+  @abimethod({ name: 'helloCreate', onCreate: 'require' })
+  create(greeting: string) {
+    this.greeting.value = greeting
+  }
+
+  @abimethod({ allowActions: 'DeleteApplication' })
+  delete() {}
+
+  greet(name: string): string {
+    return `${this.greeting.value} ${name}`
+  }
+}
+
+export class HelloFactory extends Contract {
+  test_compile_contract() {
+    const compiled = compile(Hello)
+    const helloApp = itxn
+      .applicationCall({
+        appArgs: [methodSelector(Hello.prototype.create), encodeArc4('hello')],
+        approvalProgram: compiled.approvalProgram,
+        clearStateProgram: compiled.clearStateProgram,
+        globalNumBytes: 1,
+      })
+      .submit().createdApp
+
+    const txn = itxn
+      .applicationCall({
+        appArgs: [methodSelector(Hello.prototype.greet), encodeArc4('world')],
+        appId: helloApp,
+      })
+      .submit()
+    const result = decodeArc4<string>(txn.lastLog, 'log')
+
+    assert(result === 'hello world')
+
+    itxn
+      .applicationCall({
+        appId: helloApp,
+        appArgs: [methodSelector(Hello.prototype.delete)],
+        onCompletion: OnCompleteAction.DeleteApplication,
+      })
+      .submit()
+  }
+}
+
+describe('pre compiled app calls', () => {
+  const ctx = new TestExecutionContext()
+  afterEach(() => {
+    ctx.reset()
+  })
+
+  it('should be able to compile and call a precompiled app', () => {
+    // Arrange
+    const helloApp = ctx.any.application()
+    ctx.setCompiledApp(Hello, helloApp.id)
+
+    const spy = new ApplicationSpy(Hello)
+    spy.on.create((itxnContext) => {
+      itxnContext.createdApp = helloApp
+    })
+    spy.on.greet((itxnContext) => {
+      itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
+    })
+    ctx.addApplicationSpy(spy)
+
+    const contract = ctx.contract.create(HelloFactory)
+
+    // Act
+    contract.test_compile_contract()
+  })
+})
+```
+
+## Strongly typed contract to contract
+
+Assuming the contract you wish to compile extends the ARC4 `Contract` type, you can make use of `compileArc4` to produce a contract proxy object that makes it easy to invoke application methods with compile time type safety. You can use the same `ctx.setCompiledApp` method set up the mock result for `compile` call and `ApplicationSpy` for mocking subsequent calls to the compiled contract.
+
+```ts
+import { assert, Contract, GlobalState } from '@algorandfoundation/algorand-typescript'
+import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { abimethod, compileArc4, decodeArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { afterEach, describe, it } from 'vitest'
+
+export class Hello extends Contract {
+  greeting = GlobalState({ initialValue: '' })
+
+  @abimethod({ name: 'helloCreate', onCreate: 'require' })
+  create(greeting: string) {
+    this.greeting.value = greeting
+  }
+
+  @abimethod({ allowActions: 'DeleteApplication' })
+  delete() {}
+
+  greet(name: string): string {
+    return `${this.greeting.value} ${name}`
+  }
+}
+
+export class HelloFactoryTyped extends Contract {
+  test_compile_contract() {
+    const compiled = compileArc4(Hello)
+
+    const app = compiled.call.create({
+      args: ['hello'],
+    }).itxn.createdApp
+
+    const result = compiled.call.greet({
+      args: ['world'],
+      appId: app,
+    }).returnValue
+    assert(result === 'hello world')
+
+    compiled.call.delete({
+      appId: app,
+    })
+  }
+}
+
+describe('pre compiled typed app calls', () => {
+  const ctx = new TestExecutionContext()
+
+  afterEach(() => {
+    ctx.reset()
+  })
+
+  it('should be able to compile and call a precompiled app', () => {
+    // Arrange
+    const helloApp = ctx.any.application({})
+    ctx.setCompiledApp(Hello, helloApp.id)
+
+    const spy = new ApplicationSpy(Hello)
+    spy.on.create((itxnContext) => {
+      itxnContext.createdApp = helloApp
+    })
+    spy.on.greet((itxnContext) => {
+      itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
+    })
+    ctx.addApplicationSpy(spy)
+
+    const contract = ctx.contract.create(HelloFactoryTyped)
+
+    // Act
+    contract.test_compile_contract()
+  })
+})
+```
+
+## Strongly typed ABI calls
+
+If your use case does not require deploying another contract, and instead you are just calling methods then the `abiCall` method will allow you to do this in a strongly typed manner provided you have at bare minimum a compatible stub implementation of the target contract. You can use the same `ApplicationSpy` approach for mocking methods calls.
+
+```ts
+import type { Application } from '@algorandfoundation/algorand-typescript'
+import { assert, Contract, GlobalState } from '@algorandfoundation/algorand-typescript'
+import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { abiCall, abimethod, decodeArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { afterEach, describe, it } from 'vitest'
+
+export class Hello extends Contract {
+  greeting = GlobalState({ initialValue: '' })
+
+  @abimethod({ name: 'helloCreate', onCreate: 'require' })
+  create(greeting: string) {
+    this.greeting.value = greeting
+  }
+
+  @abimethod({ allowActions: 'DeleteApplication' })
+  delete() {}
+
+  greet(name: string): string {
+    return `${this.greeting.value} ${name}`
+  }
+}
+
+export class HelloFactoryTyped extends Contract {
+  test_compile_contract(app: Application) {
+    const result2 = abiCall(Hello.prototype.greet, {
+      appId: app,
+      args: ['abi'],
+    }).returnValue
+
+    assert(result2 === 'hello abi')
+  }
+}
+
+describe('pre compiled typed app calls', () => {
+  const ctx = new TestExecutionContext()
+
+  afterEach(() => {
+    ctx.reset()
+  })
+
+  it('should be able to compile and call a precompiled app', () => {
+    // Arrange
+    const helloApp = ctx.any.application({})
+
+    const spy = new ApplicationSpy(Hello)
+    spy.on.greet((itxnContext) => {
+      itxnContext.setReturnValue(`hello ${decodeArc4<string>(itxnContext.appArgs(1))}`)
+    })
+    ctx.addApplicationSpy(spy)
+
+    const contract = ctx.contract.create(HelloFactoryTyped)
+
+    // Act
+    contract.test_compile_contract(helloApp)
+  })
+})
+```
+
 ## References
 
 - [API](../api.md) for more details on the test context manager and inner transactions related methods that perform implicit inner transaction type validation.
 - [Examples](../examples.md) for more examples of smart contracts and associated tests that interact with inner transactions.
+- [ApplicationSpy](./application-spy.md) for detailed explanation on the usage of it
 
 ```ts
 // test cleanup
