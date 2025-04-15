@@ -26,7 +26,6 @@ export class Auction extends Contract {
 
   claimableAmount = LocalState<uint64>()
 
-  @abimethod({ allowActions: 'NoOp', onCreate: 'require' })
   public createApplication(): void {
     this.auctionEnd.value = 0
     this.previousBid.value = 0
@@ -82,7 +81,7 @@ export class Auction extends Contract {
   }
 
   @abimethod({ allowActions: 'OptIn' })
-  public optInToApplication(): void {}
+  public optInToApplication(): void { }
 
   public bid(payment: gtxn.PaymentTxn): void {
     /// Ensure auction hasn't ended

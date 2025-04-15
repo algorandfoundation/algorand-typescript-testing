@@ -1,5 +1,5 @@
 import type { Account, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { arc4, assert, BaseContract, Bytes, contract, Contract, Global, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { assert, BaseContract, Bytes, contract, Contract, Global, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, it } from 'vitest'
 import { lazyContext } from '../../src/context-helpers/internal-context'
@@ -39,8 +39,7 @@ class ContractARC4Create extends Contract {
     this.#stateTotals = Uint64()
   }
 
-  @arc4.abimethod({ onCreate: 'require' })
-  create(val: uint64): void {
+  createApplication(val: uint64): void {
     this.arg1 = val
     assert(Global.currentApplicationId.globalNumBytes === 4)
     assert(Global.currentApplicationId.globalNumUint === 5)
@@ -82,7 +81,7 @@ describe('arc4 contract creation', () => {
 
     const contract = ctx.contract.create(ContractARC4Create)
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: ctx.ledger.getApplicationForContract(contract), sender })]).execute(() => {
-      contract.create(arg1)
+      contract.createApplication(arg1)
       expect(contract.arg1).toEqual(arg1)
       expect(contract.creator).toEqual(sender)
     })
@@ -96,7 +95,7 @@ describe('arc4 contract creation', () => {
     const appData = lazyContext.getApplicationData(contract)
     expect(appData.isCreating).toBe(true)
 
-    contract.create(arg1)
+    contract.createApplication(arg1)
 
     expect(appData.isCreating).toBe(false)
     expect(contract.arg1).toEqual(arg1)

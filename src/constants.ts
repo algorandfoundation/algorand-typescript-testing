@@ -66,3 +66,13 @@ export enum OnApplicationComplete {
   UpdateApplicationOC = 4,
   DeleteApplicationOC = 5,
 }
+
+export const ConventionalRouting = {
+  methodNames: {
+    closeOutOfApplication: 'closeOutOfApplication',
+    createApplication: 'createApplication',
+    deleteApplication: 'deleteApplication',
+    optInToApplication: 'optInToApplication',
+    updateApplication: 'updateApplication',
+  },
+}
