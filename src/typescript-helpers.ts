@@ -3,6 +3,10 @@
 export type DeliberateAny = any
 export type AnyFunction = (...args: DeliberateAny[]) => DeliberateAny
 export type ConstructorFor<T, TArgs extends DeliberateAny[] = DeliberateAny[]> = new (...args: TArgs) => T
+export type InstanceMethod<TClass, TArgs extends DeliberateAny[] = DeliberateAny[], TReturn = DeliberateAny> = (
+  this: TClass,
+  ...args: TArgs
+) => TReturn
 export type Mutable<T> = {
   -readonly [P in keyof T]: T[P]
 }
@@ -43,3 +47,10 @@ export const nameOfType = (x: unknown) => {
   }
   return typeof x
 }
+
+export type Overloads<T> = T extends {
+  (...args: infer P1): infer R1
+  (...args: infer P2): infer R2
+}
+  ? ((...args: P1) => R1) | ((...args: P2) => R2)
+  : never

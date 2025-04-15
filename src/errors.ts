@@ -49,7 +49,7 @@ export class NotImplementedError extends Error {
   }
 }
 
-export function testInvariant(condition: unknown, message: string): asserts condition {
+export function invariant(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new InternalError(message)
   }

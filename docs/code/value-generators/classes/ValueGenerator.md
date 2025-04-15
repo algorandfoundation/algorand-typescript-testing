@@ -14,19 +14,19 @@ Defined in: [src/value-generators/index.ts:5](https://github.com/algorandfoundat
 
 ## Constructors
 
-### new ValueGenerator()
+### Constructor
 
-> **new ValueGenerator**(): [`ValueGenerator`](ValueGenerator.md)
+> **new ValueGenerator**(): `ValueGenerator`
 
 Defined in: [src/value-generators/index.ts:9](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/index.ts#L9)
 
 #### Returns
 
-[`ValueGenerator`](ValueGenerator.md)
+`ValueGenerator`
 
 #### Overrides
 
-[`AvmValueGenerator`](../avm/classes/AvmValueGenerator.md).[`constructor`](../avm/classes/AvmValueGenerator.md#constructors)
+[`AvmValueGenerator`](../avm/classes/AvmValueGenerator.md).[`constructor`](../avm/classes/AvmValueGenerator.md#constructor)
 
 ## Properties
 

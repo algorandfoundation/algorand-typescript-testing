@@ -9,7 +9,7 @@ export const getAccount = (acct: Account | StubUint64Compat): Account => {
   const acctId = asMaybeUint64Cls(acct)
   if (acctId !== undefined) {
     const activeTxn = lazyContext.activeGroup.activeTransaction
-    return (activeTxn as gtxn.ApplicationTxn).accounts(acctId.asAlgoTs())
+    return (activeTxn as gtxn.ApplicationCallTxn).accounts(acctId.asAlgoTs())
   }
   return acct as Account
 }

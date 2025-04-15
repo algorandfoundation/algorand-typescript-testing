@@ -10,19 +10,19 @@ Defined in: [src/value-generators/txn.ts:16](https://github.com/algorandfoundati
 
 ## Constructors
 
-### new TxnValueGenerator()
+### Constructor
 
-> **new TxnValueGenerator**(): [`TxnValueGenerator`](TxnValueGenerator.md)
+> **new TxnValueGenerator**(): `TxnValueGenerator`
 
 #### Returns
 
-[`TxnValueGenerator`](TxnValueGenerator.md)
+`TxnValueGenerator`
 
 ## Methods
 
 ### applicationCall()
 
-> **applicationCall**(`fields`?): `ApplicationTransaction`
+> **applicationCall**(`fields`?): `ApplicationCallTransaction`
 
 Defined in: [src/value-generators/txn.ts:22](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/txn.ts#L22)
 
@@ -32,13 +32,13 @@ Generates a random application call transaction with the specified fields.
 
 ##### fields?
 
-`Partial`\<`Omit`\<`ApplicationTransactionFields`, `"appId"`\> & `object`\>
+`Partial`\<`Omit`\<`ApplicationCallTransactionFields`, `"appId"`\> & `object`\>
 
 The fields for the application call transaction where `appId` value can be instance of Application or BaseContract.
 
 #### Returns
 
-`ApplicationTransaction`
+`ApplicationCallTransaction`
 
 - A random application call transaction.
 
