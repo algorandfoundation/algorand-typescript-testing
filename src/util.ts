@@ -42,12 +42,14 @@ export const asBytes = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).as
 
 export const asUint8Array = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).asUint8Array()
 
-export const asMaybeUint64Cls = (val: DeliberateAny) => {
+export const asMaybeUint64Cls = (val: DeliberateAny, throwsOverflow: boolean = true) => {
   try {
     return Uint64Cls.fromCompat(val)
   } catch (e) {
     if (e instanceof InternalError) {
       // swallow error and return undefined
+    } else if (!throwsOverflow && e instanceof AvmError && e.message.includes('overflow')) {
+      // swallow overflow error and return undefined
     } else {
       throw e
     }

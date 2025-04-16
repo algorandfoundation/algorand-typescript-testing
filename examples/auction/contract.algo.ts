@@ -81,7 +81,7 @@ export class Auction extends Contract {
   }
 
   @abimethod({ allowActions: 'OptIn' })
-  public optInToApplication(): void { }
+  public optInToApplication(): void {}
 
   public bid(payment: gtxn.PaymentTxn): void {
     /// Ensure auction hasn't ended

@@ -63,7 +63,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
 }
 
 export const toBytes = (val: unknown): bytes => {
-  const uint64Val = asMaybeUint64Cls(val)
+  const uint64Val = asMaybeUint64Cls(val, false)
   if (uint64Val !== undefined) {
     return uint64Val.toBytes().asAlgoTs()
   }
