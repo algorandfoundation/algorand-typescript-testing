@@ -1,6 +1,7 @@
 import type { OnCompleteActionStr } from '@algorandfoundation/algorand-typescript'
 import type { CreateOptions } from '@algorandfoundation/algorand-typescript/arc4'
 import js_sha512 from 'js-sha512'
+import { ConventionalRouting } from './constants'
 import type { TypeInfo } from './encoders'
 import { Arc4MethodConfigSymbol, Contract } from './impl/contract'
 import { getArc4TypeName as getArc4TypeNameForARC4Encoded } from './impl/encoded-types'
@@ -22,7 +23,12 @@ export const attachAbiMetadata = (contract: { new (): Contract }, methodName: st
     metadataStore.set(contract, {})
   }
   const metadatas: Record<string, AbiMetadata> = metadataStore.get(contract) as Record<string, AbiMetadata>
-  metadatas[methodName] = metadata
+  const conventionalRoutingConfig = getConventionalRoutingConfig(methodName)
+  metadatas[methodName] = {
+    ...metadata,
+    allowActions: metadata.allowActions ?? conventionalRoutingConfig?.allowActions,
+    onCreate: metadata.onCreate ?? conventionalRoutingConfig?.onCreate,
+  }
 }
 
 export const getContractAbiMetadata = <T extends Contract>(contract: T | { new (): T }): Record<string, AbiMetadata> => {
@@ -109,4 +115,37 @@ const getArc4TypeName = (t: TypeInfo): string => {
     return entry(t)
   }
   return entry
+}
+
+/**
+ * Get routing properties inferred by conventional naming
+ * @param methodName The name of the method
+ */
+const getConventionalRoutingConfig = (methodName: string): Pick<AbiMetadata, 'allowActions' | 'onCreate'> | undefined => {
+  switch (methodName) {
+    case ConventionalRouting.methodNames.closeOutOfApplication:
+      return {
+        allowActions: ['CloseOut'],
+        onCreate: 'disallow',
+      }
+    case ConventionalRouting.methodNames.createApplication:
+      return {
+        onCreate: 'require',
+      }
+    case ConventionalRouting.methodNames.deleteApplication:
+      return {
+        allowActions: ['DeleteApplication'],
+      }
+    case ConventionalRouting.methodNames.optInToApplication:
+      return {
+        allowActions: ['OptIn'],
+      }
+    case ConventionalRouting.methodNames.updateApplication:
+      return {
+        allowActions: ['UpdateApplication'],
+        onCreate: 'disallow',
+      }
+    default:
+      return undefined
+  }
 }

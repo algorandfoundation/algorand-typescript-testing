@@ -89,8 +89,15 @@ export function abiCall<TArgs extends DeliberateAny[], TReturn>(
   methodArgs: TypedApplicationCallFields<TArgs>,
   contract?: Contract | { new (): Contract },
 ): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
+  const abiMetadata = contract ? getContractMethodAbiMetadata(contract, method.name) : undefined
   const selector = methodSelector(method, contract)
-  const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields<TReturn>(methodArgs, selector)
+  const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields<TReturn>(
+    {
+      ...methodArgs,
+      onCompletion: methodArgs.onCompletion ?? abiMetadata?.allowActions?.map((action) => OnCompleteAction[action])[0],
+    },
+    selector,
+  )
   invokeCallback(itxnContext)
 
   return {

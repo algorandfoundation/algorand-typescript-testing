@@ -26,7 +26,6 @@ export class Auction extends Contract {
 
   claimableAmount = LocalState<uint64>()
 
-  @abimethod({ allowActions: 'NoOp', onCreate: 'require' })
   public createApplication(): void {
     this.auctionEnd.value = 0
     this.previousBid.value = 0

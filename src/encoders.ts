@@ -3,7 +3,7 @@ import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { InternalError } from './errors'
 import { BytesBackedCls, Uint64BackedCls } from './impl/base'
-import { arc4Encoders, encodeArc4Impl, getArc4Encoder } from './impl/encoded-types'
+import { arc4Encoders, encodeArc4Impl, getArc4Encoder, tryArc4EncodedLengthImpl } from './impl/encoded-types'
 import { BigUint, Uint64, type StubBytesCompat } from './impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from './impl/reference'
 import type { DeliberateAny } from './typescript-helpers'
@@ -63,7 +63,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
 }
 
 export const toBytes = (val: unknown): bytes => {
-  const uint64Val = asMaybeUint64Cls(val)
+  const uint64Val = asMaybeUint64Cls(val, false)
   if (uint64Val !== undefined) {
     return uint64Val.toBytes().asAlgoTs()
   }
@@ -85,7 +85,12 @@ export const toBytes = (val: unknown): bytes => {
     return val.bytes
   }
   if (Array.isArray(val) || typeof val === 'object') {
-    return encodeArc4Impl('', val)
+    return encodeArc4Impl(undefined, val)
   }
   throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
+}
+
+export const minLengthForType = (typeInfo: TypeInfo): number => {
+  const minArc4StaticLength = tryArc4EncodedLengthImpl(typeInfo)
+  return minArc4StaticLength ?? 0
 }

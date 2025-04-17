@@ -279,6 +279,9 @@ const getContractOptions = (contract: BaseContract): ContractOptionsParameter | 
 }
 
 const hasCreateMethods = (contract: Contract) => {
+  const createFn = Reflect.get(contract, 'createApplication')
+  if (createFn !== undefined && typeof createFn === 'function') return true
+
   const metadatas = getContractAbiMetadata(contract)
   return Object.values(metadatas).some((metadata) => (metadata.onCreate ?? 'disallow') !== 'disallow')
 }
