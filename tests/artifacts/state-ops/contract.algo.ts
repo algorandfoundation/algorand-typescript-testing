@@ -585,7 +585,7 @@ export class ItxnDemoContract extends BaseContract {
       createAppParams = itxn.applicationCall({
         approvalProgram: APPROVE,
         clearStateProgram: APPROVE,
-        appArgs: [Bytes('3'), '4', Bytes('5')],
+        appArgs: [Bytes('3'), Bytes('4'), Bytes('5')],
         note: 'no args param set',
       })
     }
