@@ -7,6 +7,9 @@ import type { StubBytesCompat, Uint64Cls } from './primitives'
 import { BytesCls } from './primitives'
 
 export const matchImpl: typeof match = (subject, test): boolean => {
+  if (Object.hasOwn(test, 'not')) {
+    return !matchImpl(subject, (test as DeliberateAny).not)
+  }
   const bigIntSubjectValue = getBigIntValue(subject)
   if (bigIntSubjectValue !== undefined) {
     const bigIntTestValue = getBigIntValue(test)
@@ -31,9 +34,9 @@ export const matchImpl: typeof match = (subject, test): boolean => {
   } else if (subject instanceof BytesBackedCls) {
     return subject.bytes.equals((test as unknown as BytesBackedCls).bytes)
   } else if (subject instanceof Uint64BackedCls) {
-    return (
-      getBigIntValue(subject.uint64 as unknown as Uint64Cls) ===
-      getBigIntValue((test as unknown as Uint64BackedCls).uint64 as unknown as Uint64Cls)
+    return matchImpl(
+      getBigIntValue(subject.uint64 as unknown as Uint64Cls),
+      getBigIntValue((test as unknown as Uint64BackedCls).uint64 as unknown as Uint64Cls),
     )
   } else if (test instanceof ARC4Encoded) {
     return (subject as unknown as ARC4Encoded).bytes.equals(test.bytes)
