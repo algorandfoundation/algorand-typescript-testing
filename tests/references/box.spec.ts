@@ -1,7 +1,7 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { BigUint, Box, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { DynamicBytes } from '@algorandfoundation/algorand-typescript/arc4'
+import type { DynamicBytes, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   ARC4Encoded,
   Bool,
@@ -266,6 +266,21 @@ describe('Box', () => {
       op.Box.put(key, toBytes(copy))
       expect(box.value.length).toEqual(3)
       expect(box.value.at(-1).native).toEqual(400)
+    })
+  })
+
+  test('should be able to replace specific bytes values using ref', () => {
+    ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+      const box = Box<StaticArray<UintN16, 4>>({ key: 'a' })
+      box.create()
+
+      const boxRef1 = box.ref
+      boxRef1.replace(1, new UintN8(123).bytes)
+      expect(box.value[0].native).toEqual(123)
+
+      const boxRef2 = box.ref
+      boxRef2.replace(2, new UintN8(255).bytes)
+      expect(box.value[1].native).toEqual(65280)
     })
   })
 

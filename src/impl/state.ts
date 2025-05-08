@@ -236,6 +236,10 @@ export class BoxCls<TValue> {
     return lazyContext.ledger.getBox(this.#app, this.key).length
   }
 
+  get ref(): BoxRefCls {
+    return new BoxRefCls(this.key)
+  }
+
   get(options: { default: TValue }): TValue {
     const [value, exists] = this.maybe()
     return exists ? value : options.default
