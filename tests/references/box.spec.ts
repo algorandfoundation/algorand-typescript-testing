@@ -1,7 +1,7 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { BigUint, Box, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { DynamicBytes } from '@algorandfoundation/algorand-typescript/arc4'
+import type { DynamicBytes, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   ARC4Encoded,
   Bool,
@@ -24,7 +24,7 @@ import { BoxContract } from '../artifacts/box-contract/contract.algo'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
 
-class MyStruct extends Struct<{ a: Str; b: DynamicBytes; c: Bool }> {}
+class MyStruct extends Struct<{ a: Str; b: DynamicBytes; c: Bool }> { }
 
 describe('Box', () => {
   const ctx = new TestExecutionContext()
@@ -269,6 +269,21 @@ describe('Box', () => {
     })
   })
 
+  test('should be able to replace specific bytes values using ref', () => {
+    ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+      const box = Box<StaticArray<UintN16, 4>>({ key: 'a' })
+      box.create()
+
+      const boxRef1 = box.ref
+      boxRef1.replace(1, new UintN8(123).bytes)
+      expect(box.value[0].native).toEqual(123)
+
+      const boxRef2 = box.ref
+      boxRef2.replace(2, new UintN8(255).bytes)
+      expect(box.value[1].native).toEqual(65280)
+    })
+  })
+
   describe('Box.create', () => {
     it('throw errors if size is not provided for dynamic value type', () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
@@ -322,18 +337,18 @@ describe('Box', () => {
         boxStaticArray.create({ size: 41 })
         expect(
           () =>
-            (boxStaticArray.value = new StaticArray(
-              new UintN32(100),
-              new UintN32(200),
-              new UintN32(300),
-              new UintN32(400),
-              new UintN32(500),
-              new UintN32(600),
-              new UintN32(700),
-              new UintN32(800),
-              new UintN32(900),
-              new UintN32(1000),
-            )),
+          (boxStaticArray.value = new StaticArray(
+            new UintN32(100),
+            new UintN32(200),
+            new UintN32(300),
+            new UintN32(400),
+            new UintN32(500),
+            new UintN32(600),
+            new UintN32(700),
+            new UintN32(800),
+            new UintN32(900),
+            new UintN32(1000),
+          )),
         ).toThrow(errorMessage)
 
         boxTuple.create({ size: 4 })
