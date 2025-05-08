@@ -782,7 +782,7 @@ export class StructImpl<T extends StructConstraint> extends (Struct<StructConstr
     return new Proxy(this, {
       get(target, prop) {
         const originalValue = Reflect.get(target, prop)
-        if (originalValue === undefined && target.uint8ArrayValue && Object.keys(target.genericArgs).includes(prop.toString())) {
+        if (originalValue === undefined && target.uint8ArrayValue?.length && Object.keys(target.genericArgs).includes(prop.toString())) {
           return target.items[prop.toString()]
         }
         return originalValue
@@ -1268,6 +1268,7 @@ export const arc4Encoders: Record<string, fromBytes<DeliberateAny>> = {
   'Struct(<.*>)?': StructImpl.fromBytesImpl,
   DynamicBytes: DynamicBytesImpl.fromBytesImpl,
   'StaticBytes<.*>': StaticBytesImpl.fromBytesImpl,
+  object: StructImpl.fromBytesImpl,
 }
 export const getArc4Encoder = <T>(typeInfo: TypeInfo, encoders?: Record<string, fromBytes<DeliberateAny>>): fromBytes<T> => {
   const encoder = Object.entries(encoders ?? arc4Encoders).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]
