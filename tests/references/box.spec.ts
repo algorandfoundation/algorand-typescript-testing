@@ -1,6 +1,7 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { BigUint, Box, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import type { DynamicBytes } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   ARC4Encoded,
   Bool,
@@ -8,6 +9,7 @@ import {
   interpretAsArc4,
   StaticArray,
   Str,
+  Struct,
   Tuple,
   UintN32,
   UintN64,
@@ -21,6 +23,8 @@ import { asBytes } from '../../src/util'
 import { BoxContract } from '../artifacts/box-contract/contract.algo'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
+
+class MyStruct extends Struct<{ a: Str; b: DynamicBytes; c: Bool }> {}
 
 describe('Box', () => {
   const ctx = new TestExecutionContext()
@@ -99,6 +103,28 @@ describe('Box', () => {
       withBoxContext: (test: (boxMap: Box<DynamicArray<UintN64>>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = Box<DynamicArray<UintN64>>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: ['hello', Bytes('world'), true] as const,
+      newValue: ['world', Bytes('hello'), false] as const,
+      emptyValue: interpretAsArc4<Tuple<[Str, DynamicBytes, Bool]>>(Bytes('')),
+      withBoxContext: (test: (boxMap: Box<readonly [string, bytes, boolean]>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<readonly [string, bytes, boolean]>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: { a: 'hello', b: Bytes('world'), c: true },
+      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      emptyValue: interpretAsArc4<MyStruct>(Bytes('')),
+      withBoxContext: (test: (boxMap: Box<{ a: string; b: bytes; c: boolean }>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<{ a: string; b: bytes; c: boolean }>({ key })
           test(boxMap)
         })
       },
@@ -211,6 +237,8 @@ describe('Box', () => {
       expect(opContent).toEqual(newBytesValue)
       if (newValue instanceof ARC4Encoded) {
         expect((box as DeliberateAny).get(key).bytes).toEqual(newValue.bytes)
+      } else if (box.value instanceof ARC4Encoded) {
+        expect(box.value.bytes).toEqual(newBytesValue)
       } else {
         expect(box.value).toEqual(newValue)
       }

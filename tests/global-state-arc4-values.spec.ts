@@ -1,4 +1,4 @@
-import { Bytes } from '@algorandfoundation/algorand-typescript'
+import { Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type {
   AddressImpl,
@@ -104,6 +104,22 @@ describe('ARC4 AppGlobal values', async () => {
         const arc4Value = value as DynamicBytesImpl
         expect(arc4Value).toBeInstanceOf(DynamicBytes)
         expect(arc4Value.native).toEqual(expectedValue)
+      },
+    },
+    {
+      nativeValue: [21, asUint8Array(Bytes('Hello')), true],
+      abiValue: [Uint64(21), Bytes('Hello'), true],
+      methodName: `get_implicit_key_tuple`,
+      assert: (value: DeliberateAny, expectedValue: DeliberateAny) => {
+        expect(value).toEqual(expectedValue)
+      },
+    },
+    {
+      nativeValue: { a: 12, b: asUint8Array(Bytes('world')), c: true },
+      abiValue: { a: 12, b: Bytes('world'), c: true },
+      methodName: `get_implicit_key_obj`,
+      assert: (value: DeliberateAny, expectedValue: DeliberateAny) => {
+        expect(value).toEqual(expectedValue)
       },
     },
   ])

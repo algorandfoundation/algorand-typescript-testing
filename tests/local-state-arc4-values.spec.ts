@@ -93,6 +93,18 @@ describe('ARC4 AppLocal values', async () => {
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
+    {
+      methodName: `get_implicit_key_tuple`,
+      assert: (value: DeliberateAny, expectedValue: DeliberateAny) => {
+        expect(value).toEqual(expectedValue)
+      },
+    },
+    {
+      methodName: `get_implicit_key_obj`,
+      assert: (value: DeliberateAny, expectedValue: DeliberateAny) => {
+        expect(value).toEqual(expectedValue)
+      },
+    },
   ])
 
   test.for(testData)('should be able to get arc4 state values', async (data, { appClientLocalStateContract: appClient, testAccount }) => {

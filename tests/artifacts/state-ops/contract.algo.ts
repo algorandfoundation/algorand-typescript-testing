@@ -605,6 +605,8 @@ export class GlobalStateContract extends arc4.Contract {
   implicitKeyArc4Address = GlobalState({ initialValue: new Address(Global.creatorAddress) })
   implicitKeyArc4UintN128 = GlobalState({ initialValue: new UintN128(2n ** 100n) })
   implicitKeyArc4DynamicBytes = GlobalState({ initialValue: new DynamicBytes('dynamic bytes') })
+  implicitKeyTuple = GlobalState<[uint64, bytes, boolean]>({ initialValue: [Uint64(42), Bytes('Hello'), false] })
+  implicitKeyObj = GlobalState<{ a: uint64; b: bytes; c: boolean }>({ initialValue: { a: 42, b: Bytes('World'), c: true } })
 
   // Explicit key state variables
   arc4UintN64 = GlobalState({ initialValue: new UintN64(1337), key: 'explicit_key_arc4_uintn64' })
@@ -649,6 +651,16 @@ export class GlobalStateContract extends arc4.Contract {
   @arc4.abimethod()
   get_implicit_key_arc4_dynamic_bytes(): DynamicBytes {
     return this.implicitKeyArc4DynamicBytes.value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_tuple(): [uint64, bytes, boolean] {
+    return this.implicitKeyTuple.value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_obj(): { a: uint64; b: bytes; c: boolean } {
+    return this.implicitKeyObj.value
   }
 
   // Getter methods for explicit key state variables
@@ -723,6 +735,16 @@ export class GlobalStateContract extends arc4.Contract {
     this.implicitKeyArc4DynamicBytes.value = value
   }
 
+  @arc4.abimethod()
+  set_implicit_key_tuple(value: [uint64, bytes, boolean]) {
+    this.implicitKeyTuple.value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_obj(value: { a: uint64; b: bytes; c: boolean }) {
+    this.implicitKeyObj.value = value
+  }
+
   // Setter methods for explicit key state variables
   @arc4.abimethod()
   set_arc4_uintn64(value: UintN64) {
@@ -769,6 +791,8 @@ export class LocalStateContract extends arc4.Contract {
   implicitKeyArc4Address = LocalState<Address>()
   implicitKeyArc4UintN128 = LocalState<UintN128>()
   implicitKeyArc4DynamicBytes = LocalState<DynamicBytes>()
+  implicitKeyTuple = LocalState<[uint64, bytes, boolean]>()
+  implicitKeyObj = LocalState<{ a: uint64; b: bytes; c: boolean }>()
 
   // Explicit key state variables
   arc4UintN64 = LocalState<UintN64>({ key: 'explicit_key_arc4_uintn64' })
@@ -788,6 +812,8 @@ export class LocalStateContract extends arc4.Contract {
     this.implicitKeyArc4Address(Global.creatorAddress).value = new Address(Global.creatorAddress)
     this.implicitKeyArc4UintN128(Global.creatorAddress).value = new UintN128(2n ** 100n)
     this.implicitKeyArc4DynamicBytes(Global.creatorAddress).value = new DynamicBytes('dynamic bytes')
+    this.implicitKeyTuple(Global.creatorAddress).value = [42, Bytes('dummy_bytes'), true]
+    this.implicitKeyObj(Global.creatorAddress).value = { a: Uint64(42), b: Bytes('dummy_bytes'), c: true }
 
     this.arc4UintN64(Global.creatorAddress).value = new UintN64(1337)
     this.arc4Str(Global.creatorAddress).value = new Str('Hello')
@@ -832,6 +858,16 @@ export class LocalStateContract extends arc4.Contract {
   @arc4.abimethod()
   get_implicit_key_arc4_dynamic_bytes(a: Account): DynamicBytes {
     return this.implicitKeyArc4DynamicBytes(a).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_tuple(a: Account): [uint64, bytes, boolean] {
+    return this.implicitKeyTuple(a).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_obj(a: Account): { a: uint64; b: bytes; c: boolean } {
+    return this.implicitKeyObj(a).value
   }
 
   // Getter methods for explicit key state variables

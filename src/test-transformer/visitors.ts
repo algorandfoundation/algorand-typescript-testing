@@ -407,6 +407,12 @@ const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
     )
   } else if (type instanceof ptypes.ARC4TupleType || type instanceof ptypes.TuplePType) {
     genericArgs.push(...type.items.map(getGenericTypeInfo))
+  } else if (type instanceof ptypes.ObjectPType) {
+    genericArgs = Object.fromEntries(
+      Object.entries(type.properties)
+        .map(([key, value]) => [key, getGenericTypeInfo(value)])
+        .filter((x) => !!x),
+    )
   }
 
   const result: TypeInfo = { name: typeName }
