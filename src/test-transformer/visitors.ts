@@ -427,14 +427,29 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
   const identityExpression = ts.isPropertyAccessExpression(node.expression)
     ? (node.expression as ts.PropertyAccessExpression).name
     : (node.expression as ts.Identifier)
-  const functionSymbol = helper.tryGetSymbol(identityExpression)
-  if (functionSymbol) {
-    const sourceFileName = functionSymbol.valueDeclaration?.getSourceFile().fileName
+  const functionName = tryGetAlgoTsSymbolName(identityExpression, helper)
+  if (functionName === undefined) return undefined
+  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'arc4EncodedLength', 'abiCall']
+
+  if (stubbedFunctionNames.includes(functionName)) {
+    return functionName
+  }
+
+  if (['begin', 'next'].includes(functionName) && ts.isPropertyAccessExpression(node.expression)) {
+    const objectExpression = (node.expression as ts.PropertyAccessExpression).expression
+    const objectName = tryGetAlgoTsSymbolName(objectExpression, helper)
+    if (objectName === 'itxnCompose') return functionName
+  }
+  return undefined
+}
+
+const tryGetAlgoTsSymbolName = (node: ts.Node, helper: VisitorHelper): string | undefined => {
+  const s = helper.tryGetSymbol(node)
+  if (s) {
+    const sourceFileName = s.valueDeclaration?.getSourceFile().fileName
     if (sourceFileName && !algotsModulePaths.some((s) => sourceFileName.includes(s))) return undefined
   }
-  const functionName = functionSymbol?.getName() ?? identityExpression.text
-  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'arc4EncodedLength', 'abiCall']
-  return stubbedFunctionNames.includes(functionName) ? functionName : undefined
+  return s?.getName() ?? (ts.isMemberName(node) ? node.text : node.getText())
 }
 
 const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['decodeArc4'].includes(functionName ?? '')
@@ -442,4 +457,4 @@ const isCallingEncodeArc4 = (functionName: string | undefined): boolean => ['enc
 const isCallingArc4EncodedLength = (functionName: string | undefined): boolean => 'arc4EncodedLength' === (functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
-const isCallingAbiCall = (functionName: string | undefined): boolean => 'abiCall' === (functionName ?? '')
+const isCallingAbiCall = (functionName: string | undefined): boolean => ['abiCall', 'begin', 'next'].includes(functionName ?? '')
