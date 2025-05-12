@@ -1,8 +1,8 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { BigUint, BoxMap, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { Bool, DynamicBytes, Tuple } from '@algorandfoundation/algorand-typescript/arc4'
-import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, Struct, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+import type { Bool, DynamicBytes, StaticArray, Tuple, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
+import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, Struct, UintN64, UintN8 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { MAX_UINT64 } from '../../src/constants'
 import { toBytes } from '../../src/encoders'
@@ -257,6 +257,38 @@ describe('BoxMap', () => {
       op.Box.put(fullKey, toBytes(copy))
       expect(boxMap(key).value.length).toEqual(3)
       expect(boxMap(key).value.at(-1).native).toEqual(400)
+    })
+  })
+
+  test('should be able to replace specific bytes values using ref', () => {
+    ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+      const boxMap = BoxMap<uint64, StaticArray<UintN16, 4>>({ keyPrefix: 'a' })
+
+      const box1 = boxMap(1)
+      box1.create()
+
+      const boxRefA = box1.ref
+      boxRefA.replace(1, new UintN8(123).bytes)
+      expect(box1.value[0].native).toEqual(123)
+      expect(boxMap(1).value[0].native).toEqual(123)
+
+      const boxRefB = box1.ref
+      boxRefB.replace(2, new UintN8(255).bytes)
+      expect(box1.value[1].native).toEqual(65280)
+      expect(boxMap(1).value[1].native).toEqual(65280)
+
+      const box2 = boxMap(2)
+      box2.create()
+
+      const boxRefC = box2.ref
+      boxRefC.replace(1, new UintN8(223).bytes)
+      expect(box2.value[0].native).toEqual(223)
+      expect(boxMap(2).value[0].native).toEqual(223)
+
+      const boxRefD = box2.ref
+      boxRefD.replace(3, new UintN8(255).bytes)
+      expect(box2.value[1].native).toEqual(255)
+      expect(boxMap(2).value[1].native).toEqual(255)
     })
   })
 })
