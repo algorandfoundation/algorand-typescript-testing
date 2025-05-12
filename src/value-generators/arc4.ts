@@ -12,7 +12,7 @@ export class Arc4ValueGenerator {
   address(): arc4.Address {
     const source = new AvmValueGenerator().account()
     const result = new AddressImpl(
-      { name: 'StaticArray', genericArgs: { elementType: { name: 'Byte', genericArgs: [{ name: '8' }] }, size: { name: '32' } } },
+      { name: 'Address', genericArgs: { elementType: { name: 'Byte', genericArgs: [{ name: '8' }] }, size: { name: '32' } } },
       source,
     )
     return result

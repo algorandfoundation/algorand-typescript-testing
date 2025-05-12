@@ -12,7 +12,7 @@ import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError, invariant } from '../errors'
 import { extractArraysFromArgs } from '../subcontexts/contract-context'
 import type { DeliberateAny } from '../typescript-helpers'
-import { asBytes, asNumber, asUint8Array } from '../util'
+import { asBytes, asNumber, asUint64, asUint8Array } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
 import { encodeArc4Impl } from './encoded-types'
@@ -247,16 +247,27 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
     return this.#fields.type === TransactionType.ApplicationCall
   }
 
-  submit(): TTransaction {
+  createInnerTxns(): TTransaction[] {
     let itxnContext: ApplicationCallInnerTxnContext | undefined
-
     if (this.isApplicationCall()) {
       itxnContext = ApplicationCallInnerTxnContext.createFromFields(this.#fields)
-      lazyContext.value.notifyApplicationSpies(itxnContext)
     }
-    const innerTxn = (itxnContext ?? createInnerTxn<InnerTxnFields>(this.#fields)) as unknown as TTransaction
-    lazyContext.txn.activeGroup.addInnerTransactionGroup(innerTxn)
-    return innerTxn
+    const innerTxns = [
+      ...(itxnContext?.itxns ?? []),
+      itxnContext ?? createInnerTxn<InnerTxnFields>(this.#fields),
+    ] as unknown as TTransaction[]
+    return innerTxns
+  }
+
+  submit(): TTransaction {
+    const innerTxns = this.createInnerTxns()
+    innerTxns.forEach((itxn, index) => Object.assign(itxn, { groupIndex: asUint64(index) }))
+    const lastInnerTxn = innerTxns.at(-1)
+    if (lastInnerTxn instanceof ApplicationCallInnerTxnContext) {
+      lazyContext.value.notifyApplicationSpies(lastInnerTxn)
+    }
+    lazyContext.txn.activeGroup.addInnerTransactionGroup(...innerTxns)
+    return lastInnerTxn as TTransaction
   }
 
   set(p: Partial<TFields>) {

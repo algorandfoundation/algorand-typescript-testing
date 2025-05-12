@@ -37,6 +37,7 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | ensureBudget                 | Emulated            |
 | err                          | Native              |
 | interpretAsArc4              | Native              |
+| itxnCompose                  | Emulated            |
 | log                          | Emulated            |
 | logicSig                     | Emulated            |
 | logicsig                     | Emulated            |
