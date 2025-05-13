@@ -124,6 +124,18 @@ describe('BoxMap', () => {
         })
       },
     },
+    {
+      key: { x: Uint64(21), y: Uint64(42) },
+      value: { a: 'hello', b: Bytes('world'), c: true } as unknown as MyStruct,
+      newValue: { a: 'world', b: Bytes('hello'), c: false } as unknown as MyStruct,
+      emptyValue: interpretAsArc4<MyStruct>(Bytes('')),
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, MyStruct>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, MyStruct>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
   ]
 
   afterEach(() => {
