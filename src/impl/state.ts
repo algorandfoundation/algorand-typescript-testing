@@ -17,7 +17,7 @@ import { lazyContext } from '../context-helpers/internal-context'
 import type { TypeInfo } from '../encoders'
 import { getEncoder, minLengthForType, toBytes } from '../encoders'
 import { AssertError, CodeError, InternalError } from '../errors'
-import { getGenericTypeInfo, tryArc4EncodedLengthImpl } from '../runtime-helpers'
+import { getGenericTypeInfo } from '../runtime-helpers'
 import { asBytes, asBytesCls, asNumber, asUint8Array, conactUint8Arrays } from '../util'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 import { Bytes, Uint64, Uint64Cls } from './primitives'
@@ -162,7 +162,7 @@ export class BoxCls<TValue> {
 
   create(options?: { size?: StubUint64Compat }): boolean {
     const optionSize = options?.size !== undefined ? asNumber(options.size) : undefined
-    const valueTypeSize = tryArc4EncodedLengthImpl(this.valueType)
+    const valueTypeSize = minLengthForType(this.valueType)
     if (valueTypeSize === undefined && optionSize === undefined) {
       throw new InternalError(`${this.valueType.name} does not have a fixed byte size. Please specify a size argument`)
     }
@@ -176,11 +176,7 @@ export class BoxCls<TValue> {
         )
       }
     }
-    lazyContext.ledger.setBox(
-      this.#app,
-      this.key,
-      new Uint8Array(Math.max(asNumber(options?.size ?? 0), this.valueType ? minLengthForType(this.valueType) : 0)),
-    )
+    lazyContext.ledger.setBox(this.#app, this.key, new Uint8Array(Math.max(asNumber(options?.size ?? 0), valueTypeSize ?? 0)))
     return true
   }
 
@@ -198,7 +194,7 @@ export class BoxCls<TValue> {
     return materialised
   }
   set value(v: TValue) {
-    const isStaticValueType = tryArc4EncodedLengthImpl(this.valueType) !== undefined
+    const isStaticValueType = minLengthForType(this.valueType) !== undefined
     const newValueBytes = asUint8Array(toBytes(v))
     if (isStaticValueType && this.exists) {
       const originalValueBytes = lazyContext.ledger.getBox(this.#app, this.key)
