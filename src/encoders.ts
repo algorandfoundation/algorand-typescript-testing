@@ -1,9 +1,9 @@
 import type { biguint, bytes, OnCompleteAction, TransactionType, uint64 } from '@algorandfoundation/algorand-typescript'
 import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { InternalError } from './errors'
+import { CodeError, InternalError } from './errors'
 import { BytesBackedCls, Uint64BackedCls } from './impl/base'
-import { arc4Encoders, encodeArc4Impl, getArc4Encoder, tryArc4EncodedLengthImpl } from './impl/encoded-types'
+import { arc4Encoders, encodeArc4Impl, getArc4Encoder, getMaxLengthOfStaticContentType } from './impl/encoded-types'
 import { BigUint, Uint64, type StubBytesCompat } from './impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from './impl/reference'
 import type { DeliberateAny } from './typescript-helpers'
@@ -90,7 +90,13 @@ export const toBytes = (val: unknown): bytes => {
   throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
 }
 
-export const minLengthForType = (typeInfo: TypeInfo): number => {
-  const minArc4StaticLength = tryArc4EncodedLengthImpl(typeInfo)
-  return minArc4StaticLength ?? 0
+export const minLengthForType = (typeInfo: TypeInfo): number | undefined => {
+  try {
+    return getMaxLengthOfStaticContentType(typeInfo, false)
+  } catch (e) {
+    if (e instanceof CodeError && e.message.startsWith('unsupported type')) {
+      return undefined
+    }
+    throw e
+  }
 }

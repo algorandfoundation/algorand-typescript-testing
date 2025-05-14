@@ -1103,14 +1103,14 @@ const findBoolTypes = (values: TypeInfo[], index: number, delta: number): number
   return until
 }
 
-const getMaxLengthOfStaticContentType = (type: TypeInfo): number => {
+export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: boolean = true): number => {
   switch (trimGenericTypeName(type.name)) {
     case 'uint64':
       return UINT64_SIZE / BITS_IN_BYTE
     case 'biguint':
       return UINT512_SIZE / BITS_IN_BYTE
     case 'boolean':
-      return 8
+      return asArc4Encoded ? 1 : 8
     case 'Bool':
       return 1
     case 'Address':
@@ -1409,17 +1409,5 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
 
 export const arc4EncodedLengthImpl = (typeInfoString: string): uint64 => {
   const typeInfo = JSON.parse(typeInfoString)
-  return getMaxLengthOfStaticContentType(typeInfo)
-}
-
-export const tryArc4EncodedLengthImpl = (typeInfoString: string | TypeInfo): uint64 | undefined => {
-  const typeInfo = typeof typeInfoString === 'string' ? JSON.parse(typeInfoString) : typeInfoString
-  try {
-    return getMaxLengthOfStaticContentType(typeInfo)
-  } catch (e) {
-    if (e instanceof CodeError && e.message.startsWith('unsupported type')) {
-      return undefined
-    }
-    throw e
-  }
+  return getMaxLengthOfStaticContentType(typeInfo, true)
 }

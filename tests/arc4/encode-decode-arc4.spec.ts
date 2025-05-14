@@ -225,12 +225,16 @@ describe('arc4EncodedLength', () => {
     expect(arc4EncodedLength<uint64>()).toEqual(8)
     expect(arc4EncodedLength<biguint>()).toEqual(64)
     expect(arc4EncodedLength<Bool>()).toEqual(1)
-    expect(arc4EncodedLength<boolean>()).toEqual(8)
+    expect(arc4EncodedLength<boolean>()).toEqual(1)
     expect(arc4EncodedLength<UintN<512>>()).toEqual(64)
     expect(arc4EncodedLength<[uint64, uint64, boolean]>()).toEqual(17)
     expect(arc4EncodedLength<[uint64, uint64, boolean, boolean]>()).toEqual(17)
     expect(arc4EncodedLength<Tuple<[StaticArray<Bool, 10>, Bool]>>()).toEqual(3)
     expect(arc4EncodedLength<StaticStruct>()).toEqual(395)
+    expect(arc4EncodedLength<[StaticArray<Bool, 10>, boolean, boolean]>()).toEqual(3)
+    expect(
+      arc4EncodedLength<[[boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean], boolean, boolean]>(),
+    ).toEqual(3)
   })
 })
 
