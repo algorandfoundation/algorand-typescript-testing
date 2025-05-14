@@ -45,3 +45,5 @@ export const itxn = {
   assetFreeze,
   applicationCall,
 }
+
+export { itxnCompose } from '../impl/itxn-compose'

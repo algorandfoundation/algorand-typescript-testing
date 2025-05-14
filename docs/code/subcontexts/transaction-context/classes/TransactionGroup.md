@@ -196,7 +196,7 @@ If there is already an inner transaction group being constructed or the active t
 
 > **getApplicationCallTransaction**(`index`?): `ApplicationCallTransaction`
 
-Defined in: [src/subcontexts/transaction-context.ts:394](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L394)
+Defined in: [src/subcontexts/transaction-context.ts:405](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L405)
 
 Gets an application transaction by index.
 
@@ -220,7 +220,7 @@ The application transaction.
 
 > **getAssetConfigTransaction**(`index`?): `AssetConfigTransaction`
 
-Defined in: [src/subcontexts/transaction-context.ts:403](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L403)
+Defined in: [src/subcontexts/transaction-context.ts:414](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L414)
 
 Gets an asset configuration transaction by index.
 
@@ -244,7 +244,7 @@ The asset configuration transaction.
 
 > **getAssetFreezeTransaction**(`index`?): `AssetFreezeTransaction`
 
-Defined in: [src/subcontexts/transaction-context.ts:421](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L421)
+Defined in: [src/subcontexts/transaction-context.ts:432](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L432)
 
 Gets an asset freeze transaction by index.
 
@@ -268,7 +268,7 @@ The asset freeze transaction.
 
 > **getAssetTransferTransaction**(`index`?): `AssetTransferTransaction`
 
-Defined in: [src/subcontexts/transaction-context.ts:412](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L412)
+Defined in: [src/subcontexts/transaction-context.ts:423](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L423)
 
 Gets an asset transfer transaction by index.
 
@@ -292,7 +292,7 @@ The asset transfer transaction.
 
 > **getItxnGroup**(`index`?): [`ItxnGroup`](ItxnGroup.md)
 
-Defined in: [src/subcontexts/transaction-context.ts:376](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L376)
+Defined in: [src/subcontexts/transaction-context.ts:387](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L387)
 
 Gets an inner transaction group by index.
 
@@ -320,7 +320,7 @@ If the index is invalid or there are no previous inner transactions.
 
 > **getKeyRegistrationTransaction**(`index`?): `KeyRegistrationTransaction`
 
-Defined in: [src/subcontexts/transaction-context.ts:430](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L430)
+Defined in: [src/subcontexts/transaction-context.ts:441](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L441)
 
 Gets a key registration transaction by index.
 
@@ -344,7 +344,7 @@ The key registration transaction.
 
 > **getPaymentTransaction**(`index`?): `PaymentTransaction`
 
-Defined in: [src/subcontexts/transaction-context.ts:439](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L439)
+Defined in: [src/subcontexts/transaction-context.ts:450](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L450)
 
 Gets a payment transaction by index.
 
@@ -408,7 +408,7 @@ The scratch space.
 
 > **getTransaction**(`index`?): `Transaction`
 
-Defined in: [src/subcontexts/transaction-context.ts:448](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L448)
+Defined in: [src/subcontexts/transaction-context.ts:459](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L459)
 
 Gets a transaction by index.
 
@@ -432,7 +432,7 @@ The transaction.
 
 > **lastItxnGroup**(): [`ItxnGroup`](ItxnGroup.md)
 
-Defined in: [src/subcontexts/transaction-context.ts:366](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L366)
+Defined in: [src/subcontexts/transaction-context.ts:377](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L377)
 
 Gets the last inner transaction group.
 

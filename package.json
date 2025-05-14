@@ -23,7 +23,7 @@
     "test:ci": "vitest run --coverage --reporter junit --outputFile test-results.xml",
     "script:documentation": "typedoc",
     "script:build-examples": "rollup --config examples/rollup.config.ts --configPlugin typescript",
-    "script:compile-examples": "puya-ts --out-dir data ./examples/*/",
+    "script:compile-examples": "puya-ts --out-dir data ./examples/*/ --puya-path=/home/parallels/.local/bin/puya",
     "script:refresh-test-artifacts": "puya-ts --out-dir data ./tests/artifacts/*/"
   },
   "devDependencies": {

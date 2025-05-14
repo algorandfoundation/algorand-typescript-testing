@@ -15,7 +15,7 @@ import type {
   KeyRegistrationInnerTxn,
   PaymentInnerTxn,
 } from '../impl/inner-transactions'
-import { createInnerTxn } from '../impl/inner-transactions'
+import { ApplicationCallInnerTxnContext, createInnerTxn, ItxnParams } from '../impl/inner-transactions'
 import type { InnerTxn, InnerTxnFields } from '../impl/itxn'
 import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
 import type {
@@ -353,8 +353,19 @@ export class TransactionGroup {
     if (this.constructingItxnGroup.length > TRANSACTION_GROUP_MAX_SIZE) {
       throw new InternalError(`Cannot submit more than ${TRANSACTION_GROUP_MAX_SIZE} inner transactions at once`)
     }
-    const itxns = this.constructingItxnGroup.map((t) => createInnerTxn(t))
+    const itxns = this.constructingItxnGroup.flatMap((t) =>
+      t instanceof ApplicationCallInnerTxnContext
+        ? [...(t.itxns ?? []), t]
+        : t instanceof ItxnParams
+          ? t.createInnerTxns()
+          : [createInnerTxn(t)],
+    )
     itxns.forEach((itxn, index) => Object.assign(itxn, { groupIndex: asUint64(index) }))
+    for (const itxn of itxns) {
+      if (itxn instanceof ApplicationCallInnerTxnContext) {
+        lazyContext.value.notifyApplicationSpies(itxn)
+      }
+    }
     this.itxnGroups.push(new ItxnGroup(itxns))
     this.constructingItxnGroup = []
   }
