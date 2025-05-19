@@ -66,8 +66,8 @@
     "vitest": "3.1.3"
   },
   "dependencies": {
-    "@algorandfoundation/algorand-typescript": "1.0.0-alpha.59",
-    "@algorandfoundation/puya-ts": "1.0.0-alpha.59",
+    "@algorandfoundation/algorand-typescript": "1.0.0-alpha.61",
+    "@algorandfoundation/puya-ts": "1.0.0-alpha.61",
     "elliptic": "^6.6.1",
     "js-sha256": "^0.11.0",
     "js-sha3": "^0.9.3",

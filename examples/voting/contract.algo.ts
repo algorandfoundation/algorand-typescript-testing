@@ -47,7 +47,7 @@ export class VotingRoundApp extends arc4.Contract {
   tallyBox = BoxRef({ key: Bytes`V` })
   votesByAccount = BoxMap<Account, VoteIndexArray>({ keyPrefix: Bytes() })
   voteId = GlobalState<string>()
-  snapshotPublicKey = GlobalState<bytes>()
+  snapshotPublicKey = GlobalState<bytes<32>>()
   metadataIpfsCid = GlobalState<string>()
   startTime = GlobalState<uint64>()
   nftImageUrl = GlobalState<string>()
@@ -60,7 +60,7 @@ export class VotingRoundApp extends arc4.Contract {
   @abimethod({ onCreate: 'require' })
   public create(
     voteId: string,
-    snapshotPublicKey: bytes,
+    snapshotPublicKey: bytes<32>,
     metadataIpfsCid: string,
     startTime: uint64,
     endTime: uint64,
@@ -158,7 +158,7 @@ export class VotingRoundApp extends arc4.Contract {
   }
 
   @abimethod({ readonly: true })
-  public getPreconditions(signature: bytes): VotingPreconditions {
+  public getPreconditions(signature: bytes<64>): VotingPreconditions {
     return {
       is_allowed_to_vote: Uint64(this.allowedToVote(signature)),
       is_voting_open: Uint64(this.votingOpen()),
@@ -167,7 +167,7 @@ export class VotingRoundApp extends arc4.Contract {
     }
   }
 
-  private allowedToVote(signature: bytes): boolean {
+  private allowedToVote(signature: bytes<64>): boolean {
     ensureBudget(2000)
     return op.ed25519verifyBare(Txn.sender.bytes, signature, this.snapshotPublicKey.value)
   }
@@ -176,7 +176,7 @@ export class VotingRoundApp extends arc4.Contract {
     return this.votesByAccount(Txn.sender).exists
   }
 
-  public vote(fundMinBalReq: gtxn.PaymentTxn, signature: bytes, answerIds: VoteIndexArray): void {
+  public vote(fundMinBalReq: gtxn.PaymentTxn, signature: bytes<64>, answerIds: VoteIndexArray): void {
     ensureBudget(7700, OpUpFeeSource.GroupCredit)
     assert(this.allowedToVote(signature), 'Not allowed to vote')
     assert(this.votingOpen(), 'Voting not open')

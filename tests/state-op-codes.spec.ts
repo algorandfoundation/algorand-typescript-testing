@@ -14,7 +14,7 @@ import { BytesCls, Uint64Cls } from '../src/impl/primitives'
 import { AccountCls, encodeAddress } from '../src/impl/reference'
 import type { ApplicationCallTransaction } from '../src/impl/transactions'
 import type { DeliberateAny } from '../src/typescript-helpers'
-import { asBigInt, asBigUintCls, asNumber, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
+import { asBigInt, asNumber, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
 import { AppExpectingEffects } from './artifacts/created-app-asset/contract.algo'
 import {
   ItxnDemoContract,
@@ -268,7 +268,7 @@ describe('State op codes', async () => {
       'should return the correct field value of the asset',
       async ([methodName, expectedValue], { appClientStateAssetParamsContract: appClient, testAccount, assetFactory }) => {
         const creator = Account(Bytes.fromBase32(testAccount.addr.toString()))
-        const metadataHash = Bytes(`test${' '.repeat(28)}`)
+        const metadataHash = Bytes(`test${' '.repeat(28)}`).toFixed({ length: 32 })
         const mockAsset = ctx.any.asset({
           total: 100,
           decimals: 0,
@@ -528,12 +528,12 @@ describe('State op codes', async () => {
   describe('Block', async () => {
     test('should return the correct field value of the block', async () => {
       const index = 42
-      const seed = asBigUintCls(123n).toBytes().asAlgoTs()
+      const seed = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
       const timestamp = 1234567890
       const proposer = ctx.any.account()
       const feesCollected = 1000
       const bonus = 12
-      const branch = getRandomBytes(32).asAlgoTs()
+      const branch = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
       const feeSink = ctx.any.account()
       const protocol = getRandomBytes(32).asAlgoTs()
       const txnCounter = 32

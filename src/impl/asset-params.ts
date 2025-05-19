@@ -50,9 +50,9 @@ export const AssetParams: typeof op.AssetParams = {
     const asset = getAsset(a)
     return asset === undefined ? [Bytes(), false] : [asset.url, true]
   },
-  assetMetadataHash(a: AssetType | StubUint64Compat): readonly [bytes, boolean] {
+  assetMetadataHash(a: AssetType | StubUint64Compat): readonly [bytes<32>, boolean] {
     const asset = getAsset(a)
-    return asset === undefined ? [Bytes(), false] : [asset.metadataHash, true]
+    return asset === undefined ? [Bytes() as bytes<32>, false] : [asset.metadataHash, true]
   },
   assetManager(a: AssetType | StubUint64Compat): readonly [AccountType, boolean] {
     const asset = getAsset(a)

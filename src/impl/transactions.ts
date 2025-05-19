@@ -23,9 +23,9 @@ const baseDefaultFields = () => ({
   firstValidTime: Uint64(0),
   lastValid: Uint64(0),
   note: Bytes(),
-  lease: Bytes(),
+  lease: Bytes() as bytes<32>,
   groupIndex: Uint64(0),
-  txnId: getRandomBytes(32).asAlgoTs(),
+  txnId: getRandomBytes(32).asAlgoTs().toFixed({ length: 32 }),
   rekeyTo: Account(),
 })
 
@@ -53,9 +53,9 @@ abstract class TransactionBase {
   readonly firstValidTime: uint64
   readonly lastValid: uint64
   readonly note: bytes
-  readonly lease: bytes
+  readonly lease: bytes<32>
   readonly groupIndex: uint64
-  readonly txnId: bytes
+  readonly txnId: bytes<32>
   readonly rekeyTo: AccountType
   readonly scratchSpace: Array<bytes | uint64>
 
@@ -106,13 +106,13 @@ export class KeyRegistrationTransaction extends TransactionBase implements gtxn.
 
   protected constructor(fields: TxnFields<gtxn.KeyRegistrationTxn>) {
     super(fields)
-    this.voteKey = fields.voteKey ?? Bytes()
-    this.selectionKey = fields.selectionKey ?? Bytes()
+    this.voteKey = fields.voteKey ?? (Bytes() as bytes<32>)
+    this.selectionKey = fields.selectionKey ?? (Bytes() as bytes<32>)
     this.voteFirst = fields.voteFirst ?? Uint64(0)
     this.voteLast = fields.voteLast ?? Uint64(0)
     this.voteKeyDilution = fields.voteKeyDilution ?? Uint64(0)
     this.nonparticipation = fields.nonparticipation ?? false
-    this.stateProofKey = fields.stateProofKey ?? Bytes()
+    this.stateProofKey = fields.stateProofKey ?? (Bytes() as bytes<64>)
     const globalData = lazyContext.ledger.globalData
     if (this.fee >= globalData.payoutsGoOnlineFee && globalData.payoutsEnabled) {
       lazyContext.ledger.patchAccountData(this.sender, {
@@ -121,13 +121,13 @@ export class KeyRegistrationTransaction extends TransactionBase implements gtxn.
     }
   }
 
-  readonly voteKey: bytes
-  readonly selectionKey: bytes
+  readonly voteKey: bytes<32>
+  readonly selectionKey: bytes<32>
   readonly voteFirst: uint64
   readonly voteLast: uint64
   readonly voteKeyDilution: uint64
   readonly nonparticipation: boolean
-  readonly stateProofKey: bytes
+  readonly stateProofKey: bytes<64>
   readonly type: TransactionType.KeyRegistration = TransactionType.KeyRegistration
   readonly typeBytes: bytes = asUint64Cls(TransactionType.KeyRegistration).toBytes().asAlgoTs()
 }
@@ -147,7 +147,7 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
     this.unitName = fields.unitName ?? Bytes()
     this.assetName = fields.assetName ?? Bytes()
     this.url = fields.url ?? Bytes()
-    this.metadataHash = fields.metadataHash ?? Bytes()
+    this.metadataHash = fields.metadataHash ?? (Bytes() as bytes<32>)
     this.manager = fields.manager ?? Account()
     this.reserve = fields.reserve ?? Account()
     this.freeze = fields.freeze ?? Account()
@@ -162,7 +162,7 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
   readonly unitName: bytes
   readonly assetName: bytes
   readonly url: bytes
-  readonly metadataHash: bytes
+  readonly metadataHash: bytes<32>
   readonly manager: AccountType
   readonly reserve: AccountType
   readonly freeze: AccountType

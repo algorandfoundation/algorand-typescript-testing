@@ -60,7 +60,7 @@ export const Txn: typeof op.Txn = {
   /**
    * 32 byte lease value
    */
-  get lease(): bytes {
+  get lease(): bytes<32> {
     return lazyContext.activeGroup.getTransaction().lease
   },
 
@@ -88,14 +88,14 @@ export const Txn: typeof op.Txn = {
   /**
    * 32 byte address
    */
-  get votePk(): bytes {
+  get votePk(): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().voteKey
   },
 
   /**
    * 32 byte address
    */
-  get selectionPk(): bytes {
+  get selectionPk(): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().selectionKey
   },
 
@@ -179,7 +179,7 @@ export const Txn: typeof op.Txn = {
   /**
    * The computed ID for this transaction. 32 bytes.
    */
-  get txId(): bytes {
+  get txId(): bytes<32> {
     return lazyContext.activeGroup.getTransaction().txnId
   },
 
@@ -299,7 +299,7 @@ export const Txn: typeof op.Txn = {
   /**
    * 32 byte commitment to unspecified asset metadata
    */
-  get configAssetMetadataHash(): bytes {
+  get configAssetMetadataHash(): bytes<32> {
     return lazyContext.activeGroup.getAssetConfigTransaction().metadataHash
   },
 

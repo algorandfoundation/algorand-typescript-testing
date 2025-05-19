@@ -5,24 +5,24 @@ import { Uint64, type StubUint64Compat } from './primitives'
 import { Account } from './reference'
 
 export class BlockData {
-  seed: bytes
+  seed: bytes<32>
   timestamp: uint64
   proposer: AccountType
   feesCollected: uint64
   bonus: uint64
-  branch: bytes
+  branch: bytes<32>
   feeSink: AccountType
   protocol: bytes
   txnCounter: uint64
   proposerPayout: uint64
 
   constructor() {
-    this.seed = getRandomBytes(32).asAlgoTs()
+    this.seed = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
     this.timestamp = asUint64(Date.now())
     this.proposer = Account()
     this.feesCollected = Uint64(0)
     this.bonus = Uint64(0)
-    this.branch = getRandomBytes(32).asAlgoTs()
+    this.branch = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
     this.feeSink = Account()
     this.protocol = getRandomBytes(32).asAlgoTs()
     this.txnCounter = Uint64(0)
@@ -31,7 +31,7 @@ export class BlockData {
 }
 
 export const Block: typeof op.Block = {
-  blkSeed: function (a: StubUint64Compat): bytes {
+  blkSeed: function (a: StubUint64Compat): bytes<32> {
     return lazyContext.ledger.getBlockData(a).seed
   },
   blkTimestamp: function (a: StubUint64Compat): uint64 {
@@ -46,7 +46,7 @@ export const Block: typeof op.Block = {
   blkBonus: function (a: uint64): uint64 {
     return lazyContext.ledger.getBlockData(a).bonus
   },
-  blkBranch: function (a: uint64): bytes {
+  blkBranch: function (a: uint64): bytes<32> {
     return lazyContext.ledger.getBlockData(a).branch
   },
   blkFeeSink: function (a: uint64): AccountType {

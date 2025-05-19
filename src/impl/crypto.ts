@@ -12,32 +12,32 @@ import { asBytes, asBytesCls, asUint8Array, conactUint8Arrays } from '../util'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 import { Bytes, BytesCls, Uint64Cls } from './primitives'
 
-export const sha256 = (a: StubBytesCompat): bytes => {
+export const sha256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha256.sha256.create().update(bytesA.asUint8Array()).digest()
   const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  return hashBytes.asAlgoTs().toFixed({ length: 32 })
 }
 
-export const sha3_256 = (a: StubBytesCompat): bytes => {
+export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.sha3_256.create().update(bytesA.asUint8Array()).digest()
   const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  return hashBytes.asAlgoTs().toFixed({ length: 32 })
 }
 
-export const keccak256 = (a: StubBytesCompat): bytes => {
+export const keccak256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.keccak256.create().update(bytesA.asUint8Array()).digest()
   const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  return hashBytes.asAlgoTs().toFixed({ length: 32 })
 }
 
-export const sha512_256 = (a: StubBytesCompat): bytes => {
+export const sha512_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha512.sha512_256.create().update(bytesA.asUint8Array()).digest()
   const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  return hashBytes.asAlgoTs().toFixed({ length: 32 })
 }
 
 export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
@@ -88,7 +88,7 @@ export const ecdsaPkRecover = (
   b: StubUint64Compat,
   c: StubBytesCompat,
   d: StubBytesCompat,
-): readonly [bytes, bytes] => {
+): readonly [bytes<32>, bytes<32>] => {
   if (v !== Ecdsa.Secp256k1) {
     throw new InternalError(`Unsupported ECDSA curve: ${v}`)
   }
@@ -106,10 +106,10 @@ export const ecdsaPkRecover = (
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(x), Bytes(y)]
+  return [Bytes(x).toFixed({ length: 32 }), Bytes(y).toFixed({ length: 32 })]
 }
 
-export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes, bytes] => {
+export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes<32>, bytes<32>] => {
   const bytesA = BytesCls.fromCompat(a)
 
   const ecdsa = new elliptic.ec(curveMap[v])
@@ -118,10 +118,10 @@ export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(new Uint8Array(x)), Bytes(new Uint8Array(y))]
+  return [Bytes(new Uint8Array(x)).toFixed({ length: 32 }), Bytes(new Uint8Array(y)).toFixed({ length: 32 })]
 }
 
-export const vrfVerify = (_s: VrfVerify, _a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): readonly [bytes, boolean] => {
+export const vrfVerify = (_s: VrfVerify, _a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): readonly [bytes<64>, boolean] => {
   throw new NotImplementedError('vrfVerify')
 }
 
