@@ -505,6 +505,14 @@ export class BytesCls extends AlgoTsPrimitiveCls {
     return encodingUtil.uint8ArrayToHex(this.#v)
   }
 
+  toFixed<TNewLength extends uint64>(options: { length: TNewLength; checked?: boolean }): bytes<TNewLength> {
+    if (options.checked !== false) {
+      if (this.#v.length !== options.length) {
+        throw new CodeError(`Invalid bytes constant length of ${this.#v.length}, expected ${options.length}`)
+      }
+    }
+    return new BytesCls(this.#v) as unknown as bytes<TNewLength>
+  }
   static [Symbol.hasInstance](x: unknown): x is BytesCls {
     return isInstanceOfTypeByName(x, BytesCls)
   }

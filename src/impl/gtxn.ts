@@ -22,7 +22,7 @@ export const GTxn: typeof op.GTxn = {
   note(t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getTransaction(t).note
   },
-  lease(t: StubUint64Compat): bytes {
+  lease(t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getTransaction(t).lease
   },
   receiver(t: StubUint64Compat): Account {
@@ -34,10 +34,10 @@ export const GTxn: typeof op.GTxn = {
   closeRemainderTo(t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getPaymentTransaction(t).closeRemainderTo
   },
-  votePk(t: StubUint64Compat): bytes {
+  votePk(t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction(t).voteKey
   },
-  selectionPk(t: StubUint64Compat): bytes {
+  selectionPk(t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction(t).selectionKey
   },
   voteFirst(t: StubUint64Compat): uint64 {
@@ -73,7 +73,7 @@ export const GTxn: typeof op.GTxn = {
   groupIndex(t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getTransaction(t).groupIndex
   },
-  txId(t: StubUint64Compat): bytes {
+  txId(t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getTransaction(t).txnId
   },
   applicationId(t: StubUint64Compat): Application {
@@ -125,7 +125,7 @@ export const GTxn: typeof op.GTxn = {
   configAssetUrl(t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getAssetConfigTransaction(t).url
   },
-  configAssetMetadataHash(t: StubUint64Compat): bytes {
+  configAssetMetadataHash(t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getAssetConfigTransaction(t).metadataHash
   },
   configAssetManager(t: StubUint64Compat): Account {

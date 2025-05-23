@@ -16,7 +16,7 @@ describe('VotingRoundApp', () => {
 
   const createContract = () => {
     const contract = ctx.contract.create(VotingRoundApp)
-    const snapshotPublicKey = Bytes(keyPair.publicKey)
+    const snapshotPublicKey = Bytes(keyPair.publicKey).toFixed({ length: 32 })
     const metadataIpfsCid = ctx.any.string(16)
     const startTime = ctx.any.uint64(Date.now() - 10_000, Date.now())
     const endTime = ctx.any.uint64(Date.now() + 10_000, Date.now() + 100_000)

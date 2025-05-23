@@ -938,16 +938,16 @@ export class DynamicBytesImpl extends DynamicBytes {
   }
 }
 
-export class StaticBytesImpl extends StaticBytes {
-  private value: StaticArrayImpl<ByteImpl, number>
+export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLength> {
+  private value: StaticArrayImpl<ByteImpl, TLength>
   typeInfo: TypeInfo
 
-  constructor(typeInfo: TypeInfo | string, value?: bytes | string) {
-    super(value)
+  constructor(typeInfo: TypeInfo | string, value?: bytes<TLength>) {
+    super(value ?? (Bytes() as bytes<TLength>))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     const uint8ArrayValue = asUint8Array(value ?? new Uint8Array(StaticBytesImpl.getMaxBytesLength(this.typeInfo)))
-    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as StaticArrayImpl<ByteImpl, number>
-    return new Proxy(this, arrayProxyHandler<ByteImpl>()) as StaticBytesImpl
+    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as StaticArrayImpl<ByteImpl, TLength>
+    return new Proxy(this, arrayProxyHandler<ByteImpl>()) as StaticBytesImpl<TLength>
   }
 
   get bytes(): bytes {
@@ -965,8 +965,8 @@ export class StaticBytesImpl extends StaticBytes {
     return this.value.length
   }
 
-  get native(): bytes {
-    return this.value.bytes
+  get native(): bytes<TLength> {
+    return this.value.bytes as bytes<TLength>
   }
 
   get items(): ByteImpl[] {
@@ -994,7 +994,7 @@ export class StaticBytesImpl extends StaticBytes {
   static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): StaticBytesImpl {
     const staticArrayValue = StaticArrayImpl.fromBytesImpl(value, typeInfo, prefix) as StaticArrayImpl<ByteImpl, number>
     const result = new StaticBytesImpl(typeInfo)
-    result.value = staticArrayValue
+    result.value = staticArrayValue as StaticArrayImpl<ByteImpl, 0>
     return result
   }
 

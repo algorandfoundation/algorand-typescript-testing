@@ -41,7 +41,7 @@ export const GITxn: typeof op.GITxn = {
   note: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).note
   },
-  lease: function (t: StubUint64Compat): bytes {
+  lease: function (t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).lease
   },
   receiver: function (t: StubUint64Compat): Account {
@@ -53,10 +53,10 @@ export const GITxn: typeof op.GITxn = {
   closeRemainderTo: function (t: StubUint64Compat): Account {
     return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(t).closeRemainderTo
   },
-  votePk: function (t: StubUint64Compat): bytes {
+  votePk: function (t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteKey
   },
-  selectionPk: function (t: StubUint64Compat): bytes {
+  selectionPk: function (t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).selectionKey
   },
   voteFirst: function (t: StubUint64Compat): uint64 {
@@ -92,7 +92,7 @@ export const GITxn: typeof op.GITxn = {
   groupIndex: function (t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).groupIndex
   },
-  txId: function (t: StubUint64Compat): bytes {
+  txId: function (t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).txnId
   },
   applicationId: function (t: StubUint64Compat): Application {
@@ -144,7 +144,7 @@ export const GITxn: typeof op.GITxn = {
   configAssetUrl: function (t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).url
   },
-  configAssetMetadataHash: function (t: StubUint64Compat): bytes {
+  configAssetMetadataHash: function (t: StubUint64Compat): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).metadataHash
   },
   configAssetManager: function (t: StubUint64Compat): Account {
@@ -269,7 +269,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte lease value
    */
-  get lease(): bytes {
+  get lease(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn().lease
   },
   /**
@@ -293,13 +293,13 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte address
    */
-  get votePk(): bytes {
+  get votePk(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn().voteKey
   },
   /**
    * 32 byte address
    */
-  get selectionPk(): bytes {
+  get selectionPk(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn().selectionKey
   },
   /**
@@ -371,7 +371,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * The computed ID for this transaction. 32 bytes.
    */
-  get txId(): bytes {
+  get txId(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn().txnId
   },
   /**
@@ -474,7 +474,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte commitment to unspecified asset metadata
    */
-  get configAssetMetadataHash(): bytes {
+  get configAssetMetadataHash(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn().metadataHash
   },
   /**
@@ -672,10 +672,10 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     setConstructingItxnField({ closeRemainderTo: a })
   },
   setVotePk: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ voteKey: asBytes(a) })
+    setConstructingItxnField({ voteKey: asBytes(a).toFixed({ length: 32 }) })
   },
   setSelectionPk: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ selectionKey: asBytes(a) })
+    setConstructingItxnField({ selectionKey: asBytes(a).toFixed({ length: 32 }) })
   },
   setVoteFirst: function (a: StubUint64Compat): void {
     setConstructingItxnField({ voteFirst: asUint64(a) })
@@ -754,7 +754,7 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     setConstructingItxnField({ url: asBytes(a) })
   },
   setConfigAssetMetadataHash: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ metadataHash: asBytes(a) })
+    setConstructingItxnField({ metadataHash: asBytes(a).toFixed({ length: 32 }) })
   },
   setConfigAssetManager: function (a: Account): void {
     setConstructingItxnField({ manager: a })
@@ -812,7 +812,7 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     setConstructingItxnField({ nonparticipation: a })
   },
   setStateProofPk: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ stateProofKey: asBytes(a) })
+    setConstructingItxnField({ stateProofKey: asBytes(a).toFixed({ length: 64 }) })
   },
   setApprovalProgramPages: function (a: StubBytesCompat): void {
     let pages = (getConstructingItxn<itxn.ApplicationCallFields>().approvalProgram ?? []) as bytes[]

@@ -77,6 +77,10 @@ export class AccountCls extends BytesBackedCls implements AccountType {
     super(addressBytes.slice(0, 32))
   }
 
+  get bytes() {
+    return super.bytes.toFixed({ length: 32 })
+  }
+
   private get data(): AccountData {
     return lazyContext.getAccountData(this)
   }
@@ -218,7 +222,7 @@ export const getDefaultAssetData = (): AssetData => ({
   unitName: lazyContext.any.bytes(4),
   name: lazyContext.any.bytes(32),
   url: lazyContext.any.bytes(10),
-  metadataHash: lazyContext.any.bytes(32),
+  metadataHash: lazyContext.any.bytes(32).toFixed({ length: 32 }),
   manager: Account(ZERO_ADDRESS),
   freeze: Account(ZERO_ADDRESS),
   clawback: Account(ZERO_ADDRESS),
@@ -261,7 +265,7 @@ export class AssetCls extends Uint64BackedCls implements AssetType {
   get url(): bytes {
     return this.data.url
   }
-  get metadataHash(): bytes {
+  get metadataHash(): bytes<32> {
     return this.data.metadataHash
   }
   get manager(): AccountType {
