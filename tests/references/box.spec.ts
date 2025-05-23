@@ -17,7 +17,7 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { itob } from '@algorandfoundation/algorand-typescript/op'
 import { afterEach, describe, expect, it, test } from 'vitest'
-import { toBytes } from '../../src/encoders'
+import { toBytes } from '../../src/impl/encoded-types'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
 import { BoxContract } from '../artifacts/box-contract/contract.algo'

@@ -1,7 +1,7 @@
 import { LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
 import path from 'path'
 import ts from 'typescript'
-import type { TypeInfo } from '../encoders'
+import type { TypeInfo } from '../impl/encoded-types'
 import { instanceOfAny } from '../typescript-helpers'
 import { nodeFactory } from './node-factory'
 import type { TransformerConfig } from './program-factory'
