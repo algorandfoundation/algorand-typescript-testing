@@ -1,12 +1,4 @@
-import type {
-  Account as AccountType,
-  BigUintCompat,
-  bytes,
-  NTuple,
-  StringCompat,
-  uint64,
-  Uint64Compat,
-} from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, bytes, NTuple, StringCompat, uint64 } from '@algorandfoundation/algorand-typescript'
 import type { BitSize } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Address,
@@ -25,42 +17,65 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import assert from 'assert'
-import {
-  ABI_RETURN_VALUE_LOG_PREFIX,
-  ALGORAND_ADDRESS_BYTE_LENGTH,
-  ALGORAND_CHECKSUM_BYTE_LENGTH,
-  BITS_IN_BYTE,
-  UINT512_SIZE,
-  UINT64_SIZE,
-} from '../constants'
-import { lazyContext } from '../context-helpers/internal-context'
-import type { fromBytes, TypeInfo } from '../encoders'
-import { AvmError, avmInvariant, CodeError } from '../errors'
-import type { DeliberateAny } from '../typescript-helpers'
+import { ABI_RETURN_VALUE_LOG_PREFIX, ALGORAND_ADDRESS_BYTE_LENGTH, ALGORAND_CHECKSUM_BYTE_LENGTH, UINT64_SIZE } from '../../constants'
+import { lazyContext } from '../../context-helpers/internal-context'
+import { AvmError, avmInvariant, CodeError, InternalError } from '../../errors'
+import { nameOfType, type DeliberateAny } from '../../typescript-helpers'
 import {
   asBigInt,
   asBigUint,
   asBigUintCls,
   asBytes,
   asBytesCls,
+  asMaybeBigUintCls,
+  asMaybeBytesCls,
+  asMaybeUint64Cls,
   asUint64,
+  asUint64Cls,
   asUint8Array,
   conactUint8Arrays,
   uint8ArrayToNumber,
-} from '../util'
-import { BytesBackedCls, Uint64BackedCls } from './base'
-import type { StubBytesCompat } from './primitives'
-import { AlgoTsPrimitiveCls, arrayUtil, BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from './primitives'
-import { Account, AccountCls, ApplicationCls, AssetCls } from './reference'
-import type { ApplicationCallTransaction } from './transactions'
+} from '../../util'
+import { BytesBackedCls, Uint64BackedCls } from '../base'
+import type { StubBytesCompat } from '../primitives'
+import { BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from '../primitives'
+import { Account, AccountCls, ApplicationCls, AssetCls } from '../reference'
+import type { ApplicationCallTransaction } from '../transactions'
+import { arrayProxyHandler } from './array-proxy'
+import { ABI_LENGTH_SIZE, FALSE_BIGINT_VALUE, IS_INITIALISING_FROM_BYTES_SYMBOL, TRUE_BIGINT_VALUE } from './constants'
+import {
+  areAllARC4Encoded,
+  bigUintFromBytes,
+  booleanFromBytes,
+  bytesFromBytes,
+  checkItemTypeName,
+  compressMultipleBool,
+  encodeLength,
+  findBool,
+  findBoolTypes,
+  holdsDynamicLengthContent,
+  maxBigIntValue,
+  maxBytesLength,
+  onCompletionFromBytes,
+  readLength,
+  regExpNxM,
+  stringFromBytes,
+  transactionTypeFromBytes,
+  trimTrailingDecimalZeros,
+  uint64FromBytes,
+  validBitSizes,
+} from './helpers'
+import type {
+  CompatForArc4Int,
+  DynamicArrayGenericArgs,
+  fromBytes,
+  StaticArrayGenericArgs,
+  StructConstraint,
+  TypeInfo,
+  uFixedNxMGenericArgs,
+} from './types'
+import { getMaxLengthOfStaticContentType } from './utils'
 
-const ABI_LENGTH_SIZE = 2
-const maxBigIntValue = (bitSize: number) => 2n ** BigInt(bitSize) - 1n
-const maxBytesLength = (bitSize: number) => Math.floor(bitSize / BITS_IN_BYTE)
-const encodeLength = (length: number) => new BytesCls(encodingUtil.bigIntToUint8Array(BigInt(length), ABI_LENGTH_SIZE))
-
-type CompatForArc4Int<N extends BitSize> = N extends 8 | 16 | 24 | 32 | 40 | 48 | 56 | 64 ? Uint64Compat : BigUintCompat
-const validBitSizes = [...Array(64).keys()].map((x) => (x + 1) * 8)
 export class UintNImpl<N extends BitSize> extends UintN<N> {
   private value: Uint8Array
   private bitSize: N
@@ -114,15 +129,8 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
   static getMaxBitsLength(typeInfo: TypeInfo): BitSize {
     return parseInt((typeInfo.genericArgs as TypeInfo[])![0].name, 10) as BitSize
   }
-
-  static getArc4TypeName = (t: TypeInfo): string => {
-    return `uint${this.getMaxBitsLength(t)}`
-  }
 }
 
-const regExpNxM = (maxPrecision: number) => new RegExp(`^\\d*\\.?\\d{0,${maxPrecision}}$`)
-const trimTrailingDecimalZeros = (v: string) => v.replace(/(\d+\.\d*?)0+$/, '$1').replace(/\.$/, '')
-type uFixedNxMGenericArgs = { n: TypeInfo; m: TypeInfo }
 export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNxM<N, M> {
   private value: Uint8Array
   private bitSize: N
@@ -180,11 +188,6 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
   static getMaxBitsLength(typeInfo: TypeInfo): BitSize {
     const genericArgs = typeInfo.genericArgs as uFixedNxMGenericArgs
     return parseInt(genericArgs.n.name, 10) as BitSize
-  }
-
-  static getArc4TypeName = (t: TypeInfo): string => {
-    const genericArgs = t.genericArgs as uFixedNxMGenericArgs
-    return `ufixed${genericArgs.n.name}x${genericArgs.m.name}`
   }
 }
 
@@ -263,8 +266,6 @@ export class StrImpl extends Str {
   }
 }
 
-const TRUE_BIGINT_VALUE = 128n
-const FALSE_BIGINT_VALUE = 0n
 export class BoolImpl extends Bool {
   private value: Uint8Array
   typeInfo: TypeInfo
@@ -302,44 +303,6 @@ export class BoolImpl extends Bool {
   }
 }
 
-const areAllARC4Encoded = <T extends ARC4Encoded>(items: T[]): items is T[] => items.every((item) => item instanceof ARC4Encoded)
-const checkItemTypeName = (type: TypeInfo, value: ARC4Encoded) => {
-  const typeName = trimGenericTypeName(type.name)
-  const validTypeNames = [typeName, `${typeName}Impl`]
-  assert(validTypeNames.includes(value.constructor.name), `item must be of type ${typeName}, not ${value.constructor.name}`)
-}
-type StaticArrayGenericArgs = { elementType: TypeInfo; size: TypeInfo }
-const arrayProxyHandler = <TItem>() => ({
-  get(target: { items: readonly TItem[] }, prop: PropertyKey) {
-    const idx = prop ? parseInt(prop.toString(), 10) : NaN
-    if (!isNaN(idx)) {
-      if (idx >= 0 && idx < target.items.length) return target.items[idx]
-      throw new AvmError('Index out of bounds')
-    } else if (prop === Symbol.iterator) {
-      return target.items[Symbol.iterator].bind(target.items)
-    } else if (prop === 'entries') {
-      return target.items.entries.bind(target.items)
-    } else if (prop === 'at') {
-      return (index: Uint64Compat): TItem => {
-        return arrayUtil.arrayAt(target.items, index)
-      }
-    }
-    return Reflect.get(target, prop)
-  },
-  set(target: { items: TItem[]; setItem: (index: number, value: TItem) => void }, prop: PropertyKey, value: TItem) {
-    const idx = prop ? parseInt(prop.toString(), 10) : NaN
-    if (!isNaN(idx)) {
-      if (idx >= 0 && idx < target.items.length) {
-        target.setItem(idx, value)
-        return true
-      }
-      throw new AvmError('Index out of bounds')
-    }
-
-    return Reflect.set(target, prop, value)
-  },
-})
-const isInitialisingFromBytesSymbol = Symbol('IsInitialisingFromBytes')
 export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> extends StaticArray<TItem, TLength> {
   private value?: NTuple<TItem, TLength>
   private uint8ArrayValue?: Uint8Array
@@ -352,7 +315,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
   constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength }) {
     // if first item is the symbol, we are initialising from bytes
     // so we don't need to pass the items to the super constructor
-    const isInitialisingFromBytes = items.length === 1 && (items[0] as DeliberateAny) === isInitialisingFromBytesSymbol
+    const isInitialisingFromBytes = items.length === 1 && (items[0] as DeliberateAny) === IS_INITIALISING_FROM_BYTES_SYMBOL
     super(...(isInitialisingFromBytes ? [] : (items as DeliberateAny)))
 
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
@@ -374,7 +337,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
       if (items.length) {
         this.value = items as NTuple<TItem, TLength>
       } else {
-        this.uint8ArrayValue = new Uint8Array(StaticArrayImpl.getMaxBytesLength(this.typeInfo))
+        this.uint8ArrayValue = new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo))
       }
     }
     return new Proxy(this, arrayProxyHandler<TItem>()) as StaticArrayImpl<TItem, TLength>
@@ -413,7 +376,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
   }
 
   copy(): StaticArrayImpl<TItem, TLength> {
-    return StaticArrayImpl.fromBytesImpl(this.bytes, JSON.stringify(this.typeInfo)) as StaticArrayImpl<TItem, TLength>
+    return StaticArrayImpl.fromBytesImpl(this.bytes, JSON.stringify(this.typeInfo)) as unknown as StaticArrayImpl<TItem, TLength>
   }
 
   concat(other: Parameters<InstanceType<typeof StaticArray>['concat']>[0]): DynamicArrayImpl<TItem> {
@@ -445,34 +408,9 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
       bytesValue = bytesValue.slice(4)
     }
     // pass the symbol to the constructor to let it know we are initialising from bytes
-    const result = new StaticArrayImpl<ARC4Encoded, number>(typeInfo, isInitialisingFromBytesSymbol as DeliberateAny)
+    const result = new StaticArrayImpl<ARC4Encoded, number>(typeInfo, IS_INITIALISING_FROM_BYTES_SYMBOL as DeliberateAny)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
-  }
-
-  static getMaxBytesLength(typeInfo: TypeInfo): number {
-    const genericArgs = typeInfo.genericArgs as StaticArrayGenericArgs
-    const arraySize = parseInt(genericArgs.size.name, 10)
-    const childTypes = Array(arraySize).fill(genericArgs.elementType)
-    let i = 0
-    let size = 0
-    if (['Bool', 'boolean'].includes(genericArgs.elementType.name)) {
-      while (i < childTypes.length) {
-        const after = findBoolTypes(childTypes, i, 1)
-        const boolNum = after + 1
-        size += Math.floor(boolNum / BITS_IN_BYTE)
-        size += boolNum % BITS_IN_BYTE ? 1 : 0
-        i += after + 1
-      }
-    } else {
-      size = getMaxLengthOfStaticContentType(genericArgs.elementType) * arraySize
-    }
-    return size
-  }
-
-  static getArc4TypeName = (t: TypeInfo): string => {
-    const genericArgs = t.genericArgs as StaticArrayGenericArgs
-    return `${getArc4TypeName(genericArgs.elementType)}[${genericArgs.size.name}]`
   }
 }
 
@@ -532,18 +470,8 @@ export class AddressImpl extends Address {
     result.value = staticArrayValue
     return result
   }
-
-  static getMaxBytesLength(typeInfo: TypeInfo): number {
-    return StaticArrayImpl.getMaxBytesLength(typeInfo)
-  }
 }
 
-type DynamicArrayGenericArgs = { elementType: TypeInfo }
-const readLength = (value: Uint8Array): readonly [number, Uint8Array] => {
-  const length = Number(encodingUtil.uint8ArrayToBigInt(value.slice(0, ABI_LENGTH_SIZE)))
-  const data = value.slice(ABI_LENGTH_SIZE)
-  return [length, data]
-}
 export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TItem> {
   private value?: TItem[]
   private uint8ArrayValue?: Uint8Array
@@ -644,11 +572,6 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
     return result
   }
 
-  static getArc4TypeName = (t: TypeInfo): string => {
-    const genericArgs = t.genericArgs as DynamicArrayGenericArgs
-    return `${getArc4TypeName(genericArgs.elementType)}[]`
-  }
-
   private encodeWithLength(items: TItem[]) {
     return conactUint8Arrays(encodeLength(items.length).asUint8Array(), encode(items))
   }
@@ -663,7 +586,7 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
   constructor(typeInfo: TypeInfo | string, ...items: TTuple) {
     // if first item is the symbol, we are initialising from bytes
     // so we don't need to pass the items to the super constructor
-    const isInitialisingFromBytes = items.length === 1 && (items[0] as DeliberateAny) === isInitialisingFromBytesSymbol
+    const isInitialisingFromBytes = items.length === 1 && (items[0] as DeliberateAny) === IS_INITIALISING_FROM_BYTES_SYMBOL
     super(...(isInitialisingFromBytes ? ([] as DeliberateAny) : items))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = Object.values(this.typeInfo.genericArgs as Record<string, TypeInfo>)
@@ -678,7 +601,7 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
       if (items.length) {
         this.value = items
       } else {
-        this.uint8ArrayValue = new Uint8Array(TupleImpl.getMaxBytesLength(this.typeInfo))
+        this.uint8ArrayValue = new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo))
       }
     }
   }
@@ -729,39 +652,12 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
       bytesValue = bytesValue.slice(4)
     }
     // pass the symbol to the constructor to let it know we are initialising from bytes
-    const result = new TupleImpl(typeInfo, isInitialisingFromBytesSymbol as DeliberateAny)
+    const result = new TupleImpl(typeInfo, IS_INITIALISING_FROM_BYTES_SYMBOL as DeliberateAny)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
-
-  static getMaxBytesLength(typeInfo: TypeInfo): number {
-    const genericArgs = Object.values(typeInfo.genericArgs as Record<string, TypeInfo>)
-    let i = 0
-    let size = 0
-
-    while (i < genericArgs.length) {
-      const childType = genericArgs[i]
-      if (['Bool', 'boolean'].includes(childType.name)) {
-        const after = findBoolTypes(genericArgs, i, 1)
-        const boolNum = after + 1
-        size += Math.floor(boolNum / BITS_IN_BYTE)
-        size += boolNum % BITS_IN_BYTE ? 1 : 0
-        i += after
-      } else {
-        size += getMaxLengthOfStaticContentType(childType)
-      }
-      i += 1
-    }
-    return size
-  }
-
-  static getArc4TypeName = (t: TypeInfo): string => {
-    const genericArgs = Object.values(t.genericArgs as Record<string, TypeInfo>)
-    return `(${genericArgs.map(getArc4TypeName).join(',')})`
-  }
 }
 
-type StructConstraint = Record<string, ARC4Encoded>
 export class StructImpl<T extends StructConstraint> extends (Struct<StructConstraint> as DeliberateAny) {
   private uint8ArrayValue?: Uint8Array
   genericArgs: Record<string, TypeInfo>
@@ -841,32 +737,6 @@ export class StructImpl<T extends StructConstraint> extends (Struct<StructConstr
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
-
-  static getArc4TypeName = (t: TypeInfo): string => {
-    const genericArgs = Object.values(t.genericArgs as Record<string, TypeInfo>)
-    return `(${genericArgs.map(getArc4TypeName).join(',')})`
-  }
-
-  static getMaxBytesLength(typeInfo: TypeInfo): number {
-    const genericArgs = Object.values(typeInfo.genericArgs as Record<string, TypeInfo>)
-    let i = 0
-    let size = 0
-
-    while (i < genericArgs.length) {
-      const childType = genericArgs[i]
-      if (['Bool', 'boolean'].includes(childType.name)) {
-        const after = findBoolTypes(genericArgs, i, 1)
-        const boolNum = after + 1
-        size += Math.floor(boolNum / BITS_IN_BYTE)
-        size += boolNum % BITS_IN_BYTE ? 1 : 0
-        i += after
-      } else {
-        size += getMaxLengthOfStaticContentType(childType)
-      }
-      i += 1
-    }
-    return size
-  }
 }
 
 export class DynamicBytesImpl extends DynamicBytes {
@@ -932,10 +802,6 @@ export class DynamicBytesImpl extends DynamicBytes {
     result.value = dynamicArrayValue
     return result
   }
-
-  static getArc4TypeName = (_t: TypeInfo): string => {
-    return 'byte[]'
-  }
 }
 
 export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLength> {
@@ -945,8 +811,8 @@ export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLe
   constructor(typeInfo: TypeInfo | string, value?: bytes<TLength>) {
     super(value ?? (Bytes() as bytes<TLength>))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    const uint8ArrayValue = asUint8Array(value ?? new Uint8Array(StaticBytesImpl.getMaxBytesLength(this.typeInfo)))
-    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as StaticArrayImpl<ByteImpl, TLength>
+    const uint8ArrayValue = asUint8Array(value ?? new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo)))
+    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as unknown as StaticArrayImpl<ByteImpl, TLength>
     return new Proxy(this, arrayProxyHandler<ByteImpl>()) as StaticBytesImpl<TLength>
   }
 
@@ -996,15 +862,6 @@ export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLe
     const result = new StaticBytesImpl(typeInfo)
     result.value = staticArrayValue as StaticArrayImpl<ByteImpl, 0>
     return result
-  }
-
-  static getMaxBytesLength(typeInfo: TypeInfo): number {
-    return StaticArrayImpl.getMaxBytesLength(typeInfo)
-  }
-
-  static getArc4TypeName = (t: TypeInfo): string => {
-    const genericArgs = t.genericArgs as StaticArrayGenericArgs
-    return `byte[${genericArgs.size.name}]`
   }
 }
 
@@ -1078,60 +935,9 @@ const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
 
   const values: ARC4Encoded[] = []
   childTypes.forEach((childType, index) => {
-    values.push(getArc4Encoder<ARC4Encoded>(childType)(valuePartitions[index], childType))
+    values.push(getEncoder<ARC4Encoded>(childType)(valuePartitions[index], childType))
   })
   return values
-}
-
-const findBoolTypes = (values: TypeInfo[], index: number, delta: number): number => {
-  // Helper function to find consecutive booleans from current index in a tuple.
-  let until = 0
-  const length = values.length
-  while (true) {
-    const curr = index + delta * until
-    if (['Bool', 'boolean'].includes(values[curr].name)) {
-      if ((curr != length - 1 && delta > 0) || (curr > 0 && delta < 0)) {
-        until += 1
-      } else {
-        break
-      }
-    } else {
-      until -= 1
-      break
-    }
-  }
-  return until
-}
-
-export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: boolean = true): number => {
-  switch (trimGenericTypeName(type.name)) {
-    case 'uint64':
-      return UINT64_SIZE / BITS_IN_BYTE
-    case 'biguint':
-      return UINT512_SIZE / BITS_IN_BYTE
-    case 'boolean':
-      return asArc4Encoded ? 1 : 8
-    case 'Bool':
-      return 1
-    case 'Address':
-      return AddressImpl.getMaxBytesLength(type)
-    case 'Byte':
-      return ByteImpl.getMaxBitsLength(type) / BITS_IN_BYTE
-    case 'UintN':
-      return UintNImpl.getMaxBitsLength(type) / BITS_IN_BYTE
-    case 'UFixedNxM':
-      return UFixedNxMImpl.getMaxBitsLength(type) / BITS_IN_BYTE
-    case 'StaticArray':
-      return StaticArrayImpl.getMaxBytesLength(type)
-    case 'StaticBytes':
-      return StaticBytesImpl.getMaxBytesLength(type)
-    case 'Tuple':
-      return TupleImpl.getMaxBytesLength(type)
-    case 'Struct':
-      return StructImpl.getMaxBytesLength(type)
-    default:
-      throw new CodeError(`unsupported type ${type.name}`)
-  }
 }
 
 const encode = (values: ARC4Encoded[]) => {
@@ -1188,157 +994,20 @@ const encode = (values: ARC4Encoded[]) => {
   return conactUint8Arrays(valuesLengthBytes, ...heads, ...tails)
 }
 
-const findBool = (values: ARC4Encoded[], index: number, delta: number) => {
-  let until = 0
-  const length = values.length
-  while (true) {
-    const curr = index + delta * until
-    if (values[curr] instanceof Bool) {
-      if ((curr !== length - 1 && delta > 0) || (curr > 0 && delta < 0)) {
-        until += 1
-      } else {
-        break
-      }
-    } else {
-      until -= 1
-      break
-    }
-  }
-  return until
-}
-
-const compressMultipleBool = (values: Bool[]): number => {
-  let result = 0
-  if (values.length > 8) {
-    throw new Error('length of list should not be greater than 8')
-  }
-  for (let i = 0; i < values.length; i++) {
-    const value = values[i]
-    if (value.native) {
-      result |= 1 << (7 - i)
-    }
-  }
-  return result
-}
-
-const trimGenericTypeName = (typeName: string) => typeName.replace(/<.*>/, '')
-
-const isDynamicLengthType = (value: ARC4Encoded) =>
-  value instanceof StrImpl ||
-  (value instanceof StaticArrayImpl && holdsDynamicLengthContent(value)) ||
-  (value instanceof TupleImpl && value.genericArgs.some(holdsDynamicLengthContent)) ||
-  (value instanceof StructImpl && Object.values(value.genericArgs).some(holdsDynamicLengthContent)) ||
-  value instanceof DynamicArrayImpl ||
-  value instanceof DynamicBytesImpl
-
-const holdsDynamicLengthContent = (value: StaticArrayImpl<ARC4Encoded, number> | DynamicArrayImpl<ARC4Encoded> | TypeInfo): boolean => {
-  const itemTypeName = trimGenericTypeName(
-    value instanceof StaticArrayImpl || value instanceof DynamicArrayImpl ? value.genericArgs.elementType.name : value.name,
-  )
+const isDynamicLengthType = (value: ARC4Encoded) => {
   return (
-    itemTypeName === 'Str' ||
-    itemTypeName === 'DynamicArray' ||
-    itemTypeName === 'DynamicBytes' ||
-    (itemTypeName === 'StaticArray' &&
-      holdsDynamicLengthContent(((value as StaticArrayImpl<ARC4Encoded, number>).genericArgs as StaticArrayGenericArgs).elementType)) ||
-    ((itemTypeName === 'Tuple' || itemTypeName === 'Struct') &&
-      Object.values(value.genericArgs as Record<string, TypeInfo>).some(holdsDynamicLengthContent))
+    value instanceof StrImpl ||
+    (value instanceof StaticArrayImpl && holdsDynamicLengthContent(value.typeInfo)) ||
+    (value instanceof TupleImpl && value.genericArgs.some(holdsDynamicLengthContent)) ||
+    (value instanceof StructImpl && Object.values(value.genericArgs).some(holdsDynamicLengthContent)) ||
+    value instanceof DynamicArrayImpl ||
+    value instanceof DynamicBytesImpl
   )
-}
-
-export function interpretAsArc4Impl<T extends ARC4Encoded>(
-  typeInfoString: string,
-  bytes: StubBytesCompat,
-  prefix: 'none' | 'log' = 'none',
-): T {
-  const typeInfo = JSON.parse(typeInfoString)
-  return getArc4Encoder<T>(typeInfo)(bytes, typeInfo, prefix)
-}
-
-export const arc4Encoders: Record<string, fromBytes<DeliberateAny>> = {
-  Address: AddressImpl.fromBytesImpl,
-  Bool: BoolImpl.fromBytesImpl,
-  Byte: ByteImpl.fromBytesImpl,
-  Str: StrImpl.fromBytesImpl,
-  'UintN<.*>': UintNImpl.fromBytesImpl,
-  'UFixedNxM<.*>': UFixedNxMImpl.fromBytesImpl,
-  'StaticArray<.*>': StaticArrayImpl.fromBytesImpl,
-  'DynamicArray<.*>': DynamicArrayImpl.fromBytesImpl,
-  'Tuple(<.*>)?': TupleImpl.fromBytesImpl,
-  'Struct(<.*>)?': StructImpl.fromBytesImpl,
-  DynamicBytes: DynamicBytesImpl.fromBytesImpl,
-  'StaticBytes<.*>': StaticBytesImpl.fromBytesImpl,
-  object: StructImpl.fromBytesImpl,
-}
-export const getArc4Encoder = <T>(typeInfo: TypeInfo, encoders?: Record<string, fromBytes<DeliberateAny>>): fromBytes<T> => {
-  const encoder = Object.entries(encoders ?? arc4Encoders).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]
-  if (!encoder) {
-    throw new Error(`No encoder found for type ${typeInfo.name}`)
-  }
-  return encoder as fromBytes<T>
-}
-
-export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
-  const map = {
-    Address: 'address',
-    Bool: 'bool',
-    Byte: 'byte',
-    Str: 'string',
-    'UintN<.*>': UintNImpl.getArc4TypeName,
-    'UFixedNxM<.*>': UFixedNxMImpl.getArc4TypeName,
-    'StaticArray<.*>': StaticArrayImpl.getArc4TypeName,
-    'DynamicArray<.*>': DynamicArrayImpl.getArc4TypeName,
-    'Tuple(<.*>)?': TupleImpl.getArc4TypeName,
-    'Struct(<.*>)?': StructImpl.getArc4TypeName,
-    DynamicBytes: DynamicBytesImpl.getArc4TypeName,
-    'StaticBytes<.*>': StaticBytesImpl.getArc4TypeName,
-  }
-  const name = Object.entries(map).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]
-  if (typeof name === 'string') return name
-  else if (typeof name === 'function') return name(typeInfo)
-  return undefined
-}
-
-export function decodeArc4Impl<T>(
-  sourceTypeInfoString: string,
-  targetTypeInfoString: string,
-  bytes: StubBytesCompat,
-  prefix: 'none' | 'log' = 'none',
-): T {
-  const sourceTypeInfo = JSON.parse(sourceTypeInfoString)
-  const targetTypeInfo = JSON.parse(targetTypeInfoString)
-  const encoder = getArc4Encoder(sourceTypeInfo)
-  const source = encoder(bytes, sourceTypeInfo, prefix) as { typeInfo: TypeInfo }
-  return getNativeValue(source, targetTypeInfo) as T
 }
 
 export function encodeArc4Impl<T>(sourceTypeInfoString: string | undefined, source: T): bytes {
   const arc4Encoded = getArc4Encoded(source, sourceTypeInfoString)
   return arc4Encoded.bytes
-}
-
-const getNativeValue = (value: DeliberateAny, targetTypeInfo: TypeInfo | undefined): DeliberateAny => {
-  if (value.typeInfo && value.typeInfo.name === targetTypeInfo?.name) {
-    return value
-  }
-  const native = (value as DeliberateAny).native
-  if (Array.isArray(native)) {
-    return native.map((item) => getNativeValue(item, (targetTypeInfo?.genericArgs as { elementType: TypeInfo })?.elementType))
-  } else if (native instanceof AlgoTsPrimitiveCls) {
-    return native
-  } else if (native instanceof BytesBackedCls) {
-    return native.bytes
-  } else if (native instanceof Uint64BackedCls) {
-    return native.uint64
-  } else if (typeof native === 'object') {
-    return Object.fromEntries(
-      Object.entries(native).map(([key, value], index) => [
-        key,
-        getNativeValue(value, (targetTypeInfo?.genericArgs as TypeInfo[])?.[index]),
-      ]),
-    )
-  }
-  return native
 }
 
 export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: string): ARC4Encoded => {
@@ -1407,7 +1076,61 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
   throw new CodeError(`Unsupported type for encoding: ${typeof value}`)
 }
 
-export const arc4EncodedLengthImpl = (typeInfoString: string): uint64 => {
-  const typeInfo = JSON.parse(typeInfoString)
-  return getMaxLengthOfStaticContentType(typeInfo, true)
+export const toBytes = (val: unknown): bytes => {
+  const uint64Val = asMaybeUint64Cls(val, false)
+  if (uint64Val !== undefined) {
+    return uint64Val.toBytes().asAlgoTs()
+  }
+  const bytesVal = asMaybeBytesCls(val)
+  if (bytesVal !== undefined) {
+    return bytesVal.asAlgoTs()
+  }
+  const bigUintVal = asMaybeBigUintCls(val)
+  if (bigUintVal !== undefined) {
+    return bigUintVal.toBytes().asAlgoTs()
+  }
+  if (val instanceof BytesBackedCls) {
+    return val.bytes
+  }
+  if (val instanceof Uint64BackedCls) {
+    return asUint64Cls(val.uint64).toBytes().asAlgoTs()
+  }
+  if (Array.isArray(val) || typeof val === 'object') {
+    return encodeArc4Impl(undefined, val)
+  }
+  throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
+}
+
+export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
+  const encoders: Record<string, fromBytes<DeliberateAny>> = {
+    account: AccountCls.fromBytes,
+    application: ApplicationCls.fromBytes,
+    asset: AssetCls.fromBytes,
+    boolean: booleanFromBytes,
+    biguint: bigUintFromBytes,
+    bytes: bytesFromBytes,
+    string: stringFromBytes,
+    uint64: uint64FromBytes,
+    OnCompleteAction: onCompletionFromBytes,
+    TransactionType: transactionTypeFromBytes,
+    Address: AddressImpl.fromBytesImpl,
+    Bool: BoolImpl.fromBytesImpl,
+    Byte: ByteImpl.fromBytesImpl,
+    Str: StrImpl.fromBytesImpl,
+    'UintN<.*>': UintNImpl.fromBytesImpl,
+    'UFixedNxM<.*>': UFixedNxMImpl.fromBytesImpl,
+    'StaticArray<.*>': StaticArrayImpl.fromBytesImpl,
+    'DynamicArray<.*>': DynamicArrayImpl.fromBytesImpl,
+    'Tuple(<.*>)?': TupleImpl.fromBytesImpl,
+    'Struct(<.*>)?': StructImpl.fromBytesImpl,
+    DynamicBytes: DynamicBytesImpl.fromBytesImpl,
+    'StaticBytes<.*>': StaticBytesImpl.fromBytesImpl,
+    object: StructImpl.fromBytesImpl,
+  }
+
+  const encoder = Object.entries(encoders).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]
+  if (!encoder) {
+    throw new Error(`No encoder found for type ${typeInfo.name}`)
+  }
+  return encoder as fromBytes<T>
 }

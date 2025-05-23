@@ -1,9 +1,9 @@
 import type { bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { MAX_BOX_SIZE } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { toBytes } from '../encoders'
 import { AvmError, InternalError } from '../errors'
 import { asBytes, asBytesCls, asNumber, asUint8Array, conactUint8Arrays } from '../util'
+import { toBytes } from './encoded-types'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 
 export const Box: typeof op.Box = {

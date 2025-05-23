@@ -5,7 +5,7 @@ import type { Bool, DynamicBytes, StaticArray, Tuple, UintN16 } from '@algorandf
 import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, Struct, UintN64, UintN8 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { MAX_UINT64 } from '../../src/constants'
-import { toBytes } from '../../src/encoders'
+import { toBytes } from '../../src/impl/encoded-types'
 import { asBytes } from '../../src/util'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
