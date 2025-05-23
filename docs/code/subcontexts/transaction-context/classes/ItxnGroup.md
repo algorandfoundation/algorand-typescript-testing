@@ -6,7 +6,7 @@
 
 # Class: ItxnGroup
 
-Defined in: [src/subcontexts/transaction-context.ts:485](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L485)
+Defined in: [src/subcontexts/transaction-context.ts:496](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L496)
 
 Represents a group of inner transactions.
 
@@ -16,7 +16,7 @@ Represents a group of inner transactions.
 
 > **new ItxnGroup**(`itxns`): `ItxnGroup`
 
-Defined in: [src/subcontexts/transaction-context.ts:487](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L487)
+Defined in: [src/subcontexts/transaction-context.ts:498](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L498)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [src/subcontexts/transaction-context.ts:487](https://github.com/algo
 
 > **itxns**: `InnerTxn`[] = `[]`
 
-Defined in: [src/subcontexts/transaction-context.ts:486](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L486)
+Defined in: [src/subcontexts/transaction-context.ts:497](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L497)
 
 ## Methods
 
@@ -42,7 +42,7 @@ Defined in: [src/subcontexts/transaction-context.ts:486](https://github.com/algo
 
 > **getApplicationCallInnerTxn**(`index`?): `ApplicationCallInnerTxn`
 
-Defined in: [src/subcontexts/transaction-context.ts:496](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L496)
+Defined in: [src/subcontexts/transaction-context.ts:507](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L507)
 
 Gets an application inner transaction by index.
 
@@ -66,7 +66,7 @@ The application inner transaction.
 
 > **getAssetConfigInnerTxn**(`index`?): `AssetConfigInnerTxn`
 
-Defined in: [src/subcontexts/transaction-context.ts:505](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L505)
+Defined in: [src/subcontexts/transaction-context.ts:516](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L516)
 
 Gets an asset configuration inner transaction by index.
 
@@ -90,7 +90,7 @@ The asset configuration inner transaction.
 
 > **getAssetFreezeInnerTxn**(`index`?): `AssetFreezeInnerTxn`
 
-Defined in: [src/subcontexts/transaction-context.ts:523](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L523)
+Defined in: [src/subcontexts/transaction-context.ts:534](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L534)
 
 Gets an asset freeze inner transaction by index.
 
@@ -114,7 +114,7 @@ The asset freeze inner transaction.
 
 > **getAssetTransferInnerTxn**(`index`?): `AssetTransferInnerTxn`
 
-Defined in: [src/subcontexts/transaction-context.ts:514](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L514)
+Defined in: [src/subcontexts/transaction-context.ts:525](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L525)
 
 Gets an asset transfer inner transaction by index.
 
@@ -138,7 +138,7 @@ The asset transfer inner transaction.
 
 > **getInnerTxn**(`index`?): `InnerTxn`
 
-Defined in: [src/subcontexts/transaction-context.ts:550](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L550)
+Defined in: [src/subcontexts/transaction-context.ts:561](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L561)
 
 Gets an inner transaction by index.
 
@@ -162,7 +162,7 @@ The inner transaction.
 
 > **getKeyRegistrationInnerTxn**(`index`?): `KeyRegistrationInnerTxn`
 
-Defined in: [src/subcontexts/transaction-context.ts:532](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L532)
+Defined in: [src/subcontexts/transaction-context.ts:543](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L543)
 
 Gets a key registration inner transaction by index.
 
@@ -186,7 +186,7 @@ The key registration inner transaction.
 
 > **getPaymentInnerTxn**(`index`?): `PaymentInnerTxn`
 
-Defined in: [src/subcontexts/transaction-context.ts:541](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L541)
+Defined in: [src/subcontexts/transaction-context.ts:552](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L552)
 
 Gets a payment inner transaction by index.
 
