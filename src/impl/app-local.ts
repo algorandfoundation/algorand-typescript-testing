@@ -1,9 +1,9 @@
 import type { Account, Application, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
-import { toBytes } from '../encoders'
 import { asBytes } from '../util'
 import { getAccount } from './acct-params'
 import { getApp } from './app-params'
+import { toBytes } from './encoded-types'
 import { Bytes, Uint64, type StubBytesCompat, type StubUint64Compat } from './primitives'
 
 export const AppLocal: typeof op.AppLocal = {

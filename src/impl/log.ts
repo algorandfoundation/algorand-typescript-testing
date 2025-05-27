@@ -2,7 +2,8 @@ import type { bytes, BytesBacked, StringCompat } from '@algorandfoundation/algor
 import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
-import { nameOfType } from '../util'
+
+import { nameOfType } from '../typescript-helpers'
 import type { StubBigUintCompat, StubBytesCompat, StubUint64Compat } from './primitives'
 import { AlgoTsPrimitiveCls, BigUintCls, BytesCls, Uint64Cls } from './primitives'
 

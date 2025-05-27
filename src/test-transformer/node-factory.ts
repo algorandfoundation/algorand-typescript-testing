@@ -1,6 +1,6 @@
 import type { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
-import type { TypeInfo } from '../encoders'
+import type { TypeInfo } from '../impl/encoded-types'
 import type { DeliberateAny } from '../typescript-helpers'
 import { getPropertyNameAsString, trimGenericTypeName } from './helpers'
 
