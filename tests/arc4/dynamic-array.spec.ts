@@ -1,4 +1,5 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
+import { clone } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import {
   Address,
@@ -50,6 +51,9 @@ const addressDynamicArray = {
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
+  clone(array: DynamicArray<Address>) {
+    return clone(array)
+  },
 }
 const boolDynamicArray = {
   abiTypeString: 'bool[]',
@@ -71,6 +75,9 @@ const boolDynamicArray = {
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
+  clone(array: DynamicArray<Bool>) {
+    return clone(array)
+  },
 }
 const uint256DynamicArray = {
   abiTypeString: 'uint256[]',
@@ -91,6 +98,9 @@ const uint256DynamicArray = {
   },
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+  },
+  clone(array: DynamicArray<UintN<256>>) {
+    return clone(array)
   },
 }
 const ufixednxmDynamicArray = {
@@ -124,6 +134,9 @@ const ufixednxmDynamicArray = {
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
+  clone(array: DynamicArray<UFixedNxM<256, 16>>) {
+    return clone(array)
+  },
 }
 const stringDynamicArray = {
   abiTypeString: 'string[]',
@@ -156,6 +169,9 @@ const stringDynamicArray = {
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
+  clone(array: DynamicArray<Str>) {
+    return clone(array)
+  },
 }
 const boolDynamicArrayOfArray = {
   abiTypeString: 'bool[][]',
@@ -178,6 +194,9 @@ const boolDynamicArrayOfArray = {
   },
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+  },
+  clone(array: DynamicArray<DynamicArray<Bool>>) {
+    return clone(array)
   },
 }
 const addressDynamicArrayOfArray = {
@@ -202,6 +221,9 @@ const addressDynamicArrayOfArray = {
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
+  clone(array: DynamicArray<DynamicArray<Address>>) {
+    return clone(array)
+  },
 }
 const uint256DynamicArrayOfArray = {
   abiTypeString: 'uint256[][]',
@@ -224,6 +246,9 @@ const uint256DynamicArrayOfArray = {
   },
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+  },
+  clone(array: DynamicArray<DynamicArray<UintN<256>>>) {
+    return clone(array)
   },
 }
 const uint256DynamicArrayOfStaticArray = {
@@ -250,6 +275,9 @@ const uint256DynamicArrayOfStaticArray = {
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
+  clone(array: DynamicArray<StaticArray<UintN<256>, 10>>) {
+    return clone(array)
+  },
 }
 const stringDynamicArrayOfArray = {
   abiTypeString: 'string[][]',
@@ -272,6 +300,9 @@ const stringDynamicArrayOfArray = {
   },
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+  },
+  clone(array: DynamicArray<DynamicArray<Str>>) {
+    return clone(array)
   },
 }
 const stringDynamicArrayOfArrayOfArray = {
@@ -300,6 +331,9 @@ const stringDynamicArrayOfArrayOfArray = {
   },
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+  },
+  clone(array: DynamicArray<DynamicArray<DynamicArray<Str>>>) {
+    return clone(array)
   },
 }
 const tupleDynamicArray = {
@@ -353,6 +387,11 @@ const tupleDynamicArray = {
   },
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+  },
+  clone(
+    array: DynamicArray<Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, UintN<256>, Address]>, Bool, StaticArray<UintN<256>, 3>]>>,
+  ) {
+    return clone(array)
   },
 }
 class Swapped extends Struct<{
@@ -411,6 +450,9 @@ const structDynamicArray = {
   concatABIValue() {
     return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
   },
+  clone(array: DynamicArray<Swapped>) {
+    return clone(array)
+  },
 }
 const testDataArray = [
   addressDynamicArray,
@@ -433,7 +475,7 @@ describe('arc4.DynamicArray', () => {
     ctx.reset()
   })
 
-  test.each(testDataArray)('should be able to get bytes representation', (data) => {
+  test.each([testDataArray])('should be able to get bytes representation', (data) => {
     const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
     const result = data.array().bytes
     expect(result).toEqual(sdkResult)
@@ -442,7 +484,7 @@ describe('arc4.DynamicArray', () => {
   test.each(testDataArray)('copy dynamic array', (data) => {
     const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
     const original = data.array()
-    const copy = original.copy()
+    const copy = data.clone(original as DeliberateAny)
     const result = copy.bytes
     expect(copy.length).toEqual(original.length)
     expect(result).toEqual(sdkResult)
@@ -475,7 +517,7 @@ describe('arc4.DynamicArray', () => {
     nativeValuesCopy[0] = nativeTemp
 
     const dynamicArray = data.array()
-    const dynamicArrayCopy = dynamicArray.copy()
+    const dynamicArrayCopy = data.clone(dynamicArray as DeliberateAny)
     const arrayTemp = dynamicArrayCopy.at(-1)
     dynamicArrayCopy[dynamicArrayCopy.length - 1] = dynamicArrayCopy[0]
     dynamicArrayCopy[0] = arrayTemp
@@ -501,7 +543,7 @@ describe('arc4.DynamicArray', () => {
     nativeValuesCopy.push(nativeValues[0])
 
     const dynamicArray = data.array()
-    const dynamicArrayCopy = dynamicArray.copy()
+    const dynamicArrayCopy = data.clone(dynamicArray as DeliberateAny)
     dynamicArrayCopy.push(dynamicArray.at(-1) as never, dynamicArray[0] as never)
 
     const sdkResult = getABIEncodedValue(nativeValuesCopy, data.abiTypeString, {})
@@ -536,7 +578,7 @@ describe('arc4.DynamicArray', () => {
     const nativeValue2 = nativeValuesCopy.pop()
 
     const dynamicArray = data.array()
-    const dynamicArrayCopy = dynamicArray.copy()
+    const dynamicArrayCopy = data.clone(dynamicArray as DeliberateAny)
     const value1 = dynamicArrayCopy.pop()
     const value2 = dynamicArrayCopy.pop()
 

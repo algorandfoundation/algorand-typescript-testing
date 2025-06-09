@@ -1,5 +1,5 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { BigUint, Box, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { BigUint, Box, Bytes, clone, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type { DynamicBytes, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
@@ -259,7 +259,7 @@ describe('Box', () => {
       expect(box.value.at(-1).native).toEqual(300)
 
       // setting bytes value through op should be reflected in the box value.
-      const copy = box.value.copy()
+      const copy = clone(box.value)
       copy[2] = new UintN64(400)
       expect(box.value.at(-1).native).toEqual(300)
 

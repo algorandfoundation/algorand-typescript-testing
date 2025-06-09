@@ -1,5 +1,5 @@
 import type { Asset, gtxn, uint64 } from '@algorandfoundation/algorand-typescript'
-import { arc4, assert, BoxMap, Global, itxn, op, Txn } from '@algorandfoundation/algorand-typescript'
+import { arc4, assert, BoxMap, clone, Global, itxn, op, Txn } from '@algorandfoundation/algorand-typescript'
 
 export class ListingKey extends arc4.Struct<{
   owner: arc4.Address
@@ -111,7 +111,7 @@ export default class DigitalMarketplace extends arc4.Contract {
     assert(xfer.assetReceiver === Global.currentApplicationAddress)
     assert(xfer.assetAmount > 0)
 
-    const existing = this.listings(key).value.copy()
+    const existing = clone(this.listings(key).value)
     this.listings(key).value = new ListingValue({
       bid: existing.bid,
       bidUnitaryPrice: existing.bidUnitaryPrice,
@@ -129,7 +129,7 @@ export default class DigitalMarketplace extends arc4.Contract {
       nonce: nonce,
     })
 
-    const existing = this.listings(key).value.copy()
+    const existing = clone(this.listings(key).value)
     this.listings(key).value = new ListingValue({
       bid: existing.bid,
       bidUnitaryPrice: existing.bidUnitaryPrice,
@@ -147,7 +147,7 @@ export default class DigitalMarketplace extends arc4.Contract {
       nonce: nonce,
     })
 
-    const listing = this.listings(key).value.copy()
+    const listing = clone(this.listings(key).value)
 
     const amountToBePaid = this.quantityPrice(quantity, listing.unitaryPrice.native, asset.decimals)
 
@@ -180,7 +180,7 @@ export default class DigitalMarketplace extends arc4.Contract {
       nonce: nonce,
     })
 
-    const listing = this.listings(key).value.copy()
+    const listing = clone(this.listings(key).value)
     if (listing.bidder !== new arc4.Address()) {
       const currentBidDeposit = this.quantityPrice(listing.bid.native, listing.bidUnitaryPrice.native, asset.decimals)
       itxn.payment({ receiver: listing.bidder.native, amount: currentBidDeposit }).submit()
@@ -203,7 +203,7 @@ export default class DigitalMarketplace extends arc4.Contract {
   bid(owner: arc4.Address, asset: Asset, nonce: arc4.UintN64, bidPay: gtxn.PaymentTxn, quantity: arc4.UintN64, unitaryPrice: arc4.UintN64) {
     const key = new ListingKey({ owner, asset: new arc4.UintN64(asset.id), nonce })
 
-    const listing = this.listings(key).value.copy()
+    const listing = clone(this.listings(key).value)
     if (listing.bidder !== new arc4.Address()) {
       assert(unitaryPrice.native > listing.bidUnitaryPrice.native)
 
@@ -231,7 +231,7 @@ export default class DigitalMarketplace extends arc4.Contract {
   acceptBid(asset: Asset, nonce: arc4.UintN64) {
     const key = new ListingKey({ owner: new arc4.Address(Txn.sender), asset: new arc4.UintN64(asset.id), nonce })
 
-    const listing = this.listings(key).value.copy()
+    const listing = clone(this.listings(key).value)
     assert(listing.bidder !== new arc4.Address())
 
     const minQuantity = listing.deposited.native < listing.bid.native ? listing.deposited.native : listing.bid.native

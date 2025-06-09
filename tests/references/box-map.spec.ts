@@ -1,5 +1,5 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { BigUint, BoxMap, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { BigUint, BoxMap, Bytes, clone, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type { Bool, DynamicBytes, StaticArray, Tuple, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
 import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, Struct, UintN64, UintN8 } from '@algorandfoundation/algorand-typescript/arc4'
@@ -261,7 +261,7 @@ describe('BoxMap', () => {
       expect(boxMap(key).value.at(-1).native).toEqual(300)
 
       // setting bytes value through op should be reflected in the box value.
-      const copy = boxMap(key).value.copy()
+      const copy = clone(boxMap(key).value)
       copy[2] = new UintN64(400)
       expect(boxMap(key).value.at(-1).native).toEqual(300)
 
