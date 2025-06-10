@@ -6,6 +6,7 @@ import {
   assert,
   BigUint,
   Bytes,
+  clone,
   ensureBudget,
   Global,
   GlobalState,
@@ -88,7 +89,7 @@ export default class ZkWhitelistContract extends arc4.Contract {
       .applicationCall({
         appId: appId,
         fee: 0,
-        appArgs: [arc4.methodSelector('verify(byte[32][],byte[32][])bool'), proof.copy(), publicInputs.copy()],
+        appArgs: [arc4.methodSelector('verify(byte[32][],byte[32][])bool'), clone(proof), clone(publicInputs)],
         onCompletion: OnCompleteAction.NoOp,
       })
       .submit().lastLog

@@ -2,8 +2,8 @@ import type { OnCompleteActionStr } from '@algorandfoundation/algorand-typescrip
 import type { CreateOptions } from '@algorandfoundation/algorand-typescript/arc4'
 import js_sha512 from 'js-sha512'
 import { ConventionalRouting } from './constants'
-import type { TypeInfo } from './encoders'
 import { Arc4MethodConfigSymbol, Contract } from './impl/contract'
+import type { TypeInfo } from './impl/encoded-types'
 import { getArc4TypeName as getArc4TypeNameForARC4Encoded } from './impl/encoded-types'
 import type { DeliberateAny } from './typescript-helpers'
 

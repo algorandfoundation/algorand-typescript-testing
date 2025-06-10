@@ -1,7 +1,8 @@
 import { LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
 import path from 'path'
 import ts from 'typescript'
-import type { TypeInfo } from '../encoders'
+import { CodeError } from '../errors'
+import type { TypeInfo } from '../impl/encoded-types'
 import { instanceOfAny } from '../typescript-helpers'
 import { nodeFactory } from './node-factory'
 import type { TransformerConfig } from './program-factory'
@@ -146,13 +147,13 @@ class ExpressionVisitor {
 
       const isGeneric = isGenericType(type)
       const needsToCaptureTypeInfo = isGeneric && isStateOrBoxType(type)
-      const isArc4Encoded = isArc4EncodedType(type)
+      const isArc4Encoded = isEncodedType(type)
       const info = isGeneric || isArc4Encoded ? getGenericTypeInfo(type) : undefined
       let updatedNode = node
 
       if (ts.isNewExpression(updatedNode)) {
-        if (isArc4EncodedType(type)) {
-          updatedNode = nodeFactory.instantiateARC4EncodedType(updatedNode, info)
+        if (isEncodedType(type)) {
+          updatedNode = nodeFactory.instantiateEncodedType(updatedNode, info)
         }
       }
 
@@ -160,17 +161,21 @@ class ExpressionVisitor {
         const stubbedFunctionName = this.stubbedFunctionName ?? tryGetStubbedFunctionName(updatedNode, this.helper)
         this.stubbedFunctionName = undefined
         let infoArg: TypeInfo | TypeInfo[] | undefined = info
-        if (isCallingEmit(stubbedFunctionName)) {
-          infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
+
+        if (
+          isCallingEmit(stubbedFunctionName) ||
+          isCallingEncodeArc4(stubbedFunctionName) ||
+          isCallingArc4EncodedLength(stubbedFunctionName) ||
+          isCallingClone(stubbedFunctionName)
+        ) {
+          const sourceLocation = this.helper.sourceLocation(updatedNode)
+          infoArg = this.helper.resolveTypeParameters(updatedNode).map((t) => getGenericTypeInfo(t, sourceLocation))[0]
         } else if (isCallingDecodeArc4(stubbedFunctionName)) {
-          const sourceType = ptypes.ptypeToArc4EncodedType(type, this.helper.sourceLocation(node))
-          const sourceTypeInfo = getGenericTypeInfo(sourceType)
-          const targetTypeInfo = getGenericTypeInfo(type)
+          const sourceLocation = this.helper.sourceLocation(updatedNode)
+          const sourceType = ptypes.ptypeToArc4EncodedType(type, sourceLocation)
+          const sourceTypeInfo = getGenericTypeInfo(sourceType, sourceLocation)
+          const targetTypeInfo = getGenericTypeInfo(type, sourceLocation)
           infoArg = [sourceTypeInfo, targetTypeInfo]
-        } else if (isCallingEncodeArc4(stubbedFunctionName)) {
-          infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
-        } else if (isCallingArc4EncodedLength(stubbedFunctionName)) {
-          infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
         }
 
         updatedNode = stubbedFunctionName
@@ -360,12 +365,13 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.UFixedNxMType,
     ptypes.UintNType,
     ptypes.TuplePType,
+    ptypes.MutableObjectType,
   )
 
 const isStateOrBoxType = (type: ptypes.PType): boolean =>
   instanceOfAny(type, ptypes.BoxMapPType, ptypes.BoxPType, ptypes.GlobalStateType, ptypes.LocalStateType)
 
-const isArc4EncodedType = (type: ptypes.PType): boolean =>
+const isEncodedType = (type: ptypes.PType): boolean =>
   instanceOfAny(
     type,
     ptypes.ARC4StructType,
@@ -374,22 +380,28 @@ const isArc4EncodedType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
+    ptypes.MutableObjectType,
   ) ||
   type === ptypes.arc4StringType ||
   type === ptypes.arc4BooleanType
 
-const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
+const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation): TypeInfo => {
+  if (type instanceof ptypes.UnionPType) {
+    throw new CodeError(
+      `${sourceLocation}: Union types are not valid as a variable, parameter, return, or property type. Expression type is ${type.name}`,
+    )
+  }
   let typeName = type?.name ?? type?.toString() ?? 'unknown'
   let genericArgs: TypeInfo[] | Record<string, TypeInfo> = []
 
   if (instanceOfAny(type, ptypes.LocalStateType, ptypes.GlobalStateType, ptypes.BoxPType)) {
-    genericArgs.push(getGenericTypeInfo(type.contentType))
+    genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
   } else if (type instanceof ptypes.BoxMapPType) {
-    genericArgs.push(getGenericTypeInfo(type.keyType))
-    genericArgs.push(getGenericTypeInfo(type.contentType))
+    genericArgs.push(getGenericTypeInfo(type.keyType, sourceLocation))
+    genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
   } else if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.DynamicArrayType, ptypes.ArrayPType)) {
     const entries = []
-    entries.push(['elementType', getGenericTypeInfo(type.elementType)])
+    entries.push(['elementType', getGenericTypeInfo(type.elementType, sourceLocation)])
     if (instanceOfAny(type, ptypes.StaticArrayType)) {
       entries.push(['size', { name: type.arraySize.toString() }])
     }
@@ -398,19 +410,19 @@ const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
     genericArgs = { n: { name: type.n.toString() }, m: { name: type.m.toString() } }
   } else if (type instanceof ptypes.UintNType) {
     genericArgs.push({ name: type.n.toString() })
-  } else if (type instanceof ptypes.ARC4StructType) {
-    typeName = `Struct<${type.name}>`
+  } else if (type instanceof ptypes.ARC4StructType || type instanceof ptypes.MutableObjectType) {
+    typeName = type instanceof ptypes.ARC4StructType ? `Struct<${type.name}>` : `MutableObject<${type.name}>`
     genericArgs = Object.fromEntries(
       Object.entries(type.fields)
-        .map(([key, value]) => [key, getGenericTypeInfo(value)])
+        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
         .filter((x) => !!x),
     )
   } else if (type instanceof ptypes.ARC4TupleType || type instanceof ptypes.TuplePType) {
-    genericArgs.push(...type.items.map(getGenericTypeInfo))
+    genericArgs.push(...type.items.map((t) => getGenericTypeInfo(t, sourceLocation)))
   } else if (type instanceof ptypes.ObjectPType) {
     genericArgs = Object.fromEntries(
       Object.entries(type.properties)
-        .map(([key, value]) => [key, getGenericTypeInfo(value)])
+        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
         .filter((x) => !!x),
     )
   }
@@ -429,14 +441,27 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     : (node.expression as ts.Identifier)
   const functionName = tryGetAlgoTsSymbolName(identityExpression, helper)
   if (functionName === undefined) return undefined
-  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'arc4EncodedLength', 'abiCall']
+  const stubbedFunctionNames = [
+    'interpretAsArc4',
+    'decodeArc4',
+    'encodeArc4',
+    'emit',
+    'methodSelector',
+    'arc4EncodedLength',
+    'abiCall',
+    'clone',
+  ]
 
   if (stubbedFunctionNames.includes(functionName)) {
+    if (ts.isPropertyAccessExpression(node.expression)) {
+      const objectName = tryGetAlgoTsSymbolName(node.expression.expression, helper)
+      return objectName !== undefined ? functionName : undefined
+    }
     return functionName
   }
 
   if (['begin', 'next'].includes(functionName) && ts.isPropertyAccessExpression(node.expression)) {
-    const objectExpression = (node.expression as ts.PropertyAccessExpression).expression
+    const objectExpression = node.expression.expression
     const objectName = tryGetAlgoTsSymbolName(objectExpression, helper)
     if (objectName === 'itxnCompose') return functionName
   }
@@ -458,3 +483,4 @@ const isCallingArc4EncodedLength = (functionName: string | undefined): boolean =
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
 const isCallingAbiCall = (functionName: string | undefined): boolean => ['abiCall', 'begin', 'next'].includes(functionName ?? '')
+const isCallingClone = (functionName: string | undefined): boolean => 'clone' === (functionName ?? '')
