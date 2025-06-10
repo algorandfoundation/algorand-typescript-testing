@@ -147,13 +147,13 @@ class ExpressionVisitor {
 
       const isGeneric = isGenericType(type)
       const needsToCaptureTypeInfo = isGeneric && isStateOrBoxType(type)
-      const isArc4Encoded = isArc4EncodedType(type)
+      const isArc4Encoded = isEncodedType(type)
       const info = isGeneric || isArc4Encoded ? getGenericTypeInfo(type) : undefined
       let updatedNode = node
 
       if (ts.isNewExpression(updatedNode)) {
-        if (isArc4EncodedType(type)) {
-          updatedNode = nodeFactory.instantiateARC4EncodedType(updatedNode, info)
+        if (isEncodedType(type)) {
+          updatedNode = nodeFactory.instantiateEncodedType(updatedNode, info)
         }
       }
 
@@ -365,12 +365,13 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.UFixedNxMType,
     ptypes.UintNType,
     ptypes.TuplePType,
+    ptypes.MutableObjectType,
   )
 
 const isStateOrBoxType = (type: ptypes.PType): boolean =>
   instanceOfAny(type, ptypes.BoxMapPType, ptypes.BoxPType, ptypes.GlobalStateType, ptypes.LocalStateType)
 
-const isArc4EncodedType = (type: ptypes.PType): boolean =>
+const isEncodedType = (type: ptypes.PType): boolean =>
   instanceOfAny(
     type,
     ptypes.ARC4StructType,
@@ -379,6 +380,7 @@ const isArc4EncodedType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
+    ptypes.MutableObjectType,
   ) ||
   type === ptypes.arc4StringType ||
   type === ptypes.arc4BooleanType
@@ -408,8 +410,8 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
     genericArgs = { n: { name: type.n.toString() }, m: { name: type.m.toString() } }
   } else if (type instanceof ptypes.UintNType) {
     genericArgs.push({ name: type.n.toString() })
-  } else if (type instanceof ptypes.ARC4StructType) {
-    typeName = `Struct<${type.name}>`
+  } else if (type instanceof ptypes.ARC4StructType || type instanceof ptypes.MutableObjectType) {
+    typeName = type instanceof ptypes.ARC4StructType ? `Struct<${type.name}>` : `MutableObject<${type.name}>`
     genericArgs = Object.fromEntries(
       Object.entries(type.fields)
         .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])

@@ -13,7 +13,7 @@ export { attachAbiMetadata } from './abi-metadata'
 export { cloneImpl } from './impl/clone'
 export { emitImpl } from './impl/emit'
 export * from './impl/encoded-types'
-export { arc4EncodedLengthImpl, decodeArc4Impl, encodeArc4Impl } from './impl/encoded-types'
+export { MutableObjectImpl } from './impl/mutable-object'
 
 export function switchableValue(x: unknown): bigint | string | boolean {
   if (typeof x === 'boolean') return x

@@ -84,7 +84,7 @@ export const nodeFactory = {
     )
   },
 
-  instantiateARC4EncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
+  instantiateEncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
     const infoString = JSON.stringify(typeInfo)
     const classIdentifier = node.expression.getText().replace('arc4.', '')
     return factory.createNewExpression(
