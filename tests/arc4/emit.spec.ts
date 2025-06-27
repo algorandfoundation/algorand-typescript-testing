@@ -37,7 +37,7 @@ class SwappedArc4 extends arc4.Struct<{
   q: arc4.Bool
   r: arc4.StaticArray<arc4.UintN8, 3>
   s: arc4.DynamicArray<arc4.UintN16>
-  t: arc4.Tuple<[arc4.UintN32, arc4.UintN64, arc4.Str]>
+  t: arc4.Tuple<readonly [arc4.UintN32, arc4.UintN64, arc4.Str]>
 }> {}
 
 describe('arc4.emit', async () => {

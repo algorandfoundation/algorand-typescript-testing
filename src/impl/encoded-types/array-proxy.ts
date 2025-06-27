@@ -12,6 +12,8 @@ export const arrayProxyHandler = <TItem>() => ({
       return target.items[Symbol.iterator].bind(target.items)
     } else if (prop === 'entries') {
       return target.items.entries.bind(target.items)
+    } else if (prop === 'keys') {
+      return target.items.keys.bind(target.items)
     } else if (prop === 'at') {
       return (index: Uint64Compat): TItem => {
         return arrayUtil.arrayAt(target.items, index)

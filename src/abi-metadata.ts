@@ -4,7 +4,7 @@ import js_sha512 from 'js-sha512'
 import { ConventionalRouting } from './constants'
 import { Arc4MethodConfigSymbol, Contract } from './impl/contract'
 import type { TypeInfo } from './impl/encoded-types'
-import { getArc4TypeName as getArc4TypeNameForARC4Encoded } from './impl/encoded-types'
+import { getArc4TypeName } from './impl/encoded-types'
 import type { DeliberateAny } from './typescript-helpers'
 
 export interface AbiMetadata {
@@ -80,41 +80,6 @@ export const getArc4Signature = (metadata: AbiMetadata): string => {
 export const getArc4Selector = (metadata: AbiMetadata): Uint8Array => {
   const hash = js_sha512.sha512_256.array(getArc4Signature(metadata))
   return new Uint8Array(hash.slice(0, 4))
-}
-
-const getArc4TypeName = (t: TypeInfo): string => {
-  const map: Record<string, string | ((t: TypeInfo) => string)> = {
-    void: 'void',
-    account: 'account',
-    application: 'application',
-    asset: 'asset',
-    boolean: 'bool',
-    biguint: 'uint512',
-    bytes: 'byte[]',
-    string: 'string',
-    uint64: 'uint64',
-    OnCompleteAction: 'uint64',
-    TransactionType: 'uint64',
-    Transaction: 'txn',
-    PaymentTxn: 'pay',
-    KeyRegistrationTxn: 'keyreg',
-    AssetConfigTxn: 'acfg',
-    AssetTransferTxn: 'axfer',
-    AssetFreezeTxn: 'afrz',
-    ApplicationCallTxn: 'appl',
-    'Tuple(<.*>)?': (t) =>
-      `(${Object.values(t.genericArgs as Record<string, TypeInfo>)
-        .map(getArc4TypeName)
-        .join(',')})`,
-  }
-  const entry = Object.entries(map).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(t.name))?.[1]
-  if (entry === undefined) {
-    return getArc4TypeNameForARC4Encoded(t) ?? t.name
-  }
-  if (entry instanceof Function) {
-    return entry(t)
-  }
-  return entry
 }
 
 /**

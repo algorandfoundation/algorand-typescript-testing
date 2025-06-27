@@ -31,7 +31,7 @@ describe('ARC4 AppGlobal values', async () => {
     ctx.reset()
   })
 
-  const testData = ['_implicit_key', ''].flatMap((implicit) => [
+  const testData: DeliberateAny[] = ['_implicit_key', ''].flatMap((implicit) => [
     {
       nativeValue: 42,
       abiValue: new UintN<64>(42),
@@ -106,6 +106,8 @@ describe('ARC4 AppGlobal values', async () => {
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
+  ])
+  testData.push(
     {
       nativeValue: [21, asUint8Array(Bytes('Hello')), true],
       abiValue: [Uint64(21), Bytes('Hello'), true],
@@ -122,7 +124,7 @@ describe('ARC4 AppGlobal values', async () => {
         expect(value).toEqual(expectedValue)
       },
     },
-  ])
+  )
 
   test.for(testData)('should be able to get arc4 state values', async (data, { appClientGlobalStateContract: appClient, testAccount }) => {
     ctx.defaultSender = Bytes.fromBase32(testAccount.addr.toString())

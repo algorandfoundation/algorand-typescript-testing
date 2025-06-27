@@ -1,15 +1,15 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { BigUint, Box, Bytes, clone, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { DynamicBytes, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
+import type { UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   ARC4Encoded,
   Bool,
   DynamicArray,
+  DynamicBytes,
   interpretAsArc4,
   StaticArray,
   Str,
-  Struct,
   Tuple,
   UintN32,
   UintN64,
@@ -24,7 +24,8 @@ import { BoxContract } from '../artifacts/box-contract/contract.algo'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
 
-class MyStruct extends Struct<{ a: Str; b: DynamicBytes; c: Bool }> {}
+type MyObject = { a: string; b: bytes; c: boolean }
+type MyArc4Object = { a: Str; b: DynamicBytes; c: Bool }
 
 describe('Box', () => {
   const ctx = new TestExecutionContext()
@@ -110,7 +111,7 @@ describe('Box', () => {
     {
       value: ['hello', Bytes('world'), true] as const,
       newValue: ['world', Bytes('hello'), false] as const,
-      emptyValue: interpretAsArc4<Tuple<[Str, DynamicBytes, Bool]>>(Bytes('')),
+      emptyValue: [],
       withBoxContext: (test: (boxMap: Box<readonly [string, bytes, boolean]>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = Box<readonly [string, bytes, boolean]>({ key })
@@ -119,12 +120,56 @@ describe('Box', () => {
       },
     },
     {
+      value: ['hello', Bytes('world'), true] as const,
+      newValue: ['world', Bytes('hello'), false] as const,
+      emptyValue: [],
+      withBoxContext: (test: (boxMap: Box<[string, bytes, boolean]>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<[string, bytes, boolean]>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
       value: { a: 'hello', b: Bytes('world'), c: true },
       newValue: { a: 'world', b: Bytes('hello'), c: false },
-      emptyValue: interpretAsArc4<MyStruct>(Bytes('')),
-      withBoxContext: (test: (boxMap: Box<{ a: string; b: bytes; c: boolean }>) => void) => {
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<MyObject>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-          const boxMap = Box<{ a: string; b: bytes; c: boolean }>({ key })
+          const boxMap = Box<MyObject>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: { a: 'hello', b: Bytes('world'), c: true },
+      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<Readonly<MyObject>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<Readonly<MyObject>>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<MyArc4Object>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<MyArc4Object>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<Readonly<MyArc4Object>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<Readonly<MyArc4Object>>({ key })
           test(boxMap)
         })
       },
@@ -240,7 +285,7 @@ describe('Box', () => {
       } else if (box.value instanceof ARC4Encoded) {
         expect(box.value.bytes).toEqual(newBytesValue)
       } else {
-        expect(box.value).toEqual(newValue)
+        expect(toBytes(box.value)).toEqual(newBytesValue)
       }
     })
   })
@@ -322,7 +367,7 @@ describe('Box', () => {
         const boxArc4Bool = Box<Bool>({ key: 'arc4b' })
         const boxUint = Box<uint64>({ key: 'b' })
         const boxStaticArray = Box<StaticArray<UintN32, 10>>({ key: 'c' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool]>>({ key: 'e' })
+        const boxTuple = Box<Tuple<readonly [UintN8, UintN8, Bool, Bool]>>({ key: 'e' })
 
         const errorMessage = 'attempt to box_put wrong size'
         boxBool.create({ size: 9 })
@@ -362,7 +407,7 @@ describe('Box', () => {
         const boxArc4Bool = Box<Bool>({ key: 'arc4b' })
         const boxUint = Box<uint64>({ key: 'b' })
         const boxStaticArray = Box<StaticArray<UintN32, 10>>({ key: 'c' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool]>>({ key: 'e' })
+        const boxTuple = Box<Tuple<readonly [UintN8, UintN8, Bool, Bool]>>({ key: 'e' })
 
         boxBool.create()
         expect(boxBool.length).toEqual(8)
@@ -407,7 +452,7 @@ describe('Box', () => {
         const boxStr = Box<string>({ key: 'a' })
         const boxStaticArray = Box<StaticArray<DynamicArray<UintN32>, 10>>({ key: 'c' })
         const boxDynamicArray = Box<DynamicArray<UintN8>>({ key: 'd' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool, Str]>>({ key: 'e' })
+        const boxTuple = Box<Tuple<readonly [UintN8, UintN8, Bool, Bool, Str]>>({ key: 'e' })
 
         boxStr.create({ size: 2 })
         boxStr.value = 'hello'
@@ -443,7 +488,7 @@ describe('Box', () => {
         const boxStr = Box<string>({ key: 'a' })
         const boxStaticArray = Box<StaticArray<DynamicArray<UintN32>, 10>>({ key: 'c' })
         const boxDynamicArray = Box<DynamicArray<UintN8>>({ key: 'd' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool, Str]>>({ key: 'e' })
+        const boxTuple = Box<Tuple<readonly [UintN8, UintN8, Bool, Bool, Str]>>({ key: 'e' })
 
         boxStr.create({ size: 200 })
         boxStr.value = 'hello'

@@ -61,10 +61,14 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
     case 'Address':
     case 'StaticBytes':
     case 'StaticArray':
+    case 'FixedArray':
       return getMaxBytesLengthForStaticArray(type as unknown as { genericArgs: StaticArrayGenericArgs })
     case 'Tuple':
-      return getMaxBytesLengthForObjectType(type)
+    case 'ReadonlyTuple':
+    case 'MutableTuple':
     case 'Struct':
+    case 'Object':
+    case 'ReadonlyObject':
       return getMaxBytesLengthForObjectType(type)
     default:
       throw new CodeError(`unsupported type ${type.name}`)
@@ -76,7 +80,27 @@ export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
     const genericArgs = Object.values(typeInfo.genericArgs as Record<string, TypeInfo>)
     return `(${genericArgs.map(getArc4TypeName).join(',')})`
   }
-  const map = {
+  const map: Record<string, string | ((t: TypeInfo) => string)> = {
+    void: 'void',
+    account: 'account',
+    application: 'application',
+    asset: 'asset',
+    boolean: 'bool',
+    biguint: 'uint512',
+    bytes: 'byte[]',
+    string: 'string',
+    uint64: 'uint64',
+    OnCompleteAction: 'uint64',
+    TransactionType: 'uint64',
+    Transaction: 'txn',
+    PaymentTxn: 'pay',
+    KeyRegistrationTxn: 'keyreg',
+    AssetConfigTxn: 'acfg',
+    AssetTransferTxn: 'axfer',
+    AssetFreezeTxn: 'afrz',
+    ApplicationCallTxn: 'appl',
+    '(Readonly|Mutable)?Tuple(<.*>)?': getArc4TypeNameForObjectType,
+
     Address: 'address',
     Bool: 'bool',
     Byte: 'byte',
@@ -86,16 +110,16 @@ export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
       const genericArgs = t.genericArgs as uFixedNxMGenericArgs
       return `ufixed${genericArgs.n.name}x${genericArgs.m.name}`
     },
-    'StaticArray<.*>': (t: TypeInfo) => {
+    '(StaticArray|FixedArray)(<.*>)?': (t: TypeInfo) => {
       const genericArgs = t.genericArgs as StaticArrayGenericArgs
       return `${getArc4TypeName(genericArgs.elementType)}[${genericArgs.size.name}]`
     },
-    'DynamicArray<.*>': (t: TypeInfo) => {
+    '(Dynamic|Readonly)?Array<.*>': (t: TypeInfo) => {
       const genericArgs = t.genericArgs as DynamicArrayGenericArgs
       return `${getArc4TypeName(genericArgs.elementType)}[]`
     },
-    'Tuple(<.*>)?': getArc4TypeNameForObjectType,
     'Struct(<.*>)?': getArc4TypeNameForObjectType,
+    '(Readonly)?Object(<.*>)?': getArc4TypeNameForObjectType,
     DynamicBytes: 'byte[]',
     'StaticBytes<.*>': (t: TypeInfo) => {
       const genericArgs = t.genericArgs as StaticArrayGenericArgs
