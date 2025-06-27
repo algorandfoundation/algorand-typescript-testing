@@ -364,8 +364,10 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
-    ptypes.TuplePType,
-    ptypes.MutableObjectType,
+    ptypes.MutableTuplePType,
+    ptypes.ReadonlyTuplePType,
+    ptypes.MutableObjectPType,
+    ptypes.ImmutableObjectPType,
   )
 
 const isStateOrBoxType = (type: ptypes.PType): boolean =>
@@ -380,7 +382,6 @@ const isEncodedType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
-    ptypes.MutableObjectType,
   ) ||
   type === ptypes.arc4StringType ||
   type === ptypes.arc4BooleanType
@@ -410,21 +411,32 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
     genericArgs = { n: { name: type.n.toString() }, m: { name: type.m.toString() } }
   } else if (type instanceof ptypes.UintNType) {
     genericArgs.push({ name: type.n.toString() })
-  } else if (type instanceof ptypes.ARC4StructType || type instanceof ptypes.MutableObjectType) {
-    typeName = type instanceof ptypes.ARC4StructType ? `Struct<${type.name}>` : `MutableObject<${type.name}>`
+  } else if (type instanceof ptypes.ARC4StructType) {
+    typeName = `Struct<${type.name}>`
     genericArgs = Object.fromEntries(
       Object.entries(type.fields)
         .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
         .filter((x) => !!x),
     )
-  } else if (type instanceof ptypes.ARC4TupleType || type instanceof ptypes.TuplePType) {
-    genericArgs.push(...type.items.map((t) => getGenericTypeInfo(t, sourceLocation)))
-  } else if (type instanceof ptypes.ObjectPType) {
+  } else if (type instanceof ptypes.MutableObjectPType || type instanceof ptypes.ImmutableObjectPType) {
+    typeName = type instanceof ptypes.MutableObjectPType ? `Object<${type.name}>` : `ReadonlyObject<${type.name}>`
     genericArgs = Object.fromEntries(
       Object.entries(type.properties)
         .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
         .filter((x) => !!x),
     )
+  } else if (
+    type instanceof ptypes.ARC4TupleType ||
+    type instanceof ptypes.MutableTuplePType ||
+    type instanceof ptypes.ReadonlyTuplePType
+  ) {
+    typeName =
+      type instanceof ptypes.MutableTuplePType
+        ? `MutableTuple<${type.name}>`
+        : type instanceof ptypes.ReadonlyTuplePType
+          ? `ReadonlyTuple<${type.name}>`
+          : type.name
+    genericArgs.push(...type.items.map((t) => getGenericTypeInfo(t, sourceLocation)))
   }
 
   const result: TypeInfo = { name: typeName }

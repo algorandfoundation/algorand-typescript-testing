@@ -398,7 +398,7 @@ class Swapped extends Struct<{
   b: UintN<256>
   c: Bool
   d: Str
-  a: Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<256>, Bool, StaticArray<UintN<256>, 3>]>
+  a: Tuple<readonly [DynamicArray<Str>, DynamicArray<Str>, Str, UintN<256>, Bool, StaticArray<UintN<256>, 3>]>
 }> {}
 const structDynamicArray = {
   abiTypeString: '(uint256,bool,string,(string[],string[],string,uint256,bool,uint256[3]))[]',

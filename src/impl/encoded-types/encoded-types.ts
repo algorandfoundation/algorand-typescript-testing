@@ -30,6 +30,7 @@ import {
   asMaybeBigUintCls,
   asMaybeBytesCls,
   asMaybeUint64Cls,
+  asNumber,
   asUint64,
   asUint64Cls,
   asUint8Array,
@@ -37,7 +38,6 @@ import {
   uint8ArrayToNumber,
 } from '../../util'
 import { BytesBackedCls, Uint64BackedCls } from '../base'
-import { MutableObjectImpl } from '../mutable-object'
 import type { StubBytesCompat } from '../primitives'
 import { BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from '../primitives'
 import { Account, AccountCls, ApplicationCls, AssetCls } from '../reference'
@@ -936,7 +936,12 @@ const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
 
   const values: ARC4Encoded[] = []
   childTypes.forEach((childType, index) => {
-    values.push(getEncoder<ARC4Encoded>(childType)(valuePartitions[index], childType))
+    values.push(
+      getEncoder<ARC4Encoded>(childType)(
+        ['bytes', 'string'].includes(childType.name) ? valuePartitions[index].slice(2) : valuePartitions[index],
+        childType,
+      ),
+    )
   })
   return values
 }
@@ -1066,11 +1071,10 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
     const result = Object.values(value).reduce((acc: ARC4Encoded[], cur: DeliberateAny) => {
       return acc.concat(getArc4Encoded(cur))
     }, [])
-    const genericArgs: TypeInfo[] = value instanceof MutableObjectImpl ? [] : result.map((x) => (x as DeliberateAny).typeInfo)
+    const genericArgs: TypeInfo[] = result.map((x) => (x as DeliberateAny).typeInfo)
     const typeInfo = {
       name: `Struct<${value.constructor.name}>`,
-      genericArgs:
-        value instanceof MutableObjectImpl ? value.genericArgs : Object.fromEntries(Object.keys(value).map((x, i) => [x, genericArgs[i]])),
+      genericArgs: Object.fromEntries(Object.keys(value).map((x, i) => [x, genericArgs[i]])),
     }
     return new StructImpl(typeInfo, Object.fromEntries(Object.keys(value).map((x, i) => [x, result[i]])))
   }
@@ -1103,16 +1107,27 @@ export const toBytes = (val: unknown): bytes => {
   throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
 }
 
-const mutableObjectFromBytes: fromBytes<MutableObjectImpl<DeliberateAny>> = (
-  value: StubBytesCompat | Uint8Array,
-  typeInfo: string | TypeInfo,
-  prefix: 'none' | 'log' = 'none',
-) => {
-  const s = StructImpl.fromBytesImpl(value, typeInfo, prefix) as StructImpl<DeliberateAny>
-  return new MutableObjectImpl(typeInfo, s.native)
-}
-
 export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
+  const mutableTupleFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
+    const tuple = TupleImpl.fromBytesImpl(value, typeInfo, prefix)
+    return asNumber(tuple.bytes.length) ? tuple.native : ([] as unknown as typeof tuple.native)
+  }
+  const readonlyMutableTupleFromBytes = (
+    value: StubBytesCompat | Uint8Array,
+    typeInfo: string | TypeInfo,
+    prefix: 'none' | 'log' = 'none',
+  ) => {
+    const result = mutableTupleFromBytes(value, typeInfo, prefix)
+    return result as Readonly<typeof result>
+  }
+  const mutableObjectFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
+    const struct = StructImpl.fromBytesImpl(value, typeInfo, prefix)
+    return asNumber(struct.bytes.length) ? struct.native : ({} as unknown as typeof struct.native)
+  }
+  const readonlyObjectFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
+    const result = mutableObjectFromBytes(value, typeInfo, prefix)
+    return result as Readonly<typeof result>
+  }
   const encoders: Record<string, fromBytes<DeliberateAny>> = {
     account: AccountCls.fromBytes,
     application: ApplicationCls.fromBytes,
@@ -1133,11 +1148,14 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     'StaticArray<.*>': StaticArrayImpl.fromBytesImpl,
     'DynamicArray<.*>': DynamicArrayImpl.fromBytesImpl,
     'Tuple(<.*>)?': TupleImpl.fromBytesImpl,
+    'ReadonlyTuple(<.*>)?': readonlyMutableTupleFromBytes,
+    'MutableTuple(<.*>)?': mutableTupleFromBytes,
     'Struct(<.*>)?': StructImpl.fromBytesImpl,
     DynamicBytes: DynamicBytesImpl.fromBytesImpl,
     'StaticBytes<.*>': StaticBytesImpl.fromBytesImpl,
     object: StructImpl.fromBytesImpl,
-    'MutableObject(<.*>)?': mutableObjectFromBytes,
+    'Object<.*>': mutableObjectFromBytes,
+    'ReadonlyObject<.*>': readonlyObjectFromBytes,
   }
 
   const encoder = Object.entries(encoders).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]

@@ -124,6 +124,8 @@ export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
     itemTypeName === 'Str' ||
     itemTypeName === 'DynamicArray' ||
     itemTypeName === 'DynamicBytes' ||
+    itemTypeName === 'bytes' ||
+    itemTypeName === 'string' ||
     (itemTypeName === 'StaticArray' && holdsDynamicLengthContent((value.genericArgs as StaticArrayGenericArgs).elementType)) ||
     ((itemTypeName === 'Tuple' || itemTypeName === 'Struct') &&
       Object.values(value.genericArgs as Record<string, TypeInfo>).some(holdsDynamicLengthContent))

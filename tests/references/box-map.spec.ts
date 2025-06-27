@@ -1,8 +1,18 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { BigUint, BoxMap, Bytes, clone, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { Bool, DynamicBytes, StaticArray, Tuple, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
-import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, Struct, UintN64, UintN8 } from '@algorandfoundation/algorand-typescript/arc4'
+import type { StaticArray, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
+import {
+  ARC4Encoded,
+  Bool,
+  DynamicArray,
+  DynamicBytes,
+  interpretAsArc4,
+  Str,
+  Struct,
+  UintN64,
+  UintN8,
+} from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { MAX_UINT64 } from '../../src/constants'
 import { toBytes } from '../../src/impl/encoded-types'
@@ -11,6 +21,8 @@ import { asBytes } from '../../src/util'
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
 
 class MyStruct extends Struct<{ a: Str; b: DynamicBytes; c: Bool }> {}
+type MyObject = { a: string; b: bytes; c: boolean }
+type MyArc4Object = { a: Str; b: DynamicBytes; c: Bool }
 
 describe('BoxMap', () => {
   const ctx = new TestExecutionContext()
@@ -104,10 +116,22 @@ describe('BoxMap', () => {
       key: new Str('TTest'),
       value: ['hello', Bytes('world'), true] as const,
       newValue: ['world', Bytes('hello'), false] as const,
-      emptyValue: interpretAsArc4<Tuple<[Str, DynamicBytes, Bool]>>(Bytes('')),
+      emptyValue: [],
       withBoxContext: (test: (boxMap: BoxMap<Str, readonly [string, bytes, boolean]>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = BoxMap<Str, readonly [string, bytes, boolean]>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: new Str('TTest'),
+      value: ['hello', Bytes('world'), true] as const,
+      newValue: ['world', Bytes('hello'), false] as const,
+      emptyValue: [],
+      withBoxContext: (test: (boxMap: BoxMap<Str, [string, bytes, boolean]>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<Str, [string, bytes, boolean]>({ keyPrefix })
           test(boxMap)
         })
       },
@@ -126,12 +150,48 @@ describe('BoxMap', () => {
     },
     {
       key: { x: Uint64(21), y: Uint64(42) },
-      value: { a: 'hello', b: Bytes('world'), c: true } as unknown as MyStruct,
-      newValue: { a: 'world', b: Bytes('hello'), c: false } as unknown as MyStruct,
-      emptyValue: interpretAsArc4<MyStruct>(Bytes('')),
-      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, MyStruct>) => void) => {
+      value: { a: 'hello', b: Bytes('world'), c: true },
+      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, MyObject>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-          const boxMap = BoxMap<{ x: uint64; y: uint64 }, MyStruct>({ keyPrefix })
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, MyObject>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: { x: Uint64(21), y: Uint64(42) },
+      value: { a: 'hello', b: Bytes('world'), c: true },
+      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, Readonly<MyObject>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, Readonly<MyObject>>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: { x: Uint64(21), y: Uint64(42) },
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, MyArc4Object>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, MyArc4Object>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: { x: Uint64(21), y: Uint64(42) },
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, Readonly<MyArc4Object>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, Readonly<MyArc4Object>>({ keyPrefix })
           test(boxMap)
         })
       },
@@ -225,7 +285,7 @@ describe('BoxMap', () => {
     withBoxContext((boxMap) => {
       boxMap(key as never).value = value
       if (value instanceof ARC4Encoded) {
-        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(value.bytes)
+        expect((boxMap(key as never).value as unknown as ARC4Encoded).bytes).toEqual(value.bytes)
       } else {
         expect(boxMap(key as never).value).toEqual(value)
       }
@@ -237,11 +297,11 @@ describe('BoxMap', () => {
 
       expect(opContent).toEqual(newBytesValue)
       if (newValue instanceof ARC4Encoded) {
-        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(newValue.bytes)
+        expect((boxMap(key as never).value as unknown as ARC4Encoded).bytes).toEqual(newValue.bytes)
       } else if (boxMap(key as never).value instanceof ARC4Encoded) {
-        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(newBytesValue)
+        expect((boxMap(key as never).value as unknown as ARC4Encoded).bytes).toEqual(newBytesValue)
       } else {
-        expect(boxMap(key as never).value).toEqual(newValue)
+        expect(toBytes(boxMap(key as never).value)).toEqual(newBytesValue)
       }
     })
   })

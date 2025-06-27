@@ -371,8 +371,8 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const arc4_s = interpretAsArc4<arc4.DynamicArray<arc4.UintN16>>(s)
     const arc4_t = interpretAsArc4<arc4.Tuple<[arc4.UintN32, arc4.UintN64, arc4.Str]>>(t)
 
-    emit(new SwappedArc4({ m, n, o, p, q, r: arc4_r, s: arc4_s, t: arc4_t }))
-    emit('Swapped', a, b, c, d, e, f, g, h, m, n, o, p, q, clone(arc4_r), clone(arc4_s), arc4_t)
+    emit(new SwappedArc4({ m, n, o, p, q, r: clone(arc4_r), s: clone(arc4_s), t: clone(arc4_t) }))
+    emit('Swapped', a, b, c, d, e, f, g, h, m, n, o, p, q, arc4_r, arc4_s, arc4_t)
     emit(
       'Swapped(string,uint512,uint64,byte[],uint64,bool,byte[],string,uint64,uint256,ufixed32x8,ufixed256x16,bool,uint8[3],uint16[],(uint32,uint64,string))',
       a,
@@ -388,8 +388,8 @@ export class Arc4PrimitiveOpsContract extends Contract {
       o,
       p,
       q,
-      clone(arc4_r),
-      clone(arc4_s),
+      arc4_r,
+      arc4_s,
       arc4_t,
     )
   }

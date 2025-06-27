@@ -2,7 +2,7 @@ import type { uint64, Uint64Compat } from '@algorandfoundation/algorand-typescri
 import { AvmError } from '../errors'
 import { asNumber } from '../util'
 
-export class MutableArray<TItem> {
+export class ReferenceArray<TItem> {
   private _values: TItem[]
 
   constructor(...items: TItem[]) {
@@ -52,14 +52,14 @@ export class MutableArray<TItem> {
    * Create a new Dynamic array with all items from this array
    * @internal Not supported yet
    */
-  slice(): MutableArray<TItem>
+  slice(): ReferenceArray<TItem>
   /**
    * Create a new MutableArray with all items up till `end`.
    * Negative indexes are taken from the end.
    * @param end An index in which to stop copying items.
    * @internal Not supported yet
    */
-  slice(end: Uint64Compat): MutableArray<TItem>
+  slice(end: Uint64Compat): ReferenceArray<TItem>
   /**
    * Create a new MutableArray with items from `start`, up until `end`
    * Negative indexes are taken from the end.
@@ -67,11 +67,11 @@ export class MutableArray<TItem> {
    * @param end An index in which to stop copying items
    * @internal Not supported yet
    */
-  slice(start: Uint64Compat, end: Uint64Compat): MutableArray<TItem>
-  slice(start?: Uint64Compat, end?: Uint64Compat): MutableArray<TItem> {
+  slice(start: Uint64Compat, end: Uint64Compat): ReferenceArray<TItem>
+  slice(start?: Uint64Compat, end?: Uint64Compat): ReferenceArray<TItem> {
     const startIndex = end === undefined ? 0 : asNumber(start ?? 0)
     const endIndex = end === undefined ? asNumber(start ?? this._values.length) : asNumber(end)
-    return new MutableArray<TItem>(...this._values.slice(startIndex, endIndex))
+    return new ReferenceArray<TItem>(...this._values.slice(startIndex, endIndex))
   }
 
   /**
@@ -116,7 +116,7 @@ export class MutableArray<TItem> {
     return this._values.pop()!
   }
 
-  copy(): MutableArray<TItem> {
-    return new MutableArray(...this._values)
+  copy(): ReferenceArray<TItem> {
+    return new ReferenceArray(...this._values)
   }
 }
