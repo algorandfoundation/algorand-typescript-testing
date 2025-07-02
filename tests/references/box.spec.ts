@@ -382,18 +382,18 @@ describe('Box', () => {
         boxStaticArray.create({ size: 41 })
         expect(
           () =>
-          (boxStaticArray.value = new StaticArray(
-            new UintN32(100),
-            new UintN32(200),
-            new UintN32(300),
-            new UintN32(400),
-            new UintN32(500),
-            new UintN32(600),
-            new UintN32(700),
-            new UintN32(800),
-            new UintN32(900),
-            new UintN32(1000),
-          )),
+            (boxStaticArray.value = new StaticArray(
+              new UintN32(100),
+              new UintN32(200),
+              new UintN32(300),
+              new UintN32(400),
+              new UintN32(500),
+              new UintN32(600),
+              new UintN32(700),
+              new UintN32(800),
+              new UintN32(900),
+              new UintN32(1000),
+            )),
         ).toThrow(errorMessage)
 
         boxTuple.create({ size: 4 })
