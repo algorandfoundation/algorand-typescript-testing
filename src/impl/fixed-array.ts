@@ -1,6 +1,9 @@
+import type { NTuple } from '@algorandfoundation/algorand-typescript'
 import { FixedArray, type uint64, type Uint64Compat } from '@algorandfoundation/algorand-typescript'
-import { DeliberateAny } from '../typescript-helpers'
-import { StaticArrayGenericArgs, TypeInfo } from './encoded-types/types'
+import type { DeliberateAny } from '../typescript-helpers'
+import { asNumber } from '../util'
+import { arrayProxyHandler } from './encoded-types/array-proxy'
+import type { StaticArrayGenericArgs, TypeInfo } from './encoded-types/types'
 
 /**
  * A fixed sized array
@@ -8,56 +11,39 @@ import { StaticArrayGenericArgs, TypeInfo } from './encoded-types/types'
  * @typeParam TLength The fixed length of the array
  */
 export class FixedArrayImpl<TItem, TLength extends number> extends FixedArray<TItem, TLength> {
-  private _values: TItem[]
+  private _value: NTuple<TItem, TLength>
   private size: number
   private typeInfo: TypeInfo
   private genericArgs: StaticArrayGenericArgs
 
-  /**
-   * Create a new FixedArray instance
-   */
-  constructor(typeInfo: TypeInfo | string)
-  /**
-   * Create a new FixedArray instance with the specified items
-   * @param items The initial items for the array
-   */
-  constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength })
   constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength }) {
     super(...(items as DeliberateAny))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = this.typeInfo.genericArgs as StaticArrayGenericArgs
     this.size = parseInt(this.genericArgs.size.name, 10)
+    if (items.length) {
+      this._value = items as NTuple<TItem, TLength>
+    } else {
+      this._value = items as NTuple<TItem, TLength>
+      // console.log(getMaxLengthOfStaticContentType(this.typeInfo))
+    }
+    return new Proxy(this, arrayProxyHandler<TItem>()) as FixedArrayImpl<TItem, TLength>
   }
 
-  /**
-   * Returns a copy of this array
-   */
-  copy(): FixedArray<TItem, TLength> {
-    throw new Error()
+  concat(...others: (TItem | ConcatArray<TItem>)[]): TItem[] {
+    return this.items.concat(...others)
   }
 
-  /**
-   * Returns a new array containing all items from _this_ array, and _other_ array
-   * @param items Another array to concat with this one
-   */
-  concat(...items: (TItem | ConcatArray<TItem>)[]): TItem[] {
-    throw new Error()
-  }
-
-  /**
-   * Returns the current length of this array
-   */
   get length(): uint64 {
-    throw new Error()
+    return this.size
   }
 
-  /**
-   * Returns the item at the given index.
-   * Negative indexes are taken from the end.
-   * @param index The index of the item to retrieve
-   */
-  at(index: Uint64Compat): TItem {
-    throw new Error()
+  get items(): NTuple<TItem, TLength> {
+    return this._value
+  }
+
+  setItem(index: number, value: TItem): void {
+    this.items[index] = value
   }
 
   /** @deprecated Array slicing is not yet supported in Algorand TypeScript
@@ -78,43 +64,6 @@ export class FixedArrayImpl<TItem, TLength extends number> extends FixedArray<TI
    */
   slice(start: Uint64Compat, end: Uint64Compat): Array<TItem>
   slice(start?: Uint64Compat, end?: Uint64Compat): Array<TItem> {
-    throw new Error()
-  }
-
-  /**
-   * Returns an iterator for the items in this array
-   */
-  [Symbol.iterator](): IterableIterator<TItem> {
-    throw new Error()
-  }
-
-  /**
-   * Returns an iterator for a tuple of the indexes and items in this array
-   */
-  entries(): ArrayIterator<readonly [uint64, TItem]> {
-    throw new Error()
-  }
-
-  /**
-   * Returns an iterator for the indexes in this array
-   */
-  keys(): IterableIterator<uint64> {
-    throw new Error()
-  }
-
-  /**
-   * Get or set the item at the specified index.
-   * Negative indexes are not supported
-   */
-  [index: uint64]: TItem
-
-  /**
-   * Creates a string by concatenating all the items in the array delimited by the
-   * specified separator (or ',' by default)
-   * @param separator
-   * @deprecated Join is not supported in Algorand TypeScript
-   */
-  join(separator?: string): string {
-    throw new Error()
+    return this.items.slice(start === undefined ? undefined : asNumber(start), end === undefined ? undefined : asNumber(end))
   }
 }

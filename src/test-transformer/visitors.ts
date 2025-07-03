@@ -382,6 +382,8 @@ const isEncodedType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
+    ptypes.ReferenceArrayType,
+    ptypes.FixedArrayPType,
   ) ||
   type === ptypes.arc4StringType ||
   type === ptypes.arc4BooleanType
@@ -400,10 +402,19 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
   } else if (type instanceof ptypes.BoxMapPType) {
     genericArgs.push(getGenericTypeInfo(type.keyType, sourceLocation))
     genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
-  } else if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.DynamicArrayType, ptypes.ArrayPType)) {
+  } else if (
+    instanceOfAny(
+      type,
+      ptypes.StaticArrayType,
+      ptypes.DynamicArrayType,
+      ptypes.ArrayPType,
+      ptypes.FixedArrayPType,
+      ptypes.ReferenceArrayType,
+    )
+  ) {
     const entries = []
     entries.push(['elementType', getGenericTypeInfo(type.elementType, sourceLocation)])
-    if (instanceOfAny(type, ptypes.StaticArrayType)) {
+    if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.FixedArrayPType)) {
       entries.push(['size', { name: type.arraySize.toString() }])
     }
     genericArgs = Object.fromEntries(entries)

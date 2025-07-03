@@ -13,6 +13,7 @@ export {
   encodeArc4Impl,
   getArc4Encoded,
   getEncoder,
+  ReferenceArrayImpl,
   StaticArrayImpl,
   StaticBytesImpl,
   StrImpl,

@@ -1,9 +1,9 @@
-import type { uint64 } from '@algorandfoundation/algorand-typescript'
+import { clone, ReferenceArray, type uint64 } from '@algorandfoundation/algorand-typescript'
 import { describe, expect, it } from 'vitest'
-import { ReferenceArray } from '../src/impl'
+
 import { Uint64 } from '../src/impl/primitives'
 
-describe('MutableArray', () => {
+describe('ReferenceArray', () => {
   describe('constructor', () => {
     it('creates empty array when no arguments provided', () => {
       const arr = new ReferenceArray<uint64>()
@@ -42,7 +42,7 @@ describe('MutableArray', () => {
 
     it('returns value at negative index', () => {
       const arr = new ReferenceArray(1, 2, 3)
-      expect(() => arr.at(-1)).toThrow('Uint64 overflow or underflow')
+      expect(arr.at(-1)).toEqual(3)
     })
   })
 
@@ -109,11 +109,11 @@ describe('MutableArray', () => {
 
   describe('copy()', () => {
     it('creates a deep copy', () => {
-      const original = new ReferenceArray(1, 2, 3)
-      const copy = original.copy()
-      copy[0] = 10
-      expect(original[0]).toEqual(1)
-      expect(copy[0]).toEqual(10)
+      const original = new ReferenceArray<ReferenceArray<uint64>>(new ReferenceArray(1, 2, 3))
+      const copy = clone(original)
+      copy[0][0] = 10
+      expect(original[0][0]).toEqual(1)
+      expect(copy[0][0]).toEqual(10)
     })
   })
 })

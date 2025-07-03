@@ -1,4 +1,5 @@
-import type { Account as AccountType, bytes, NTuple, StringCompat, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account as AccountType, bytes, NTuple, StringCompat, uint64, Uint64Compat } from '@algorandfoundation/algorand-typescript'
+import { ReferenceArray } from '@algorandfoundation/algorand-typescript'
 import type { BitSize } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Address,
@@ -866,6 +867,62 @@ export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLe
   }
 }
 
+export class ReferenceArrayImpl<TItem> extends ReferenceArray<TItem> {
+  private _values: TItem[]
+  private typeInfo: TypeInfo
+  private genericArgs: DynamicArrayGenericArgs
+
+  constructor(typeInfo: TypeInfo | string, ...items: TItem[]) {
+    super(...items)
+    this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
+    this.genericArgs = this.typeInfo.genericArgs as DynamicArrayGenericArgs
+    this._values = items
+
+    return new Proxy(this, arrayProxyHandler<TItem>()) as ReferenceArrayImpl<TItem>
+  }
+
+  /**
+   * Returns the current length of this array
+   */
+  get length(): uint64 {
+    return this._values.length
+  }
+
+  get items(): TItem[] {
+    return this._values
+  }
+
+  setItem(index: number, value: TItem): void {
+    this.items[index] = value
+  }
+
+  slice(start?: Uint64Compat, end?: Uint64Compat): ReferenceArray<TItem> {
+    const startIndex = end === undefined ? 0 : asNumber(start ?? 0)
+    const endIndex = end === undefined ? asNumber(start ?? this._values.length) : asNumber(end)
+    return new ReferenceArrayImpl<TItem>(this.typeInfo, ...this._values.slice(startIndex, endIndex))
+  }
+
+  /**
+   * Push a number of items into this array
+   * @param items The items to be added to this array
+   */
+  push(...items: TItem[]): void {
+    this._values.push(...items)
+  }
+
+  /**
+   * Pop a single item from this array
+   */
+  pop(): TItem {
+    return this._values.pop()!
+  }
+
+  copy(): ReferenceArray<TItem> {
+    const bytesValue = toBytes(this)
+    return getEncoder<ReferenceArray<TItem>>(this.typeInfo)(bytesValue, this.typeInfo)
+  }
+}
+
 const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
   let i = 0
   let arrayIndex = 0
@@ -1053,13 +1110,17 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
   if (typeof value === 'string') {
     return new StrImpl({ name: 'Str' }, value)
   }
-  if (Array.isArray(value)) {
-    const result: ARC4Encoded[] = value.reduce((acc: ARC4Encoded[], cur: DeliberateAny) => {
-      return acc.concat(getArc4Encoded(cur))
-    }, [])
+  if (Array.isArray(value) || value instanceof ReferenceArrayImpl) {
+    const result: ARC4Encoded[] = (value instanceof ReferenceArrayImpl ? value.items : value).reduce(
+      (acc: ARC4Encoded[], cur: DeliberateAny) => {
+        return acc.concat(getArc4Encoded(cur))
+      },
+      [],
+    )
     const sourceTypeInfo = sourceTypeInfoString ? JSON.parse(sourceTypeInfoString) : undefined
     const genericArgs: TypeInfo[] = result.map((x) => (x as DeliberateAny).typeInfo)
-    if (sourceTypeInfo?.name?.startsWith('Array')) {
+
+    if (sourceTypeInfo?.name?.startsWith('Array') || value instanceof ReferenceArrayImpl) {
       const typeInfo = { name: `DynamicArray<${genericArgs[0].name}>`, genericArgs: { elementType: genericArgs[0] } }
       return new DynamicArrayImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
     } else {
@@ -1128,6 +1189,13 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     const result = mutableObjectFromBytes(value, typeInfo, prefix)
     return result as Readonly<typeof result>
   }
+  const referenceArrayFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
+    const dynamicArray = DynamicArrayImpl.fromBytesImpl(value, typeInfo, prefix)
+    return new ReferenceArrayImpl(
+      typeInfo,
+      asNumber(dynamicArray.bytes.length) ? dynamicArray.native : ([] as unknown as typeof dynamicArray.native),
+    )
+  }
   const encoders: Record<string, fromBytes<DeliberateAny>> = {
     account: AccountCls.fromBytes,
     application: ApplicationCls.fromBytes,
@@ -1156,6 +1224,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     object: StructImpl.fromBytesImpl,
     'Object<.*>': mutableObjectFromBytes,
     'ReadonlyObject<.*>': readonlyObjectFromBytes,
+    'ReferenceArray<.*>': referenceArrayFromBytes,
   }
 
   const encoder = Object.entries(encoders).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]

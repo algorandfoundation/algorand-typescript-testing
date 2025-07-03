@@ -123,6 +123,7 @@ export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
   return (
     itemTypeName === 'Str' ||
     itemTypeName === 'DynamicArray' ||
+    itemTypeName === 'ReferenceArray' ||
     itemTypeName === 'DynamicBytes' ||
     itemTypeName === 'bytes' ||
     itemTypeName === 'string' ||
