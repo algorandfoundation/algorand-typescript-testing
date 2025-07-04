@@ -122,13 +122,15 @@ export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
 
   return (
     itemTypeName === 'Str' ||
+    itemTypeName === 'Array' ||
+    itemTypeName === 'ReadonlyArray' ||
     itemTypeName === 'DynamicArray' ||
     itemTypeName === 'ReferenceArray' ||
     itemTypeName === 'DynamicBytes' ||
     itemTypeName === 'bytes' ||
     itemTypeName === 'string' ||
     (itemTypeName === 'StaticArray' && holdsDynamicLengthContent((value.genericArgs as StaticArrayGenericArgs).elementType)) ||
-    ((itemTypeName === 'Tuple' || itemTypeName === 'Struct') &&
+    ((itemTypeName === 'Tuple' || itemTypeName === 'MutableTuple' || itemTypeName === 'ReadonlyTuple' || itemTypeName === 'Struct') &&
       Object.values(value.genericArgs as Record<string, TypeInfo>).some(holdsDynamicLengthContent))
   )
 }

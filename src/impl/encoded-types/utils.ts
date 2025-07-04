@@ -66,8 +66,9 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
     case 'Tuple':
     case 'ReadonlyTuple':
     case 'MutableTuple':
-      return getMaxBytesLengthForObjectType(type)
     case 'Struct':
+    case 'Object':
+    case 'ReadonlyObject':
       return getMaxBytesLengthForObjectType(type)
     default:
       throw new CodeError(`unsupported type ${type.name}`)

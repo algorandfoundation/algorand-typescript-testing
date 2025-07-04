@@ -408,6 +408,7 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
       ptypes.StaticArrayType,
       ptypes.DynamicArrayType,
       ptypes.ArrayPType,
+      ptypes.ReadonlyArrayPType,
       ptypes.ReferenceArrayType,
       ptypes.FixedArrayPType,
     )
