@@ -123,7 +123,12 @@ const testData = [
   },
   {
     nativeValues() {
-      return { b: nativeNumber, c: nativeBool, d: nativeString, a: [nativeNumber, nativeBool, nativeBool] }
+      return { b: nativeNumber, c: nativeBool, d: nativeString, a: [nativeNumber, nativeBool, nativeBool] } as {
+        b: uint64
+        c: boolean
+        d: string
+        a: [uint64, boolean, boolean]
+      }
     },
     abiValues() {
       return { b: abiUint64, c: abiBool, d: abiString, a: new Tuple<[UintN<64>, Bool, Bool]>(abiUint64, abiBool, abiBool) }
