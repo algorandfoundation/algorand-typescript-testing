@@ -408,8 +408,8 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
       ptypes.StaticArrayType,
       ptypes.DynamicArrayType,
       ptypes.ArrayPType,
-      ptypes.FixedArrayPType,
       ptypes.ReferenceArrayType,
+      ptypes.FixedArrayPType,
     )
   ) {
     const entries = []

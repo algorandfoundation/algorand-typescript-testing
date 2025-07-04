@@ -61,6 +61,7 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
     case 'Address':
     case 'StaticBytes':
     case 'StaticArray':
+    case 'FixedArray':
       return getMaxBytesLengthForStaticArray(type as unknown as { genericArgs: StaticArrayGenericArgs })
     case 'Tuple':
     case 'ReadonlyTuple':

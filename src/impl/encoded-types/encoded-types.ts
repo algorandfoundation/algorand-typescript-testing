@@ -1,5 +1,5 @@
 import type { Account as AccountType, bytes, NTuple, StringCompat, uint64, Uint64Compat } from '@algorandfoundation/algorand-typescript'
-import { ReferenceArray } from '@algorandfoundation/algorand-typescript'
+import { FixedArray, ReferenceArray } from '@algorandfoundation/algorand-typescript'
 import type { BitSize } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Address,
@@ -870,12 +870,10 @@ export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLe
 export class ReferenceArrayImpl<TItem> extends ReferenceArray<TItem> {
   private _values: TItem[]
   private typeInfo: TypeInfo
-  private genericArgs: DynamicArrayGenericArgs
 
   constructor(typeInfo: TypeInfo | string, ...items: TItem[]) {
     super(...items)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    this.genericArgs = this.typeInfo.genericArgs as DynamicArrayGenericArgs
     this._values = items
 
     return new Proxy(this, arrayProxyHandler<TItem>()) as ReferenceArrayImpl<TItem>
@@ -920,6 +918,56 @@ export class ReferenceArrayImpl<TItem> extends ReferenceArray<TItem> {
   copy(): ReferenceArray<TItem> {
     const bytesValue = toBytes(this)
     return getEncoder<ReferenceArray<TItem>>(this.typeInfo)(bytesValue, this.typeInfo)
+  }
+}
+
+export class FixedArrayImpl<TItem, TLength extends number> extends FixedArray<TItem, TLength> {
+  private _values: NTuple<TItem, TLength>
+  private size: number
+  private typeInfo: TypeInfo
+  private genericArgs: StaticArrayGenericArgs
+
+  constructor(typeInfo: TypeInfo | string, ...items: TItem[] & { length: TLength }) {
+    super(...(items as DeliberateAny))
+    this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
+    this.genericArgs = this.typeInfo.genericArgs as StaticArrayGenericArgs
+    this.size = parseInt(this.genericArgs.size.name, 10)
+    if (items.length) {
+      this._values = items as NTuple<TItem, TLength>
+    } else {
+      const bytesValue = asBytes(new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo)))
+      this._values = (
+        getEncoder<FixedArray<TItem, TLength>>(this.typeInfo)(bytesValue, this.typeInfo) as FixedArrayImpl<TItem, TLength>
+      ).items
+    }
+    return new Proxy(this, arrayProxyHandler<TItem>()) as FixedArrayImpl<TItem, TLength>
+  }
+
+  concat(...others: (TItem | ConcatArray<TItem>)[]): TItem[] {
+    return this.items.concat(...others)
+  }
+
+  get length(): uint64 {
+    return this.size
+  }
+
+  get items(): NTuple<TItem, TLength> {
+    return this._values
+  }
+
+  setItem(index: number, value: TItem): void {
+    this.items[index] = value
+  }
+
+  slice(start?: Uint64Compat, end?: Uint64Compat): Array<TItem> {
+    const startIndex = end === undefined ? 0 : asNumber(start ?? 0)
+    const endIndex = end === undefined ? asNumber(start ?? this._values.length) : asNumber(end)
+    return this._values.slice(startIndex, endIndex)
+  }
+
+  copy(): FixedArray<TItem, TLength> {
+    const bytesValue = toBytes(this)
+    return getEncoder<FixedArray<TItem, TLength>>(this.typeInfo)(bytesValue, this.typeInfo)
   }
 }
 
@@ -1110,8 +1158,8 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
   if (typeof value === 'string') {
     return new StrImpl({ name: 'Str' }, value)
   }
-  if (Array.isArray(value) || value instanceof ReferenceArrayImpl) {
-    const result: ARC4Encoded[] = (value instanceof ReferenceArrayImpl ? value.items : value).reduce(
+  if (Array.isArray(value) || value instanceof ReferenceArrayImpl || value instanceof FixedArrayImpl) {
+    const result: ARC4Encoded[] = (value instanceof ReferenceArrayImpl || value instanceof FixedArrayImpl ? value.items : value).reduce(
       (acc: ARC4Encoded[], cur: DeliberateAny) => {
         return acc.concat(getArc4Encoded(cur))
       },
@@ -1123,6 +1171,12 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
     if (sourceTypeInfo?.name?.startsWith('Array') || value instanceof ReferenceArrayImpl) {
       const typeInfo = { name: `DynamicArray<${genericArgs[0].name}>`, genericArgs: { elementType: genericArgs[0] } }
       return new DynamicArrayImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
+    } else if (value instanceof FixedArrayImpl) {
+      const typeInfo = {
+        name: `StaticArray<${genericArgs[0].name},${genericArgs.length}>`,
+        genericArgs: { elementType: genericArgs[0], size: { name: genericArgs.length.toString() } },
+      }
+      return new StaticArrayImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
     } else {
       const typeInfo = { name: `Tuple<[${genericArgs.map((x) => x.name).join(',')}]>`, genericArgs }
       return new TupleImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
@@ -1196,6 +1250,13 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
       asNumber(dynamicArray.bytes.length) ? dynamicArray.native : ([] as unknown as typeof dynamicArray.native),
     )
   }
+  const fixedArrayFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
+    const staticArray = StaticArrayImpl.fromBytesImpl(value, typeInfo, prefix)
+    return new ReferenceArrayImpl(
+      typeInfo,
+      asNumber(staticArray.bytes.length) ? staticArray.native : ([] as unknown as typeof staticArray.native),
+    )
+  }
   const encoders: Record<string, fromBytes<DeliberateAny>> = {
     account: AccountCls.fromBytes,
     application: ApplicationCls.fromBytes,
@@ -1225,6 +1286,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     'Object<.*>': mutableObjectFromBytes,
     'ReadonlyObject<.*>': readonlyObjectFromBytes,
     'ReferenceArray<.*>': referenceArrayFromBytes,
+    'FixedArray<.*>': fixedArrayFromBytes,
   }
 
   const encoder = Object.entries(encoders).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(typeInfo.name))?.[1]
