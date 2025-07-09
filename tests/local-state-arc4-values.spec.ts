@@ -32,7 +32,7 @@ describe('ARC4 AppLocal values', async () => {
     ctx.reset()
   })
 
-  const testData = ['_implicit_key', ''].flatMap((implicit) => [
+  const testData: DeliberateAny[] = ['_implicit_key', ''].flatMap((implicit) => [
     {
       methodName: `get${implicit}_arc4_uintn64`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
@@ -93,6 +93,8 @@ describe('ARC4 AppLocal values', async () => {
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
+  ])
+  testData.push(
     {
       methodName: `get_implicit_key_tuple`,
       assert: (value: DeliberateAny, expectedValue: DeliberateAny) => {
@@ -105,7 +107,7 @@ describe('ARC4 AppLocal values', async () => {
         expect(value).toEqual(expectedValue)
       },
     },
-  ])
+  )
 
   test.for(testData)('should be able to get arc4 state values', async (data, { appClientLocalStateContract: appClient, testAccount }) => {
     const defaultSenderAccountAddress = Bytes.fromBase32(testAccount.addr.toString())
