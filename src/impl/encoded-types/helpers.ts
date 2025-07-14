@@ -67,7 +67,12 @@ export const getNativeValue = (value: DeliberateAny, targetTypeInfo: TypeInfo | 
     return Object.fromEntries(
       Object.entries(native).map(([key, value], index) => [
         key,
-        getNativeValue(value, (targetTypeInfo?.genericArgs as TypeInfo[])?.[index]),
+        getNativeValue(
+          value,
+          Array.isArray(targetTypeInfo?.genericArgs)
+            ? (targetTypeInfo?.genericArgs as TypeInfo[])?.[index]
+            : ((targetTypeInfo?.genericArgs as Record<string, TypeInfo>)?.[key] as TypeInfo),
+        ),
       ]),
     )
   }

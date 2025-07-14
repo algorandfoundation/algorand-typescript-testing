@@ -13,7 +13,7 @@ import {
   LocalState,
 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { decodeArc4, encodeArc4, interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, it } from 'vitest'
 
 type SimpleObj = {
@@ -578,6 +578,215 @@ describe('native mutable object', () => {
       expect(methodSelector(TestContract.prototype.arc4PrimitiveMutableObj)).toEqual(
         methodSelector('arc4PrimitiveMutableObj((uint64,bool,string,byte))(uint64,bool,string,byte)'),
       )
+    })
+  })
+
+  describe('decode and encode', () => {
+    it('should decode and encode simple mutable object', () => {
+      class SimpleObjStruct extends arc4.Struct<{
+        a: arc4.UintN64
+        b: arc4.Bool
+        c: arc4.Str
+        d: arc4.DynamicBytes
+      }> {}
+      const obj: SimpleObj = { a: 1, b: true, c: 'hello', d: Bytes('world') }
+      const encoded = encodeArc4(obj)
+      const interpreted = interpretAsArc4<SimpleObjStruct>(encoded)
+      const decoded = decodeArc4<SimpleObj>(encoded)
+
+      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.b.native, obj.b)
+      assertMatch(interpreted.c.native, obj.c)
+      assertMatch(interpreted.d.native, obj.d)
+      assertMatch(decoded, obj)
+    })
+
+    it('should decode and encode nested mutable object', () => {
+      class ObjectStruct extends arc4.Struct<{
+        x: arc4.UintN64
+        y: arc4.Str
+        z: arc4.Bool
+      }> {}
+      class NestedObjStruct extends arc4.Struct<{
+        a: arc4.UintN64
+        b: arc4.Bool
+        c: arc4.Str
+        d: ObjectStruct
+      }> {}
+
+      const obj: NestedObj = {
+        a: 42,
+        b: false,
+        c: 'nested',
+        d: { x: 100, y: 'inner', z: true },
+      }
+
+      const encoded = encodeArc4(obj)
+      const interpreted = interpretAsArc4<NestedObjStruct>(encoded)
+      const decoded = decodeArc4<NestedObj>(encoded)
+
+      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.b.native, obj.b)
+      assertMatch(interpreted.c.native, obj.c)
+      assertMatch(interpreted.d.x.native, obj.d.x)
+      assertMatch(interpreted.d.y.native, obj.d.y)
+      assertMatch(interpreted.d.z.native, obj.d.z)
+      assertMatch(decoded, obj)
+    })
+
+    it('should decode and encode array object', () => {
+      class ArrayObjStruct extends arc4.Struct<{
+        a: arc4.UintN64
+        b: arc4.Bool
+        c: arc4.Str
+        d: arc4.DynamicArray<arc4.UintN64>
+      }> {}
+
+      const obj: ArrayObj = {
+        a: 123,
+        b: true,
+        c: 'array test',
+        d: [10, 20, 30, 40],
+      }
+
+      const encoded = encodeArc4(obj)
+      const interpreted = interpretAsArc4<ArrayObjStruct>(encoded)
+      const decoded = decodeArc4<ArrayObj>(encoded)
+
+      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.b.native, obj.b)
+      assertMatch(interpreted.c.native, obj.c)
+      assertMatch(interpreted.d.length, obj.d.length)
+      for (let i = 0; i < obj.d.length; i++) {
+        assertMatch(interpreted.d[i].native, obj.d[i])
+      }
+      assertMatch(decoded, obj)
+    })
+
+    it('should decode and encode fixed array object', () => {
+      class FixedArrayObjStruct extends arc4.Struct<{
+        a: arc4.UintN64
+        b: arc4.Bool
+        c: arc4.Str
+        d: arc4.StaticArray<arc4.UintN64, 3>
+      }> {}
+
+      const obj: FixedArrayObj = {
+        a: 456,
+        b: false,
+        c: 'fixed array',
+        d: new FixedArray<uint64, 3>(5, 10, 15),
+      }
+
+      const encoded = encodeArc4(obj)
+      const interpreted = interpretAsArc4<FixedArrayObjStruct>(encoded)
+      const decoded = decodeArc4<FixedArrayObj>(encoded)
+
+      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.b.native, obj.b)
+      assertMatch(interpreted.c.native, obj.c)
+      assertMatch(interpreted.d.length, obj.d.length)
+      for (let i = 0; i < obj.d.length; i++) {
+        assertMatch(interpreted.d[i].native, obj.d[i])
+      }
+      assertMatch(decoded, obj)
+    })
+
+    it('should decode and encode tuple object', () => {
+      class TupleObjStruct extends arc4.Struct<{
+        a: arc4.UintN64
+        b: arc4.Bool
+        c: arc4.Str
+        d: arc4.Tuple<[arc4.UintN64, arc4.Str, arc4.Bool]>
+      }> {}
+
+      const obj: TupleObj = {
+        a: 789,
+        b: true,
+        c: 'tuple test',
+        d: [99, 'tuple string', false],
+      }
+
+      const encoded = encodeArc4(obj)
+      const interpreted = interpretAsArc4<TupleObjStruct>(encoded)
+      const decoded = decodeArc4<TupleObj>(encoded)
+
+      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.b.native, obj.b)
+      assertMatch(interpreted.c.native, obj.c)
+      assertMatch(interpreted.d.native[0].native, obj.d[0])
+      assertMatch(interpreted.d.native[1].native, obj.d[1])
+      assertMatch(interpreted.d.native[2].native, obj.d[2])
+      assertMatch(decoded, obj)
+    })
+
+    it('should decode and encode arc4 primitive object', () => {
+      class Arc4PrimitiveObjStruct extends arc4.Struct<{
+        a: arc4.UintN64
+        b: arc4.Bool
+        c: arc4.Str
+        d: arc4.Byte
+      }> {}
+
+      const obj: Arc4PrimitiveObj = {
+        a: new arc4.UintN64(999),
+        b: new arc4.Bool(false),
+        c: new arc4.Str('arc4 test'),
+        d: new arc4.Byte(255),
+      }
+
+      const encoded = encodeArc4(obj)
+      const interpreted = interpretAsArc4<Arc4PrimitiveObjStruct>(encoded)
+      const decoded = decodeArc4<Arc4PrimitiveObj>(encoded)
+
+      assertMatch(interpreted.a, obj.a)
+      assertMatch(interpreted.b, obj.b)
+      assertMatch(interpreted.c, obj.c)
+      assertMatch(interpreted.d, obj.d)
+      assertMatch(decoded, obj)
+    })
+
+    it('should decode and encode deep nested object', () => {
+      class ObjStruct extends arc4.Struct<{
+        p: arc4.UintN64
+        q: arc4.Str
+      }> {}
+      class NestedObjStruct extends arc4.Struct<{
+        x: ObjStruct
+        y: arc4.DynamicArray<arc4.Str>
+        z: arc4.Tuple<[arc4.UintN64, arc4.Bool]>
+      }> {}
+      class DeepNestedObjStruct extends arc4.Struct<{
+        a: arc4.UintN64
+        b: NestedObjStruct
+        c: arc4.Str
+      }> {}
+
+      const obj: DeepNestedObj = {
+        a: 555,
+        b: {
+          x: { p: 111, q: 'deep' },
+          y: ['first', 'second', 'third'],
+          z: [222, true],
+        },
+        c: 'deep test',
+      }
+
+      const encoded = encodeArc4(obj)
+      const interpreted = interpretAsArc4<DeepNestedObjStruct>(encoded)
+      const decoded = decodeArc4<DeepNestedObj>(encoded)
+
+      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.b.x.p.native, obj.b.x.p)
+      assertMatch(interpreted.b.x.q.native, obj.b.x.q)
+      assertMatch(interpreted.b.y.length, obj.b.y.length)
+      for (let i = 0; i < obj.b.y.length; i++) {
+        assertMatch(interpreted.b.y[i].native, obj.b.y[i])
+      }
+      assertMatch(interpreted.b.z.native[0].native, obj.b.z[0])
+      assertMatch(interpreted.b.z.native[1].native, obj.b.z[1])
+      assertMatch(interpreted.c.native, obj.c)
+      assertMatch(decoded, obj)
     })
   })
 })

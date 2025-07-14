@@ -3,6 +3,7 @@ import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import type { DeliberateAny } from '../typescript-helpers'
 import { asBytes, asMaybeBigUintCls, assert } from '../util'
 import { BytesBackedCls, Uint64BackedCls } from './base'
+import { FixedArrayImpl } from './encoded-types/encoded-types'
 import type { StubBytesCompat, Uint64Cls } from './primitives'
 import { BytesCls } from './primitives'
 
@@ -42,6 +43,8 @@ export const matchImpl: typeof match = (subject, test): boolean => {
     return (subject as unknown as ARC4Encoded).bytes.equals(test.bytes)
   } else if (Array.isArray(test)) {
     return test.map((x, i) => matchImpl((subject as DeliberateAny)[i], x as DeliberateAny)).every((x) => x)
+  } else if (test instanceof FixedArrayImpl) {
+    return test.items.map((x, i) => matchImpl((subject as DeliberateAny[])[i], x as DeliberateAny)).every((x) => x)
   } else if (typeof test === 'object') {
     return Object.entries(test!)
       .map(([k, v]) => matchImpl((subject as DeliberateAny)[k], v as DeliberateAny))

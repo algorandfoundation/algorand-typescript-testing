@@ -1,5 +1,5 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Bytes } from '@algorandfoundation/algorand-typescript'
+import { assertMatch, Bytes } from '@algorandfoundation/algorand-typescript'
 import type { StaticBytes, UFixedNxM } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Address,
@@ -168,7 +168,7 @@ describe('decodeArc4', () => {
         ...encodingUtil.utf8ToUint8Array('hello world'),
       ]),
     )
-    const e = { a: 50n, b: new Uint8Array([1, 2, 3, 4, 5]) }
+    const e = { a: new UintN64(50n), b: new DynamicBytes(asBytes(new Uint8Array([1, 2, 3, 4, 5]))) }
     const eBytes = asBytes(new Uint8Array([...encodingUtil.bigIntToUint8Array(50n, 8), 0, 10, 0, 5, 1, 2, 3, 4, 5]))
     const f = new Address(Bytes.fromHex(`${'00'.repeat(31)}ff`))
     const fBytes = Bytes.fromHex(`${'00'.repeat(31)}ff`)
@@ -176,7 +176,7 @@ describe('decodeArc4', () => {
     expect(decodeArc4<boolean>(bBytes)).toEqual(b)
     expect(decodeArc4<biguint>(cBytes)).toEqual(c)
     expect(decodeArc4<string>(dBytes)).toEqual(d)
-    expect(decodeArc4<TestObj>(eBytes)).toEqual(e)
+    assertMatch(decodeArc4<TestObj>(eBytes), e)
 
     const lenPrefix = itob(1).slice(6, 8)
     const offsetHeader = itob(2).slice(6, 8)
@@ -184,7 +184,7 @@ describe('decodeArc4', () => {
     expect(decodeArc4<boolean[]>(lenPrefix.concat(bBytes))).toEqual([b])
     expect(decodeArc4<biguint[]>(lenPrefix.concat(cBytes))).toEqual([c])
     expect(decodeArc4<string[]>(Bytes`${lenPrefix}${offsetHeader}${dBytes}`)).toEqual([d])
-    expect(decodeArc4<TestObj[]>(Bytes`${lenPrefix}${offsetHeader}${eBytes}`)).toEqual([e])
+    assertMatch(decodeArc4<TestObj[]>(Bytes`${lenPrefix}${offsetHeader}${eBytes}`), [e])
     expect(JSON.stringify(decodeArc4<Address[]>(Bytes`${lenPrefix}${fBytes}`))).toEqual(JSON.stringify([f]))
   })
 })

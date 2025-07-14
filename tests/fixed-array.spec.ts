@@ -14,7 +14,7 @@ import {
   Uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { decodeArc4, encodeArc4, interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, it } from 'vitest'
 
 class TestContract extends Contract {
@@ -424,6 +424,135 @@ describe('FixedArray', () => {
       expect(methodSelector(TestContract.prototype.fixedArrayArc4)).toEqual(
         methodSelector('fixedArrayArc4(uint8[10],string)(uint8[2],string)'),
       )
+    })
+  })
+
+  describe('decode and encode', () => {
+    it('should decode and encode native uint64 fixed array', () => {
+      const arr = new FixedArray<uint64, 3>(10, 20, 30)
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.UintN64, 3>>(encoded)
+      const decoded = decodeArc4<FixedArray<uint64, 3>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode string fixed array', () => {
+      const arr = new FixedArray<string, 2>('hello', 'world')
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.Str, 2>>(encoded)
+      const decoded = decodeArc4<FixedArray<string, 2>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode boolean fixed array', () => {
+      const arr = new FixedArray<boolean, 10>(true, false, true, false, true, false, true, false, true, false)
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.Bool, 10>>(encoded)
+      const decoded = decodeArc4<FixedArray<boolean, 10>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode bytes fixed array', () => {
+      const arr = new FixedArray<bytes, 2>(Bytes('hello'), Bytes('world'))
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.DynamicBytes, 2>>(encoded)
+      const decoded = decodeArc4<FixedArray<bytes, 2>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode nested fixed array', () => {
+      const arr = new FixedArray<FixedArray<uint64, 2>, 2>(new FixedArray<uint64, 2>(1, 2), new FixedArray<uint64, 2>(3, 4))
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.StaticArray<arc4.UintN64, 2>, 2>>(encoded)
+      const decoded = decodeArc4<FixedArray<FixedArray<uint64, 2>, 2>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].length, arr[i].length)
+        for (let j = 0; j < arr[i].length; j++) {
+          assertMatch(interpreted[i][j].native, arr[i][j])
+        }
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode fixed array with native arrays', () => {
+      const arr = new FixedArray<uint64[], 2>([1, 2, 3], [4, 5])
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.DynamicArray<arc4.UintN64>, 2>>(encoded)
+      const decoded = decodeArc4<FixedArray<uint64[], 2>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].length, arr[i].length)
+        for (let j = 0; j < arr[i].length; j++) {
+          assertMatch(interpreted[i][j].native, arr[i][j])
+        }
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode fixed array with tuples', () => {
+      const arr = new FixedArray<[uint64, string], 2>([10, 'first'], [20, 'second'])
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.Tuple<[arc4.UintN64, arc4.Str]>, 2>>(encoded)
+      const decoded = decodeArc4<FixedArray<[uint64, string], 2>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native[0].native, arr[i][0])
+        assertMatch(interpreted[i].native[1].native, arr[i][1])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode fixed array with objects', () => {
+      type Point = { x: uint64; y: uint64 }
+      const arr = new FixedArray<Point, 2>({ x: 1, y: 2 }, { x: 3, y: 4 })
+      class ObjStruct extends arc4.Struct<{ x: arc4.UintN64; y: arc4.UintN64 }> {}
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<ObjStruct, 2>>(encoded)
+      const decoded = decodeArc4<FixedArray<Point, 2>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].x.native, arr[i].x)
+        assertMatch(interpreted[i].y.native, arr[i].y)
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode arc4 fixed array', () => {
+      const arr = new FixedArray<arc4.UintN64, 3>(new arc4.UintN64(100), new arc4.UintN64(200), new arc4.UintN64(300))
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.UintN64, 3>>(encoded)
+      const decoded = decodeArc4<FixedArray<arc4.UintN64, 3>>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i], arr[i])
+      }
+      assertMatch(decoded, arr)
     })
   })
 })

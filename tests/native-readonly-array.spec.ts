@@ -14,7 +14,7 @@ import {
   Uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { decodeArc4, encodeArc4, interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, it } from 'vitest'
 
 class TestContract extends Contract {
@@ -45,6 +45,18 @@ describe('native readonly array', () => {
 
       expect(arr.at(0)).toEqual(1)
       expect(arr.at(-1)).toEqual(3)
+    })
+
+    it('update element with with() method', () => {
+      const arr: readonly uint64[] = [1, 2, 3]
+
+      let updatedArr = arr.with(0, Uint64(10))
+      assertMatch(updatedArr, [10, 2, 3])
+
+      updatedArr = arr.with(-1, Uint64(30))
+      assertMatch(updatedArr, [1, 2, 30])
+
+      assertMatch(arr, [1, 2, 3])
     })
   })
 
@@ -321,6 +333,157 @@ describe('native readonly array', () => {
       expect(methodSelector(TestContract.prototype.arc4ReadonlyArrayMethod)).toEqual(
         methodSelector('arc4ReadonlyArrayMethod(uint8[],string)(uint8[],string)'),
       )
+    })
+  })
+
+  describe('decode and encode', () => {
+    it('should decode and encode readonly uint64 array', () => {
+      const arr: readonly uint64[] = [10, 20, 30, 40]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const decoded = decodeArc4<readonly uint64[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly string array', () => {
+      const arr: readonly string[] = ['hello', 'world', 'test']
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Str>>(encoded)
+      const decoded = decodeArc4<readonly string[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly boolean array', () => {
+      const arr: readonly boolean[] = [true, false, true, false, true, true, false, true, false, true]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Bool>>(encoded)
+      const decoded = decodeArc4<readonly boolean[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly bytes array', () => {
+      const arr: readonly bytes[] = [Bytes('hello'), Bytes('world'), Bytes('test')]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicBytes>>(encoded)
+      const decoded = decodeArc4<readonly bytes[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly nested array', () => {
+      const arr: readonly (readonly uint64[])[] = [[1, 2], [3, 4, 5], [6]]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicArray<arc4.UintN64>>>(encoded)
+      const decoded = decodeArc4<readonly (readonly uint64[])[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].length, arr[i].length)
+        for (let j = 0; j < arr[i].length; j++) {
+          assertMatch(interpreted[i][j].native, arr[i][j])
+        }
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly array with FixedArrays', () => {
+      const arr: readonly FixedArray<uint64, 2>[] = [
+        new FixedArray<uint64, 2>(1, 2),
+        new FixedArray<uint64, 2>(3, 4),
+        new FixedArray<uint64, 2>(5, 6),
+      ]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.StaticArray<arc4.UintN64, 2>>>(encoded)
+      const decoded = decodeArc4<readonly FixedArray<uint64, 2>[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].length, arr[i].length)
+        for (let j = 0; j < arr[i].length; j++) {
+          assertMatch(interpreted[i][j].native, arr[i][j])
+        }
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly array with tuples', () => {
+      const arr: readonly (readonly [uint64, string])[] = [
+        [10, 'first'],
+        [20, 'second'],
+        [30, 'third'],
+      ]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Tuple<readonly [arc4.UintN64, arc4.Str]>>>(encoded)
+      const decoded = decodeArc4<readonly (readonly [uint64, string])[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native[0].native, arr[i][0])
+        assertMatch(interpreted[i].native[1].native, arr[i][1])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly array with objects', () => {
+      type Point = Readonly<{ x: uint64; y: uint64 }>
+      const arr: readonly Point[] = [
+        { x: 1, y: 2 },
+        { x: 3, y: 4 },
+        { x: 5, y: 6 },
+      ]
+      class PointStruct extends arc4.Struct<{ x: arc4.UintN64; y: arc4.UintN64 }> {}
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<PointStruct>>(encoded)
+      const decoded = decodeArc4<readonly Point[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].x.native, arr[i].x)
+        assertMatch(interpreted[i].y.native, arr[i].y)
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode readonly arc4 array', () => {
+      const arr: readonly arc4.UintN64[] = [new arc4.UintN64(100), new arc4.UintN64(200), new arc4.UintN64(300)]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const decoded = decodeArc4<readonly arc4.UintN64[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i], arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode empty readonly array', () => {
+      const arr: readonly uint64[] = []
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const decoded = decodeArc4<readonly uint64[]>(encoded)
+
+      assertMatch(interpreted.length, 0)
+      assertMatch(decoded, [])
     })
   })
 })

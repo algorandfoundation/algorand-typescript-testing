@@ -290,7 +290,7 @@ export class BoolImpl extends Bool {
   }
 
   get bytes(): bytes {
-    return Bytes(this.value)
+    return Bytes(this.value?.length ? this.value : new Uint8Array([0]))
   }
 
   static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): BoolImpl {
@@ -1182,7 +1182,8 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
       sourceTypeInfo?.name?.startsWith('ReadonlyArray') ||
       value instanceof ReferenceArrayImpl
     ) {
-      const typeInfo = { name: `DynamicArray<${genericArgs[0].name}>`, genericArgs: { elementType: genericArgs[0] } }
+      const elementType = genericArgs[0] ?? sourceTypeInfo.genericArgs?.elementType
+      const typeInfo = { name: `DynamicArray<${elementType.name}>`, genericArgs: { elementType } }
       return new DynamicArrayImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
     } else {
       const typeInfo = { name: `Tuple<[${genericArgs.map((x) => x.name).join(',')}]>`, genericArgs }

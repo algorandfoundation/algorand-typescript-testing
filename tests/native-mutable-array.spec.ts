@@ -14,7 +14,7 @@ import {
   Uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { decodeArc4, encodeArc4, interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, it } from 'vitest'
 
 class TestContract extends Contract {
@@ -302,6 +302,176 @@ describe('native mutable array', () => {
       expect(methodSelector(TestContract.prototype.arc4ArrayMethod)).toEqual(
         methodSelector('arc4ArrayMethod(uint8[],string)(uint8[],string)'),
       )
+    })
+  })
+
+  describe('decode and encode', () => {
+    it('should decode and encode mutable uint64 array', () => {
+      const arr: uint64[] = [10, 20, 30, 40]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const decoded = decodeArc4<uint64[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable string array', () => {
+      const arr: string[] = ['hello', 'world', 'test', 'mutable']
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Str>>(encoded)
+      const decoded = decodeArc4<string[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable boolean array', () => {
+      const arr: boolean[] = [true, false, true, false, true, true, false, true, false, true]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Bool>>(encoded)
+      const decoded = decodeArc4<boolean[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable bytes array', () => {
+      const arr: bytes[] = [Bytes('hello'), Bytes('world'), Bytes('test'), Bytes('data')]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicBytes>>(encoded)
+      const decoded = decodeArc4<bytes[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native, arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable nested array', () => {
+      const arr: uint64[][] = [[1, 2], [3, 4, 5], [6], [7, 8, 9, 10]]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicArray<arc4.UintN64>>>(encoded)
+      const decoded = decodeArc4<uint64[][]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].length, arr[i].length)
+        for (let j = 0; j < arr[i].length; j++) {
+          assertMatch(interpreted[i][j].native, arr[i][j])
+        }
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable array with FixedArrays', () => {
+      const arr: FixedArray<uint64, 2>[] = [
+        new FixedArray<uint64, 2>(1, 2),
+        new FixedArray<uint64, 2>(3, 4),
+        new FixedArray<uint64, 2>(5, 6),
+      ]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.StaticArray<arc4.UintN64, 2>>>(encoded)
+      const decoded = decodeArc4<FixedArray<uint64, 2>[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].length, arr[i].length)
+        for (let j = 0; j < arr[i].length; j++) {
+          assertMatch(interpreted[i][j].native, arr[i][j])
+        }
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable array with tuples', () => {
+      const arr: [uint64, string][] = [
+        [10, 'first'],
+        [20, 'second'],
+        [30, 'third'],
+      ]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Tuple<[arc4.UintN64, arc4.Str]>>>(encoded)
+      const decoded = decodeArc4<[uint64, string][]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].native[0].native, arr[i][0])
+        assertMatch(interpreted[i].native[1].native, arr[i][1])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable array with objects', () => {
+      type Point = { x: uint64; y: uint64 }
+      const arr: Point[] = [
+        { x: 1, y: 2 },
+        { x: 3, y: 4 },
+        { x: 5, y: 6 },
+      ]
+      class PointStruct extends arc4.Struct<{ x: arc4.UintN64; y: arc4.UintN64 }> {}
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<PointStruct>>(encoded)
+      const decoded = decodeArc4<Point[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i].x.native, arr[i].x)
+        assertMatch(interpreted[i].y.native, arr[i].y)
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode mutable arc4 array', () => {
+      const arr: arc4.UintN64[] = [new arc4.UintN64(100), new arc4.UintN64(200), new arc4.UintN64(300), new arc4.UintN64(400)]
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const decoded = decodeArc4<arc4.UintN64[]>(encoded)
+
+      assertMatch(interpreted.length, arr.length)
+      for (let i = 0; i < arr.length; i++) {
+        assertMatch(interpreted[i], arr[i])
+      }
+      assertMatch(decoded, arr)
+    })
+
+    it('should decode and encode empty mutable array', () => {
+      const arr: uint64[] = []
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const decoded = decodeArc4<uint64[]>(encoded)
+
+      assertMatch(interpreted.length, 0)
+      assertMatch(decoded, [])
+    })
+
+    it('should decode and encode after array mutation', () => {
+      const arr: uint64[] = [1, 2, 3]
+
+      // Mutate the array
+      arr.push(4, 5)
+      arr[0] = 10
+
+      const encoded = encodeArc4(arr)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const decoded = decodeArc4<uint64[]>(encoded)
+
+      const expected = [10, 2, 3, 4, 5]
+      assertMatch(interpreted.length, expected.length)
+      for (let i = 0; i < expected.length; i++) {
+        assertMatch(interpreted[i].native, expected[i])
+      }
+      assertMatch(decoded, expected)
     })
   })
 })
