@@ -550,6 +550,7 @@ describe('native readonly object', () => {
           c: 'hello',
           d: Bytes('world'),
         },
+        'metadata',
       ])
     })
 

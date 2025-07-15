@@ -42,7 +42,10 @@ export const matchImpl: typeof match = (subject, test): boolean => {
   } else if (test instanceof ARC4Encoded) {
     return (subject as unknown as ARC4Encoded).bytes.equals(test.bytes)
   } else if (Array.isArray(test)) {
-    return test.map((x, i) => matchImpl((subject as DeliberateAny)[i], x as DeliberateAny)).every((x) => x)
+    return (
+      (subject as DeliberateAny).length === test.length &&
+      test.map((x, i) => matchImpl((subject as DeliberateAny)[i], x as DeliberateAny)).every((x) => x)
+    )
   } else if (test instanceof FixedArrayImpl) {
     return test.items.map((x, i) => matchImpl((subject as DeliberateAny[])[i], x as DeliberateAny)).every((x) => x)
   } else if (typeof test === 'object') {
@@ -53,10 +56,9 @@ export const matchImpl: typeof match = (subject, test): boolean => {
   return false
 }
 
-export const assertMatchImpl: typeof assertMatch = (subject, test, message): boolean => {
+export const assertMatchImpl: typeof assertMatch = (subject, test, message): void => {
   const isMatching = matchImpl(subject, test)
   assert(isMatching, message)
-  return isMatching
 }
 
 const getBigIntValue = (x: unknown) => {

@@ -52,6 +52,7 @@ describe('match', () => {
     { subject: MAX_UINT512, test: { not: MAX_UINT512 }, expected: false },
     { subject: { a: 42 }, test: { a: { not: 3 } }, expected: true },
     { subject: { a: 42 }, test: { a: { not: 42 } }, expected: false },
+    { subject: [Uint64(1), Uint64(2), Uint64(3)], test: [Uint64(1), { lessThanEq: Uint64(2) }], expected: false },
   ]
 
   const account1 = ctx.any.account()
@@ -109,10 +110,10 @@ describe('match', () => {
     { subject: { a: 'hello', b: 42, c: arc4Str1 }, test: { c: differentArc4Str }, expected: false },
     { subject: { a: 'hello', b: 42, c: arc4Str1 }, test: { not: { c: differentArc4Str } }, expected: true },
     { subject: ['hello', 42, arc4Str1], test: ['hello', { lessThanEq: 42 }, sameArc4Str], expected: true },
-    { subject: ['hello', 42, arc4Str1], test: ['hello'], expected: true },
-    { subject: ['hello', 42, arc4Str1], test: { not: ['hello'] }, expected: false },
-    { subject: ['hello', 42, arc4Str1], test: ['world'], expected: false },
-    { subject: ['hello', 42, arc4Str1], test: { not: ['world'] }, expected: true },
+    { subject: ['hello', 42, arc4Str1], test: ['hello'], expected: false },
+    { subject: ['hello', 42, arc4Str1], test: [{ not: 'hello' }, 42, sameArc4Str], expected: false },
+    { subject: ['hello', 42, arc4Str1], test: ['world', 42, sameArc4Str], expected: false },
+    { subject: ['hello', 42, arc4Str1], test: [{ not: 'world' }, 42, sameArc4Str], expected: true },
     { subject: { x: 43 }, test: { not: { x: 3 } }, expected: true },
     { subject: { x: 43 }, test: { x: { not: 3 } }, expected: true },
     { subject: { x: 43 }, test: { not: { x: { not: 3 } } }, expected: false },
@@ -125,17 +126,18 @@ describe('match', () => {
 
   test.each(testData)('should be able to match %s', (data) => {
     const { subject, test, expected } = data
-    expect(match(subject, test)).toBe(expected)
+    const result = match(subject, test)
+    expect(result).toBe(expected)
   })
 
   test.each(numericTestData.filter((x) => x.expected))('should be able to assert match numeric data %s', (data) => {
-    const { subject, test, expected } = data
-    expect(assertMatch(subject, test)).toBe(expected)
+    const { subject, test } = data
+    expect(() => assertMatch(subject, test)).not.toThrow()
   })
 
   test.each(testData.filter((x) => x.expected))('should be able to assert match %s', (data) => {
-    const { subject, test, expected } = data
-    expect(match(subject, test)).toBe(expected)
+    const { subject, test } = data
+    expect(() => assertMatch(subject, test)).not.toThrow()
   })
 
   test.each(numericTestData.filter((x) => !x.expected))('should throw exception when assert match fails for numeric data %s', (data) => {
