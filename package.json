@@ -24,12 +24,13 @@
     "script:documentation": "typedoc",
     "script:build-examples": "rollup --config examples/rollup.config.ts --configPlugin typescript",
     "script:compile-examples": "puya-ts --out-dir data ./examples/*/ --puya-path=/home/parallels/.local/bin/puya",
-    "script:refresh-test-artifacts": "puya-ts --out-dir data ./tests/artifacts/*/"
+    "script:refresh-test-artifacts": "puya-ts --out-dir data --output-awst --output-awst-json ./tests/artifacts/*/ --puya-path=/home/parallels/.local/bin/puya"
   },
   "devDependencies": {
     "@algorandfoundation/algokit-utils": "^9.0.0",
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
+    "@dotenvx/dotenvx": "^1.45.1",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.23.0",
     "@makerx/eslint-config": "4.2.0",

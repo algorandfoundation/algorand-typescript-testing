@@ -9,10 +9,10 @@ import type {
 import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_ITEMS_IN_LOG } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { toBytes } from '../encoders'
 import { InternalError } from '../errors'
 import type { Mutable, ObjectKeys } from '../typescript-helpers'
 import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asNumber, asUint64Cls, combineIntoMaxBytePages, getRandomBytes } from '../util'
+import { toBytes } from './encoded-types'
 import { Bytes, Uint64, type StubBytesCompat, type StubUint64Compat } from './primitives'
 import { Account, Application, Asset } from './reference'
 

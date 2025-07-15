@@ -4,6 +4,7 @@ import {
   assert,
   BaseContract,
   Bytes,
+  clone,
   contract,
   Global,
   GlobalState,
@@ -737,12 +738,12 @@ export class GlobalStateContract extends arc4.Contract {
 
   @arc4.abimethod()
   set_implicit_key_tuple(value: [uint64, bytes, boolean]) {
-    this.implicitKeyTuple.value = value
+    this.implicitKeyTuple.value = clone(value)
   }
 
   @arc4.abimethod()
   set_implicit_key_obj(value: { a: uint64; b: bytes; c: boolean }) {
-    this.implicitKeyObj.value = value
+    this.implicitKeyObj.value = clone(value)
   }
 
   // Setter methods for explicit key state variables

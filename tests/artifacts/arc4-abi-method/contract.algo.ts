@@ -2,7 +2,7 @@ type UInt8Array = arc4.DynamicArray<arc4.UintN8>
 type MyAlias = arc4.UintN<128>
 
 import type { Account, Application, Asset } from '@algorandfoundation/algorand-typescript'
-import { arc4, assert, gtxn, op, Txn } from '@algorandfoundation/algorand-typescript'
+import { arc4, assert, clone, gtxn, op, Txn } from '@algorandfoundation/algorand-typescript'
 
 export class AnotherStruct extends arc4.Struct<{
   one: arc4.UintN64
@@ -99,6 +99,6 @@ export class SignaturesContract extends arc4.Contract {
     assert(acc.balance === acc.minBalance + 1234)
     assert(five[0].native === 5)
 
-    return [struct1.anotherStruct.copy(), struct1.copy()]
+    return [clone(struct1.anotherStruct), clone(struct1)]
   }
 }
