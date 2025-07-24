@@ -2,7 +2,7 @@ import type { uint64 } from '@algorandfoundation/algorand-typescript'
 import { BITS_IN_BYTE, UINT512_SIZE, UINT64_SIZE } from '../../constants'
 import { CodeError } from '../../errors'
 import { findBoolTypes, trimGenericTypeName } from './helpers'
-import type { DynamicArrayGenericArgs, StaticArrayGenericArgs, TypeInfo, uFixedNxMGenericArgs } from './types'
+import type { DynamicArrayGenericArgs, StaticArrayGenericArgs, TypeInfo, uFixedGenericArgs } from './types'
 
 export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: boolean = true): number => {
   const getMaxBytesLengthForStaticArray = (typeInfo: { genericArgs: StaticArrayGenericArgs }) => {
@@ -54,10 +54,10 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
     case 'Bool':
       return 1
     case 'Byte':
-    case 'UintN':
+    case 'Uint':
       return parseInt((type.genericArgs as TypeInfo[])![0].name, 10) / BITS_IN_BYTE
-    case 'UFixedNxM':
-      return parseInt((type.genericArgs as uFixedNxMGenericArgs).n.name, 10) / BITS_IN_BYTE
+    case 'UFixed':
+      return parseInt((type.genericArgs as uFixedGenericArgs).n.name, 10) / BITS_IN_BYTE
     case 'Address':
     case 'StaticBytes':
     case 'StaticArray':
@@ -105,9 +105,9 @@ export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
     Bool: 'bool',
     Byte: 'byte',
     Str: 'string',
-    'UintN<.*>': (t: TypeInfo) => `uint${getMaxLengthOfStaticContentType(t) * BITS_IN_BYTE}`,
-    'UFixedNxM<.*>': (t: TypeInfo) => {
-      const genericArgs = t.genericArgs as uFixedNxMGenericArgs
+    'Uint<.*>': (t: TypeInfo) => `uint${getMaxLengthOfStaticContentType(t) * BITS_IN_BYTE}`,
+    'UFixed<.*>': (t: TypeInfo) => {
+      const genericArgs = t.genericArgs as uFixedGenericArgs
       return `ufixed${genericArgs.n.name}x${genericArgs.m.name}`
     },
     '(StaticArray|FixedArray)(<.*>)?': (t: TypeInfo) => {

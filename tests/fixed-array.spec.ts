@@ -21,7 +21,7 @@ class TestContract extends Contract {
   fixedArrayNative(a: FixedArray<uint64, 10>, b: string): readonly [FixedArray<uint64, 2>, string] {
     return [new FixedArray(a[0], a[1]), b]
   }
-  fixedArrayArc4(a: FixedArray<arc4.UintN8, 10>, b: arc4.Str): readonly [FixedArray<arc4.UintN8, 2>, arc4.Str] {
+  fixedArrayArc4(a: FixedArray<arc4.Uint8, 10>, b: arc4.Str): readonly [FixedArray<arc4.Uint8, 2>, arc4.Str] {
     return [new FixedArray(a[0], a[1]), b]
   }
 }
@@ -150,57 +150,57 @@ describe('FixedArray', () => {
 
   describe('store arc4 value in fixed array', () => {
     it('can store primitive arc4 values', () => {
-      const a1: FixedArray<arc4.UintN64, 3> = new FixedArray(new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3))
-      assertMatch(a1, [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
+      const a1: FixedArray<arc4.Uint64, 3> = new FixedArray(new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3))
+      assertMatch(a1, [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
 
       const a2 = clone(a1)
-      a2[0] = new arc4.UintN64(10)
-      assertMatch(a1, [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
-      assertMatch(a2, [new arc4.UintN64(10), new arc4.UintN64(2), new arc4.UintN64(3)])
+      a2[0] = new arc4.Uint64(10)
+      assertMatch(a1, [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
+      assertMatch(a2, [new arc4.Uint64(10), new arc4.Uint64(2), new arc4.Uint64(3)])
 
-      const a3 = new FixedArray<arc4.UintN64, 3>()
-      assertMatch(a3, [new arc4.UintN64(0), new arc4.UintN64(0), new arc4.UintN64(0)])
+      const a3 = new FixedArray<arc4.Uint64, 3>()
+      assertMatch(a3, [new arc4.Uint64(0), new arc4.Uint64(0), new arc4.Uint64(0)])
     })
 
     it('can store arc4 dynamic array', () => {
-      const a1: FixedArray<arc4.DynamicArray<arc4.UintN64>, 1> = new FixedArray(
-        new arc4.DynamicArray(new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)),
+      const a1: FixedArray<arc4.DynamicArray<arc4.Uint64>, 1> = new FixedArray(
+        new arc4.DynamicArray(new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)),
       )
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
 
       const a2 = clone(a1)
-      a2[0][0] = new arc4.UintN64(10)
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
-      assertMatch(a2[0], [new arc4.UintN64(10), new arc4.UintN64(2), new arc4.UintN64(3)])
+      a2[0][0] = new arc4.Uint64(10)
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
+      assertMatch(a2[0], [new arc4.Uint64(10), new arc4.Uint64(2), new arc4.Uint64(3)])
     })
 
     it('can store arc4 static array', () => {
-      const a1: FixedArray<arc4.StaticArray<arc4.UintN64, 3>, 1> = new FixedArray(
-        new arc4.StaticArray(new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)),
+      const a1: FixedArray<arc4.StaticArray<arc4.Uint64, 3>, 1> = new FixedArray(
+        new arc4.StaticArray(new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)),
       )
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
 
       const a2 = clone(a1)
-      a2[0][0] = new arc4.UintN64(10)
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
-      assertMatch(a2[0], [new arc4.UintN64(10), new arc4.UintN64(2), new arc4.UintN64(3)])
+      a2[0][0] = new arc4.Uint64(10)
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
+      assertMatch(a2[0], [new arc4.Uint64(10), new arc4.Uint64(2), new arc4.Uint64(3)])
 
-      const a3 = new FixedArray<arc4.StaticArray<arc4.UintN64, 3>, 1>()
-      assertMatch(a3[0], [new arc4.UintN64(0), new arc4.UintN64(0), new arc4.UintN64(0)])
+      const a3 = new FixedArray<arc4.StaticArray<arc4.Uint64, 3>, 1>()
+      assertMatch(a3[0], [new arc4.Uint64(0), new arc4.Uint64(0), new arc4.Uint64(0)])
     })
     it('can store arc4 tuple', () => {
-      const a1: FixedArray<arc4.Tuple<readonly [arc4.UintN64, arc4.Str]>, 1> = new FixedArray(
-        new arc4.Tuple(new arc4.UintN64(1), new arc4.Str('Hello')),
+      const a1: FixedArray<arc4.Tuple<readonly [arc4.Uint64, arc4.Str]>, 1> = new FixedArray(
+        new arc4.Tuple(new arc4.Uint64(1), new arc4.Str('Hello')),
       )
-      assertMatch(a1[0].native, [new arc4.UintN64(1), new arc4.Str('Hello')])
+      assertMatch(a1[0].native, [new arc4.Uint64(1), new arc4.Str('Hello')])
 
       const a2 = clone(a1)
-      a2[0] = new arc4.Tuple(new arc4.UintN64(10), new arc4.Str('hello'))
-      assertMatch(a1[0].native, [new arc4.UintN64(1), new arc4.Str('Hello')])
-      assertMatch(a2[0].native, [new arc4.UintN64(10), new arc4.Str('hello')])
+      a2[0] = new arc4.Tuple(new arc4.Uint64(10), new arc4.Str('hello'))
+      assertMatch(a1[0].native, [new arc4.Uint64(1), new arc4.Str('Hello')])
+      assertMatch(a2[0].native, [new arc4.Uint64(10), new arc4.Str('hello')])
 
-      const a3 = new FixedArray<arc4.Tuple<[arc4.UintN64, arc4.UintN64]>, 1>()
-      assertMatch(a3[0].native, [new arc4.UintN64(0), new arc4.UintN64(0)])
+      const a3 = new FixedArray<arc4.Tuple<[arc4.Uint64, arc4.Uint64]>, 1>()
+      assertMatch(a3[0].native, [new arc4.Uint64(0), new arc4.Uint64(0)])
     })
   })
 
@@ -431,7 +431,7 @@ describe('FixedArray', () => {
     it('should decode and encode native uint64 fixed array', () => {
       const arr = new FixedArray<uint64, 3>(10, 20, 30)
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.UintN64, 3>>(encoded)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.Uint64, 3>>(encoded)
       const decoded = decodeArc4<FixedArray<uint64, 3>>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -483,7 +483,7 @@ describe('FixedArray', () => {
     it('should decode and encode nested fixed array', () => {
       const arr = new FixedArray<FixedArray<uint64, 2>, 2>(new FixedArray<uint64, 2>(1, 2), new FixedArray<uint64, 2>(3, 4))
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.StaticArray<arc4.UintN64, 2>, 2>>(encoded)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.StaticArray<arc4.Uint64, 2>, 2>>(encoded)
       const decoded = decodeArc4<FixedArray<FixedArray<uint64, 2>, 2>>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -499,7 +499,7 @@ describe('FixedArray', () => {
     it('should decode and encode fixed array with native arrays', () => {
       const arr = new FixedArray<uint64[], 2>([1, 2, 3], [4, 5])
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.DynamicArray<arc4.UintN64>, 2>>(encoded)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.DynamicArray<arc4.Uint64>, 2>>(encoded)
       const decoded = decodeArc4<FixedArray<uint64[], 2>>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -515,7 +515,7 @@ describe('FixedArray', () => {
     it('should decode and encode fixed array with tuples', () => {
       const arr = new FixedArray<[uint64, string], 2>([10, 'first'], [20, 'second'])
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.Tuple<[arc4.UintN64, arc4.Str]>, 2>>(encoded)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.Tuple<[arc4.Uint64, arc4.Str]>, 2>>(encoded)
       const decoded = decodeArc4<FixedArray<[uint64, string], 2>>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -529,7 +529,7 @@ describe('FixedArray', () => {
     it('should decode and encode fixed array with objects', () => {
       type Point = { x: uint64; y: uint64 }
       const arr = new FixedArray<Point, 2>({ x: 1, y: 2 }, { x: 3, y: 4 })
-      class ObjStruct extends arc4.Struct<{ x: arc4.UintN64; y: arc4.UintN64 }> {}
+      class ObjStruct extends arc4.Struct<{ x: arc4.Uint64; y: arc4.Uint64 }> {}
       const encoded = encodeArc4(arr)
       const interpreted = interpretAsArc4<arc4.StaticArray<ObjStruct, 2>>(encoded)
       const decoded = decodeArc4<FixedArray<Point, 2>>(encoded)
@@ -543,10 +543,10 @@ describe('FixedArray', () => {
     })
 
     it('should decode and encode arc4 fixed array', () => {
-      const arr = new FixedArray<arc4.UintN64, 3>(new arc4.UintN64(100), new arc4.UintN64(200), new arc4.UintN64(300))
+      const arr = new FixedArray<arc4.Uint64, 3>(new arc4.Uint64(100), new arc4.Uint64(200), new arc4.Uint64(300))
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.UintN64, 3>>(encoded)
-      const decoded = decodeArc4<FixedArray<arc4.UintN64, 3>>(encoded)
+      const interpreted = interpretAsArc4<arc4.StaticArray<arc4.Uint64, 3>>(encoded)
+      const decoded = decodeArc4<FixedArray<arc4.Uint64, 3>>(encoded)
 
       assertMatch(interpreted.length, arr.length)
       for (let i = 0; i < arr.length; i++) {

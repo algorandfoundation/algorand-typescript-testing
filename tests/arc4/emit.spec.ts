@@ -30,14 +30,14 @@ class Swapped {
   }
 }
 class SwappedArc4 extends arc4.Struct<{
-  m: arc4.UintN<64>
-  n: arc4.UintN<256>
-  o: arc4.UFixedNxM<32, 8>
-  p: arc4.UFixedNxM<256, 16>
+  m: arc4.Uint<64>
+  n: arc4.Uint<256>
+  o: arc4.UFixed<32, 8>
+  p: arc4.UFixed<256, 16>
   q: arc4.Bool
-  r: arc4.StaticArray<arc4.UintN8, 3>
-  s: arc4.DynamicArray<arc4.UintN16>
-  t: arc4.Tuple<readonly [arc4.UintN32, arc4.UintN64, arc4.Str]>
+  r: arc4.StaticArray<arc4.Uint8, 3>
+  s: arc4.DynamicArray<arc4.Uint16>
+  t: arc4.Tuple<readonly [arc4.Uint32, arc4.Uint64, arc4.Str]>
 }> {}
 
 describe('arc4.emit', async () => {
@@ -58,14 +58,14 @@ describe('arc4.emit', async () => {
     const test_data = new Swapped('hello', BigUint(MAX_UINT512), Uint64(MAX_UINT64), Bytes('world'), 16, false, Bytes('test'), 'greetings')
 
     const test_data_arc4 = new SwappedArc4({
-      m: new arc4.UintN64(42),
-      n: new arc4.UintN256(512),
-      o: new arc4.UFixedNxM<32, 8>('42.94967295'),
-      p: new arc4.UFixedNxM<256, 16>('25.5'),
+      m: new arc4.Uint64(42),
+      n: new arc4.Uint256(512),
+      o: new arc4.UFixed<32, 8>('42.94967295'),
+      p: new arc4.UFixed<256, 16>('25.5'),
       q: new arc4.Bool(true),
-      r: new arc4.StaticArray(new arc4.UintN8(1), new arc4.UintN8(2), new arc4.UintN8(3)),
-      s: new arc4.DynamicArray(new arc4.UintN16(1), new arc4.UintN16(2), new arc4.UintN16(3)),
-      t: new arc4.Tuple(new arc4.UintN32(1), new arc4.UintN64(2), new arc4.Str('hello')),
+      r: new arc4.StaticArray(new arc4.Uint8(1), new arc4.Uint8(2), new arc4.Uint8(3)),
+      s: new arc4.DynamicArray(new arc4.Uint16(1), new arc4.Uint16(2), new arc4.Uint16(3)),
+      t: new arc4.Tuple(new arc4.Uint32(1), new arc4.Uint64(2), new arc4.Str('hello')),
     })
     const avm_result = await getAvmResultLog(
       { appClient },

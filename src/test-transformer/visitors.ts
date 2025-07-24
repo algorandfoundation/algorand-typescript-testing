@@ -95,7 +95,7 @@ export class SourceFileVisitor {
     }
 
     // capture generic type info for variable initialising outside class and function declarations
-    // e.g. `const x = new UintN<32>(42)
+    // e.g. `const x = new Uint<32>(42)
     if (ts.isVariableDeclaration(node) && node.initializer) {
       return new VariableInitializerVisitor(this.context, this.helper, node).result()
     }
@@ -278,8 +278,8 @@ class FunctionOrMethodVisitor {
      * capture generic type info in test functions and swap arc4 types with implementation; e.g.
      * ```
      *  it('should work', () => {
-     *   expect(() => new UintN<32>(2 ** 32)).toThrowError(`expected value <= ${2 ** 32 - 1}`)
-     *   expect(UintN.fromBytes<UintN<32>>('').bytes).toEqual(Bytes())
+     *   expect(() => new Uint<32>(2 ** 32)).toThrowError(`expected value <= ${2 ** 32 - 1}`)
+     *   expect(Uint.fromBytes<Uint<32>>('').bytes).toEqual(Bytes())
      * })
      * ```
      */

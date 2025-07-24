@@ -11,9 +11,9 @@ export {
   DynamicArrayImpl,
   DynamicBytesImpl,
   encodeArc4Impl,
+  FixedArrayImpl,
   getArc4Encoded,
   getEncoder,
-  FixedArrayImpl,
   ReferenceArrayImpl,
   StaticArrayImpl,
   StaticBytesImpl,
@@ -21,8 +21,8 @@ export {
   StructImpl,
   toBytes,
   TupleImpl,
-  UFixedNxMImpl,
-  UintNImpl,
+  UFixedImpl,
+  UintImpl,
 } from './encoded-types'
 export { TypeInfo } from './types'
 export { arc4EncodedLengthImpl, getArc4TypeName, getMaxLengthOfStaticContentType, minLengthForType } from './utils'

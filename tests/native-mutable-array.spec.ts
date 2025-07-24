@@ -21,7 +21,7 @@ class TestContract extends Contract {
   nativeArrayMethod(a: uint64[], b: string): readonly [uint64[], string] {
     return [a.slice(0, 2), b]
   }
-  arc4ArrayMethod(a: arc4.UintN8[], b: arc4.Str): readonly [arc4.UintN8[], arc4.Str] {
+  arc4ArrayMethod(a: arc4.Uint8[], b: arc4.Str): readonly [arc4.Uint8[], arc4.Str] {
     return [a.slice(0, 2), b]
   }
 }
@@ -64,46 +64,46 @@ describe('native mutable array', () => {
 
   describe('store arc4 value in native array', () => {
     it('can store primitive arc4 values', () => {
-      const a1: arc4.UintN64[] = [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)]
-      assertMatch(a1, [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
+      const a1: arc4.Uint64[] = [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)]
+      assertMatch(a1, [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
 
       const a2 = clone(a1)
-      a2[0] = new arc4.UintN64(10)
-      assertMatch(a1, [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
-      assertMatch(a2, [new arc4.UintN64(10), new arc4.UintN64(2), new arc4.UintN64(3)])
+      a2[0] = new arc4.Uint64(10)
+      assertMatch(a1, [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
+      assertMatch(a2, [new arc4.Uint64(10), new arc4.Uint64(2), new arc4.Uint64(3)])
 
-      const a3: arc4.UintN64[] = []
+      const a3: arc4.Uint64[] = []
       assertMatch(a3, [])
     })
 
     it('can store arc4 dynamic array', () => {
-      const a1: arc4.DynamicArray<arc4.UintN64>[] = [new arc4.DynamicArray(new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3))]
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
+      const a1: arc4.DynamicArray<arc4.Uint64>[] = [new arc4.DynamicArray(new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3))]
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
 
       const a2 = clone(a1)
-      a2[0][0] = new arc4.UintN64(10)
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
-      assertMatch(a2[0], [new arc4.UintN64(10), new arc4.UintN64(2), new arc4.UintN64(3)])
+      a2[0][0] = new arc4.Uint64(10)
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
+      assertMatch(a2[0], [new arc4.Uint64(10), new arc4.Uint64(2), new arc4.Uint64(3)])
     })
 
     it('can store arc4 static array', () => {
-      const a1: arc4.StaticArray<arc4.UintN64, 3>[] = [new arc4.StaticArray(new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3))]
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
+      const a1: arc4.StaticArray<arc4.Uint64, 3>[] = [new arc4.StaticArray(new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3))]
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
 
       const a2 = clone(a1)
-      a2[0][0] = new arc4.UintN64(10)
-      assertMatch(a1[0], [new arc4.UintN64(1), new arc4.UintN64(2), new arc4.UintN64(3)])
-      assertMatch(a2[0], [new arc4.UintN64(10), new arc4.UintN64(2), new arc4.UintN64(3)])
+      a2[0][0] = new arc4.Uint64(10)
+      assertMatch(a1[0], [new arc4.Uint64(1), new arc4.Uint64(2), new arc4.Uint64(3)])
+      assertMatch(a2[0], [new arc4.Uint64(10), new arc4.Uint64(2), new arc4.Uint64(3)])
     })
 
     it('can store arc4 tuple', () => {
-      const a1: arc4.Tuple<readonly [arc4.UintN64, arc4.Str]>[] = [new arc4.Tuple(new arc4.UintN64(1), new arc4.Str('Hello'))]
-      assertMatch(a1[0].native, [new arc4.UintN64(1), new arc4.Str('Hello')])
+      const a1: arc4.Tuple<readonly [arc4.Uint64, arc4.Str]>[] = [new arc4.Tuple(new arc4.Uint64(1), new arc4.Str('Hello'))]
+      assertMatch(a1[0].native, [new arc4.Uint64(1), new arc4.Str('Hello')])
 
       const a2 = clone(a1)
-      a2[0] = new arc4.Tuple(new arc4.UintN64(10), new arc4.Str('hello'))
-      assertMatch(a1[0].native, [new arc4.UintN64(1), new arc4.Str('Hello')])
-      assertMatch(a2[0].native, [new arc4.UintN64(10), new arc4.Str('hello')])
+      a2[0] = new arc4.Tuple(new arc4.Uint64(10), new arc4.Str('hello'))
+      assertMatch(a1[0].native, [new arc4.Uint64(1), new arc4.Str('Hello')])
+      assertMatch(a2[0].native, [new arc4.Uint64(10), new arc4.Str('hello')])
     })
   })
 
@@ -309,7 +309,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable uint64 array', () => {
       const arr: uint64[] = [10, 20, 30, 40]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
       const decoded = decodeArc4<uint64[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -361,7 +361,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable nested array', () => {
       const arr: uint64[][] = [[1, 2], [3, 4, 5], [6], [7, 8, 9, 10]]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicArray<arc4.UintN64>>>(encoded)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicArray<arc4.Uint64>>>(encoded)
       const decoded = decodeArc4<uint64[][]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -381,7 +381,7 @@ describe('native mutable array', () => {
         new FixedArray<uint64, 2>(5, 6),
       ]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.StaticArray<arc4.UintN64, 2>>>(encoded)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.StaticArray<arc4.Uint64, 2>>>(encoded)
       const decoded = decodeArc4<FixedArray<uint64, 2>[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -401,7 +401,7 @@ describe('native mutable array', () => {
         [30, 'third'],
       ]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Tuple<[arc4.UintN64, arc4.Str]>>>(encoded)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Tuple<[arc4.Uint64, arc4.Str]>>>(encoded)
       const decoded = decodeArc4<[uint64, string][]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -419,7 +419,7 @@ describe('native mutable array', () => {
         { x: 3, y: 4 },
         { x: 5, y: 6 },
       ]
-      class PointStruct extends arc4.Struct<{ x: arc4.UintN64; y: arc4.UintN64 }> {}
+      class PointStruct extends arc4.Struct<{ x: arc4.Uint64; y: arc4.Uint64 }> {}
       const encoded = encodeArc4(arr)
       const interpreted = interpretAsArc4<arc4.DynamicArray<PointStruct>>(encoded)
       const decoded = decodeArc4<Point[]>(encoded)
@@ -433,10 +433,10 @@ describe('native mutable array', () => {
     })
 
     it('should decode and encode mutable arc4 array', () => {
-      const arr: arc4.UintN64[] = [new arc4.UintN64(100), new arc4.UintN64(200), new arc4.UintN64(300), new arc4.UintN64(400)]
+      const arr: arc4.Uint64[] = [new arc4.Uint64(100), new arc4.Uint64(200), new arc4.Uint64(300), new arc4.Uint64(400)]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
-      const decoded = decodeArc4<arc4.UintN64[]>(encoded)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const decoded = decodeArc4<arc4.Uint64[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
       for (let i = 0; i < arr.length; i++) {
@@ -448,7 +448,7 @@ describe('native mutable array', () => {
     it('should decode and encode empty mutable array', () => {
       const arr: uint64[] = []
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
       const decoded = decodeArc4<uint64[]>(encoded)
 
       assertMatch(interpreted.length, 0)
@@ -463,7 +463,7 @@ describe('native mutable array', () => {
       arr[0] = 10
 
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.UintN64>>(encoded)
+      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
       const decoded = decodeArc4<uint64[]>(encoded)
 
       const expected = [10, 2, 3, 4, 5]

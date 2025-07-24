@@ -4,7 +4,7 @@ import type { ARC4Encoded, BitSize } from '@algorandfoundation/algorand-typescri
 import type { StubBytesCompat } from '../primitives'
 
 export type CompatForArc4Int<N extends BitSize> = N extends 8 | 16 | 24 | 32 | 40 | 48 | 56 | 64 ? Uint64Compat : BigUintCompat
-export type uFixedNxMGenericArgs = { n: TypeInfo; m: TypeInfo }
+export type uFixedGenericArgs = { n: TypeInfo; m: TypeInfo }
 export type StaticArrayGenericArgs = { elementType: TypeInfo; size: TypeInfo }
 export type DynamicArrayGenericArgs = { elementType: TypeInfo }
 export type StructConstraint = Record<string, ARC4Encoded>

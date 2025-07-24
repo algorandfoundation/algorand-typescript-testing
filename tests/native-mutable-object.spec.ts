@@ -94,7 +94,7 @@ type DeepNestedObj = {
 }
 
 type Arc4PrimitiveObj = {
-  a: arc4.UintN64
+  a: arc4.Uint64
   b: arc4.Bool
   c: arc4.Str
   d: arc4.Byte
@@ -102,19 +102,19 @@ type Arc4PrimitiveObj = {
 
 type Arc4DynamicArrayObj = {
   a: uint64
-  b: arc4.DynamicArray<arc4.UintN64>
+  b: arc4.DynamicArray<arc4.Uint64>
   c: string
 }
 
 type Arc4StaticArrayObj = {
   a: uint64
-  b: arc4.StaticArray<arc4.UintN64, 3>
+  b: arc4.StaticArray<arc4.Uint64, 3>
   c: string
 }
 
 type Arc4TupleObj = {
   a: uint64
-  b: arc4.Tuple<readonly [arc4.UintN64, arc4.Str, arc4.Bool]>
+  b: arc4.Tuple<readonly [arc4.Uint64, arc4.Str, arc4.Bool]>
   c: string
 }
 
@@ -327,26 +327,26 @@ describe('native mutable object', () => {
   describe('store arc4 value', () => {
     it('can store primitive arc4 values', () => {
       const obj: Arc4PrimitiveObj = {
-        a: new arc4.UintN64(42),
+        a: new arc4.Uint64(42),
         b: new arc4.Bool(true),
         c: new arc4.Str('hello'),
         d: new arc4.Byte(125),
       }
 
       const obj2 = clone(obj)
-      obj2.a = new arc4.UintN64(100)
+      obj2.a = new arc4.Uint64(100)
       obj2.b = new arc4.Bool(false)
       obj2.c = new arc4.Str('world')
       obj2.d = new arc4.Byte(42)
 
       assertMatch(obj, {
-        a: new arc4.UintN64(42),
+        a: new arc4.Uint64(42),
         b: new arc4.Bool(true),
         c: new arc4.Str('hello'),
         d: new arc4.Byte(125),
       })
       assertMatch(obj2, {
-        a: new arc4.UintN64(100),
+        a: new arc4.Uint64(100),
         b: new arc4.Bool(false),
         c: new arc4.Str('world'),
         d: new arc4.Byte(42),
@@ -356,45 +356,45 @@ describe('native mutable object', () => {
     it('can store arc4 dynamic array', () => {
       const obj: Arc4DynamicArrayObj = {
         a: 42,
-        b: new arc4.DynamicArray(new arc4.UintN64(10), new arc4.UintN64(20), new arc4.UintN64(30)),
+        b: new arc4.DynamicArray(new arc4.Uint64(10), new arc4.Uint64(20), new arc4.Uint64(30)),
         c: 'test',
       }
 
       const obj2 = clone(obj)
-      obj2.b[0] = new arc4.UintN64(100)
-      obj2.b.push(new arc4.UintN64(40))
+      obj2.b[0] = new arc4.Uint64(100)
+      obj2.b.push(new arc4.Uint64(40))
 
-      assertMatch(obj.b, [new arc4.UintN64(10), new arc4.UintN64(20), new arc4.UintN64(30)])
-      assertMatch(obj2.b, [new arc4.UintN64(100), new arc4.UintN64(20), new arc4.UintN64(30), new arc4.UintN64(40)])
+      assertMatch(obj.b, [new arc4.Uint64(10), new arc4.Uint64(20), new arc4.Uint64(30)])
+      assertMatch(obj2.b, [new arc4.Uint64(100), new arc4.Uint64(20), new arc4.Uint64(30), new arc4.Uint64(40)])
     })
 
     it('can store arc4 static array', () => {
       const obj: Arc4StaticArrayObj = {
         a: 42,
-        b: new arc4.StaticArray(new arc4.UintN64(10), new arc4.UintN64(20), new arc4.UintN64(30)),
+        b: new arc4.StaticArray(new arc4.Uint64(10), new arc4.Uint64(20), new arc4.Uint64(30)),
         c: 'test',
       }
 
       const obj2 = clone(obj)
-      obj2.b[0] = new arc4.UintN64(100)
-      obj2.b[2] = new arc4.UintN64(300)
+      obj2.b[0] = new arc4.Uint64(100)
+      obj2.b[2] = new arc4.Uint64(300)
 
-      assertMatch(obj.b, [new arc4.UintN64(10), new arc4.UintN64(20), new arc4.UintN64(30)])
-      assertMatch(obj2.b, [new arc4.UintN64(100), new arc4.UintN64(20), new arc4.UintN64(300)])
+      assertMatch(obj.b, [new arc4.Uint64(10), new arc4.Uint64(20), new arc4.Uint64(30)])
+      assertMatch(obj2.b, [new arc4.Uint64(100), new arc4.Uint64(20), new arc4.Uint64(300)])
     })
 
     it('can store arc4 tuple', () => {
       const obj: Arc4TupleObj = {
         a: 42,
-        b: new arc4.Tuple(new arc4.UintN64(10), new arc4.Str('hello'), new arc4.Bool(true)),
+        b: new arc4.Tuple(new arc4.Uint64(10), new arc4.Str('hello'), new arc4.Bool(true)),
         c: 'test',
       }
 
       const obj2 = clone(obj)
-      obj2.b = new arc4.Tuple(new arc4.UintN64(100), new arc4.Str('world'), new arc4.Bool(false))
+      obj2.b = new arc4.Tuple(new arc4.Uint64(100), new arc4.Str('world'), new arc4.Bool(false))
 
-      assertMatch(obj.b.native, [new arc4.UintN64(10), new arc4.Str('hello'), new arc4.Bool(true)])
-      assertMatch(obj2.b.native, [new arc4.UintN64(100), new arc4.Str('world'), new arc4.Bool(false)])
+      assertMatch(obj.b.native, [new arc4.Uint64(10), new arc4.Str('hello'), new arc4.Bool(true)])
+      assertMatch(obj2.b.native, [new arc4.Uint64(100), new arc4.Str('world'), new arc4.Bool(false)])
     })
   })
 
@@ -584,7 +584,7 @@ describe('native mutable object', () => {
   describe('decode and encode', () => {
     it('should decode and encode simple mutable object', () => {
       class SimpleObjStruct extends arc4.Struct<{
-        a: arc4.UintN64
+        a: arc4.Uint64
         b: arc4.Bool
         c: arc4.Str
         d: arc4.DynamicBytes
@@ -603,12 +603,12 @@ describe('native mutable object', () => {
 
     it('should decode and encode nested mutable object', () => {
       class ObjectStruct extends arc4.Struct<{
-        x: arc4.UintN64
+        x: arc4.Uint64
         y: arc4.Str
         z: arc4.Bool
       }> {}
       class NestedObjStruct extends arc4.Struct<{
-        a: arc4.UintN64
+        a: arc4.Uint64
         b: arc4.Bool
         c: arc4.Str
         d: ObjectStruct
@@ -636,10 +636,10 @@ describe('native mutable object', () => {
 
     it('should decode and encode array object', () => {
       class ArrayObjStruct extends arc4.Struct<{
-        a: arc4.UintN64
+        a: arc4.Uint64
         b: arc4.Bool
         c: arc4.Str
-        d: arc4.DynamicArray<arc4.UintN64>
+        d: arc4.DynamicArray<arc4.Uint64>
       }> {}
 
       const obj: ArrayObj = {
@@ -665,10 +665,10 @@ describe('native mutable object', () => {
 
     it('should decode and encode fixed array object', () => {
       class FixedArrayObjStruct extends arc4.Struct<{
-        a: arc4.UintN64
+        a: arc4.Uint64
         b: arc4.Bool
         c: arc4.Str
-        d: arc4.StaticArray<arc4.UintN64, 3>
+        d: arc4.StaticArray<arc4.Uint64, 3>
       }> {}
 
       const obj: FixedArrayObj = {
@@ -694,10 +694,10 @@ describe('native mutable object', () => {
 
     it('should decode and encode tuple object', () => {
       class TupleObjStruct extends arc4.Struct<{
-        a: arc4.UintN64
+        a: arc4.Uint64
         b: arc4.Bool
         c: arc4.Str
-        d: arc4.Tuple<[arc4.UintN64, arc4.Str, arc4.Bool]>
+        d: arc4.Tuple<[arc4.Uint64, arc4.Str, arc4.Bool]>
       }> {}
 
       const obj: TupleObj = {
@@ -722,14 +722,14 @@ describe('native mutable object', () => {
 
     it('should decode and encode arc4 primitive object', () => {
       class Arc4PrimitiveObjStruct extends arc4.Struct<{
-        a: arc4.UintN64
+        a: arc4.Uint64
         b: arc4.Bool
         c: arc4.Str
         d: arc4.Byte
       }> {}
 
       const obj: Arc4PrimitiveObj = {
-        a: new arc4.UintN64(999),
+        a: new arc4.Uint64(999),
         b: new arc4.Bool(false),
         c: new arc4.Str('arc4 test'),
         d: new arc4.Byte(255),
@@ -748,16 +748,16 @@ describe('native mutable object', () => {
 
     it('should decode and encode deep nested object', () => {
       class ObjStruct extends arc4.Struct<{
-        p: arc4.UintN64
+        p: arc4.Uint64
         q: arc4.Str
       }> {}
       class NestedObjStruct extends arc4.Struct<{
         x: ObjStruct
         y: arc4.DynamicArray<arc4.Str>
-        z: arc4.Tuple<[arc4.UintN64, arc4.Bool]>
+        z: arc4.Tuple<[arc4.Uint64, arc4.Bool]>
       }> {}
       class DeepNestedObjStruct extends arc4.Struct<{
-        a: arc4.UintN64
+        a: arc4.Uint64
         b: NestedObjStruct
         c: arc4.Str
       }> {}

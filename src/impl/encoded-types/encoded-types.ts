@@ -13,8 +13,8 @@ import {
   Str,
   Struct,
   Tuple,
-  UFixedNxM,
-  UintN,
+  UFixed,
+  Uint,
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import assert from 'assert'
@@ -74,11 +74,11 @@ import type {
   StaticArrayGenericArgs,
   StructConstraint,
   TypeInfo,
-  uFixedNxMGenericArgs,
+  uFixedGenericArgs,
 } from './types'
 import { getMaxLengthOfStaticContentType } from './utils'
 
-export class UintNImpl<N extends BitSize> extends UintN<N> {
+export class UintImpl<N extends BitSize> extends Uint<N> {
   private value: Uint8Array
   private bitSize: N
   typeInfo: TypeInfo
@@ -86,7 +86,7 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
   constructor(typeInfo: TypeInfo | string, v?: CompatForArc4Int<N>) {
     super()
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    this.bitSize = UintNImpl.getMaxBitsLength(this.typeInfo) as N
+    this.bitSize = UintImpl.getMaxBitsLength(this.typeInfo) as N
 
     assert(validBitSizes.includes(this.bitSize), `Invalid bit size ${this.bitSize}`)
 
@@ -99,7 +99,7 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
 
   get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as UintN<N>['native']
+    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as Uint<N>['native']
   }
 
   get bytes(): bytes {
@@ -107,7 +107,7 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof UintNImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof UintImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -117,13 +117,13 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
-  ): UintNImpl<BitSize> {
+  ): UintImpl<BitSize> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new UintNImpl<BitSize>(typeInfo)
+    const result = new UintImpl<BitSize>(typeInfo)
     result.value = asUint8Array(bytesValue)
     return result
   }
@@ -133,7 +133,7 @@ export class UintNImpl<N extends BitSize> extends UintN<N> {
   }
 }
 
-export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNxM<N, M> {
+export class UFixedImpl<N extends BitSize, M extends number> extends UFixed<N, M> {
   private value: Uint8Array
   private bitSize: N
   private precision: M
@@ -142,8 +142,8 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
   constructor(typeInfo: TypeInfo | string, v?: `${number}.${number}`) {
     super(v)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    const genericArgs = this.typeInfo.genericArgs as uFixedNxMGenericArgs
-    this.bitSize = UFixedNxMImpl.getMaxBitsLength(this.typeInfo) as N
+    const genericArgs = this.typeInfo.genericArgs as uFixedGenericArgs
+    this.bitSize = UFixedImpl.getMaxBitsLength(this.typeInfo) as N
     this.precision = parseInt(genericArgs.m.name, 10) as M
 
     const trimmedValue = trimTrailingDecimalZeros(v ?? '0.0')
@@ -158,7 +158,7 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
 
   get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as UFixedNxM<N, M>['native']
+    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as UFixed<N, M>['native']
   }
 
   get bytes(): bytes {
@@ -166,7 +166,7 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof UFixedNxMImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof UFixedImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -176,31 +176,31 @@ export class UFixedNxMImpl<N extends BitSize, M extends number> extends UFixedNx
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
-  ): UFixedNxM<BitSize, number> {
+  ): UFixed<BitSize, number> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new UFixedNxMImpl<BitSize, number>(typeInfo, '0.0')
+    const result = new UFixedImpl<BitSize, number>(typeInfo, '0.0')
     result.value = asUint8Array(bytesValue)
     return result
   }
 
   static getMaxBitsLength(typeInfo: TypeInfo): BitSize {
-    const genericArgs = typeInfo.genericArgs as uFixedNxMGenericArgs
+    const genericArgs = typeInfo.genericArgs as uFixedGenericArgs
     return parseInt(genericArgs.n.name, 10) as BitSize
   }
 }
 
 export class ByteImpl extends Byte {
   typeInfo: TypeInfo
-  private value: UintNImpl<8>
+  private value: UintImpl<8>
 
   constructor(typeInfo: TypeInfo | string, v?: CompatForArc4Int<8>) {
     super(v)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    this.value = new UintNImpl<8>(typeInfo, v)
+    this.value = new UintImpl<8>(typeInfo, v)
   }
 
   get native() {
@@ -219,14 +219,14 @@ export class ByteImpl extends Byte {
   }
 
   static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): ByteImpl {
-    const uintNValue = UintNImpl.fromBytesImpl(value, typeInfo, prefix) as UintNImpl<8>
+    const uintNValue = UintImpl.fromBytesImpl(value, typeInfo, prefix) as UintImpl<8>
     const result = new ByteImpl(typeInfo)
     result.value = uintNValue
     return result
   }
 
   static getMaxBitsLength(typeInfo: TypeInfo): BitSize {
-    return UintNImpl.getMaxBitsLength(typeInfo)
+    return UintImpl.getMaxBitsLength(typeInfo)
   }
 }
 
@@ -1127,27 +1127,27 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
   }
   if (value instanceof AccountCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apat.indexOf(value)
-    return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
+    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
   }
   if (value instanceof AssetCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apas.indexOf(value)
-    return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
+    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
   }
   if (value instanceof ApplicationCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apfa.indexOf(value)
-    return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
+    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
   }
   if (typeof value === 'boolean') {
     return new BoolImpl({ name: 'Bool' }, value)
   }
   if (value instanceof Uint64Cls || typeof value === 'number') {
-    return new UintNImpl({ name: 'UintN<64>', genericArgs: [{ name: '64' }] }, asBigInt(value))
+    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(value))
   }
   if (value instanceof BigUintCls) {
-    return new UintNImpl({ name: 'UintN<512>', genericArgs: [{ name: '512' }] }, value.asBigInt())
+    return new UintImpl({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value.asBigInt())
   }
   if (typeof value === 'bigint') {
-    return new UintNImpl({ name: 'UintN<512>', genericArgs: [{ name: '512' }] }, value)
+    return new UintImpl({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value)
   }
   if (value instanceof BytesCls) {
     return new DynamicBytesImpl(
@@ -1291,8 +1291,8 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     Bool: BoolImpl.fromBytesImpl,
     Byte: ByteImpl.fromBytesImpl,
     Str: StrImpl.fromBytesImpl,
-    'UintN<.*>': UintNImpl.fromBytesImpl,
-    'UFixedNxM<.*>': UFixedNxMImpl.fromBytesImpl,
+    'Uint<.*>': UintImpl.fromBytesImpl,
+    'UFixed<.*>': UFixedImpl.fromBytesImpl,
     'StaticArray<.*>': StaticArrayImpl.fromBytesImpl,
     'DynamicArray<.*>': DynamicArrayImpl.fromBytesImpl,
     'Tuple(<.*>)?': TupleImpl.fromBytesImpl,

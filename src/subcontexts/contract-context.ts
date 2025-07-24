@@ -15,7 +15,7 @@ import { lazyContext } from '../context-helpers/internal-context'
 import { CodeError } from '../errors'
 import { BaseContract, ContractOptionsSymbol } from '../impl/base-contract'
 import { Contract } from '../impl/contract'
-import { getArc4Encoded, UintNImpl, type TypeInfo } from '../impl/encoded-types'
+import { getArc4Encoded, UintImpl, type TypeInfo } from '../impl/encoded-types'
 import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
 import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
@@ -87,7 +87,7 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
   return states
 }
 
-const getUintN8Impl = (value: number) => new UintNImpl({ name: 'UintN<8>', genericArgs: [{ name: '8' }] }, value)
+const getUint8Impl = (value: number) => new UintImpl({ name: 'Uint<8>', genericArgs: [{ name: '8' }] }, value)
 
 /** @ignore */
 export const extractArraysFromArgs = (app: Application, methodSelector: Uint8Array, args: DeliberateAny[]) => {
@@ -101,13 +101,13 @@ export const extractArraysFromArgs = (app: Application, methodSelector: Uint8Arr
     if (isTransaction(arg)) {
       transactions.push(arg)
     } else if (arg instanceof AccountCls) {
-      appArgs.push(getUintN8Impl(accounts.length))
+      appArgs.push(getUint8Impl(accounts.length))
       accounts.push(arg as Account)
     } else if (arg instanceof ApplicationCls) {
-      appArgs.push(getUintN8Impl(apps.length))
+      appArgs.push(getUint8Impl(apps.length))
       apps.push(arg as Application)
     } else if (arg instanceof AssetCls) {
-      appArgs.push(getUintN8Impl(assets.length))
+      appArgs.push(getUint8Impl(assets.length))
       assets.push(arg as Asset)
     } else if (arg !== undefined) {
       appArgs.push(getArc4Encoded(arg))

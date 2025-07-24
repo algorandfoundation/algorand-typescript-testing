@@ -1,11 +1,11 @@
-type UInt8Array = arc4.DynamicArray<arc4.UintN8>
-type MyAlias = arc4.UintN<128>
+type UInt8Array = arc4.DynamicArray<arc4.Uint8>
+type MyAlias = arc4.Uint<128>
 
 import type { Account, Application, Asset } from '@algorandfoundation/algorand-typescript'
 import { arc4, assert, clone, gtxn, op, Txn } from '@algorandfoundation/algorand-typescript'
 
 export class AnotherStruct extends arc4.Struct<{
-  one: arc4.UintN64
+  one: arc4.Uint64
   two: arc4.Str
 }> {}
 
@@ -14,7 +14,7 @@ type MyStructAlias = AnotherStruct
 export class MyStruct extends arc4.Struct<{
   anotherStruct: AnotherStruct
   anotherStructAlias: MyStructAlias
-  three: arc4.UintN128
+  three: arc4.Uint128
   four: MyAlias
 }> {}
 
@@ -58,7 +58,7 @@ export class SignaturesContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  withApp(value: arc4.Str, app: Application, appId: arc4.UintN64, arr: UInt8Array) {
+  withApp(value: arc4.Str, app: Application, appId: arc4.Uint64, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
     assert(app.id === appId.native, 'expected app id to match provided app id')
@@ -95,7 +95,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(txn.groupIndex === Txn.groupIndex - 1)
 
     // acc
-    assert(Txn.applicationArgs(2) === new arc4.UintN8(1).bytes) // acc array ref
+    assert(Txn.applicationArgs(2) === new arc4.Uint8(1).bytes) // acc array ref
     assert(acc.balance === acc.minBalance + 1234)
     assert(five[0].native === 5)
 
