@@ -10,34 +10,34 @@ import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError, NotImplementedError } from '../errors'
 import { asBytes, asBytesCls, asUint8Array, conactUint8Arrays } from '../util'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
-import { Bytes, BytesCls, Uint64Cls } from './primitives'
+import { Bytes, BytesCls, FixedBytes, Uint64Cls } from './primitives'
 
 export const sha256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha256.sha256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs().toFixed({ length: 32 })
+  const hashBytes = FixedBytes(32, new Uint8Array(hashArray))
+  return hashBytes
 }
 
 export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.sha3_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs().toFixed({ length: 32 })
+  const hashBytes = FixedBytes(32, new Uint8Array(hashArray))
+  return hashBytes
 }
 
 export const keccak256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.keccak256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs().toFixed({ length: 32 })
+  const hashBytes = FixedBytes(32, new Uint8Array(hashArray))
+  return hashBytes
 }
 
 export const sha512_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha512.sha512_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs().toFixed({ length: 32 })
+  const hashBytes = FixedBytes(32, new Uint8Array(hashArray))
+  return hashBytes
 }
 
 export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
@@ -106,7 +106,7 @@ export const ecdsaPkRecover = (
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(x).toFixed({ length: 32 }), Bytes(y).toFixed({ length: 32 })]
+  return [FixedBytes(32, x), FixedBytes(32, y)]
 }
 
 export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes<32>, bytes<32>] => {
@@ -118,7 +118,7 @@ export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(new Uint8Array(x)).toFixed({ length: 32 }), Bytes(new Uint8Array(y)).toFixed({ length: 32 })]
+  return [FixedBytes(32, new Uint8Array(x)), FixedBytes(32, new Uint8Array(y))]
 }
 
 export const vrfVerify = (_s: VrfVerify, _a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): readonly [bytes<64>, boolean] => {

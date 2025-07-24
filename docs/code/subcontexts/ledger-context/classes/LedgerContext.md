@@ -144,7 +144,7 @@ Checks if a box exists for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 
@@ -174,7 +174,7 @@ Deletes a box for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 
@@ -364,7 +364,7 @@ Retrieves a box for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 
@@ -394,7 +394,7 @@ Retrieves global state for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 
@@ -424,7 +424,7 @@ Retrieves local state for an application and account by key.
 
 The application.
 
-`uint64` | `Application` | `BaseContract`
+`uint64` | `BaseContract` | `Application`
 
 ##### account
 
@@ -468,7 +468,7 @@ Retrieves a materialised box for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 
@@ -658,7 +658,7 @@ Sets a box for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 
@@ -692,7 +692,7 @@ Sets global state for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 
@@ -732,7 +732,7 @@ Sets local state for an application and account by key.
 
 The application.
 
-`uint64` | `Application` | `BaseContract`
+`uint64` | `BaseContract` | `Application`
 
 ##### account
 
@@ -780,7 +780,7 @@ Cache the materialised box for an application by key.
 
 The application.
 
-`Application` | `BaseContract`
+`BaseContract` | `Application`
 
 ##### key
 

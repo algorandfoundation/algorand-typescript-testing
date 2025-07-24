@@ -366,7 +366,7 @@ The payment transaction.
 
 ### getScratchSlot()
 
-> **getScratchSlot**(`index`): `bytes` \| `uint64`
+> **getScratchSlot**(`index`): `uint64` \| `bytes`
 
 Defined in: [src/subcontexts/transaction-context.ts:293](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L293)
 
@@ -382,7 +382,7 @@ The index of the scratch slot.
 
 #### Returns
 
-`bytes` \| `uint64`
+`uint64` \| `bytes`
 
 The scratch slot value.
 
@@ -390,7 +390,7 @@ The scratch slot value.
 
 ### getScratchSpace()
 
-> **getScratchSpace**(): (`bytes` \| `uint64`)[]
+> **getScratchSpace**(): (`uint64` \| `bytes`)[]
 
 Defined in: [src/subcontexts/transaction-context.ts:284](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/transaction-context.ts#L284)
 
@@ -398,7 +398,7 @@ Gets the scratch space of the active transaction.
 
 #### Returns
 
-(`bytes` \| `uint64`)[]
+(`uint64` \| `bytes`)[]
 
 The scratch space.
 

@@ -1,6 +1,6 @@
 [**@algorandfoundation/algorand-typescript-testing**](../../../README.md)
 
----
+***
 
 [@algorandfoundation/algorand-typescript-testing](../../../README.md) / [value-generators/arc4](../README.md) / Arc4ValueGenerator
 
@@ -33,7 +33,7 @@ Generate a random Algorand address.
 
 `Address`
 
----
+***
 
 ### dynamicBytes()
 
@@ -53,7 +53,7 @@ Generate a random dynamic bytes of size `n` bits.
 
 `DynamicBytes`
 
----
+***
 
 ### str()
 
@@ -73,11 +73,11 @@ Generate a random dynamic string of size `n` bits.
 
 `Str`
 
----
+***
 
-### uintN128()
+### uint128()
 
-> **uintN128**(`minValue`, `maxValue`): `Uint128`
+> **uint128**(`minValue`, `maxValue`): `Uint128`
 
 Defined in: [src/value-generators/arc4.ts:67](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L67)
 
@@ -97,11 +97,11 @@ Generate a random Uint128 within the specified range.
 
 `Uint128`
 
----
+***
 
-### uintN16()
+### uint16()
 
-> **uintN16**(`minValue`, `maxValue`): `Uint16`
+> **uint16**(`minValue`, `maxValue`): `Uint16`
 
 Defined in: [src/value-generators/arc4.ts:37](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L37)
 
@@ -121,11 +121,11 @@ Generate a random Uint16 within the specified range.
 
 `Uint16`
 
----
+***
 
-### uintN256()
+### uint256()
 
-> **uintN256**(`minValue`, `maxValue`): `Uint256`
+> **uint256**(`minValue`, `maxValue`): `Uint256`
 
 Defined in: [src/value-generators/arc4.ts:77](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L77)
 
@@ -145,11 +145,11 @@ Generate a random Uint256 within the specified range.
 
 `Uint256`
 
----
+***
 
-### uintN32()
+### uint32()
 
-> **uintN32**(`minValue`, `maxValue`): `Uint32`
+> **uint32**(`minValue`, `maxValue`): `Uint32`
 
 Defined in: [src/value-generators/arc4.ts:47](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L47)
 
@@ -169,11 +169,11 @@ Generate a random Uint32 within the specified range.
 
 `Uint32`
 
----
+***
 
-### uintN512()
+### uint512()
 
-> **uintN512**(`minValue`, `maxValue`): `Uint`\<`512`\>
+> **uint512**(`minValue`, `maxValue`): `Uint`\<`512`\>
 
 Defined in: [src/value-generators/arc4.ts:87](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L87)
 
@@ -193,11 +193,11 @@ Generate a random Uint512 within the specified range.
 
 `Uint`\<`512`\>
 
----
+***
 
-### uintN64()
+### uint64()
 
-> **uintN64**(`minValue`, `maxValue`): `Uint64`
+> **uint64**(`minValue`, `maxValue`): `Uint64`
 
 Defined in: [src/value-generators/arc4.ts:57](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L57)
 
@@ -217,11 +217,11 @@ Generate a random Uint64 within the specified range.
 
 `Uint64`
 
----
+***
 
-### uintN8()
+### uint8()
 
-> **uintN8**(`minValue`, `maxValue`): `Uint8`
+> **uint8**(`minValue`, `maxValue`): `Uint8`
 
 Defined in: [src/value-generators/arc4.ts:27](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L27)
 

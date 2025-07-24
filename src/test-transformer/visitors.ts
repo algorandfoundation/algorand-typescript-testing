@@ -187,13 +187,18 @@ class ExpressionVisitor {
           infoArg = [sourceTypeInfo, targetTypeInfo]
         }
 
-        updatedNode = stubbedFunctionName
-          ? isCallingMethodSelector(stubbedFunctionName)
-            ? nodeFactory.callMethodSelectorFunction(updatedNode)
-            : isCallingAbiCall(stubbedFunctionName)
-              ? nodeFactory.callAbiCallFunction(updatedNode)
-              : nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
-          : updatedNode
+        if (stubbedFunctionName) {
+          if (isCallingMethodSelector(stubbedFunctionName)) {
+            updatedNode = nodeFactory.callMethodSelectorFunction(updatedNode)
+          } else if (isCallingAbiCall(stubbedFunctionName)) {
+            updatedNode = nodeFactory.callAbiCallFunction(updatedNode)
+          } else if (isCallingBytes(stubbedFunctionName)) {
+            if (type instanceof ptypes.BytesPType && type.fixedByteSize)
+              updatedNode = nodeFactory.callFixedBytesFunction(stubbedFunctionName, updatedNode, Number(type.fixedByteSize))
+          } else {
+            updatedNode = nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
+          }
+        }
       }
       return needsToCaptureTypeInfo
         ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
@@ -483,6 +488,7 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     'arc4EncodedLength',
     'abiCall',
     'clone',
+    'Bytes',
   ]
 
   if (stubbedFunctionNames.includes(functionName)) {
@@ -493,11 +499,12 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     return functionName
   }
 
-  if (['begin', 'next'].includes(functionName) && ts.isPropertyAccessExpression(node.expression)) {
+  if (['begin', 'next', 'fromHex', 'fromBase64', 'fromBase32'].includes(functionName) && ts.isPropertyAccessExpression(node.expression)) {
     const objectExpression = node.expression.expression
     const objectName = tryGetAlgoTsSymbolName(objectExpression, helper)
-    if (objectName === 'itxnCompose') return functionName
+    if (['itxnCompose', 'Bytes'].includes(objectName || '')) return functionName
   }
+
   return undefined
 }
 
@@ -517,3 +524,5 @@ const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === 
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
 const isCallingAbiCall = (functionName: string | undefined): boolean => ['abiCall', 'begin', 'next'].includes(functionName ?? '')
 const isCallingClone = (functionName: string | undefined): boolean => 'clone' === (functionName ?? '')
+const isCallingBytes = (functionName: string | undefined): boolean =>
+  ['Bytes', 'fromHex', 'fromBase64', 'fromBase32'].includes(functionName ?? '')

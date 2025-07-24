@@ -133,4 +133,17 @@ export const nodeFactory = {
     }
     return node
   },
+
+  callFixedBytesFunction(functionName: string, node: ts.CallExpression, length: number) {
+    const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
+      factory.createIdentifier('runtimeHelpers'),
+      `FixedBytes${functionName === 'Bytes' ? '' : `.${functionName}`}`,
+    )
+
+    return factory.createCallExpression(
+      updatedPropertyAccessExpression,
+      node.typeArguments,
+      [factory.createNumericLiteral(length), ...(node.arguments ?? [])].filter((arg) => !!arg),
+    )
+  },
 } satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>

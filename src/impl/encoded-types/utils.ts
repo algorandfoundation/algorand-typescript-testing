@@ -44,6 +44,13 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
     }
     return size
   }
+  if (trimGenericTypeName(type.name) === 'bytes') {
+    // Extract length from bytes<N> type
+    const match = type.name.match(/bytes<(\d+)>/)
+    if (match) {
+      return parseInt(match[1], 10)
+    }
+  }
   switch (trimGenericTypeName(type.name)) {
     case 'uint64':
       return UINT64_SIZE / BITS_IN_BYTE
