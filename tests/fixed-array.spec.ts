@@ -29,8 +29,11 @@ class TestContract extends Contract {
 describe('FixedArray', () => {
   describe('constructor', () => {
     it('creates empty array when no arguments provided', () => {
-      const arr = new FixedArray<uint64, 2>()
-      expect(arr.length).toEqual(2)
+      const arr1 = new FixedArray<uint64, 2>()
+      expect(arr1.length).toEqual(2)
+
+      const arr2 = new FixedArray<bytes<32>, 2>()
+      expect(arr2.length).toEqual(2)
     })
 
     it('creates array with initial values', () => {

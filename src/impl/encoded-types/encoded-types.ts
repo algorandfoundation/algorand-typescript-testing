@@ -1282,7 +1282,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     asset: AssetCls.fromBytes,
     boolean: booleanFromBytes,
     biguint: bigUintFromBytes,
-    bytes: bytesFromBytes,
+    'bytes(<.*>)?': bytesFromBytes,
     string: stringFromBytes,
     uint64: uint64FromBytes,
     OnCompleteAction: onCompletionFromBytes,
