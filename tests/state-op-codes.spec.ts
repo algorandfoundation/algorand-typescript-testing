@@ -2,7 +2,7 @@ import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
 import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { Account, arc4, Bytes, Global, OnCompleteAction, op, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
-import { DynamicBytes, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+import { DynamicBytes } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MIN_TXN_FEE, OnApplicationComplete, ZERO_ADDRESS } from '../src/constants'
@@ -393,7 +393,7 @@ describe('State op codes', async () => {
     test('should be able to pass app call txn as app arg', async () => {
       const appCallTxn = ctx.any.txn.applicationCall({
         appArgs: [arc4.methodSelector('some_value()uint64')],
-        appLogs: [ABI_RETURN_VALUE_LOG_PREFIX.concat(new UintN64(2).bytes)],
+        appLogs: [ABI_RETURN_VALUE_LOG_PREFIX.concat(new arc4.Uint64(2).bytes)],
       })
       const contract = ctx.contract.create(AppExpectingEffects)
       contract.log_group(appCallTxn)

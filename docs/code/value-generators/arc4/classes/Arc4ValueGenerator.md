@@ -1,6 +1,6 @@
 [**@algorandfoundation/algorand-typescript-testing**](../../../README.md)
 
-***
+---
 
 [@algorandfoundation/algorand-typescript-testing](../../../README.md) / [value-generators/arc4](../README.md) / Arc4ValueGenerator
 
@@ -33,7 +33,7 @@ Generate a random Algorand address.
 
 `Address`
 
-***
+---
 
 ### dynamicBytes()
 
@@ -53,7 +53,7 @@ Generate a random dynamic bytes of size `n` bits.
 
 `DynamicBytes`
 
-***
+---
 
 ### str()
 
@@ -73,15 +73,15 @@ Generate a random dynamic string of size `n` bits.
 
 `Str`
 
-***
+---
 
 ### uintN128()
 
-> **uintN128**(`minValue`, `maxValue`): `UintN128`
+> **uintN128**(`minValue`, `maxValue`): `Uint128`
 
 Defined in: [src/value-generators/arc4.ts:67](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L67)
 
-Generate a random UintN128 within the specified range.
+Generate a random Uint128 within the specified range.
 
 #### Parameters
 
@@ -95,17 +95,17 @@ Generate a random UintN128 within the specified range.
 
 #### Returns
 
-`UintN128`
+`Uint128`
 
-***
+---
 
 ### uintN16()
 
-> **uintN16**(`minValue`, `maxValue`): `UintN16`
+> **uintN16**(`minValue`, `maxValue`): `Uint16`
 
 Defined in: [src/value-generators/arc4.ts:37](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L37)
 
-Generate a random UintN16 within the specified range.
+Generate a random Uint16 within the specified range.
 
 #### Parameters
 
@@ -119,17 +119,17 @@ Generate a random UintN16 within the specified range.
 
 #### Returns
 
-`UintN16`
+`Uint16`
 
-***
+---
 
 ### uintN256()
 
-> **uintN256**(`minValue`, `maxValue`): `UintN256`
+> **uintN256**(`minValue`, `maxValue`): `Uint256`
 
 Defined in: [src/value-generators/arc4.ts:77](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L77)
 
-Generate a random UintN256 within the specified range.
+Generate a random Uint256 within the specified range.
 
 #### Parameters
 
@@ -143,17 +143,17 @@ Generate a random UintN256 within the specified range.
 
 #### Returns
 
-`UintN256`
+`Uint256`
 
-***
+---
 
 ### uintN32()
 
-> **uintN32**(`minValue`, `maxValue`): `UintN32`
+> **uintN32**(`minValue`, `maxValue`): `Uint32`
 
 Defined in: [src/value-generators/arc4.ts:47](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L47)
 
-Generate a random UintN32 within the specified range.
+Generate a random Uint32 within the specified range.
 
 #### Parameters
 
@@ -167,17 +167,17 @@ Generate a random UintN32 within the specified range.
 
 #### Returns
 
-`UintN32`
+`Uint32`
 
-***
+---
 
 ### uintN512()
 
-> **uintN512**(`minValue`, `maxValue`): `UintN`\<`512`\>
+> **uintN512**(`minValue`, `maxValue`): `Uint`\<`512`\>
 
 Defined in: [src/value-generators/arc4.ts:87](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L87)
 
-Generate a random UintN512 within the specified range.
+Generate a random Uint512 within the specified range.
 
 #### Parameters
 
@@ -191,17 +191,17 @@ Generate a random UintN512 within the specified range.
 
 #### Returns
 
-`UintN`\<`512`\>
+`Uint`\<`512`\>
 
-***
+---
 
 ### uintN64()
 
-> **uintN64**(`minValue`, `maxValue`): `UintN64`
+> **uintN64**(`minValue`, `maxValue`): `Uint64`
 
 Defined in: [src/value-generators/arc4.ts:57](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L57)
 
-Generate a random UintN64 within the specified range.
+Generate a random Uint64 within the specified range.
 
 #### Parameters
 
@@ -215,17 +215,17 @@ Generate a random UintN64 within the specified range.
 
 #### Returns
 
-`UintN64`
+`Uint64`
 
-***
+---
 
 ### uintN8()
 
-> **uintN8**(`minValue`, `maxValue`): `UintN8`
+> **uintN8**(`minValue`, `maxValue`): `Uint8`
 
 Defined in: [src/value-generators/arc4.ts:27](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/value-generators/arc4.ts#L27)
 
-Generate a random UintN8 within the specified range.
+Generate a random Uint8 within the specified range.
 
 #### Parameters
 
@@ -239,4 +239,4 @@ Generate a random UintN8 within the specified range.
 
 #### Returns
 
-`UintN8`
+`Uint8`

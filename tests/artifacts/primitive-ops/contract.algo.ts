@@ -6,12 +6,12 @@ import type {
   StaticArray,
   Str,
   Tuple,
-  UFixedNxM,
-  UintN,
-  UintN16,
-  UintN32,
-  UintN64,
-  UintN8,
+  UFixed,
+  Uint,
+  Uint16,
+  Uint32,
+  Uint64,
+  Uint8,
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 
@@ -413,18 +413,18 @@ export class PrimitiveOpsContract extends arc4.Contract {
     d: bytes,
     e: Bool,
     f: Str,
-    g: UintN<64>,
-    h: UintN<256>,
-    i: UFixedNxM<32, 8>,
-    j: UFixedNxM<256, 16>,
+    g: Uint<64>,
+    h: Uint<256>,
+    i: UFixed<32, 8>,
+    j: UFixed<256, 16>,
     k: bytes,
     m: bytes,
     n: bytes,
   ) {
     const d_biguint = BigUint(d)
-    const arc4_k = interpretAsArc4<StaticArray<UintN8, 3>>(k)
-    const arc4_m = interpretAsArc4<DynamicArray<UintN16>>(m)
-    const arc4_n = interpretAsArc4<Tuple<[UintN32, UintN64, Str]>>(n)
+    const arc4_k = interpretAsArc4<StaticArray<Uint8, 3>>(k)
+    const arc4_m = interpretAsArc4<DynamicArray<Uint16>>(m)
+    const arc4_n = interpretAsArc4<Tuple<[Uint32, Uint64, Str]>>(n)
     log(a, b, c, d_biguint, e, f, g, h, i, j, arc4_k, arc4_m, arc4_n)
   }
 }

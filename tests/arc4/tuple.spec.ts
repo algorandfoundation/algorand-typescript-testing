@@ -1,7 +1,7 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Address, Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, test } from 'vitest'
 import type { StubBytesCompat } from '../../src/impl/primitives'
@@ -18,12 +18,12 @@ const otherNativeString = 'hello'
 const otherNativeNumber = 42
 
 const abiString = new Str('hello')
-const abiUint8 = new UintN<8>(42)
+const abiUint8 = new Uint<8>(42)
 const abiBool = new Bool(true)
 const abiAddress = new Address(Bytes.fromHex(`${'00'.repeat(31)}ff`))
 
 const otherAbiString = new Str('hello')
-const otherAbiUint8 = new UintN<8>(42)
+const otherAbiUint8 = new Uint<8>(42)
 
 const testData = [
   {
@@ -55,13 +55,13 @@ const testData = [
       return [nativeNumber, nativeBool, nativeBool, nativeAddress]
     },
     abiValues() {
-      return [abiUint8, abiBool, abiBool, abiAddress] as readonly [UintN<8>, Bool, Bool, Address]
+      return [abiUint8, abiBool, abiBool, abiAddress] as readonly [Uint<8>, Bool, Bool, Address]
     },
     tuple() {
-      return new Tuple<[UintN<8>, Bool, Bool, Address]>(...this.abiValues())
+      return new Tuple<[Uint<8>, Bool, Bool, Address]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[UintN<8>, Bool, Bool, Address]>>(asBytes(value))
+      return interpretAsArc4<Tuple<[Uint<8>, Bool, Bool, Address]>>(asBytes(value))
     },
   },
   {
@@ -70,13 +70,13 @@ const testData = [
       return [nativeString, nativeNumber, nativeBool]
     },
     abiValues() {
-      return [abiString, abiUint8, abiBool] as readonly [Str, UintN<8>, Bool]
+      return [abiString, abiUint8, abiBool] as readonly [Str, Uint<8>, Bool]
     },
     tuple() {
-      return new Tuple<[Str, UintN<8>, Bool]>(...this.abiValues())
+      return new Tuple<[Str, Uint<8>, Bool]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Str, UintN<8>, Bool]>>(asBytes(value))
+      return interpretAsArc4<Tuple<[Str, Uint<8>, Bool]>>(asBytes(value))
     },
   },
   {
@@ -89,15 +89,15 @@ const testData = [
     },
     abiValues() {
       return [
-        new Tuple<[UintN<8>, Bool, Bool]>(abiUint8, abiBool, abiBool),
-        new Tuple<[UintN<8>, Bool, Bool]>(abiUint8, abiBool, abiBool),
-      ] as readonly [Tuple<[UintN<8>, Bool, Bool]>, Tuple<[UintN<8>, Bool, Bool]>]
+        new Tuple<[Uint<8>, Bool, Bool]>(abiUint8, abiBool, abiBool),
+        new Tuple<[Uint<8>, Bool, Bool]>(abiUint8, abiBool, abiBool),
+      ] as readonly [Tuple<[Uint<8>, Bool, Bool]>, Tuple<[Uint<8>, Bool, Bool]>]
     },
     tuple() {
-      return new Tuple<[Tuple<[UintN<8>, Bool, Bool]>, Tuple<[UintN<8>, Bool, Bool]>]>(...this.abiValues())
+      return new Tuple<[Tuple<[Uint<8>, Bool, Bool]>, Tuple<[Uint<8>, Bool, Bool]>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[UintN<8>, Bool, Bool]>, Tuple<[UintN<8>, Bool, Bool]>]>>(asBytes(value))
+      return interpretAsArc4<Tuple<[Tuple<[Uint<8>, Bool, Bool]>, Tuple<[Uint<8>, Bool, Bool]>]>>(asBytes(value))
     },
   },
   {
@@ -120,13 +120,13 @@ const testData = [
         abiUint8,
         abiBool,
         new StaticArray(abiUint8, abiUint8, abiUint8),
-      ] as readonly [DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]
+      ] as readonly [DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]
     },
     tuple() {
-      return new Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>(...this.abiValues())
+      return new Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>>(asBytes(value))
+      return interpretAsArc4<Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]>>(asBytes(value))
     },
   },
   {
@@ -139,13 +139,13 @@ const testData = [
         new Tuple<[Bool, DynamicArray<Str>, Str]>(abiBool, new DynamicArray(abiString, abiString), abiString),
         abiUint8,
         new StaticArray(abiUint8, abiUint8, abiUint8),
-      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]
+      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]
     },
     tuple() {
-      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>(...this.abiValues())
+      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>>(asBytes(value))
+      return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]>>(asBytes(value))
     },
   },
   {
@@ -159,14 +159,14 @@ const testData = [
     abiValues() {
       return [
         new Tuple<[Bool, DynamicArray<Str>, Str]>(abiBool, new DynamicArray(abiString, abiString), abiString),
-        new Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
-      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]
+        new Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
+      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]
     },
     tuple() {
-      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>(...this.abiValues())
+      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>>(asBytes(value))
+      return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>>(asBytes(value))
     },
   },
   {
@@ -183,16 +183,16 @@ const testData = [
           abiBool,
           new Tuple<[DynamicArray<Str>, Str, Address]>(new DynamicArray(abiString, abiString), abiString, abiAddress),
         ),
-        new Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
-      ] as readonly [Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]
+        new Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
+      ] as readonly [Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]
     },
     tuple() {
-      return new Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>(
+      return new Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>(
         ...this.abiValues(),
       )
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>>(
+      return interpretAsArc4<Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>>(
         asBytes(value),
       )
     },
@@ -220,12 +220,12 @@ const testDataWithArray = [
         abiUint8,
         abiBool,
         new StaticArray(abiUint8, abiUint8, abiUint8),
-      ] as readonly [DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]
+      ] as readonly [DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]
     },
     tuple() {
-      return new Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>(...this.abiValues())
+      return new Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]>(...this.abiValues())
     },
-    update(value: Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<8>, Bool, StaticArray<UintN<8>, 3>]>) {
+    update(value: Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]>) {
       value.native[0][0] = otherAbiString
       value.native[0].push(otherAbiString)
       value.native[1][0] = otherAbiString
@@ -248,12 +248,12 @@ const testDataWithArray = [
         new Tuple<[Bool, DynamicArray<Str>, Str]>(abiBool, new DynamicArray(abiString, abiString), abiString),
         abiUint8,
         new StaticArray(abiUint8, abiUint8, abiUint8),
-      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]
+      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]
     },
     tuple() {
-      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>(...this.abiValues())
+      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]>(...this.abiValues())
     },
-    update(value: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<8>, StaticArray<UintN<8>, 3>]>) {
+    update(value: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]>) {
       value.native[0].native[1][0] = otherAbiString
       value.native[0].native[1].push(otherAbiString)
       value.native[2][0] = otherAbiUint8
@@ -271,13 +271,13 @@ const testDataWithArray = [
     abiValues() {
       return [
         new Tuple<[Bool, DynamicArray<Str>, Str]>(abiBool, new DynamicArray(abiString, abiString), abiString),
-        new Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
-      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]
+        new Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
+      ] as readonly [Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]
     },
     tuple() {
-      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>(...this.abiValues())
+      return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>(...this.abiValues())
     },
-    update(value: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>) {
+    update(value: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>) {
       value.native[0].native[1][0] = otherAbiString
       value.native[0].native[1].push(otherAbiString)
       value.native[1].native[1][0] = otherAbiUint8
@@ -298,15 +298,15 @@ const testDataWithArray = [
           abiBool,
           new Tuple<[DynamicArray<Str>, Str, Address]>(new DynamicArray(abiString, abiString), abiString, abiAddress),
         ),
-        new Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
-      ] as readonly [Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]
+        new Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>(abiUint8, new StaticArray(abiUint8, abiUint8, abiUint8)),
+      ] as readonly [Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]
     },
     tuple() {
-      return new Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>(
+      return new Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>(
         ...this.abiValues(),
       )
     },
-    update(value: Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[UintN<8>, StaticArray<UintN<8>, 3>]>]>) {
+    update(value: Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>) {
       value.native[0].native[1].native[0][0] = otherAbiString
       value.native[0].native[1].native[0].push(otherAbiString)
       value.native[1].native[1][0] = otherAbiUint8

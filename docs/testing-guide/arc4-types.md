@@ -22,28 +22,28 @@ const ctx = new TestExecutionContext()
 
 ```ts
 // Integer types
-const uint8Value = new arc4.UintN8(255)
-const uint16Value = new arc4.UintN16(65535)
-const uint32Value = new arc4.UintN32(4294967295)
-const uint64Value = new arc4.UintN64(18446744073709551615n)
+const uint8Value = new arc4.Uint8(255)
+const uint16Value = new arc4.Uint16(65535)
+const uint32Value = new arc4.Uint32(4294967295)
+const uint64Value = new arc4.Uint64(18446744073709551615n)
 
 // Generate a random unsigned arc4 integer with default range
-const uint8 = ctx.any.arc4.uintN8()
-const uint16 = ctx.any.arc4.uintN16()
-const uint32 = ctx.any.arc4.uintN32()
-const uint64 = ctx.any.arc4.uintN64()
-const biguint128 = ctx.any.arc4.uintN128()
-const biguint256 = ctx.any.arc4.uintN256()
-const biguint512 = ctx.any.arc4.uintN512()
+const uint8 = ctx.any.arc4.uint8()
+const uint16 = ctx.any.arc4.uint16()
+const uint32 = ctx.any.arc4.uint32()
+const uint64 = ctx.any.arc4.uint64()
+const biguint128 = ctx.any.arc4.uint128()
+const biguint256 = ctx.any.arc4.uint256()
+const biguint512 = ctx.any.arc4.uint512()
 
 // Generate a random unsigned arc4 integer with specified range
-const uint8Custom = ctx.any.arc4.uintN8(10, 100)
-const uint16Custom = ctx.any.arc4.uintN16(1000, 5000)
-const uint32Custom = ctx.any.arc4.uintN32(100000, 1000000)
-const uint64Custom = ctx.any.arc4.uintN64(1000000000, 10000000000)
-const biguint128Custom = ctx.any.arc4.uintN128(1000000000000000, 10000000000000000n)
-const biguint256Custom = ctx.any.arc4.uintN256(1000000000000000000000000n, 10000000000000000000000000n)
-const biguint512Custom = ctx.any.arc4.uintN512(10000000000000000000000000000000000n, 10000000000000000000000000000000000n)
+const uint8Custom = ctx.any.arc4.uint8(10, 100)
+const uint16Custom = ctx.any.arc4.uint16(1000, 5000)
+const uint32Custom = ctx.any.arc4.uint32(100000, 1000000)
+const uint64Custom = ctx.any.arc4.uint64(1000000000, 10000000000)
+const biguint128Custom = ctx.any.arc4.uint128(1000000000000000, 10000000000000000n)
+const biguint256Custom = ctx.any.arc4.uint256(1000000000000000000000000n, 10000000000000000000000000n)
+const biguint512Custom = ctx.any.arc4.uint512(10000000000000000000000000000000000n, 10000000000000000000000000000000000n)
 ```
 
 ## Address

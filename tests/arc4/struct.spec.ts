@@ -1,6 +1,6 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
-import { Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Struct, Tuple, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import { Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Struct, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { describe, expect, it, test } from 'vitest'
 import type { StubBytesCompat } from '../../src/impl/primitives'
@@ -13,49 +13,49 @@ const nativeNumber = 42
 const nativeBool = true
 
 const abiString = new Str('hello')
-const abiUint64 = new UintN<64>(42)
+const abiUint64 = new Uint<64>(42)
 const abiBool = new Bool(true)
 
 class Swapped1 extends Struct<{
-  b: UintN<64>
+  b: Uint<64>
   c: Bool
   d: Str
-  a: Tuple<[UintN<64>, Bool, Bool]>
+  a: Tuple<[Uint<64>, Bool, Bool]>
 }> {}
 
 class Swapped2 extends Struct<{
-  b: UintN<64>
+  b: Uint<64>
   c: Bool
   d: Str
-  a: Tuple<[Tuple<[UintN<64>, Bool, Bool]>, Tuple<[UintN<64>, Bool, Bool]>]>
+  a: Tuple<[Tuple<[Uint<64>, Bool, Bool]>, Tuple<[Uint<64>, Bool, Bool]>]>
 }> {}
 
 class Swapped3 extends Struct<{
-  b: UintN<64>
+  b: Uint<64>
   c: Bool
   d: Str
-  a: Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, UintN<64>, Bool, StaticArray<UintN<64>, 3>]>
+  a: Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<64>, Bool, StaticArray<Uint<64>, 3>]>
 }> {}
 
 class Swapped4 extends Struct<{
-  b: UintN<64>
+  b: Uint<64>
   c: Bool
   d: Str
-  a: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, UintN<64>, StaticArray<UintN<64>, 3>]>
+  a: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<64>, StaticArray<Uint<64>, 3>]>
 }> {}
 
 class Swapped5 extends Struct<{
-  b: UintN<64>
+  b: Uint<64>
   c: Bool
   d: Str
-  a: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[UintN<64>, StaticArray<UintN<64>, 3>]>]>
+  a: Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<64>, StaticArray<Uint<64>, 3>]>]>
 }> {}
 
 class Swapped6 extends Struct<{
-  b: UintN<64>
+  b: Uint<64>
   c: Bool
   d: Str
-  a: Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str]>]>, Tuple<[UintN<64>, StaticArray<UintN<64>, 3>]>]>
+  a: Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str]>]>, Tuple<[Uint<64>, StaticArray<Uint<64>, 3>]>]>
 }> {}
 
 const testData = [
@@ -130,7 +130,7 @@ const testData = [
           abiString,
           abiUint64,
           abiBool,
-          new StaticArray<UintN<64>, 3>(abiUint64, abiUint64, abiUint64),
+          new StaticArray<Uint<64>, 3>(abiUint64, abiUint64, abiUint64),
         ),
       } as Swapped3
     },
@@ -159,7 +159,7 @@ const testData = [
         a: new Tuple(
           new Tuple(abiBool, new DynamicArray<Str>(abiString, abiString), abiString),
           abiUint64,
-          new StaticArray<UintN<64>, 3>(abiUint64, abiUint64, abiUint64),
+          new StaticArray<Uint<64>, 3>(abiUint64, abiUint64, abiUint64),
         ),
       } as Swapped4
     },
@@ -190,7 +190,7 @@ const testData = [
         d: abiString,
         a: new Tuple(
           new Tuple(abiBool, new DynamicArray<Str>(abiString, abiString), abiString),
-          new Tuple(abiUint64, new StaticArray<UintN<64>, 3>(abiUint64, abiUint64, abiUint64)),
+          new Tuple(abiUint64, new StaticArray<Uint<64>, 3>(abiUint64, abiUint64, abiUint64)),
         ),
       } as Swapped5
     },
@@ -221,7 +221,7 @@ const testData = [
         d: abiString,
         a: new Tuple(
           new Tuple(abiBool, new Tuple(new DynamicArray<Str>(abiString, abiString), abiString)),
-          new Tuple(abiUint64, new StaticArray<UintN<64>, 3>(abiUint64, abiUint64, abiUint64)),
+          new Tuple(abiUint64, new StaticArray<Uint<64>, 3>(abiUint64, abiUint64, abiUint64)),
         ),
       } as Swapped6
     },
@@ -266,11 +266,11 @@ describe('arc4.Struct', async () => {
     const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
 
     const abiValues = data.struct() as Swapped6
-    abiValues.b = new UintN<64>(43)
+    abiValues.b = new Uint<64>(43)
     abiValues.d = new Str('world')
     abiValues.a.at(0).at(1).at(0)[1] = new Str('hello, world')
     abiValues.a.at(0).at(1).at(0).push(new Str('test'))
-    abiValues.a.at(1).at(1)[0] = new UintN<64>(24)
+    abiValues.a.at(1).at(1)[0] = new Uint<64>(24)
     const result = abiValues.bytes
 
     expect(result).toEqual(Bytes(sdkResult))
@@ -289,11 +289,11 @@ describe('arc4.Struct', async () => {
     const bytes = Bytes(getABIEncodedValue(data.nativeValues(), data.abiTypeString, {}))
 
     const abiValues = data.create(bytes) as Swapped6
-    abiValues.b = new UintN<64>(43)
+    abiValues.b = new Uint<64>(43)
     abiValues.d = new Str('world')
     abiValues.a.at(0).at(1).at(0)[1] = new Str('hello, world')
     abiValues.a.at(0).at(1).at(0).push(new Str('test'))
-    abiValues.a.at(1).at(1)[0] = new UintN<64>(24)
+    abiValues.a.at(1).at(1)[0] = new Uint<64>(24)
     const result = abiValues.bytes
 
     expect(result).toEqual(Bytes(sdkResult))

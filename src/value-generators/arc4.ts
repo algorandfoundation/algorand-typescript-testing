@@ -1,6 +1,6 @@
 import type { arc4 } from '@algorandfoundation/algorand-typescript'
 import { BITS_IN_BYTE, MAX_UINT128, MAX_UINT16, MAX_UINT256, MAX_UINT32, MAX_UINT512, MAX_UINT64, MAX_UINT8 } from '../constants'
-import { AddressImpl, DynamicBytesImpl, StrImpl, UintNImpl } from '../impl/encoded-types'
+import { AddressImpl, DynamicBytesImpl, StrImpl, UintImpl } from '../impl/encoded-types'
 import { getRandomBigInt, getRandomBytes } from '../util'
 import { AvmValueGenerator } from './avm'
 
@@ -19,73 +19,73 @@ export class Arc4ValueGenerator {
   }
 
   /**
-   * Generate a random UintN8 within the specified range.
+   * Generate a random Uint8 within the specified range.
    * @param minValue: Minimum value (inclusive). Defaults to 0.
    * @param maxValue: Maximum value (inclusive). Defaults to 2 ** 8 - 1.
-   * @returns: A random UintN8 value.
+   * @returns: A random Uint8 value.
    * */
-  uintN8(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT8): arc4.UintN8 {
-    return new UintNImpl({ name: 'UintN', genericArgs: [{ name: '8' }] }, getRandomBigInt(minValue, maxValue)) as arc4.UintN8
+  uint8(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT8): arc4.Uint8 {
+    return new UintImpl({ name: 'Uint', genericArgs: [{ name: '8' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint8
   }
 
   /**
-   * Generate a random UintN16 within the specified range.
+   * Generate a random Uint16 within the specified range.
    * @param minValue: Minimum value (inclusive). Defaults to 0.
    * @param maxValue: Maximum value (inclusive). Defaults to 2 ** 16 - 1.
-   * @returns: A random UintN16 value.
+   * @returns: A random Uint16 value.
    * */
-  uintN16(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT16): arc4.UintN16 {
-    return new UintNImpl({ name: 'UintN', genericArgs: [{ name: '16' }] }, getRandomBigInt(minValue, maxValue)) as arc4.UintN16
+  uint16(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT16): arc4.Uint16 {
+    return new UintImpl({ name: 'Uint', genericArgs: [{ name: '16' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint16
   }
 
   /**
-   * Generate a random UintN32 within the specified range.
+   * Generate a random Uint32 within the specified range.
    * @param minValue: Minimum value (inclusive). Defaults to 0.
    * @param maxValue: Maximum value (inclusive). Defaults to 2 ** 32 - 1.
-   * @returns: A random UintN32 value.
+   * @returns: A random Uint32 value.
    * */
-  uintN32(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT32): arc4.UintN32 {
-    return new UintNImpl({ name: 'UintN', genericArgs: [{ name: '32' }] }, getRandomBigInt(minValue, maxValue)) as arc4.UintN32
+  uint32(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT32): arc4.Uint32 {
+    return new UintImpl({ name: 'Uint', genericArgs: [{ name: '32' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint32
   }
 
   /**
-   * Generate a random UintN64 within the specified range.
+   * Generate a random Uint64 within the specified range.
    * @param minValue: Minimum value (inclusive). Defaults to 0.
    * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 64n - 1n.
-   * @returns: A random UintN64 value.
+   * @returns: A random Uint64 value.
    * */
-  uintN64(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT64): arc4.UintN64 {
-    return new UintNImpl({ name: 'UintN', genericArgs: [{ name: '64' }] }, getRandomBigInt(minValue, maxValue)) as arc4.UintN64
+  uint64(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT64): arc4.Uint64 {
+    return new UintImpl({ name: 'Uint', genericArgs: [{ name: '64' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint64
   }
 
   /**
-   * Generate a random UintN128 within the specified range.
+   * Generate a random Uint128 within the specified range.
    * @param minValue: Minimum value (inclusive). Defaults to 0.
    * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 128n - 1n.
-   * @returns: A random UintN128 value.
+   * @returns: A random Uint128 value.
    * */
-  uintN128(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT128): arc4.UintN128 {
-    return new UintNImpl({ name: 'UintN', genericArgs: [{ name: '128' }] }, getRandomBigInt(minValue, maxValue)) as arc4.UintN128
+  uint128(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT128): arc4.Uint128 {
+    return new UintImpl({ name: 'Uint', genericArgs: [{ name: '128' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint128
   }
 
   /**
-   * Generate a random UintN256 within the specified range.
+   * Generate a random Uint256 within the specified range.
    * @param minValue: Minimum value (inclusive). Defaults to 0.
    * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 256n - 1n.
-   * @returns: A random UintN256 value.
+   * @returns: A random Uint256 value.
    * */
-  uintN256(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT256): arc4.UintN256 {
-    return new UintNImpl({ name: 'UintN', genericArgs: [{ name: '256' }] }, getRandomBigInt(minValue, maxValue)) as arc4.UintN256
+  uint256(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT256): arc4.Uint256 {
+    return new UintImpl({ name: 'Uint', genericArgs: [{ name: '256' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint256
   }
 
   /**
-   * Generate a random UintN512 within the specified range.
+   * Generate a random Uint512 within the specified range.
    * @param minValue: Minimum value (inclusive). Defaults to 0.
    * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 512n - 1n.
-   * @returns: A random UintN512 value.
+   * @returns: A random Uint512 value.
    * */
-  uintN512(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT512): arc4.UintN<512> {
-    return new UintNImpl({ name: 'UintN', genericArgs: [{ name: '512' }] }, getRandomBigInt(minValue, maxValue)) as arc4.UintN<512>
+  uint512(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT512): arc4.Uint<512> {
+    return new UintImpl({ name: 'Uint', genericArgs: [{ name: '512' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint<512>
   }
 
   /**

@@ -26,8 +26,8 @@ export default class VotingContract extends arc4.Contract {
   }
 
   @arc4.abimethod({ readonly: true })
-  public getVotes(): arc4.UintN64 {
-    return new arc4.UintN64(this.votes.value)
+  public getVotes(): arc4.Uint64 {
+    return new arc4.Uint64(this.votes.value)
   }
 
   public clearStateProgram(): boolean {

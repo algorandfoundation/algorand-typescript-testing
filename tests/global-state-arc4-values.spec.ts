@@ -7,9 +7,9 @@ import type {
   DynamicBytesImpl,
   StrImpl,
 } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
-import { UintNImpl } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
+import { UintImpl } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
 import type { ARC4Encoded, BitSize } from '@algorandfoundation/algorand-typescript/arc4'
-import { Address, Bool, Byte, DynamicBytes, Str, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, Bool, Byte, DynamicBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import type { DeliberateAny, FunctionKeys } from '../src/typescript-helpers'
 import { asUint8Array } from '../src/util'
@@ -31,15 +31,15 @@ describe('ARC4 AppGlobal values', async () => {
     ctx.reset()
   })
 
-  const testData = ['_implicit_key', ''].flatMap((implicit) => [
+  const testData: DeliberateAny[] = ['_implicit_key', ''].flatMap((implicit) => [
     {
       nativeValue: 42,
-      abiValue: new UintN<64>(42),
+      abiValue: new Uint<64>(42),
       methodName: `get${implicit}_arc4_uintn64`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as UintNImpl<BitSize>
-        const bitSize = UintNImpl.getMaxBitsLength(arc4Value.typeInfo)
-        expect(arc4Value).toBeInstanceOf(UintN)
+        const arc4Value = value as UintImpl<BitSize>
+        const bitSize = UintImpl.getMaxBitsLength(arc4Value.typeInfo)
+        expect(arc4Value).toBeInstanceOf(Uint)
         expect(bitSize).toEqual(64)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -86,12 +86,12 @@ describe('ARC4 AppGlobal values', async () => {
     },
     {
       nativeValue: 2n ** 102n,
-      abiValue: new UintN<128>(2n ** 102n),
+      abiValue: new Uint<128>(2n ** 102n),
       methodName: `get${implicit}_arc4_uintn128`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as UintNImpl<BitSize>
-        const bitSize = UintNImpl.getMaxBitsLength(arc4Value.typeInfo)
-        expect(arc4Value).toBeInstanceOf(UintN)
+        const arc4Value = value as UintImpl<BitSize>
+        const bitSize = UintImpl.getMaxBitsLength(arc4Value.typeInfo)
+        expect(arc4Value).toBeInstanceOf(Uint)
         expect(bitSize).toEqual(128)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -106,6 +106,8 @@ describe('ARC4 AppGlobal values', async () => {
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
+  ])
+  testData.push(
     {
       nativeValue: [21, asUint8Array(Bytes('Hello')), true],
       abiValue: [Uint64(21), Bytes('Hello'), true],
@@ -122,7 +124,7 @@ describe('ARC4 AppGlobal values', async () => {
         expect(value).toEqual(expectedValue)
       },
     },
-  ])
+  )
 
   test.for(testData)('should be able to get arc4 state values', async (data, { appClientGlobalStateContract: appClient, testAccount }) => {
     ctx.defaultSender = Bytes.fromBase32(testAccount.addr.toString())

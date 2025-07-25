@@ -1,6 +1,6 @@
 import { Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext, toExternalValue } from '@algorandfoundation/algorand-typescript-testing'
-import { DynamicArray, UintN8 } from '@algorandfoundation/algorand-typescript/arc4'
+import { DynamicArray, Uint8 } from '@algorandfoundation/algorand-typescript/arc4'
 import nacl from 'tweetnacl'
 import { afterEach, describe, expect, it } from 'vitest'
 import { VotingRoundApp } from './contract.algo'
@@ -16,14 +16,14 @@ describe('VotingRoundApp', () => {
 
   const createContract = () => {
     const contract = ctx.contract.create(VotingRoundApp)
-    const snapshotPublicKey = Bytes(keyPair.publicKey).toFixed({ length: 32 })
+    const snapshotPublicKey = Bytes<32>(keyPair.publicKey)
     const metadataIpfsCid = ctx.any.string(16)
     const startTime = ctx.any.uint64(Date.now() - 10_000, Date.now())
     const endTime = ctx.any.uint64(Date.now() + 10_000, Date.now() + 100_000)
-    const optionCounts = new DynamicArray<UintN8>(
+    const optionCounts = new DynamicArray<Uint8>(
       ...Array(13)
         .fill(0)
-        .map(() => new UintN8(2)),
+        .map(() => new Uint8(2)),
     )
     const quorum = ctx.any.uint64()
     const nftImageUrl = ctx.any.string(64)
@@ -68,10 +68,10 @@ describe('VotingRoundApp', () => {
 
     const account = ctx.any.account()
     const signature = nacl.sign.detached(toExternalValue(account.bytes), keyPair.secretKey)
-    const answerIds = new DynamicArray<UintN8>(
+    const answerIds = new DynamicArray<Uint8>(
       ...Array(13)
         .fill(0)
-        .map(() => new UintN8(Math.ceil(Math.random() * 10) % 2)),
+        .map(() => new Uint8(Math.ceil(Math.random() * 10) % 2)),
     )
 
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: app, sender: account })]).execute(() => {
