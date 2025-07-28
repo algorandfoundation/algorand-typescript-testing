@@ -33,7 +33,7 @@ describe('methodSelector', async () => {
     const contract = ctx.contract.create(SignaturesContract)
     contract.create()
     const arg1 = new arc4.Str('hello')
-    const arg2 = new arc4.DynamicArray(new arc4.UintN8(1), new arc4.UintN8(2))
+    const arg2 = new arc4.DynamicArray(new arc4.Uint8(1), new arc4.Uint8(2))
 
     // act
     // ensure same execution in AVM runs without errors
@@ -55,7 +55,7 @@ describe('methodSelector', async () => {
     const contract = ctx.contract.create(SignaturesContract)
     contract.create()
     const arg1 = new arc4.Str('hello')
-    const arg2 = new arc4.DynamicArray(new arc4.UintN8(1), new arc4.UintN8(2))
+    const arg2 = new arc4.DynamicArray(new arc4.Uint8(1), new arc4.Uint8(2))
 
     // act
     // ensure same execution in AVM runs without errors
@@ -78,7 +78,7 @@ describe('methodSelector', async () => {
     contract.create()
 
     const arg1 = new arc4.Str('hello')
-    const arg3 = new arc4.DynamicArray(new arc4.UintN8(1), new arc4.UintN8(2))
+    const arg3 = new arc4.DynamicArray(new arc4.Uint8(1), new arc4.Uint8(2))
     const localnetCreator = await algorand.account.localNetDispenser()
     const paymentTxn = await algorand.createTransaction.payment({
       sender: localnetCreator,
@@ -106,7 +106,7 @@ describe('methodSelector', async () => {
     contract.create()
 
     const arg1 = new arc4.Str('hello')
-    const arg3 = new arc4.DynamicArray(new arc4.UintN8(1), new arc4.UintN8(2))
+    const arg3 = new arc4.DynamicArray(new arc4.Uint8(1), new arc4.Uint8(2))
     const localnetCreator = await algorand.account.localNetDispenser()
     const asaId = (
       await algorand.send.assetCreate({
@@ -139,7 +139,7 @@ describe('methodSelector', async () => {
     const contract = ctx.contract.create(SignaturesContract)
     contract.create()
     const arg1 = new arc4.Str('hello')
-    const arg3 = new arc4.DynamicArray(new arc4.UintN8(1), new arc4.UintN8(2))
+    const arg3 = new arc4.DynamicArray(new arc4.Uint8(1), new arc4.Uint8(2))
 
     const account = algorand.account.random()
     await algorand.account.ensureFundedFromEnvironment(account, new AlgoAmount({ microAlgo: _FUNDED_ACCOUNT_SPENDING }))
@@ -172,7 +172,7 @@ describe('methodSelector', async () => {
     const contract = ctx.contract.create(SignaturesContract)
     contract.create()
     const arg1 = new arc4.Str('hello')
-    const arg4 = new arc4.DynamicArray(new arc4.UintN8(1), new arc4.UintN8(2))
+    const arg4 = new arc4.DynamicArray(new arc4.Uint8(1), new arc4.Uint8(2))
 
     const selfApp = ctx.ledger.getApplicationForContract(contract)
     const otherApp = await appFactorySignaturesContract.send.create({ method: 'create' })
@@ -181,7 +181,7 @@ describe('methodSelector', async () => {
 
     // act
     await getAvmResult({ appClient }, 'withApp', 'hello', otherAppId, otherAppId, [1, 2])
-    contract.withApp(arg1, ctx.ledger.getApplication(otherAppId), new arc4.UintN64(otherAppId), arg4)
+    contract.withApp(arg1, ctx.ledger.getApplication(otherAppId), new arc4.Uint64(otherAppId), arg4)
 
     // assert
     const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
@@ -218,12 +218,12 @@ describe('methodSelector', async () => {
 
     const payment = ctx.any.txn.payment()
     const struct = new MyStruct({
-      three: new arc4.UintN128(3),
-      four: new arc4.UintN128(4),
-      anotherStruct: new AnotherStruct({ one: new arc4.UintN64(1), two: new arc4.Str('2') }),
-      anotherStructAlias: new AnotherStruct({ one: new arc4.UintN64(1), two: new arc4.Str('2') }),
+      three: new arc4.Uint128(3),
+      four: new arc4.Uint128(4),
+      anotherStruct: new AnotherStruct({ one: new arc4.Uint64(1), two: new arc4.Str('2') }),
+      anotherStructAlias: new AnotherStruct({ one: new arc4.Uint64(1), two: new arc4.Str('2') }),
     })
-    const five = new DynamicArray(new arc4.UintN8(5))
+    const five = new DynamicArray(new arc4.Uint8(5))
 
     // act
     const result = contract.complexSig(struct, payment, account, five)
@@ -263,12 +263,12 @@ describe('methodSelector', async () => {
     })
 
     const struct = new MyStruct({
-      three: new arc4.UintN128(3),
-      four: new arc4.UintN128(4),
-      anotherStruct: new AnotherStruct({ one: new arc4.UintN64(1), two: new arc4.Str('2') }),
-      anotherStructAlias: new AnotherStruct({ one: new arc4.UintN64(1), two: new arc4.Str('2') }),
+      three: new arc4.Uint128(3),
+      four: new arc4.Uint128(4),
+      anotherStruct: new AnotherStruct({ one: new arc4.Uint64(1), two: new arc4.Str('2') }),
+      anotherStructAlias: new AnotherStruct({ one: new arc4.Uint64(1), two: new arc4.Str('2') }),
     })
-    const five = new DynamicArray(new arc4.UintN8(5))
+    const five = new DynamicArray(new arc4.Uint8(5))
 
     const deferredAppCall = ctx.txn.deferAppCall(contract, contract.complexSig, 'complexSig', struct, ctx.any.txn.payment(), account, five)
     const localnetCreator = await algorand.account.localNetDispenser()

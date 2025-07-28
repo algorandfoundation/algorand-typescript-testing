@@ -1,16 +1,27 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { BigUint, BoxMap, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, BigUint, BoxMap, Bytes, clone, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { Bool, DynamicBytes, StaticArray, Tuple, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
-import { ARC4Encoded, DynamicArray, interpretAsArc4, Str, Struct, UintN64, UintN8 } from '@algorandfoundation/algorand-typescript/arc4'
+import type { StaticArray, Uint16 } from '@algorandfoundation/algorand-typescript/arc4'
+import {
+  ARC4Encoded,
+  Bool,
+  DynamicArray,
+  DynamicBytes,
+  interpretAsArc4,
+  Str,
+  Struct,
+  Uint8,
+} from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { MAX_UINT64 } from '../../src/constants'
-import { toBytes } from '../../src/encoders'
+import { toBytes } from '../../src/impl/encoded-types'
 import { asBytes } from '../../src/util'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
 
 class MyStruct extends Struct<{ a: Str; b: DynamicBytes; c: Bool }> {}
+type MyObject = { a: string; b: bytes; c: boolean }
+type MyArc4Object = { a: Str; b: DynamicBytes; c: Bool }
 
 describe('BoxMap', () => {
   const ctx = new TestExecutionContext()
@@ -90,12 +101,12 @@ describe('BoxMap', () => {
     },
     {
       key: new Str('jkl'),
-      value: new DynamicArray(new UintN64(100), new UintN64(200)),
-      newValue: new DynamicArray(new UintN64(200), new UintN64(300)),
-      emptyValue: interpretAsArc4<DynamicArray<UintN64>>(Bytes('')),
-      withBoxContext: (test: (boxMap: BoxMap<Str, DynamicArray<UintN64>>) => void) => {
+      value: new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200)),
+      newValue: new DynamicArray(new arc4.Uint64(200), new arc4.Uint64(300)),
+      emptyValue: interpretAsArc4<DynamicArray<arc4.Uint64>>(Bytes('')),
+      withBoxContext: (test: (boxMap: BoxMap<Str, DynamicArray<arc4.Uint64>>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-          const boxMap = BoxMap<Str, DynamicArray<UintN64>>({ keyPrefix })
+          const boxMap = BoxMap<Str, DynamicArray<arc4.Uint64>>({ keyPrefix })
           test(boxMap)
         })
       },
@@ -104,10 +115,22 @@ describe('BoxMap', () => {
       key: new Str('TTest'),
       value: ['hello', Bytes('world'), true] as const,
       newValue: ['world', Bytes('hello'), false] as const,
-      emptyValue: interpretAsArc4<Tuple<[Str, DynamicBytes, Bool]>>(Bytes('')),
+      emptyValue: [],
       withBoxContext: (test: (boxMap: BoxMap<Str, readonly [string, bytes, boolean]>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = BoxMap<Str, readonly [string, bytes, boolean]>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: new Str('TTest'),
+      value: ['hello', Bytes('world'), true] as const,
+      newValue: ['world', Bytes('hello'), false] as const,
+      emptyValue: [],
+      withBoxContext: (test: (boxMap: BoxMap<Str, [string, bytes, boolean]>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<Str, [string, bytes, boolean]>({ keyPrefix })
           test(boxMap)
         })
       },
@@ -126,12 +149,48 @@ describe('BoxMap', () => {
     },
     {
       key: { x: Uint64(21), y: Uint64(42) },
-      value: { a: 'hello', b: Bytes('world'), c: true } as unknown as MyStruct,
-      newValue: { a: 'world', b: Bytes('hello'), c: false } as unknown as MyStruct,
-      emptyValue: interpretAsArc4<MyStruct>(Bytes('')),
-      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, MyStruct>) => void) => {
+      value: { a: 'hello', b: Bytes('world'), c: true },
+      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, MyObject>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-          const boxMap = BoxMap<{ x: uint64; y: uint64 }, MyStruct>({ keyPrefix })
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, MyObject>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: { x: Uint64(21), y: Uint64(42) },
+      value: { a: 'hello', b: Bytes('world'), c: true },
+      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, Readonly<MyObject>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, Readonly<MyObject>>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: { x: Uint64(21), y: Uint64(42) },
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, MyArc4Object>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, MyArc4Object>({ keyPrefix })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      key: { x: Uint64(21), y: Uint64(42) },
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: BoxMap<{ x: uint64; y: uint64 }, Readonly<MyArc4Object>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = BoxMap<{ x: uint64; y: uint64 }, Readonly<MyArc4Object>>({ keyPrefix })
           test(boxMap)
         })
       },
@@ -225,7 +284,7 @@ describe('BoxMap', () => {
     withBoxContext((boxMap) => {
       boxMap(key as never).value = value
       if (value instanceof ARC4Encoded) {
-        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(value.bytes)
+        expect((boxMap(key as never).value as unknown as ARC4Encoded).bytes).toEqual(value.bytes)
       } else {
         expect(boxMap(key as never).value).toEqual(value)
       }
@@ -237,32 +296,32 @@ describe('BoxMap', () => {
 
       expect(opContent).toEqual(newBytesValue)
       if (newValue instanceof ARC4Encoded) {
-        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(newValue.bytes)
+        expect((boxMap(key as never).value as unknown as ARC4Encoded).bytes).toEqual(newValue.bytes)
       } else if (boxMap(key as never).value instanceof ARC4Encoded) {
-        expect((boxMap(key as never).value as ARC4Encoded).bytes).toEqual(newBytesValue)
+        expect((boxMap(key as never).value as unknown as ARC4Encoded).bytes).toEqual(newBytesValue)
       } else {
-        expect(boxMap(key as never).value).toEqual(newValue)
+        expect(toBytes(boxMap(key as never).value)).toEqual(newBytesValue)
       }
     })
   })
 
   it('can maintain the mutations to the array box value', () => {
     ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-      const boxMap = BoxMap<Str, DynamicArray<UintN64>>({ keyPrefix })
+      const boxMap = BoxMap<Str, DynamicArray<arc4.Uint64>>({ keyPrefix })
       const key = new Str('jkl')
-      const value = new DynamicArray(new UintN64(100), new UintN64(200))
+      const value = new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200))
       boxMap(key).value = value
       expect(boxMap(key).value.length).toEqual(2)
       expect(boxMap(key).value.at(-1).native).toEqual(200)
 
       // newly pushed value should be retained
-      boxMap(key).value.push(new UintN64(300))
+      boxMap(key).value.push(new arc4.Uint64(300))
       expect(boxMap(key).value.length).toEqual(3)
       expect(boxMap(key).value.at(-1).native).toEqual(300)
 
       // setting bytes value through op should be reflected in the box value.
-      const copy = boxMap(key).value.copy()
-      copy[2] = new UintN64(400)
+      const copy = clone(boxMap(key).value)
+      copy[2] = new arc4.Uint64(400)
       expect(boxMap(key).value.at(-1).native).toEqual(300)
 
       const fullKey = keyPrefix.concat(toBytes(key))
@@ -274,18 +333,18 @@ describe('BoxMap', () => {
 
   test('should be able to replace specific bytes values using ref', () => {
     ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-      const boxMap = BoxMap<uint64, StaticArray<UintN16, 4>>({ keyPrefix: 'a' })
+      const boxMap = BoxMap<uint64, StaticArray<Uint16, 4>>({ keyPrefix: 'a' })
 
       const box1 = boxMap(1)
       box1.create()
 
       const boxRefA = box1.ref
-      boxRefA.replace(1, new UintN8(123).bytes)
+      boxRefA.replace(1, new Uint8(123).bytes)
       expect(box1.value[0].native).toEqual(123)
       expect(boxMap(1).value[0].native).toEqual(123)
 
       const boxRefB = box1.ref
-      boxRefB.replace(2, new UintN8(255).bytes)
+      boxRefB.replace(2, new Uint8(255).bytes)
       expect(box1.value[1].native).toEqual(65280)
       expect(boxMap(1).value[1].native).toEqual(65280)
 
@@ -293,12 +352,12 @@ describe('BoxMap', () => {
       box2.create()
 
       const boxRefC = box2.ref
-      boxRefC.replace(1, new UintN8(223).bytes)
+      boxRefC.replace(1, new Uint8(223).bytes)
       expect(box2.value[0].native).toEqual(223)
       expect(boxMap(2).value[0].native).toEqual(223)
 
       const boxRefD = box2.ref
-      boxRefD.replace(3, new UintN8(255).bytes)
+      boxRefD.replace(3, new Uint8(255).bytes)
       expect(box2.value[1].native).toEqual(255)
       expect(boxMap(2).value[1].native).toEqual(255)
     })

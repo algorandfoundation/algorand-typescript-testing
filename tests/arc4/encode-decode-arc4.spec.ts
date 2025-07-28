@@ -1,6 +1,6 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Bytes } from '@algorandfoundation/algorand-typescript'
-import type { StaticBytes, UFixedNxM } from '@algorandfoundation/algorand-typescript/arc4'
+import { arc4, assertMatch, Bytes } from '@algorandfoundation/algorand-typescript'
+import type { StaticBytes, UFixed, Uint64 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Address,
   arc4EncodedLength,
@@ -13,8 +13,7 @@ import {
   Str,
   Struct,
   Tuple,
-  UintN,
-  UintN64,
+  Uint,
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { itob } from '@algorandfoundation/algorand-typescript/op'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
@@ -31,17 +30,17 @@ const nativeBool = true
 const nativeBytes = Bytes('hello')
 
 const abiString = new Str('hello')
-const abiUint64 = new UintN<64>(42)
-const abiUint512 = new UintN<512>(MAX_UINT128)
+const abiUint64 = new Uint<64>(42)
+const abiUint512 = new Uint<512>(MAX_UINT128)
 const abiBool = new Bool(true)
 const abiBytes = new DynamicBytes(Bytes('hello'))
 
-type TestObj = { a: UintN64; b: DynamicBytes }
+type TestObj = { a: Uint64; b: DynamicBytes }
 class Swapped1 extends Struct<{
-  b: UintN<64>
+  b: Uint<64>
   c: Bool
   d: Str
-  a: Tuple<[UintN<64>, Bool, Bool]>
+  a: Tuple<[Uint<64>, Bool, Bool]>
 }> {}
 
 const testData = [
@@ -50,10 +49,10 @@ const testData = [
       return [nativeNumber, nativeNumber, nativeBigInt, nativeBytes] as readonly [uint64, uint64, biguint, bytes]
     },
     abiValues() {
-      return [abiUint64, abiUint64, abiUint512, abiBytes] as readonly [UintN<64>, UintN<64>, UintN<512>, DynamicBytes]
+      return [abiUint64, abiUint64, abiUint512, abiBytes] as readonly [Uint<64>, Uint<64>, Uint<512>, DynamicBytes]
     },
     arc4Value() {
-      return new Tuple<[UintN<64>, UintN<64>, UintN<512>, DynamicBytes]>(abiUint64, abiUint64, abiUint512, abiBytes)
+      return new Tuple<[Uint<64>, Uint<64>, Uint<512>, DynamicBytes]>(abiUint64, abiUint64, abiUint512, abiBytes)
     },
     encode() {
       return encodeArc4(this.nativeValues())
@@ -86,16 +85,16 @@ const testData = [
     abiValues() {
       return [
         new Tuple<[Bool, Tuple<[Str, Bool]>]>(abiBool, new Tuple<[Str, Bool]>(abiString, abiBool)),
-        new Tuple<[UintN<64>, UintN<64>]>(abiUint64, abiUint64),
-        new Tuple<[UintN<512>, DynamicBytes, Swapped1]>(
+        new Tuple<[Uint<64>, Uint<64>]>(abiUint64, abiUint64),
+        new Tuple<[Uint<512>, DynamicBytes, Swapped1]>(
           abiUint512,
           abiBytes,
-          new Swapped1({ b: abiUint64, c: abiBool, d: abiString, a: new Tuple<[UintN<64>, Bool, Bool]>(abiUint64, abiBool, abiBool) }),
+          new Swapped1({ b: abiUint64, c: abiBool, d: abiString, a: new Tuple<[Uint<64>, Bool, Bool]>(abiUint64, abiBool, abiBool) }),
         ),
-      ] as readonly [Tuple<[Bool, Tuple<[Str, Bool]>]>, Tuple<[UintN<64>, UintN<64>]>, Tuple<[UintN<512>, DynamicBytes, Swapped1]>]
+      ] as readonly [Tuple<[Bool, Tuple<[Str, Bool]>]>, Tuple<[Uint<64>, Uint<64>]>, Tuple<[Uint<512>, DynamicBytes, Swapped1]>]
     },
     arc4Value() {
-      return new Tuple<[Tuple<[Bool, Tuple<[Str, Bool]>]>, Tuple<[UintN<64>, UintN<64>]>, Tuple<[UintN<512>, DynamicBytes, Swapped1]>]>(
+      return new Tuple<[Tuple<[Bool, Tuple<[Str, Bool]>]>, Tuple<[Uint<64>, Uint<64>]>, Tuple<[Uint<512>, DynamicBytes, Swapped1]>]>(
         ...this.abiValues(),
       )
     },
@@ -123,10 +122,15 @@ const testData = [
   },
   {
     nativeValues() {
-      return { b: nativeNumber, c: nativeBool, d: nativeString, a: [nativeNumber, nativeBool, nativeBool] }
+      return { b: nativeNumber, c: nativeBool, d: nativeString, a: [nativeNumber, nativeBool, nativeBool] } as {
+        b: uint64
+        c: boolean
+        d: string
+        a: [uint64, boolean, boolean]
+      }
     },
     abiValues() {
-      return { b: abiUint64, c: abiBool, d: abiString, a: new Tuple<[UintN<64>, Bool, Bool]>(abiUint64, abiBool, abiBool) }
+      return { b: abiUint64, c: abiBool, d: abiString, a: new Tuple<[Uint<64>, Bool, Bool]>(abiUint64, abiBool, abiBool) }
     },
     arc4Value() {
       return new Swapped1(this.abiValues())
@@ -163,7 +167,7 @@ describe('decodeArc4', () => {
         ...encodingUtil.utf8ToUint8Array('hello world'),
       ]),
     )
-    const e = { a: 50n, b: new Uint8Array([1, 2, 3, 4, 5]) }
+    const e = { a: new arc4.Uint64(50n), b: new DynamicBytes(asBytes(new Uint8Array([1, 2, 3, 4, 5]))) }
     const eBytes = asBytes(new Uint8Array([...encodingUtil.bigIntToUint8Array(50n, 8), 0, 10, 0, 5, 1, 2, 3, 4, 5]))
     const f = new Address(Bytes.fromHex(`${'00'.repeat(31)}ff`))
     const fBytes = Bytes.fromHex(`${'00'.repeat(31)}ff`)
@@ -171,7 +175,7 @@ describe('decodeArc4', () => {
     expect(decodeArc4<boolean>(bBytes)).toEqual(b)
     expect(decodeArc4<biguint>(cBytes)).toEqual(c)
     expect(decodeArc4<string>(dBytes)).toEqual(d)
-    expect(decodeArc4<TestObj>(eBytes)).toEqual(e)
+    assertMatch(decodeArc4<TestObj>(eBytes), e)
 
     const lenPrefix = itob(1).slice(6, 8)
     const offsetHeader = itob(2).slice(6, 8)
@@ -179,7 +183,7 @@ describe('decodeArc4', () => {
     expect(decodeArc4<boolean[]>(lenPrefix.concat(bBytes))).toEqual([b])
     expect(decodeArc4<biguint[]>(lenPrefix.concat(cBytes))).toEqual([c])
     expect(decodeArc4<string[]>(Bytes`${lenPrefix}${offsetHeader}${dBytes}`)).toEqual([d])
-    expect(decodeArc4<TestObj[]>(Bytes`${lenPrefix}${offsetHeader}${eBytes}`)).toEqual([e])
+    assertMatch(decodeArc4<TestObj[]>(Bytes`${lenPrefix}${offsetHeader}${eBytes}`), [e])
     expect(JSON.stringify(decodeArc4<Address[]>(Bytes`${lenPrefix}${fBytes}`))).toEqual(JSON.stringify([f]))
   })
 })
@@ -196,16 +200,16 @@ describe('encodeArc4', () => {
     const address = new Address(Bytes.fromHex(`${'00'.repeat(31)}ff`))
     expect(encodeArc4(address)).toEqual(address.bytes)
 
-    expect(encodeArc4([nativeNumber])).toEqual(new StaticArray(new UintN64(nativeNumber)).bytes)
+    expect(encodeArc4([nativeNumber])).toEqual(new StaticArray(new arc4.Uint64(nativeNumber)).bytes)
     expect(encodeArc4([nativeBool])).toEqual(new StaticArray(new Bool(nativeBool)).bytes)
-    expect(encodeArc4([nativeBigInt])).toEqual(new StaticArray(new UintN<512>(nativeBigInt)).bytes)
+    expect(encodeArc4([nativeBigInt])).toEqual(new StaticArray(new Uint<512>(nativeBigInt)).bytes)
     expect(encodeArc4([nativeBytes])).toEqual(new StaticArray(new DynamicBytes(nativeBytes)).bytes)
     expect(encodeArc4([nativeString])).toEqual(new StaticArray(new Str(nativeString)).bytes)
     expect(encodeArc4([address])).toEqual(new StaticArray(address).bytes)
 
-    expect(encodeArc4<uint64[]>([nativeNumber])).toEqual(new DynamicArray(new UintN64(nativeNumber)).bytes)
+    expect(encodeArc4<uint64[]>([nativeNumber])).toEqual(new DynamicArray(new arc4.Uint64(nativeNumber)).bytes)
     expect(encodeArc4<boolean[]>([nativeBool])).toEqual(new DynamicArray(new Bool(nativeBool)).bytes)
-    expect(encodeArc4<biguint[]>([nativeBigInt])).toEqual(new DynamicArray(new UintN<512>(nativeBigInt)).bytes)
+    expect(encodeArc4<biguint[]>([nativeBigInt])).toEqual(new DynamicArray(new Uint<512>(nativeBigInt)).bytes)
     expect(encodeArc4<bytes[]>([nativeBytes])).toEqual(new DynamicArray(new DynamicBytes(nativeBytes)).bytes)
     expect(encodeArc4<string[]>([nativeString])).toEqual(new DynamicArray(new Str(nativeString)).bytes)
     expect(encodeArc4<Address[]>([address])).toEqual(new DynamicArray(address).bytes)
@@ -213,12 +217,12 @@ describe('encodeArc4', () => {
 })
 
 class StaticStruct extends Struct<{
-  a: UintN64
+  a: Uint64
   b: StaticArray<Bool, 10>
   c: Bool
   d: StaticBytes<32>
   e: Address
-  f: StaticArray<UFixedNxM<256, 16>, 10>
+  f: StaticArray<UFixed<256, 16>, 10>
 }> {}
 describe('arc4EncodedLength', () => {
   test('should return the correct length', () => {
@@ -226,7 +230,7 @@ describe('arc4EncodedLength', () => {
     expect(arc4EncodedLength<biguint>()).toEqual(64)
     expect(arc4EncodedLength<Bool>()).toEqual(1)
     expect(arc4EncodedLength<boolean>()).toEqual(1)
-    expect(arc4EncodedLength<UintN<512>>()).toEqual(64)
+    expect(arc4EncodedLength<Uint<512>>()).toEqual(64)
     expect(arc4EncodedLength<[uint64, uint64, boolean]>()).toEqual(17)
     expect(arc4EncodedLength<[uint64, uint64, boolean, boolean]>()).toEqual(17)
     expect(arc4EncodedLength<Tuple<[StaticArray<Bool, 10>, Bool]>>()).toEqual(3)

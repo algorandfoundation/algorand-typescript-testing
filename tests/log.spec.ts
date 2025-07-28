@@ -1,4 +1,4 @@
-import { Bytes, log, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, Bytes, log, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import {
   Bool,
@@ -6,12 +6,11 @@ import {
   StaticArray,
   Str,
   Tuple,
-  UFixedNxM,
-  UintN,
-  UintN16,
-  UintN32,
-  UintN64,
-  UintN8,
+  UFixed,
+  Uint,
+  Uint16,
+  Uint32,
+  Uint8,
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../src/constants'
@@ -41,13 +40,13 @@ describe('log', async () => {
     const d = BigInt(MAX_UINT512)
     const e = new Bool(true)
     const f = new Str('greetings')
-    const g = new UintN<64>(42)
-    const h = new UintN<256>(512)
-    const i = new UFixedNxM<32, 8>('42.94967295')
-    const j = new UFixedNxM<256, 16>('25.5')
-    const k = new StaticArray<UintN8, 3>(new UintN8(1), new UintN8(2), new UintN8(3))
-    const m = new DynamicArray(new UintN16(1), new UintN16(2), new UintN16(3))
-    const n = new Tuple((new UintN32(1), new UintN64(2), new Str('hello')))
+    const g = new Uint<64>(42)
+    const h = new Uint<256>(512)
+    const i = new UFixed<32, 8>('42.94967295')
+    const j = new UFixed<256, 16>('25.5')
+    const k = new StaticArray<Uint8, 3>(new Uint8(1), new Uint8(2), new Uint8(3))
+    const m = new DynamicArray(new Uint16(1), new Uint16(2), new Uint16(3))
+    const n = new Tuple((new Uint32(1), new arc4.Uint64(2), new Str('hello')))
 
     const avmResult = await getAvmResultLog(
       { appClient },

@@ -1,6 +1,6 @@
 import type { gtxn, uint64 } from '@algorandfoundation/algorand-typescript'
 import { arc4, assert, Global, op } from '@algorandfoundation/algorand-typescript'
-import type { UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+import type { Uint64 } from '@algorandfoundation/algorand-typescript/arc4'
 import { interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class AppExpectingEffects extends arc4.Contract {
@@ -18,6 +18,6 @@ export class AppExpectingEffects extends arc4.Contract {
   public log_group(appCall: gtxn.ApplicationCallTxn): void {
     assert(appCall.appArgs(0) === methodSelector('some_value()uint64'), 'expected correct method called')
     assert(appCall.numLogs === 1, 'expected logs')
-    assert(interpretAsArc4<UintN64>(appCall.lastLog, 'log').native === (appCall.groupIndex + 1) * Global.groupSize)
+    assert(interpretAsArc4<Uint64>(appCall.lastLog, 'log').native === (appCall.groupIndex + 1) * Global.groupSize)
   }
 }

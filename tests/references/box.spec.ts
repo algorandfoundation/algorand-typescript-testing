@@ -1,30 +1,30 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { BigUint, Box, Bytes, op, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, BigUint, Box, Bytes, clone, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type { DynamicBytes, UintN16 } from '@algorandfoundation/algorand-typescript/arc4'
+import type { Uint16 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   ARC4Encoded,
   Bool,
   DynamicArray,
+  DynamicBytes,
   interpretAsArc4,
   StaticArray,
   Str,
-  Struct,
   Tuple,
-  UintN32,
-  UintN64,
-  UintN8,
+  Uint32,
+  Uint8,
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { itob } from '@algorandfoundation/algorand-typescript/op'
 import { afterEach, describe, expect, it, test } from 'vitest'
-import { toBytes } from '../../src/encoders'
+import { toBytes } from '../../src/impl/encoded-types'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
 import { BoxContract } from '../artifacts/box-contract/contract.algo'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
 
-class MyStruct extends Struct<{ a: Str; b: DynamicBytes; c: Bool }> {}
+type MyObject = { a: string; b: bytes; c: boolean }
+type MyArc4Object = { a: Str; b: DynamicBytes; c: Bool }
 
 describe('Box', () => {
   const ctx = new TestExecutionContext()
@@ -97,12 +97,12 @@ describe('Box', () => {
       },
     },
     {
-      value: new DynamicArray(new UintN64(100), new UintN64(200)),
-      newValue: new DynamicArray(new UintN64(200), new UintN64(300)),
-      emptyValue: interpretAsArc4<DynamicArray<UintN64>>(Bytes('')),
-      withBoxContext: (test: (boxMap: Box<DynamicArray<UintN64>>) => void) => {
+      value: new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200)),
+      newValue: new DynamicArray(new arc4.Uint64(200), new arc4.Uint64(300)),
+      emptyValue: interpretAsArc4<DynamicArray<arc4.Uint64>>(Bytes('')),
+      withBoxContext: (test: (boxMap: Box<DynamicArray<arc4.Uint64>>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-          const boxMap = Box<DynamicArray<UintN64>>({ key })
+          const boxMap = Box<DynamicArray<arc4.Uint64>>({ key })
           test(boxMap)
         })
       },
@@ -110,7 +110,7 @@ describe('Box', () => {
     {
       value: ['hello', Bytes('world'), true] as const,
       newValue: ['world', Bytes('hello'), false] as const,
-      emptyValue: interpretAsArc4<Tuple<[Str, DynamicBytes, Bool]>>(Bytes('')),
+      emptyValue: [],
       withBoxContext: (test: (boxMap: Box<readonly [string, bytes, boolean]>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = Box<readonly [string, bytes, boolean]>({ key })
@@ -119,12 +119,56 @@ describe('Box', () => {
       },
     },
     {
+      value: ['hello', Bytes('world'), true] as const,
+      newValue: ['world', Bytes('hello'), false] as const,
+      emptyValue: [],
+      withBoxContext: (test: (boxMap: Box<[string, bytes, boolean]>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<[string, bytes, boolean]>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
       value: { a: 'hello', b: Bytes('world'), c: true },
       newValue: { a: 'world', b: Bytes('hello'), c: false },
-      emptyValue: interpretAsArc4<MyStruct>(Bytes('')),
-      withBoxContext: (test: (boxMap: Box<{ a: string; b: bytes; c: boolean }>) => void) => {
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<MyObject>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-          const boxMap = Box<{ a: string; b: bytes; c: boolean }>({ key })
+          const boxMap = Box<MyObject>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: { a: 'hello', b: Bytes('world'), c: true },
+      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<Readonly<MyObject>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<Readonly<MyObject>>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<MyArc4Object>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<MyArc4Object>({ key })
+          test(boxMap)
+        })
+      },
+    },
+    {
+      value: { a: new Str('hello'), b: new DynamicBytes('world'), c: new Bool(true) },
+      newValue: { a: new Str('world'), b: new DynamicBytes('hello'), c: new Bool(false) },
+      emptyValue: {},
+      withBoxContext: (test: (boxMap: Box<Readonly<MyArc4Object>>) => void) => {
+        ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+          const boxMap = Box<Readonly<MyArc4Object>>({ key })
           test(boxMap)
         })
       },
@@ -240,27 +284,27 @@ describe('Box', () => {
       } else if (box.value instanceof ARC4Encoded) {
         expect(box.value.bytes).toEqual(newBytesValue)
       } else {
-        expect(box.value).toEqual(newValue)
+        expect(toBytes(box.value)).toEqual(newBytesValue)
       }
     })
   })
 
   it('can maintain the mutations to the box value', () => {
     ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-      const box = Box<DynamicArray<UintN64>>({ key })
-      const value = new DynamicArray(new UintN64(100), new UintN64(200))
+      const box = Box<DynamicArray<arc4.Uint64>>({ key })
+      const value = new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200))
       box.value = value
       expect(box.value.length).toEqual(2)
       expect(box.value.at(-1).native).toEqual(200)
 
       // newly pushed value should be retained
-      box.value.push(new UintN64(300))
+      box.value.push(new arc4.Uint64(300))
       expect(box.value.length).toEqual(3)
       expect(box.value.at(-1).native).toEqual(300)
 
       // setting bytes value through op should be reflected in the box value.
-      const copy = box.value.copy()
-      copy[2] = new UintN64(400)
+      const copy = clone(box.value)
+      copy[2] = new arc4.Uint64(400)
       expect(box.value.at(-1).native).toEqual(300)
 
       op.Box.put(key, toBytes(copy))
@@ -271,15 +315,15 @@ describe('Box', () => {
 
   test('should be able to replace specific bytes values using ref', () => {
     ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
-      const box = Box<StaticArray<UintN16, 4>>({ key: 'a' })
+      const box = Box<StaticArray<Uint16, 4>>({ key: 'a' })
       box.create()
 
       const boxRef1 = box.ref
-      boxRef1.replace(1, new UintN8(123).bytes)
+      boxRef1.replace(1, new Uint8(123).bytes)
       expect(box.value[0].native).toEqual(123)
 
       const boxRef2 = box.ref
-      boxRef2.replace(2, new UintN8(255).bytes)
+      boxRef2.replace(2, new Uint8(255).bytes)
       expect(box.value[1].native).toEqual(65280)
     })
   })
@@ -288,9 +332,9 @@ describe('Box', () => {
     it('throw errors if size is not provided for dynamic value type', () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
         const boxStr = Box<string>({ key: 'a' })
-        const boxStaticArray = Box<StaticArray<DynamicArray<UintN32>, 10>>({ key: 'c' })
-        const boxDynamicArray = Box<DynamicArray<UintN8>>({ key: 'd' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool, Str]>>({ key: 'e' })
+        const boxStaticArray = Box<StaticArray<DynamicArray<Uint32>, 10>>({ key: 'c' })
+        const boxDynamicArray = Box<DynamicArray<Uint8>>({ key: 'd' })
+        const boxTuple = Box<Tuple<[Uint8, Uint8, Bool, Bool, Str]>>({ key: 'e' })
 
         const errorMessage = 'does not have a fixed byte size. Please specify a size argument'
         expect(() => boxStr.create()).toThrow(errorMessage)
@@ -305,8 +349,8 @@ describe('Box', () => {
         const boxBool = Box<boolean>({ key: 'bool' })
         const boxArc4Bool = Box<Bool>({ key: 'arc4b' })
         const boxUint = Box<uint64>({ key: 'b' })
-        const boxStaticArray = Box<StaticArray<UintN32, 10>>({ key: 'c' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool]>>({ key: 'e' })
+        const boxStaticArray = Box<StaticArray<Uint32, 10>>({ key: 'c' })
+        const boxTuple = Box<Tuple<[Uint8, Uint8, Bool, Bool]>>({ key: 'e' })
         const errorMessage = 'Box size cannot be less than'
         expect(() => boxBool.create({ size: 7 })).toThrow(`${errorMessage} 8`)
         expect(() => boxArc4Bool.create({ size: 0 })).toThrow(`${errorMessage} 1`)
@@ -321,8 +365,8 @@ describe('Box', () => {
         const boxBool = Box<boolean>({ key: 'bool' })
         const boxArc4Bool = Box<Bool>({ key: 'arc4b' })
         const boxUint = Box<uint64>({ key: 'b' })
-        const boxStaticArray = Box<StaticArray<UintN32, 10>>({ key: 'c' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool]>>({ key: 'e' })
+        const boxStaticArray = Box<StaticArray<Uint32, 10>>({ key: 'c' })
+        const boxTuple = Box<Tuple<readonly [Uint8, Uint8, Bool, Bool]>>({ key: 'e' })
 
         const errorMessage = 'attempt to box_put wrong size'
         boxBool.create({ size: 9 })
@@ -338,21 +382,21 @@ describe('Box', () => {
         expect(
           () =>
             (boxStaticArray.value = new StaticArray(
-              new UintN32(100),
-              new UintN32(200),
-              new UintN32(300),
-              new UintN32(400),
-              new UintN32(500),
-              new UintN32(600),
-              new UintN32(700),
-              new UintN32(800),
-              new UintN32(900),
-              new UintN32(1000),
+              new Uint32(100),
+              new Uint32(200),
+              new Uint32(300),
+              new Uint32(400),
+              new Uint32(500),
+              new Uint32(600),
+              new Uint32(700),
+              new Uint32(800),
+              new Uint32(900),
+              new Uint32(1000),
             )),
         ).toThrow(errorMessage)
 
         boxTuple.create({ size: 4 })
-        expect(() => (boxTuple.value = new Tuple(new UintN8(1), new UintN8(2), new Bool(true), new Bool(false)))).toThrow(errorMessage)
+        expect(() => (boxTuple.value = new Tuple(new Uint8(1), new Uint8(2), new Bool(true), new Bool(false)))).toThrow(errorMessage)
       })
     })
 
@@ -361,8 +405,8 @@ describe('Box', () => {
         const boxBool = Box<boolean>({ key: 'bool' })
         const boxArc4Bool = Box<Bool>({ key: 'arc4b' })
         const boxUint = Box<uint64>({ key: 'b' })
-        const boxStaticArray = Box<StaticArray<UintN32, 10>>({ key: 'c' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool]>>({ key: 'e' })
+        const boxStaticArray = Box<StaticArray<Uint32, 10>>({ key: 'c' })
+        const boxTuple = Box<Tuple<readonly [Uint8, Uint8, Bool, Bool]>>({ key: 'e' })
 
         boxBool.create()
         expect(boxBool.length).toEqual(8)
@@ -382,22 +426,22 @@ describe('Box', () => {
         boxStaticArray.create()
         expect(boxStaticArray.length).toEqual(40)
         boxStaticArray.value = new StaticArray(
-          new UintN32(100),
-          new UintN32(200),
-          new UintN32(300),
-          new UintN32(400),
-          new UintN32(500),
-          new UintN32(600),
-          new UintN32(700),
-          new UintN32(800),
-          new UintN32(900),
-          new UintN32(1000),
+          new Uint32(100),
+          new Uint32(200),
+          new Uint32(300),
+          new Uint32(400),
+          new Uint32(500),
+          new Uint32(600),
+          new Uint32(700),
+          new Uint32(800),
+          new Uint32(900),
+          new Uint32(1000),
         )
         expect(boxStaticArray.length).toEqual(40)
 
         boxTuple.create()
         expect(boxTuple.length).toEqual(3)
-        boxTuple.value = new Tuple(new UintN8(1), new UintN8(2), new Bool(true), new Bool(false))
+        boxTuple.value = new Tuple(new Uint8(1), new Uint8(2), new Bool(true), new Bool(false))
         expect(boxTuple.length).toEqual(3)
       })
     })
@@ -405,9 +449,9 @@ describe('Box', () => {
     it('can set value if size provided is less than required for dynamic value type', () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
         const boxStr = Box<string>({ key: 'a' })
-        const boxStaticArray = Box<StaticArray<DynamicArray<UintN32>, 10>>({ key: 'c' })
-        const boxDynamicArray = Box<DynamicArray<UintN8>>({ key: 'd' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool, Str]>>({ key: 'e' })
+        const boxStaticArray = Box<StaticArray<DynamicArray<Uint32>, 10>>({ key: 'c' })
+        const boxDynamicArray = Box<DynamicArray<Uint8>>({ key: 'd' })
+        const boxTuple = Box<Tuple<readonly [Uint8, Uint8, Bool, Bool, Str]>>({ key: 'e' })
 
         boxStr.create({ size: 2 })
         boxStr.value = 'hello'
@@ -415,25 +459,25 @@ describe('Box', () => {
 
         boxStaticArray.create({ size: 2 })
         boxStaticArray.value = new StaticArray(
-          new DynamicArray(new UintN32(100), new UintN32(200)),
-          new DynamicArray(new UintN32(300), new UintN32(400)),
-          new DynamicArray(new UintN32(500), new UintN32(600)),
-          new DynamicArray(new UintN32(700), new UintN32(800)),
-          new DynamicArray(new UintN32(900), new UintN32(1000)),
-          new DynamicArray(new UintN32(1100), new UintN32(1200)),
-          new DynamicArray(new UintN32(1300), new UintN32(1400)),
-          new DynamicArray(new UintN32(1500), new UintN32(1600)),
-          new DynamicArray(new UintN32(1700), new UintN32(1800)),
-          new DynamicArray(new UintN32(1900), new UintN32(2000)),
+          new DynamicArray(new Uint32(100), new Uint32(200)),
+          new DynamicArray(new Uint32(300), new Uint32(400)),
+          new DynamicArray(new Uint32(500), new Uint32(600)),
+          new DynamicArray(new Uint32(700), new Uint32(800)),
+          new DynamicArray(new Uint32(900), new Uint32(1000)),
+          new DynamicArray(new Uint32(1100), new Uint32(1200)),
+          new DynamicArray(new Uint32(1300), new Uint32(1400)),
+          new DynamicArray(new Uint32(1500), new Uint32(1600)),
+          new DynamicArray(new Uint32(1700), new Uint32(1800)),
+          new DynamicArray(new Uint32(1900), new Uint32(2000)),
         )
         expect(boxStaticArray.length).toEqual(120)
 
         boxDynamicArray.create({ size: 2 })
-        boxDynamicArray.value = new DynamicArray(new UintN8(100), new UintN8(200))
+        boxDynamicArray.value = new DynamicArray(new Uint8(100), new Uint8(200))
         expect(boxDynamicArray.length).toEqual(4)
 
         boxTuple.create({ size: 2 })
-        boxTuple.value = new Tuple(new UintN8(1), new UintN8(2), new Bool(true), new Bool(false), new Str('hello'))
+        boxTuple.value = new Tuple(new Uint8(1), new Uint8(2), new Bool(true), new Bool(false), new Str('hello'))
         expect(boxTuple.length).toEqual(12)
       })
     })
@@ -441,9 +485,9 @@ describe('Box', () => {
     it('can set value if size provided is larger than required for dynamic value type', () => {
       ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
         const boxStr = Box<string>({ key: 'a' })
-        const boxStaticArray = Box<StaticArray<DynamicArray<UintN32>, 10>>({ key: 'c' })
-        const boxDynamicArray = Box<DynamicArray<UintN8>>({ key: 'd' })
-        const boxTuple = Box<Tuple<[UintN8, UintN8, Bool, Bool, Str]>>({ key: 'e' })
+        const boxStaticArray = Box<StaticArray<DynamicArray<Uint32>, 10>>({ key: 'c' })
+        const boxDynamicArray = Box<DynamicArray<Uint8>>({ key: 'd' })
+        const boxTuple = Box<Tuple<readonly [Uint8, Uint8, Bool, Bool, Str]>>({ key: 'e' })
 
         boxStr.create({ size: 200 })
         boxStr.value = 'hello'
@@ -451,25 +495,25 @@ describe('Box', () => {
 
         boxStaticArray.create({ size: 200 })
         boxStaticArray.value = new StaticArray(
-          new DynamicArray(new UintN32(100), new UintN32(200)),
-          new DynamicArray(new UintN32(300), new UintN32(400)),
-          new DynamicArray(new UintN32(500), new UintN32(600)),
-          new DynamicArray(new UintN32(700), new UintN32(800)),
-          new DynamicArray(new UintN32(900), new UintN32(1000)),
-          new DynamicArray(new UintN32(1100), new UintN32(1200)),
-          new DynamicArray(new UintN32(1300), new UintN32(1400)),
-          new DynamicArray(new UintN32(1500), new UintN32(1600)),
-          new DynamicArray(new UintN32(1700), new UintN32(1800)),
-          new DynamicArray(new UintN32(1900), new UintN32(2000)),
+          new DynamicArray(new Uint32(100), new Uint32(200)),
+          new DynamicArray(new Uint32(300), new Uint32(400)),
+          new DynamicArray(new Uint32(500), new Uint32(600)),
+          new DynamicArray(new Uint32(700), new Uint32(800)),
+          new DynamicArray(new Uint32(900), new Uint32(1000)),
+          new DynamicArray(new Uint32(1100), new Uint32(1200)),
+          new DynamicArray(new Uint32(1300), new Uint32(1400)),
+          new DynamicArray(new Uint32(1500), new Uint32(1600)),
+          new DynamicArray(new Uint32(1700), new Uint32(1800)),
+          new DynamicArray(new Uint32(1900), new Uint32(2000)),
         )
         expect(boxStaticArray.length).toEqual(120)
 
         boxDynamicArray.create({ size: 200 })
-        boxDynamicArray.value = new DynamicArray(new UintN8(100), new UintN8(200))
+        boxDynamicArray.value = new DynamicArray(new Uint8(100), new Uint8(200))
         expect(boxDynamicArray.length).toEqual(4)
 
         boxTuple.create({ size: 200 })
-        boxTuple.value = new Tuple(new UintN8(1), new UintN8(2), new Bool(true), new Bool(false), new Str('hello'))
+        boxTuple.value = new Tuple(new Uint8(1), new Uint8(2), new Bool(true), new Bool(false), new Str('hello'))
         expect(boxTuple.length).toEqual(12)
       })
     })

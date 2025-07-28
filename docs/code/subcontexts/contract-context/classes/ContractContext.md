@@ -6,7 +6,7 @@
 
 # Class: ContractContext
 
-Defined in: [src/subcontexts/contract-context.ts:146](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L146)
+Defined in: [src/subcontexts/contract-context.ts:145](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L145)
 
 Provides a context for creating contracts and registering created contract instances
 with test execution context.
@@ -27,7 +27,7 @@ with test execution context.
 
 > **create**\<`T`\>(`type`, ...`args`): `T`
 
-Defined in: [src/subcontexts/contract-context.ts:158](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L158)
+Defined in: [src/subcontexts/contract-context.ts:157](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L157)
 
 Creates a new contract instance and register the created instance with test execution context.
 
@@ -72,7 +72,7 @@ const contract = ctx.contract.create(MyContract);
 
 > `static` **createMethodCallTxns**\<`TParams`\>(`contract`, `abiMetadata`, ...`args`): `Transaction`[]
 
-Defined in: [src/subcontexts/contract-context.ts:180](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L180)
+Defined in: [src/subcontexts/contract-context.ts:179](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/src/subcontexts/contract-context.ts#L179)
 
 **`Internal`**
 

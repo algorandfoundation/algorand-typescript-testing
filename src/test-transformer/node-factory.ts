@@ -1,6 +1,6 @@
 import type { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
-import type { TypeInfo } from '../encoders'
+import type { TypeInfo } from '../impl/encoded-types'
 import type { DeliberateAny } from '../typescript-helpers'
 import { getPropertyNameAsString, trimGenericTypeName } from './helpers'
 
@@ -84,7 +84,7 @@ export const nodeFactory = {
     )
   },
 
-  instantiateARC4EncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
+  instantiateEncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
     const infoString = JSON.stringify(typeInfo)
     const classIdentifier = node.expression.getText().replace('arc4.', '')
     return factory.createNewExpression(
@@ -132,5 +132,18 @@ export const nodeFactory = {
       return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdenifier])
     }
     return node
+  },
+
+  callFixedBytesFunction(functionName: string, node: ts.CallExpression, length: number) {
+    const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
+      factory.createIdentifier('runtimeHelpers'),
+      `FixedBytes${functionName === 'Bytes' ? '' : `.${functionName}`}`,
+    )
+
+    return factory.createCallExpression(
+      updatedPropertyAccessExpression,
+      node.typeArguments,
+      [factory.createNumericLiteral(length), ...(node.arguments ?? [])].filter((arg) => !!arg),
+    )
   },
 } satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>

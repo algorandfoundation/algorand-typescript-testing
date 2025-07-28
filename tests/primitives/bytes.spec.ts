@@ -1,9 +1,11 @@
 import type { bytes } from '@algorandfoundation/algorand-typescript'
-import { Bytes } from '@algorandfoundation/algorand-typescript'
+import { Bytes, FixedArray } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { beforeAll, describe, expect } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { MAX_BYTES_SIZE } from '../../src/constants'
 
+import type { Byte, StaticArray } from '@algorandfoundation/algorand-typescript/arc4'
+import { arc4EncodedLength, decodeArc4, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 import { sha256 } from '../../src/impl'
 import { BytesCls } from '../../src/impl/primitives'
 import { asUint8Array } from '../../src/util'
@@ -193,6 +195,51 @@ describe('Bytes', async () => {
     test(`${a} fromCompat`, async () => {
       const result = BytesCls.fromCompat(a)
       expect(result.asUint8Array()).toEqual(b)
+    })
+  })
+
+  describe('fixed size', () => {
+    it('should be able to create fixed size bytes with no parameter', () => {
+      const x = Bytes<32>()
+      expect(x.length).toEqual(32)
+      expect(x).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))
+      expect(x).toEqual(Bytes.fromBase64<32>('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='))
+      expect(x).toEqual(Bytes.fromBase32<32>('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=='))
+    })
+
+    it('should be able to create fixed size bytes with parameter', () => {
+      const x1 = Bytes<32>(new Uint8Array(32))
+      expect(x1.length).toEqual(32)
+      expect(x1).toEqual(Bytes<32>())
+
+      const x2 = Bytes<32>('abcdefghijklmnopqrstuvwxyz123456')
+      expect(x2.length).toEqual(32)
+      expect(x2).toEqual(Bytes('abcdefghijklmnopqrstuvwxyz123456'))
+      expect(x2).toEqual(Bytes.fromHex('6162636465666768696a6b6c6d6e6f707172737475767778797a313233343536'))
+      expect(x2).toEqual(Bytes.fromBase64('YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY='))
+      expect(x2).toEqual(Bytes.fromBase32('MFRGGZDFMZTWQ2LKNNWG23TPOBYXE43UOV3HO6DZPIYTEMZUGU3A===='))
+    })
+
+    it('should be treated as statically sized', () => {
+      expect(arc4EncodedLength<bytes<32>>()).toEqual(32)
+      expect(arc4EncodedLength<FixedArray<bytes<32>, 2>>()).toEqual(64)
+
+      const x1 = new FixedArray<bytes<32>, 2>()
+      expect(x1.length).toEqual(2)
+      expect(x1[0].length).toEqual(32)
+      expect(x1[1].length).toEqual(32)
+      expect(x1[0]).toEqual(Bytes<32>(new Uint8Array(32)))
+      expect(x1[1]).toEqual(Bytes<32>(new Uint8Array(32)))
+
+      const x2 = decodeArc4<FixedArray<bytes<32>, 2>>(Bytes<64>())
+      expect(x2.length).toEqual(2)
+      expect(x2[0].length).toEqual(32)
+      expect(x2[1].length).toEqual(32)
+
+      const x3 = interpretAsArc4<StaticArray<StaticArray<Byte, 32>, 2>>(Bytes<64>())
+      expect(x3.length).toEqual(2)
+      expect(x3[0].bytes).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))
+      expect(x3[1].bytes).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))
     })
   })
 })

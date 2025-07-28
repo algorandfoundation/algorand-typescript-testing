@@ -1,6 +1,6 @@
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import type { TypeInfo } from '../encoders'
+import type { TypeInfo } from '../impl/encoded-types'
 import type { StubBytesCompat } from './primitives'
 import { BytesCls, Uint64 } from './primitives'
 
