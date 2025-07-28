@@ -263,6 +263,8 @@ async function compilePath(
         outputTeal: false,
         outputSourceMap: true,
         optimizationLevel: 0,
+
+        resourceEncoding: 'foreign_index',
         ...options,
       }),
     )
