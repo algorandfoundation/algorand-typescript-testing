@@ -16,11 +16,13 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | CompiledContract             | Mockable            |
 | CompiledLogicSig             | Mockable            |
 | ContractProxy                | Mockable            |
+| FixedArray                   | Native              |
 | Global                       | Emulated            |
 | GlobalState                  | Emulated            |
 | LocalState                   | Emulated            |
 | OnCompleteAction             | Native              |
 | OpUpFeeSource                | Native              |
+| ReferenceArray               | Native              |
 | StateTotals                  | Emulated            |
 | TemplateVar                  | Emulated            |
 | TransactionType              | Native              |
@@ -32,6 +34,7 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | compile                      | Mockable            |
 | compileArc4                  | Mockable            |
 | decodeArc4                   | Native              |
+| clone                        | Native              |
 | emit                         | Emulated            |
 | encodeArc4                   | Native              |
 | ensureBudget                 | Emulated            |
@@ -55,7 +58,7 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | arc4.Struct                  | Native              |
 | arc4.Tuple                   | Native              |
 | arc4.UFixed                  | Native              |
-| arc4.UintN                   | Native              |
+| arc4.Uint                    | Native              |
 | arc4.Uint128                 | Native              |
 | arc4.Uint16                  | Native              |
 | arc4.Uint256                 | Native              |
