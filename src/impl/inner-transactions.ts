@@ -6,7 +6,11 @@ import type {
   itxn,
 } from '@algorandfoundation/algorand-typescript'
 import { TransactionType } from '@algorandfoundation/algorand-typescript'
-import type { BareCreateApplicationCallFields, TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
+import type {
+  BareCreateApplicationCallFields,
+  ResourceEncodingOptions,
+  TypedApplicationCallFields,
+} from '@algorandfoundation/algorand-typescript/arc4'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError, invariant } from '../errors'
@@ -292,12 +296,13 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
   static createFromTypedApplicationCallFields<TReturn = unknown>(
     methodArgs: TypedApplicationCallFields<DeliberateAny>,
     methodSelector: bytes,
+    resourceEncoding: ResourceEncodingOptions | undefined,
   ) {
     const app =
       (methodArgs.appId instanceof Uint64Cls ? getApp(methodArgs.appId) : (methodArgs.appId as ApplicationType | undefined)) ??
       lazyContext.any.application()
     const args = (methodArgs.args ?? []).map((x: DeliberateAny) => (x instanceof ItxnParams ? x.submit() : x))
-    const { transactions, ...appCallArgs } = extractArraysFromArgs(app, asUint8Array(methodSelector), args)
+    const { transactions, ...appCallArgs } = extractArraysFromArgs(app, asUint8Array(methodSelector), resourceEncoding, args)
     const { args: _, ...methodArgsFields } = methodArgs
     const fields = {
       ...methodArgsFields,

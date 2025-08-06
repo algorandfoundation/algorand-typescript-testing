@@ -1,8 +1,7 @@
 type UInt8Array = arc4.DynamicArray<arc4.Uint8>
 type MyAlias = arc4.Uint<128>
 
-import type { Account, Application, Asset } from '@algorandfoundation/algorand-typescript'
-import { arc4, assert, clone, gtxn, op, Txn } from '@algorandfoundation/algorand-typescript'
+import { Account, Application, arc4, assert, Asset, clone, gtxn, op, Txn } from '@algorandfoundation/algorand-typescript'
 
 export class AnotherStruct extends arc4.Struct<{
   one: arc4.Uint64
@@ -49,7 +48,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(pay.amount === 123)
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'Index' })
   withAsset(value: arc4.Str, asset: Asset, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
@@ -57,7 +56,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(Txn.assets(0) === asset)
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'Index' })
   withApp(value: arc4.Str, app: Application, appId: arc4.Uint64, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
@@ -70,7 +69,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(Txn.applications(1) === app)
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'Index' })
   withAcc(value: arc4.Str, acc: Account, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
@@ -79,7 +78,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(Txn.accounts(1) === acc)
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'Index' })
   complexSig(struct1: MyStruct, txn: gtxn.PaymentTxn, acc: Account, five: UInt8Array): readonly [MyStructAlias, MyStruct] {
     assert(Txn.numAppArgs === 4)
 
@@ -100,5 +99,27 @@ export class SignaturesContract extends arc4.Contract {
     assert(five[0].native === 5)
 
     return [clone(struct1.anotherStruct), clone(struct1)]
+  }
+
+  @arc4.abimethod({ resourceEncoding: 'Index' })
+  echoResourceByIndex(asset: Asset, app: Application, acc: Account) {
+    const assetIdx = op.btoi(Txn.applicationArgs(1))
+    assert(asset === Txn.assets(assetIdx), 'expected asset to be passed by Index')
+    const appIdx = op.btoi(Txn.applicationArgs(2))
+    assert(app === Txn.applications(appIdx), 'expected application to be passed by Index')
+    const accIdx = op.btoi(Txn.applicationArgs(3))
+    assert(acc === Txn.accounts(accIdx), 'expected account to be passed by Index')
+    return [asset, app, acc] as const
+  }
+
+  @arc4.abimethod({ resourceEncoding: 'Value' })
+  echoResourceByValue(asset: Asset, app: Application, acc: Account): [Asset, Application, Account] {
+    const assetId = op.btoi(Txn.applicationArgs(1))
+    assert(asset === Asset(assetId), 'expected asset to be passed by Value')
+    const appId = op.btoi(Txn.applicationArgs(2))
+    assert(app === Application(appId), 'expected application to be passed by Value')
+    const address = Txn.applicationArgs(3)
+    assert(acc === Account(address), 'expected account to be passed by Value')
+    return [asset, app, acc]
   }
 }

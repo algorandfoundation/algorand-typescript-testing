@@ -1127,15 +1127,15 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
   }
   if (value instanceof AccountCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apat.indexOf(value)
-    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
+    return index >= 0 ? new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.bytes)
   }
   if (value instanceof AssetCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apas.indexOf(value)
-    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
+    return index >= 0 ? new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
   }
   if (value instanceof ApplicationCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apfa.indexOf(value)
-    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index))
+    return index >= 0 ? new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
   }
   if (typeof value === 'boolean') {
     return new BoolImpl({ name: 'Bool' }, value)
@@ -1150,6 +1150,15 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
     return new UintImpl({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value)
   }
   if (value instanceof BytesCls) {
+    if (value.fixedLength !== undefined) {
+      return new StaticBytesImpl(
+        {
+          name: 'StaticBytes',
+          genericArgs: { elementType: { name: 'Byte', genericArgs: [{ name: '8' }] }, size: { name: value.fixedLength.toString() } },
+        },
+        value.asAlgoTs(),
+      )
+    }
     return new DynamicBytesImpl(
       { name: 'DynamicBytes', genericArgs: { elementType: { name: 'Byte', genericArgs: [{ name: '8' }] } } },
       value.asAlgoTs(),

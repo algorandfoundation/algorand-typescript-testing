@@ -5,6 +5,8 @@ import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-te
 import { DynamicArray, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { toBytes } from '../../src/impl/encoded-types/encoded-types'
+import { encodeAddress } from '../../src/impl/reference'
 import { AnotherStruct, MyStruct, SignaturesContract } from '../artifacts/arc4-abi-method/contract.algo'
 import { getAvmResult } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
@@ -247,6 +249,106 @@ describe('methodSelector', async () => {
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.complexSig))
     expect(result[0].bytes).toEqual(struct.anotherStruct.bytes)
     expect(result[1].bytes).toEqual(struct.bytes)
+  })
+
+  test('app args is correct with index resource encoding', async ({
+    appClientSignaturesContract: appClient,
+    algorand,
+    appFactorySignaturesContract,
+  }) => {
+    const contract = ctx.contract.create(SignaturesContract)
+    contract.create()
+
+    const localnetCreator = await algorand.account.localNetDispenser()
+    const asaId = (
+      await algorand.send.assetCreate({
+        sender: localnetCreator,
+        total: 123n,
+      })
+    ).confirmation.assetIndex
+
+    const asset = ctx.any.asset({ assetId: asaId, total: 123 })
+
+    const otherApp = await appFactorySignaturesContract.send.create({ method: 'create' })
+    const otherAppId = otherApp.appClient.appId
+    const otherApplication = ctx.any.application({ applicationId: otherAppId })
+
+    const acc = algorand.account.random()
+    await algorand.account.ensureFundedFromEnvironment(acc, new AlgoAmount({ microAlgo: _FUNDED_ACCOUNT_SPENDING }))
+    //  ensure context has the same account with matching balance
+    const account = ctx.any.account({
+      address: Bytes(acc.publicKey),
+      balance: Global.minBalance + _FUNDED_ACCOUNT_SPENDING,
+    })
+    // act
+    const result = await getAvmResult({ appClient }, 'echoResourceByIndex', asaId, otherAppId, acc.publicKey)
+    contract.echoResourceByIndex(asset, otherApplication, account)
+
+    // assert
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
+    const appArgs = Array(Number(txn.numAppArgs))
+      .fill(0)
+      .map((_, i) => txn.appArgs(i))
+
+    expect(appArgs).toEqual([
+      appClient.getABIMethod('echoResourceByIndex(asset,application,account)(uint64,uint64,address)').getSelector(),
+      Bytes.fromHex('00'), // asset index
+      Bytes.fromHex('01'),
+      Bytes.fromHex('01'),
+    ])
+    expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.echoResourceByIndex))
+
+    expect(result).toEqual([asaId, otherAppId, encodeAddress(acc.publicKey)])
+  })
+
+  test('app args is correct with value resource encoding', async ({
+    appClientSignaturesContract: appClient,
+    algorand,
+    appFactorySignaturesContract,
+  }) => {
+    const contract = ctx.contract.create(SignaturesContract)
+    contract.create()
+
+    const localnetCreator = await algorand.account.localNetDispenser()
+    const asaId = (
+      await algorand.send.assetCreate({
+        sender: localnetCreator,
+        total: 123n,
+      })
+    ).confirmation.assetIndex
+
+    const asset = ctx.any.asset({ assetId: asaId, total: 123 })
+
+    const otherApp = await appFactorySignaturesContract.send.create({ method: 'create' })
+    const otherAppId = otherApp.appClient.appId
+    const otherApplication = ctx.any.application({ applicationId: otherAppId })
+
+    const acc = algorand.account.random()
+    await algorand.account.ensureFundedFromEnvironment(acc, new AlgoAmount({ microAlgo: _FUNDED_ACCOUNT_SPENDING }))
+    //  ensure context has the same account with matching balance
+    const account = ctx.any.account({
+      address: Bytes(acc.publicKey),
+      balance: Global.minBalance + _FUNDED_ACCOUNT_SPENDING,
+    })
+    // act
+    const result = await getAvmResult({ appClient }, 'echoResourceByValue', asaId, otherAppId, acc.publicKey)
+    contract.echoResourceByValue(asset, otherApplication, account)
+
+    // assert
+    const txn = ctx.txn.lastActive as gtxn.ApplicationCallTxn
+    const appArgs = Array(Number(txn.numAppArgs))
+      .fill(0)
+      .map((_, i) => txn.appArgs(i))
+
+    expect(appArgs).toEqual([
+      appClient.getABIMethod('echoResourceByValue(uint64,uint64,address)(uint64,uint64,address)').getSelector(),
+      toBytes(asaId),
+      toBytes(otherAppId),
+      toBytes(account),
+    ])
+    expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.echoResourceByValue))
+
+    expect(result).toEqual([asaId, otherAppId, encodeAddress(acc.publicKey)])
   })
 
   test('prepare txns with complex', async ({ appClientSignaturesContract: appClient, algorand }) => {

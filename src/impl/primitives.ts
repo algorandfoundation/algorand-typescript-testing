@@ -156,7 +156,7 @@ export function FixedBytes<TLength extends uint64 = uint64>(
   if (length && length !== getNumber(result.length)) {
     throw new CodeError(`Invalid bytes constant length of ${result.length}, expected ${length}`)
   }
-  return result as bytes<TLength>
+  return result.toFixed({ length })
 }
 
 /**
@@ -168,7 +168,7 @@ FixedBytes.fromHex = <TLength extends uint64 = uint64>(length: TLength, hex: str
   if (length && length !== getNumber(result.length)) {
     throw new CodeError(`Expected decoded bytes value of length ${length}, received ${result.length}`)
   }
-  return result as bytes<TLength>
+  return result.toFixed({ length })
 }
 /**
  * Create a new bytes value from a base 64 encoded string
@@ -179,7 +179,7 @@ FixedBytes.fromBase64 = <TLength extends uint64 = uint64>(length: TLength, b64: 
   if (length && length !== getNumber(result.length)) {
     throw new CodeError(`Expected decoded bytes value of length ${length}, received ${result.length}`)
   }
-  return result as bytes<TLength>
+  return result.toFixed({ length })
 }
 
 /**
@@ -191,7 +191,7 @@ FixedBytes.fromBase32 = <TLength extends uint64 = uint64>(length: TLength, b32: 
   if (length && length !== getNumber(result.length)) {
     throw new CodeError(`Expected decoded bytes value of length ${length}, received ${result.length}`)
   }
-  return result as bytes<TLength>
+  return result.toFixed({ length })
 }
 
 /**
@@ -449,7 +449,10 @@ function isTemplateStringsArray(v: unknown): v is TemplateStringsArray {
 
 export class BytesCls extends AlgoTsPrimitiveCls {
   readonly #v: Uint8Array
-  constructor(v: Uint8Array) {
+  constructor(
+    v: Uint8Array,
+    public readonly fixedLength?: number,
+  ) {
     super()
     this.#v = v
     checkBytes(this.#v)
@@ -536,7 +539,7 @@ export class BytesCls extends AlgoTsPrimitiveCls {
         throw new CodeError(`Invalid bytes constant length of ${this.#v.length}, expected ${options.length}`)
       }
     }
-    return new BytesCls(this.#v) as unknown as bytes<TNewLength>
+    return new BytesCls(this.#v, options.length) as unknown as bytes<TNewLength>
   }
   static [Symbol.hasInstance](x: unknown): x is BytesCls {
     return isInstanceOfTypeByName(x, BytesCls)

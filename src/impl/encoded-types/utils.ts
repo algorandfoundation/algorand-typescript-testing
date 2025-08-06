@@ -1,4 +1,5 @@
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
+import type { ResourceEncodingOptions } from '@algorandfoundation/algorand-typescript/arc4'
 import { BITS_IN_BYTE, UINT512_SIZE, UINT64_SIZE } from '../../constants'
 import { CodeError } from '../../errors'
 import { findBoolTypes, trimGenericTypeName } from './helpers'
@@ -82,16 +83,20 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
   }
 }
 
-export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
+export const getArc4TypeName = (
+  typeInfo: TypeInfo,
+  resourceEncoding: ResourceEncodingOptions | undefined = undefined,
+  direction: 'in' | 'out' = 'in',
+): string | undefined => {
   const getArc4TypeNameForObjectType = (typeInfo: TypeInfo): string => {
     const genericArgs = Object.values(typeInfo.genericArgs as Record<string, TypeInfo>)
-    return `(${genericArgs.map(getArc4TypeName).join(',')})`
+    return `(${genericArgs.map((arg) => getArc4TypeName(arg, resourceEncoding, direction)).join(',')})`
   }
   const map: Record<string, string | ((t: TypeInfo) => string)> = {
     void: 'void',
-    account: 'account',
-    application: 'application',
-    asset: 'asset',
+    account: (_) => (resourceEncoding === 'Index' && direction === 'in' ? 'account' : 'address'),
+    application: (_) => (resourceEncoding === 'Index' && direction === 'in' ? 'application' : 'uint64'),
+    asset: (_) => (resourceEncoding === 'Index' && direction === 'in' ? 'asset' : 'uint64'),
     boolean: 'bool',
     biguint: 'uint512',
     bytes: 'byte[]',
@@ -119,11 +124,11 @@ export const getArc4TypeName = (typeInfo: TypeInfo): string | undefined => {
     },
     '(StaticArray|FixedArray)(<.*>)?': (t: TypeInfo) => {
       const genericArgs = t.genericArgs as StaticArrayGenericArgs
-      return `${getArc4TypeName(genericArgs.elementType)}[${genericArgs.size.name}]`
+      return `${getArc4TypeName(genericArgs.elementType, resourceEncoding, direction)}[${genericArgs.size.name}]`
     },
     '(Dynamic|Readonly)?Array<.*>': (t: TypeInfo) => {
       const genericArgs = t.genericArgs as DynamicArrayGenericArgs
-      return `${getArc4TypeName(genericArgs.elementType)}[]`
+      return `${getArc4TypeName(genericArgs.elementType, resourceEncoding, direction)}[]`
     },
     'Struct(<.*>)?': getArc4TypeNameForObjectType,
     '(Readonly)?Object(<.*>)?': getArc4TypeNameForObjectType,

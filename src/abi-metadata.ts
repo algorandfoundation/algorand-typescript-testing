@@ -1,5 +1,4 @@
-import type { OnCompleteActionStr } from '@algorandfoundation/algorand-typescript'
-import type { CreateOptions } from '@algorandfoundation/algorand-typescript/arc4'
+import type { arc4, OnCompleteActionStr } from '@algorandfoundation/algorand-typescript'
 import js_sha512 from 'js-sha512'
 import { ConventionalRouting } from './constants'
 import { Arc4MethodConfigSymbol, Contract } from './impl/contract'
@@ -13,8 +12,9 @@ export interface AbiMetadata {
   methodSignature: string | undefined
   argTypes: string[]
   returnType: string
-  onCreate?: CreateOptions
+  onCreate?: arc4.CreateOptions
   allowActions?: OnCompleteActionStr[]
+  resourceEncoding?: arc4.ResourceEncodingOptions
 }
 
 const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> = new WeakMap()
@@ -70,8 +70,8 @@ export const getContractMethodAbiMetadata = <T extends Contract>(contract: T | {
 
 export const getArc4Signature = (metadata: AbiMetadata): string => {
   if (metadata.methodSignature === undefined) {
-    const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map(getArc4TypeName)
-    const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo)
+    const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map((t) => getArc4TypeName(t, metadata.resourceEncoding, 'in'))
+    const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo, metadata.resourceEncoding, 'out')
     metadata.methodSignature = `${metadata.name ?? metadata.methodName}(${argTypes.join(',')})${returnType}`
   }
   return metadata.methodSignature
