@@ -14,7 +14,7 @@ import {
 import { abiCall, compileArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 
 class ByIndex extends Contract {
-  @abimethod({ resourceEncoding: 'Index' })
+  @abimethod({ resourceEncoding: 'index' })
   testExplicitIndex(account: Account) {
     return account.balance
   }
@@ -29,14 +29,14 @@ class ByIndex extends Contract {
 }
 
 class ByValue extends Contract {
-  @abimethod({ resourceEncoding: 'Value' })
+  @abimethod({ resourceEncoding: 'value' })
   testExplicitValue(account: Account) {
     return account.balance
   }
 }
 
 class EchoResource extends Contract {
-  @abimethod({ resourceEncoding: 'Index' })
+  @abimethod({ resourceEncoding: 'index' })
   echoResourceByIndex(asset: Asset, app: Application, acc: Account): [Asset, Application, Account] {
     const assetIdx = op.btoi(Txn.applicationArgs(1))
     assert(asset === Txn.assets(assetIdx), 'expected asset to be passed by Index')
@@ -47,7 +47,7 @@ class EchoResource extends Contract {
     return [asset, app, acc] as const
   }
 
-  @abimethod({ resourceEncoding: 'Value' })
+  @abimethod({ resourceEncoding: 'value' })
   echoResourceByValue(asset: Asset, app: Application, acc: Account): [Asset, Application, Account] {
     const assetId = op.btoi(Txn.applicationArgs(1))
     assert(asset === Asset(assetId), 'expected asset to be passed by Value')

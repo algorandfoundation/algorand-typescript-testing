@@ -48,7 +48,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(pay.amount === 123)
   }
 
-  @arc4.abimethod({ resourceEncoding: 'Index' })
+  @arc4.abimethod({ resourceEncoding: 'index' })
   withAsset(value: arc4.Str, asset: Asset, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
@@ -56,7 +56,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(Txn.assets(0) === asset)
   }
 
-  @arc4.abimethod({ resourceEncoding: 'Index' })
+  @arc4.abimethod({ resourceEncoding: 'index' })
   withApp(value: arc4.Str, app: Application, appId: arc4.Uint64, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
@@ -69,7 +69,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(Txn.applications(1) === app)
   }
 
-  @arc4.abimethod({ resourceEncoding: 'Index' })
+  @arc4.abimethod({ resourceEncoding: 'index' })
   withAcc(value: arc4.Str, acc: Account, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
@@ -78,7 +78,7 @@ export class SignaturesContract extends arc4.Contract {
     assert(Txn.accounts(1) === acc)
   }
 
-  @arc4.abimethod({ resourceEncoding: 'Index' })
+  @arc4.abimethod({ resourceEncoding: 'index' })
   complexSig(struct1: MyStruct, txn: gtxn.PaymentTxn, acc: Account, five: UInt8Array): readonly [MyStructAlias, MyStruct] {
     assert(Txn.numAppArgs === 4)
 
@@ -101,7 +101,7 @@ export class SignaturesContract extends arc4.Contract {
     return [clone(struct1.anotherStruct), clone(struct1)]
   }
 
-  @arc4.abimethod({ resourceEncoding: 'Index' })
+  @arc4.abimethod({ resourceEncoding: 'index' })
   echoResourceByIndex(asset: Asset, app: Application, acc: Account) {
     const assetIdx = op.btoi(Txn.applicationArgs(1))
     assert(asset === Txn.assets(assetIdx), 'expected asset to be passed by Index')
@@ -112,7 +112,7 @@ export class SignaturesContract extends arc4.Contract {
     return [asset, app, acc] as const
   }
 
-  @arc4.abimethod({ resourceEncoding: 'Value' })
+  @arc4.abimethod({ resourceEncoding: 'value' })
   echoResourceByValue(asset: Asset, app: Application, acc: Account): [Asset, Application, Account] {
     const assetId = op.btoi(Txn.applicationArgs(1))
     assert(asset === Asset(assetId), 'expected asset to be passed by Value')

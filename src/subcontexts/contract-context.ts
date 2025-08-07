@@ -106,21 +106,21 @@ export const extractArraysFromArgs = (
     if (isTransaction(arg)) {
       transactions.push(arg)
     } else if (arg instanceof AccountCls) {
-      if (resourceEncoding === 'Index') {
+      if (resourceEncoding === 'index') {
         appArgs.push(getUint8Impl(accounts.length))
         accounts.push(arg as Account)
       } else {
         appArgs.push(getArc4Encoded(arg.bytes))
       }
     } else if (arg instanceof ApplicationCls) {
-      if (resourceEncoding === 'Index') {
+      if (resourceEncoding === 'index') {
         appArgs.push(getUint8Impl(apps.length))
         apps.push(arg as Application)
       } else {
         appArgs.push(getArc4Encoded(arg.id))
       }
     } else if (arg instanceof AssetCls) {
-      if (resourceEncoding === 'Index') {
+      if (resourceEncoding === 'index') {
         appArgs.push(getUint8Impl(assets.length))
         assets.push(arg as Asset)
       } else {

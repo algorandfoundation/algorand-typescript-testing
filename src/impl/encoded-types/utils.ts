@@ -94,9 +94,9 @@ export const getArc4TypeName = (
   }
   const map: Record<string, string | ((t: TypeInfo) => string)> = {
     void: 'void',
-    account: (_) => (resourceEncoding === 'Index' && direction === 'in' ? 'account' : 'address'),
-    application: (_) => (resourceEncoding === 'Index' && direction === 'in' ? 'application' : 'uint64'),
-    asset: (_) => (resourceEncoding === 'Index' && direction === 'in' ? 'asset' : 'uint64'),
+    account: (_) => (resourceEncoding === 'index' && direction === 'in' ? 'account' : 'address'),
+    application: (_) => (resourceEncoding === 'index' && direction === 'in' ? 'application' : 'uint64'),
+    asset: (_) => (resourceEncoding === 'index' && direction === 'in' ? 'asset' : 'uint64'),
     boolean: 'bool',
     biguint: 'uint512',
     bytes: 'byte[]',
