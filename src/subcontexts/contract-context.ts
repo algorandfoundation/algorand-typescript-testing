@@ -15,7 +15,7 @@ import { lazyContext } from '../context-helpers/internal-context'
 import { CodeError } from '../errors'
 import { BaseContract, ContractOptionsSymbol } from '../impl/base-contract'
 import { Contract } from '../impl/contract'
-import { getArc4Encoded, UintImpl, type TypeInfo } from '../impl/encoded-types'
+import { getArc4Encoded, Uint, type TypeInfo } from '../impl/encoded-types'
 import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
 import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
@@ -87,7 +87,7 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
   return states
 }
 
-const getUint8Impl = (value: number) => new UintImpl({ name: 'Uint<8>', genericArgs: [{ name: '8' }] }, value)
+const getUint8 = (value: number) => new Uint({ name: 'Uint<8>', genericArgs: [{ name: '8' }] }, value)
 
 /** @ignore */
 export const extractArraysFromArgs = (
@@ -107,21 +107,21 @@ export const extractArraysFromArgs = (
       transactions.push(arg)
     } else if (arg instanceof AccountCls) {
       if (resourceEncoding === 'index') {
-        appArgs.push(getUint8Impl(accounts.length))
+        appArgs.push(getUint8(accounts.length))
         accounts.push(arg as Account)
       } else {
         appArgs.push(getArc4Encoded(arg.bytes))
       }
     } else if (arg instanceof ApplicationCls) {
       if (resourceEncoding === 'index') {
-        appArgs.push(getUint8Impl(apps.length))
+        appArgs.push(getUint8(apps.length))
         apps.push(arg as Application)
       } else {
         appArgs.push(getArc4Encoded(arg.id))
       }
     } else if (arg instanceof AssetCls) {
       if (resourceEncoding === 'index') {
-        appArgs.push(getUint8Impl(assets.length))
+        appArgs.push(getUint8(assets.length))
         assets.push(arg as Asset)
       } else {
         appArgs.push(getArc4Encoded(arg.id))

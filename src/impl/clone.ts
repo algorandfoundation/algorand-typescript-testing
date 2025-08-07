@@ -1,6 +1,6 @@
 import { getEncoder, toBytes } from './encoded-types'
 
-export function cloneImpl<T>(typeInfoString: string, value: T): T {
+export function clone<T>(typeInfoString: string, value: T): T {
   if (value && typeof value === 'object' && 'copy' in value && typeof value.copy === 'function') {
     return value.copy() as T
   }

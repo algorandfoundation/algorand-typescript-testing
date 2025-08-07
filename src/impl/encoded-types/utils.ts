@@ -144,7 +144,7 @@ export const getArc4TypeName = (
   return undefined
 }
 
-export const arc4EncodedLengthImpl = (typeInfoString: string): uint64 => {
+export const arc4EncodedLength = (typeInfoString: string): uint64 => {
   const typeInfo = JSON.parse(typeInfoString)
   return getMaxLengthOfStaticContentType(typeInfo, true)
 }

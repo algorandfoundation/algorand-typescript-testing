@@ -403,7 +403,7 @@ export class TransactionGroup {
    * @returns The application transaction.
    */
   getApplicationCallTransaction(index?: StubUint64Compat): ApplicationCallTransaction {
-    return this.getTransactionImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationCallTransaction
+    return this._getTransaction({ type: TransactionType.ApplicationCall, index }) as ApplicationCallTransaction
   }
 
   /**
@@ -412,7 +412,7 @@ export class TransactionGroup {
    * @returns The asset configuration transaction.
    */
   getAssetConfigTransaction(index?: StubUint64Compat): AssetConfigTransaction {
-    return this.getTransactionImpl({ type: TransactionType.AssetConfig, index }) as AssetConfigTransaction
+    return this._getTransaction({ type: TransactionType.AssetConfig, index }) as AssetConfigTransaction
   }
 
   /**
@@ -421,7 +421,7 @@ export class TransactionGroup {
    * @returns The asset transfer transaction.
    */
   getAssetTransferTransaction(index?: StubUint64Compat): AssetTransferTransaction {
-    return this.getTransactionImpl({ type: TransactionType.AssetTransfer, index }) as AssetTransferTransaction
+    return this._getTransaction({ type: TransactionType.AssetTransfer, index }) as AssetTransferTransaction
   }
 
   /**
@@ -430,7 +430,7 @@ export class TransactionGroup {
    * @returns The asset freeze transaction.
    */
   getAssetFreezeTransaction(index?: StubUint64Compat): AssetFreezeTransaction {
-    return this.getTransactionImpl({ type: TransactionType.AssetFreeze, index }) as AssetFreezeTransaction
+    return this._getTransaction({ type: TransactionType.AssetFreeze, index }) as AssetFreezeTransaction
   }
 
   /**
@@ -439,7 +439,7 @@ export class TransactionGroup {
    * @returns The key registration transaction.
    */
   getKeyRegistrationTransaction(index?: StubUint64Compat): KeyRegistrationTransaction {
-    return this.getTransactionImpl({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationTransaction
+    return this._getTransaction({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationTransaction
   }
 
   /**
@@ -448,7 +448,7 @@ export class TransactionGroup {
    * @returns The payment transaction.
    */
   getPaymentTransaction(index?: StubUint64Compat): PaymentTransaction {
-    return this.getTransactionImpl({ type: TransactionType.Payment, index }) as PaymentTransaction
+    return this._getTransaction({ type: TransactionType.Payment, index }) as PaymentTransaction
   }
 
   /**
@@ -457,9 +457,9 @@ export class TransactionGroup {
    * @returns The transaction.
    */
   getTransaction(index?: StubUint64Compat): Transaction {
-    return this.getTransactionImpl({ index })
+    return this._getTransaction({ index })
   }
-  private getTransactionImpl({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
+  private _getTransaction({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= lazyContext.activeGroup.transactions.length) {
       throw new InternalError('Invalid group index')
@@ -505,7 +505,7 @@ export class ItxnGroup {
    * @returns The application inner transaction.
    */
   getApplicationCallInnerTxn(index?: StubUint64Compat): ApplicationCallInnerTxn {
-    return this.getInnerTxnImpl({ type: TransactionType.ApplicationCall, index }) as ApplicationCallInnerTxn
+    return this._getInnerTxn({ type: TransactionType.ApplicationCall, index }) as ApplicationCallInnerTxn
   }
 
   /**
@@ -514,7 +514,7 @@ export class ItxnGroup {
    * @returns The asset configuration inner transaction.
    */
   getAssetConfigInnerTxn(index?: StubUint64Compat): AssetConfigInnerTxn {
-    return this.getInnerTxnImpl({ type: TransactionType.AssetConfig, index }) as AssetConfigInnerTxn
+    return this._getInnerTxn({ type: TransactionType.AssetConfig, index }) as AssetConfigInnerTxn
   }
 
   /**
@@ -523,7 +523,7 @@ export class ItxnGroup {
    * @returns The asset transfer inner transaction.
    */
   getAssetTransferInnerTxn(index?: StubUint64Compat): AssetTransferInnerTxn {
-    return this.getInnerTxnImpl({ type: TransactionType.AssetTransfer, index }) as AssetTransferInnerTxn
+    return this._getInnerTxn({ type: TransactionType.AssetTransfer, index }) as AssetTransferInnerTxn
   }
 
   /**
@@ -532,7 +532,7 @@ export class ItxnGroup {
    * @returns The asset freeze inner transaction.
    */
   getAssetFreezeInnerTxn(index?: StubUint64Compat): AssetFreezeInnerTxn {
-    return this.getInnerTxnImpl({ type: TransactionType.AssetFreeze, index }) as AssetFreezeInnerTxn
+    return this._getInnerTxn({ type: TransactionType.AssetFreeze, index }) as AssetFreezeInnerTxn
   }
 
   /**
@@ -541,7 +541,7 @@ export class ItxnGroup {
    * @returns The key registration inner transaction.
    */
   getKeyRegistrationInnerTxn(index?: StubUint64Compat): KeyRegistrationInnerTxn {
-    return this.getInnerTxnImpl({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationInnerTxn
+    return this._getInnerTxn({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationInnerTxn
   }
 
   /**
@@ -550,7 +550,7 @@ export class ItxnGroup {
    * @returns The payment inner transaction.
    */
   getPaymentInnerTxn(index?: StubUint64Compat): PaymentInnerTxn {
-    return this.getInnerTxnImpl({ type: TransactionType.Payment, index }) as PaymentInnerTxn
+    return this._getInnerTxn({ type: TransactionType.Payment, index }) as PaymentInnerTxn
   }
 
   /**
@@ -559,10 +559,10 @@ export class ItxnGroup {
    * @returns The inner transaction.
    */
   getInnerTxn(index?: StubUint64Compat): InnerTxn {
-    return this.getInnerTxnImpl({ index })
+    return this._getInnerTxn({ index })
   }
 
-  private getInnerTxnImpl({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
+  private _getInnerTxn({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
     invariant(this.itxns.length > 0, 'no previous inner transactions')
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= this.itxns.length) {

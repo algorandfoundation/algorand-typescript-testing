@@ -10,9 +10,6 @@ import { nameOfType, type DeliberateAny } from './typescript-helpers'
 import { flattenAsBytes } from './util'
 
 export { attachAbiMetadata } from './abi-metadata'
-export { cloneImpl } from './impl/clone'
-export { emitImpl } from './impl/emit'
-export * from './impl/encoded-types'
 export { FixedBytes } from './impl/primitives'
 
 export function switchableValue(x: unknown): bigint | string | boolean {
@@ -22,12 +19,6 @@ export function switchableValue(x: unknown): bigint | string | boolean {
   if (x instanceof AlgoTsPrimitiveCls) return x.valueOf()
   throw new InternalError(`Cannot convert ${nameOfType(x)} to switchable value`)
 }
-// export function wrapLiteral(x: unknown) {
-//   if (typeof x === 'boolean') return x
-//   if (isBytes(x)) return makeBytes(x)
-//   if (isUint64(x)) return makeUint64(x)
-//   internalError(`Cannot wrap ${nameOfType(x)}`)
-// }
 
 type BinaryOps = '+' | '-' | '*' | '**' | '/' | '%' | '>' | '>=' | '<' | '<=' | '===' | '!==' | '<<' | '>>' | '&' | '|' | '^'
 type UnaryOps = '~'

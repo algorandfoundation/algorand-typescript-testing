@@ -19,7 +19,7 @@ import type { DeliberateAny } from '../typescript-helpers'
 import { asBytes, asNumber, asUint64, asUint8Array } from '../util'
 import { getApp } from './app-params'
 import { getAsset } from './asset-params'
-import { encodeArc4Impl } from './encoded-types'
+import { encodeArc4 } from './encoded-types'
 import type { InnerTxn, InnerTxnFields } from './itxn'
 import type { StubBytesCompat } from './primitives'
 import { Uint64Cls } from './primitives'
@@ -324,7 +324,7 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
   setReturnValue(value: TReturn) {
     // Ignore undefined (void) values
     if (value === undefined) return
-    this.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4Impl(undefined, value)))
+    this.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4(undefined, value)))
     this.#returnValue = value
   }
   /* @internal */

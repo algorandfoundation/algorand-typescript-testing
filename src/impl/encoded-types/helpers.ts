@@ -26,7 +26,7 @@ export const areAllARC4Encoded = <T extends ARC4Encoded>(items: T[]): items is T
 
 export const checkItemTypeName = (type: TypeInfo, value: ARC4Encoded) => {
   const typeName = trimGenericTypeName(type.name)
-  const validTypeNames = [typeName, `${typeName}Impl`]
+  const validTypeNames = [typeName]
   assert(validTypeNames.includes(value.constructor.name), `item must be of type ${typeName}, not ${value.constructor.name}`)
 }
 

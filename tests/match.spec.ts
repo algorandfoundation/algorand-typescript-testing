@@ -3,7 +3,7 @@ import { assertMatch, BigUint, Bytes, match, Uint64 } from '@algorandfoundation/
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, test } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../src/constants'
-import { StrImpl } from '../src/impl/encoded-types'
+import { Str } from '../src/impl/encoded-types'
 describe('match', () => {
   const ctx = new TestExecutionContext()
 
@@ -68,7 +68,7 @@ describe('match', () => {
   const differentAsset = ctx.any.application()
 
   const arc4Str1 = ctx.any.arc4.str(10)
-  const sameArc4Str = new StrImpl((arc4Str1 as StrImpl).typeInfo, arc4Str1.native)
+  const sameArc4Str = new Str((arc4Str1 as Str).typeInfo, arc4Str1.native)
   const differentArc4Str = ctx.any.arc4.str(10)
 
   const testData = [

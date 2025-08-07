@@ -4,7 +4,7 @@ import { sha512_256 } from './crypto'
 import { getArc4Encoded, getArc4TypeName } from './encoded-types'
 import { log } from './log'
 
-export function emitImpl<T>(typeInfoString: string, event: T | string, ...eventProps: unknown[]) {
+export function emit<T>(typeInfoString: string, event: T | string, ...eventProps: unknown[]) {
   let eventData
   let eventName
   if (typeof event === 'string') {

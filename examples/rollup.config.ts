@@ -12,6 +12,7 @@ const config: RollupOptions = {
     'examples/hello-world-abi/contract.algo.ts',
     'examples/hello-world/contract.algo.ts',
     'examples/htlc-logicsig/signature.algo.ts',
+    'examples/local-storage/contract.algo.ts',
     'examples/marketplace/contract.algo.ts',
     'examples/precompiled/precompiled-factory.algo.ts',
     'examples/precompiled/precompiled-typed.algo.ts',

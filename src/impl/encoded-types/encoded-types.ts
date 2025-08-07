@@ -1,20 +1,20 @@
 import type { Account as AccountType, bytes, NTuple, StringCompat, uint64, Uint64Compat } from '@algorandfoundation/algorand-typescript'
-import { FixedArray, ReferenceArray } from '@algorandfoundation/algorand-typescript'
+import { FixedArray as _FixedArray, ReferenceArray as _ReferenceArray } from '@algorandfoundation/algorand-typescript'
 import type { BitSize } from '@algorandfoundation/algorand-typescript/arc4'
 import {
-  Address,
-  ARC4Encoded,
-  Bool,
-  Byte,
-  DynamicArray,
-  DynamicBytes,
-  StaticArray,
-  StaticBytes,
-  Str,
-  Struct,
-  Tuple,
-  UFixed,
-  Uint,
+  Address as _Address,
+  ARC4Encoded as _ARC4Encoded,
+  Bool as _Bool,
+  Byte as _Byte,
+  DynamicArray as _DynamicArray,
+  DynamicBytes as _DynamicBytes,
+  StaticArray as _StaticArray,
+  StaticBytes as _StaticBytes,
+  Str as _Str,
+  Struct as _Struct,
+  Tuple as _Tuple,
+  UFixed as _UFixed,
+  Uint as _Uint,
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import assert from 'assert'
@@ -55,6 +55,7 @@ import {
   encodeLength,
   findBool,
   findBoolTypes,
+  getNativeValue,
   holdsDynamicLengthContent,
   maxBigIntValue,
   maxBytesLength,
@@ -78,7 +79,7 @@ import type {
 } from './types'
 import { getMaxLengthOfStaticContentType } from './utils'
 
-export class UintImpl<N extends BitSize> extends Uint<N> {
+export class Uint<N extends BitSize> extends _Uint<N> {
   private value: Uint8Array
   private bitSize: N
   typeInfo: TypeInfo
@@ -86,7 +87,7 @@ export class UintImpl<N extends BitSize> extends Uint<N> {
   constructor(typeInfo: TypeInfo | string, v?: CompatForArc4Int<N>) {
     super()
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    this.bitSize = UintImpl.getMaxBitsLength(this.typeInfo) as N
+    this.bitSize = Uint.getMaxBitsLength(this.typeInfo) as N
 
     assert(validBitSizes.includes(this.bitSize), `Invalid bit size ${this.bitSize}`)
 
@@ -99,7 +100,7 @@ export class UintImpl<N extends BitSize> extends Uint<N> {
 
   get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as Uint<N>['native']
+    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as _Uint<N>['native']
   }
 
   get bytes(): bytes {
@@ -107,23 +108,19 @@ export class UintImpl<N extends BitSize> extends Uint<N> {
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof UintImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof Uint) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
-  static fromBytesImpl(
-    value: StubBytesCompat | Uint8Array,
-    typeInfo: string | TypeInfo,
-    prefix: 'none' | 'log' = 'none',
-  ): UintImpl<BitSize> {
+  static fromBytes(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): Uint<BitSize> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new UintImpl<BitSize>(typeInfo)
+    const result = new Uint<BitSize>(typeInfo)
     result.value = asUint8Array(bytesValue)
     return result
   }
@@ -133,7 +130,7 @@ export class UintImpl<N extends BitSize> extends Uint<N> {
   }
 }
 
-export class UFixedImpl<N extends BitSize, M extends number> extends UFixed<N, M> {
+export class UFixed<N extends BitSize, M extends number> extends _UFixed<N, M> {
   private value: Uint8Array
   private bitSize: N
   private precision: M
@@ -143,7 +140,7 @@ export class UFixedImpl<N extends BitSize, M extends number> extends UFixed<N, M
     super(v)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     const genericArgs = this.typeInfo.genericArgs as uFixedGenericArgs
-    this.bitSize = UFixedImpl.getMaxBitsLength(this.typeInfo) as N
+    this.bitSize = UFixed.getMaxBitsLength(this.typeInfo) as N
     this.precision = parseInt(genericArgs.m.name, 10) as M
 
     const trimmedValue = trimTrailingDecimalZeros(v ?? '0.0')
@@ -158,7 +155,7 @@ export class UFixedImpl<N extends BitSize, M extends number> extends UFixed<N, M
 
   get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as UFixed<N, M>['native']
+    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as _UFixed<N, M>['native']
   }
 
   get bytes(): bytes {
@@ -166,23 +163,23 @@ export class UFixedImpl<N extends BitSize, M extends number> extends UFixed<N, M
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof UFixedImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof UFixed) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
-  static fromBytesImpl(
+  static fromBytes(
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
-  ): UFixed<BitSize, number> {
+  ): _UFixed<BitSize, number> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new UFixedImpl<BitSize, number>(typeInfo, '0.0')
+    const result = new UFixed<BitSize, number>(typeInfo, '0.0')
     result.value = asUint8Array(bytesValue)
     return result
   }
@@ -193,14 +190,14 @@ export class UFixedImpl<N extends BitSize, M extends number> extends UFixed<N, M
   }
 }
 
-export class ByteImpl extends Byte {
+export class Byte extends _Byte {
   typeInfo: TypeInfo
-  private value: UintImpl<8>
+  private value: Uint<8>
 
   constructor(typeInfo: TypeInfo | string, v?: CompatForArc4Int<8>) {
     super(v)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    this.value = new UintImpl<8>(typeInfo, v)
+    this.value = new Uint<8>(typeInfo, v)
   }
 
   get native() {
@@ -212,25 +209,25 @@ export class ByteImpl extends Byte {
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof ByteImpl) || JSON.stringify(this.value.typeInfo) !== JSON.stringify(other.value.typeInfo)) {
+    if (!(other instanceof Byte) || JSON.stringify(this.value.typeInfo) !== JSON.stringify(other.value.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.value.typeInfo.name}, got ${other.value.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
-  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): ByteImpl {
-    const uintNValue = UintImpl.fromBytesImpl(value, typeInfo, prefix) as UintImpl<8>
-    const result = new ByteImpl(typeInfo)
+  static fromBytes(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): Byte {
+    const uintNValue = Uint.fromBytes(value, typeInfo, prefix) as Uint<8>
+    const result = new Byte(typeInfo)
     result.value = uintNValue
     return result
   }
 
   static getMaxBitsLength(typeInfo: TypeInfo): BitSize {
-    return UintImpl.getMaxBitsLength(typeInfo)
+    return Uint.getMaxBitsLength(typeInfo)
   }
 }
 
-export class StrImpl extends Str {
+export class Str extends _Str {
   typeInfo: TypeInfo
   private value: Uint8Array
 
@@ -250,25 +247,25 @@ export class StrImpl extends Str {
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof StrImpl)) {
+    if (!(other instanceof Str)) {
       throw new CodeError(`Expected expression of type Str, got ${(other as object).constructor.name}`)
     }
     return this.bytes.equals(other.bytes)
   }
 
-  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): StrImpl {
+  static fromBytes(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): Str {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new StrImpl(typeInfo)
+    const result = new Str(typeInfo)
     result.value = asUint8Array(bytesValue)
     return result
   }
 }
 
-export class BoolImpl extends Bool {
+export class Bool extends _Bool {
   private value: Uint8Array
   typeInfo: TypeInfo
 
@@ -283,7 +280,7 @@ export class BoolImpl extends Bool {
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof BoolImpl)) {
+    if (!(other instanceof Bool)) {
       throw new CodeError(`Expected expression of type Bool, got ${(other as object).constructor.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -293,19 +290,19 @@ export class BoolImpl extends Bool {
     return Bytes(this.value?.length ? this.value : new Uint8Array([0]))
   }
 
-  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): BoolImpl {
+  static fromBytes(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): Bool {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new BoolImpl(typeInfo)
+    const result = new Bool(typeInfo)
     result.value = asUint8Array(bytesValue)
     return result
   }
 }
 
-export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> extends StaticArray<TItem, TLength> {
+export class StaticArray<TItem extends _ARC4Encoded, TLength extends number> extends _StaticArray<TItem, TLength> {
   private value?: NTuple<TItem, TLength>
   private uint8ArrayValue?: Uint8Array
   private size: number
@@ -342,7 +339,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
         this.uint8ArrayValue = new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo))
       }
     }
-    return new Proxy(this, arrayProxyHandler<TItem>()) as StaticArrayImpl<TItem, TLength>
+    return new Proxy(this, arrayProxyHandler<TItem>()) as StaticArray<TItem, TLength>
   }
 
   get bytes(): bytes {
@@ -350,7 +347,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof StaticArrayImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof StaticArray) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -377,11 +374,11 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     this.items[index] = value
   }
 
-  copy(): StaticArrayImpl<TItem, TLength> {
-    return StaticArrayImpl.fromBytesImpl(this.bytes, JSON.stringify(this.typeInfo)) as unknown as StaticArrayImpl<TItem, TLength>
+  copy(): StaticArray<TItem, TLength> {
+    return StaticArray.fromBytes(this.bytes, JSON.stringify(this.typeInfo)) as unknown as StaticArray<TItem, TLength>
   }
 
-  concat(other: Parameters<InstanceType<typeof StaticArray>['concat']>[0]): DynamicArrayImpl<TItem> {
+  concat(other: Parameters<InstanceType<typeof _StaticArray>['concat']>[0]): DynamicArray<TItem> {
     const items = this.items
     const otherEntries = other.entries()
     let next = otherEntries.next()
@@ -389,7 +386,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
       items.push(next.value[1] as TItem)
       next = otherEntries.next()
     }
-    return new DynamicArrayImpl<TItem>(
+    return new DynamicArray<TItem>(
       { name: `DynamicArray<${this.genericArgs.elementType.name}>`, genericArgs: { elementType: this.genericArgs.elementType } },
       ...items,
     )
@@ -399,26 +396,26 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     return this.items
   }
 
-  static fromBytesImpl(
+  static fromBytes(
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
-  ): StaticArrayImpl<ARC4Encoded, number> {
+  ): StaticArray<_ARC4Encoded, number> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
     // pass the symbol to the constructor to let it know we are initialising from bytes
-    const result = new StaticArrayImpl<ARC4Encoded, number>(typeInfo, IS_INITIALISING_FROM_BYTES_SYMBOL as DeliberateAny)
+    const result = new StaticArray<_ARC4Encoded, number>(typeInfo, IS_INITIALISING_FROM_BYTES_SYMBOL as DeliberateAny)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
 }
 
-export class AddressImpl extends Address {
+export class Address extends _Address {
   typeInfo: TypeInfo
-  private value: StaticArrayImpl<ByteImpl, 32>
+  private value: StaticArray<Byte, 32>
 
   constructor(typeInfo: TypeInfo | string, value?: AccountType | string | bytes) {
     super(value)
@@ -434,9 +431,9 @@ export class AddressImpl extends Address {
     }
     avmInvariant(uint8ArrayValue.length === 32, 'Addresses should be 32 bytes')
 
-    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as StaticArrayImpl<ByteImpl, 32>
+    this.value = StaticArray.fromBytes(uint8ArrayValue, typeInfo) as StaticArray<Byte, 32>
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    return new Proxy(this, arrayProxyHandler<ByteImpl>()) as AddressImpl
+    return new Proxy(this, arrayProxyHandler<Byte>()) as Address
   }
 
   get bytes(): bytes {
@@ -444,7 +441,7 @@ export class AddressImpl extends Address {
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof AddressImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof Address) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -458,23 +455,23 @@ export class AddressImpl extends Address {
     return Account(this.value.bytes)
   }
 
-  get items(): readonly ByteImpl[] {
+  get items(): readonly Byte[] {
     return this.value.items
   }
 
-  setItem(_index: number, _value: ByteImpl): void {
+  setItem(_index: number, _value: Byte): void {
     throw new CodeError('Address is immutable')
   }
 
-  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): AddressImpl {
-    const staticArrayValue = StaticArrayImpl.fromBytesImpl(value, typeInfo, prefix) as StaticArrayImpl<ByteImpl, 32>
-    const result = new AddressImpl(typeInfo)
+  static fromBytes(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): Address {
+    const staticArrayValue = StaticArray.fromBytes(value, typeInfo, prefix) as StaticArray<Byte, 32>
+    const result = new Address(typeInfo)
     result.value = staticArrayValue
     return result
   }
 }
 
-export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TItem> {
+export class DynamicArray<TItem extends _ARC4Encoded> extends _DynamicArray<TItem> {
   private value?: TItem[]
   private uint8ArrayValue?: Uint8Array
   typeInfo: TypeInfo
@@ -492,7 +489,7 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
     })
     this.value = items
 
-    return new Proxy(this, arrayProxyHandler<TItem>()) as DynamicArrayImpl<TItem>
+    return new Proxy(this, arrayProxyHandler<TItem>()) as DynamicArray<TItem>
   }
 
   get bytes(): bytes {
@@ -500,7 +497,7 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof DynamicArrayImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof DynamicArray) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -528,8 +525,8 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
     this.items[index] = value
   }
 
-  copy(): DynamicArrayImpl<TItem> {
-    return DynamicArrayImpl.fromBytesImpl(this.bytes, JSON.stringify(this.typeInfo)) as DynamicArrayImpl<TItem>
+  copy(): DynamicArray<TItem> {
+    return DynamicArray.fromBytes(this.bytes, JSON.stringify(this.typeInfo)) as DynamicArray<TItem>
   }
 
   get native(): TItem[] {
@@ -548,7 +545,7 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
     return popped
   }
 
-  concat(other: Parameters<InstanceType<typeof DynamicArray>['concat']>[0]): DynamicArrayImpl<TItem> {
+  concat(other: Parameters<InstanceType<typeof _DynamicArray>['concat']>[0]): DynamicArray<TItem> {
     const items = this.items
     const otherEntries = other.entries()
     let next = otherEntries.next()
@@ -556,20 +553,20 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
       items.push(next.value[1] as TItem)
       next = otherEntries.next()
     }
-    return new DynamicArrayImpl<TItem>(this.typeInfo, ...items)
+    return new DynamicArray<TItem>(this.typeInfo, ...items)
   }
 
-  static fromBytesImpl(
+  static fromBytes(
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
-  ): DynamicArrayImpl<ARC4Encoded> {
+  ): DynamicArray<_ARC4Encoded> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new DynamicArrayImpl(typeInfo)
+    const result = new DynamicArray(typeInfo)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
@@ -579,7 +576,7 @@ export class DynamicArrayImpl<TItem extends ARC4Encoded> extends DynamicArray<TI
   }
 }
 
-export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends Tuple<TTuple> {
+export class Tuple<TTuple extends [_ARC4Encoded, ..._ARC4Encoded[]]> extends _Tuple<TTuple> {
   private value?: TTuple
   private uint8ArrayValue?: Uint8Array
   typeInfo: TypeInfo
@@ -613,7 +610,7 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof TupleImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof Tuple) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -643,24 +640,24 @@ export class TupleImpl<TTuple extends [ARC4Encoded, ...ARC4Encoded[]]> extends T
     throw new CodeError('value is not set')
   }
 
-  static fromBytesImpl(
+  static fromBytes(
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
-  ): TupleImpl<[ARC4Encoded, ...ARC4Encoded[]]> {
+  ): Tuple<[_ARC4Encoded, ..._ARC4Encoded[]]> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
     // pass the symbol to the constructor to let it know we are initialising from bytes
-    const result = new TupleImpl(typeInfo, IS_INITIALISING_FROM_BYTES_SYMBOL as DeliberateAny)
+    const result = new Tuple(typeInfo, IS_INITIALISING_FROM_BYTES_SYMBOL as DeliberateAny)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
 }
 
-export class StructImpl<T extends StructConstraint> extends (Struct<StructConstraint> as DeliberateAny) {
+export class Struct<T extends StructConstraint> extends (_Struct<StructConstraint> as DeliberateAny) {
   private uint8ArrayValue?: Uint8Array
   genericArgs: Record<string, TypeInfo>
 
@@ -711,8 +708,8 @@ export class StructImpl<T extends StructConstraint> extends (Struct<StructConstr
     return this.items
   }
 
-  copy(): StructImpl<T> {
-    return StructImpl.fromBytesImpl(this.bytes, JSON.stringify(this.typeInfo)) as StructImpl<T>
+  copy(): Struct<T> {
+    return Struct.fromBytes(this.bytes, JSON.stringify(this.typeInfo)) as Struct<T>
   }
 
   private decodeAsProperties() {
@@ -725,32 +722,32 @@ export class StructImpl<T extends StructConstraint> extends (Struct<StructConstr
     }
   }
 
-  static fromBytesImpl(
+  static fromBytes(
     value: StubBytesCompat | Uint8Array,
     typeInfo: string | TypeInfo,
     prefix: 'none' | 'log' = 'none',
-  ): StructImpl<StructConstraint> {
+  ): Struct<StructConstraint> {
     let bytesValue = asBytesCls(value)
     if (prefix === 'log') {
       assert(bytesValue.slice(0, 4).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
       bytesValue = bytesValue.slice(4)
     }
-    const result = new StructImpl(typeInfo)
+    const result = new Struct(typeInfo)
     result.uint8ArrayValue = asUint8Array(bytesValue)
     return result
   }
 }
 
-export class DynamicBytesImpl extends DynamicBytes {
+export class DynamicBytes extends _DynamicBytes {
   typeInfo: TypeInfo
-  private value: DynamicArrayImpl<ByteImpl>
+  private value: DynamicArray<Byte>
 
   constructor(typeInfo: TypeInfo | string, value?: bytes | string) {
     super(value)
     const uint8ArrayValue = conactUint8Arrays(encodeLength(value?.length ?? 0).asUint8Array(), asUint8Array(value ?? new Uint8Array()))
-    this.value = DynamicArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as DynamicArrayImpl<ByteImpl>
+    this.value = DynamicArray.fromBytes(uint8ArrayValue, typeInfo) as DynamicArray<Byte>
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
-    return new Proxy(this, arrayProxyHandler<ByteImpl>()) as DynamicBytesImpl
+    return new Proxy(this, arrayProxyHandler<Byte>()) as DynamicBytes
   }
 
   get bytes(): bytes {
@@ -758,7 +755,7 @@ export class DynamicBytesImpl extends DynamicBytes {
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof DynamicBytesImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof DynamicBytes) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -772,50 +769,46 @@ export class DynamicBytesImpl extends DynamicBytes {
     return this.value.bytes.slice(ABI_LENGTH_SIZE)
   }
 
-  get items(): ByteImpl[] {
+  get items(): Byte[] {
     return this.value.items
   }
 
-  setItem(_index: number, _value: ByteImpl): void {
+  setItem(_index: number, _value: Byte): void {
     throw new CodeError('DynamicBytes is immutable')
   }
 
-  concat(other: Parameters<InstanceType<typeof DynamicBytes>['concat']>[0]): DynamicBytesImpl {
+  concat(other: Parameters<InstanceType<typeof _DynamicBytes>['concat']>[0]): DynamicBytes {
     const items = this.items
     const otherEntries = other.entries()
     let next = otherEntries.next()
     while (!next.done) {
-      items.push(next.value[1] as ByteImpl)
+      items.push(next.value[1] as Byte)
       next = otherEntries.next()
     }
     const concatenatedBytes = items
       .map((item) => item.bytes)
       .reduce((acc, curr) => conactUint8Arrays(acc, asUint8Array(curr)), new Uint8Array())
-    return new DynamicBytesImpl(this.typeInfo, asBytes(concatenatedBytes))
+    return new DynamicBytes(this.typeInfo, asBytes(concatenatedBytes))
   }
 
-  static fromBytesImpl(
-    value: StubBytesCompat | Uint8Array,
-    typeInfo: string | TypeInfo,
-    prefix: 'none' | 'log' = 'none',
-  ): DynamicBytesImpl {
-    const dynamicArrayValue = DynamicArrayImpl.fromBytesImpl(value, typeInfo, prefix) as DynamicArrayImpl<ByteImpl>
-    const result = new DynamicBytesImpl(typeInfo)
+  static fromBytes(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): DynamicBytes {
+    const dynamicArrayValue = DynamicArray.fromBytes(value, typeInfo, prefix) as DynamicArray<Byte>
+    const result = new DynamicBytes(typeInfo)
     result.value = dynamicArrayValue
     return result
   }
 }
 
-export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLength> {
-  private value: StaticArrayImpl<ByteImpl, TLength>
+export class StaticBytes<TLength extends uint64 = 0> extends _StaticBytes<TLength> {
+  private value: StaticArray<Byte, TLength>
   typeInfo: TypeInfo
 
   constructor(typeInfo: TypeInfo | string, value?: bytes<TLength>) {
     super(value ?? (Bytes() as bytes<TLength>))
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     const uint8ArrayValue = asUint8Array(value ?? new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo)))
-    this.value = StaticArrayImpl.fromBytesImpl(uint8ArrayValue, typeInfo) as unknown as StaticArrayImpl<ByteImpl, TLength>
-    return new Proxy(this, arrayProxyHandler<ByteImpl>()) as StaticBytesImpl<TLength>
+    this.value = StaticArray.fromBytes(uint8ArrayValue, typeInfo) as unknown as StaticArray<Byte, TLength>
+    return new Proxy(this, arrayProxyHandler<Byte>()) as StaticBytes<TLength>
   }
 
   get bytes(): bytes {
@@ -823,7 +816,7 @@ export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLe
   }
 
   equals(other: this): boolean {
-    if (!(other instanceof StaticBytesImpl) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
+    if (!(other instanceof StaticBytes) || JSON.stringify(this.typeInfo) !== JSON.stringify(other.typeInfo)) {
       throw new CodeError(`Expected expression of type ${this.typeInfo.name}, got ${other.typeInfo.name}`)
     }
     return this.bytes.equals(other.bytes)
@@ -837,37 +830,37 @@ export class StaticBytesImpl<TLength extends uint64 = 0> extends StaticBytes<TLe
     return this.value.bytes as bytes<TLength>
   }
 
-  get items(): ByteImpl[] {
+  get items(): Byte[] {
     return this.value.items
   }
 
-  setItem(_index: number, _value: ByteImpl): void {
+  setItem(_index: number, _value: Byte): void {
     throw new CodeError('StaticBytes is immutable')
   }
 
-  concat(other: Parameters<InstanceType<typeof StaticBytes>['concat']>[0]): DynamicBytesImpl {
+  concat(other: Parameters<InstanceType<typeof _StaticBytes>['concat']>[0]): DynamicBytes {
     const items = this.items
     const otherEntries = other.entries()
     let next = otherEntries.next()
     while (!next.done) {
-      items.push(next.value[1] as ByteImpl)
+      items.push(next.value[1] as Byte)
       next = otherEntries.next()
     }
     const concatenatedBytes = items
       .map((item) => item.bytes)
       .reduce((acc, curr) => conactUint8Arrays(acc, asUint8Array(curr)), new Uint8Array())
-    return new DynamicBytesImpl(this.typeInfo, asBytes(concatenatedBytes))
+    return new DynamicBytes(this.typeInfo, asBytes(concatenatedBytes))
   }
 
-  static fromBytesImpl(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): StaticBytesImpl {
-    const staticArrayValue = StaticArrayImpl.fromBytesImpl(value, typeInfo, prefix) as StaticArrayImpl<ByteImpl, number>
-    const result = new StaticBytesImpl(typeInfo)
-    result.value = staticArrayValue as StaticArrayImpl<ByteImpl, 0>
+  static fromBytes(value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none'): StaticBytes {
+    const staticArrayValue = StaticArray.fromBytes(value, typeInfo, prefix) as StaticArray<Byte, number>
+    const result = new StaticBytes(typeInfo)
+    result.value = staticArrayValue as StaticArray<Byte, 0>
     return result
   }
 }
 
-export class ReferenceArrayImpl<TItem> extends ReferenceArray<TItem> {
+export class ReferenceArray<TItem> extends _ReferenceArray<TItem> {
   private _values: TItem[]
   typeInfo: TypeInfo
 
@@ -876,7 +869,7 @@ export class ReferenceArrayImpl<TItem> extends ReferenceArray<TItem> {
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this._values = items
 
-    return new Proxy(this, arrayProxyHandler<TItem>()) as ReferenceArrayImpl<TItem>
+    return new Proxy(this, arrayProxyHandler<TItem>()) as ReferenceArray<TItem>
   }
 
   /**
@@ -894,10 +887,10 @@ export class ReferenceArrayImpl<TItem> extends ReferenceArray<TItem> {
     this.items[index] = value
   }
 
-  slice(start?: Uint64Compat, end?: Uint64Compat): ReferenceArray<TItem> {
+  slice(start?: Uint64Compat, end?: Uint64Compat): _ReferenceArray<TItem> {
     const startIndex = end === undefined ? 0 : asNumber(start ?? 0)
     const endIndex = end === undefined ? asNumber(start ?? this._values.length) : asNumber(end)
-    return new ReferenceArrayImpl<TItem>(this.typeInfo, ...this._values.slice(startIndex, endIndex))
+    return new ReferenceArray<TItem>(this.typeInfo, ...this._values.slice(startIndex, endIndex))
   }
 
   /**
@@ -915,13 +908,13 @@ export class ReferenceArrayImpl<TItem> extends ReferenceArray<TItem> {
     return this._values.pop()!
   }
 
-  copy(): ReferenceArray<TItem> {
+  copy(): _ReferenceArray<TItem> {
     const bytesValue = toBytes(this)
-    return getEncoder<ReferenceArray<TItem>>(this.typeInfo)(bytesValue, this.typeInfo)
+    return getEncoder<_ReferenceArray<TItem>>(this.typeInfo)(bytesValue, this.typeInfo)
   }
 }
 
-export class FixedArrayImpl<TItem, TLength extends number> extends FixedArray<TItem, TLength> {
+export class FixedArray<TItem, TLength extends number> extends _FixedArray<TItem, TLength> {
   private _values: NTuple<TItem, TLength>
   private size: number
   typeInfo: TypeInfo
@@ -936,11 +929,9 @@ export class FixedArrayImpl<TItem, TLength extends number> extends FixedArray<TI
       this._values = items as NTuple<TItem, TLength>
     } else {
       const bytesValue = asBytes(new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo)))
-      this._values = (
-        getEncoder<FixedArray<TItem, TLength>>(this.typeInfo)(bytesValue, this.typeInfo) as FixedArrayImpl<TItem, TLength>
-      ).items
+      this._values = (getEncoder<_FixedArray<TItem, TLength>>(this.typeInfo)(bytesValue, this.typeInfo) as FixedArray<TItem, TLength>).items
     }
-    return new Proxy(this, arrayProxyHandler<TItem>()) as FixedArrayImpl<TItem, TLength>
+    return new Proxy(this, arrayProxyHandler<TItem>()) as FixedArray<TItem, TLength>
   }
 
   concat(...others: (TItem | ConcatArray<TItem>)[]): TItem[] {
@@ -965,9 +956,9 @@ export class FixedArrayImpl<TItem, TLength extends number> extends FixedArray<TI
     return this._values.slice(startIndex, endIndex)
   }
 
-  copy(): FixedArray<TItem, TLength> {
+  copy(): _FixedArray<TItem, TLength> {
     const bytesValue = toBytes(this)
-    return getEncoder<FixedArray<TItem, TLength>>(this.typeInfo)(bytesValue, this.typeInfo)
+    return getEncoder<_FixedArray<TItem, TLength>>(this.typeInfo)(bytesValue, this.typeInfo)
   }
 }
 
@@ -1039,10 +1030,10 @@ const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
     }
   })
 
-  const values: ARC4Encoded[] = []
+  const values: _ARC4Encoded[] = []
   childTypes.forEach((childType, index) => {
     values.push(
-      getEncoder<ARC4Encoded>(childType)(
+      getEncoder<_ARC4Encoded>(childType)(
         ['bytes', 'string'].includes(childType.name) ? valuePartitions[index].slice(2) : valuePartitions[index],
         childType,
       ),
@@ -1051,29 +1042,29 @@ const decode = (value: Uint8Array, childTypes: TypeInfo[]) => {
   return values
 }
 
-const encode = (values: ARC4Encoded[]) => {
+const encode = (values: _ARC4Encoded[]) => {
   const length = values.length
   const heads = []
   const tails = []
   const dynamicLengthTypeIndex = []
   let i = 0
-  const valuesLengthBytes = values instanceof DynamicArray ? encodeLength(length).asUint8Array() : new Uint8Array()
+  const valuesLengthBytes = values instanceof _DynamicArray ? encodeLength(length).asUint8Array() : new Uint8Array()
   while (i < length) {
     const value = values[i]
-    assert(value instanceof ARC4Encoded, `expected ARC4 type ${value.constructor.name}`)
+    assert(value instanceof _ARC4Encoded, `expected ARC4 type ${value.constructor.name}`)
     dynamicLengthTypeIndex.push(isDynamicLengthType(value))
     if (dynamicLengthTypeIndex.at(-1)) {
       heads.push(asUint8Array(Bytes.fromHex('0000')))
       tails.push(asUint8Array(value.bytes))
     } else {
-      if (value instanceof Bool) {
+      if (value instanceof _Bool) {
         const before = findBool(values, i, -1)
         let after = findBool(values, i, 1)
         if (before % 8 != 0) {
           throw new CodeError('"expected before index should have number of bool mod 8 equal 0"')
         }
         after = Math.min(7, after)
-        const consecutiveBools = values.slice(i, i + after + 1) as Bool[]
+        const consecutiveBools = values.slice(i, i + after + 1) as _Bool[]
         const compressedNumber = compressMultipleBool(consecutiveBools)
         heads.push(new Uint8Array([compressedNumber]))
         i += after
@@ -1105,53 +1096,75 @@ const encode = (values: ARC4Encoded[]) => {
   return conactUint8Arrays(valuesLengthBytes, ...heads, ...tails)
 }
 
-const isDynamicLengthType = (value: ARC4Encoded) => {
+const isDynamicLengthType = (value: _ARC4Encoded) => {
   return (
-    value instanceof StrImpl ||
-    (value instanceof StaticArrayImpl && holdsDynamicLengthContent(value.typeInfo)) ||
-    (value instanceof TupleImpl && value.genericArgs.some(holdsDynamicLengthContent)) ||
-    (value instanceof StructImpl && Object.values(value.genericArgs).some(holdsDynamicLengthContent)) ||
-    value instanceof DynamicArrayImpl ||
-    value instanceof DynamicBytesImpl
+    value instanceof Str ||
+    (value instanceof StaticArray && holdsDynamicLengthContent(value.typeInfo)) ||
+    (value instanceof Tuple && value.genericArgs.some(holdsDynamicLengthContent)) ||
+    (value instanceof Struct && Object.values(value.genericArgs).some(holdsDynamicLengthContent)) ||
+    value instanceof DynamicArray ||
+    value instanceof DynamicBytes
   )
 }
 
-export function encodeArc4Impl<T>(sourceTypeInfoString: string | undefined, source: T): bytes {
+export function encodeArc4<T>(sourceTypeInfoString: string | undefined, source: T): bytes {
   const arc4Encoded = getArc4Encoded(source, sourceTypeInfoString)
   return arc4Encoded.bytes
 }
 
-export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: string): ARC4Encoded => {
-  if (value instanceof ARC4Encoded) {
+export function decodeArc4<T>(
+  sourceTypeInfoString: string,
+  targetTypeInfoString: string,
+  bytes: StubBytesCompat,
+  prefix: 'none' | 'log' = 'none',
+): T {
+  const sourceTypeInfo = JSON.parse(sourceTypeInfoString)
+  const targetTypeInfo = JSON.parse(targetTypeInfoString)
+  const encoder = getEncoder(sourceTypeInfo)
+  const source = encoder(bytes, sourceTypeInfo, prefix) as { typeInfo: TypeInfo }
+  return getNativeValue(source, targetTypeInfo) as T
+}
+
+export function interpretAsArc4<T extends _ARC4Encoded>(
+  typeInfoString: string,
+  bytes: StubBytesCompat,
+  prefix: 'none' | 'log' = 'none',
+): T {
+  const typeInfo = JSON.parse(typeInfoString)
+  return getEncoder<T>(typeInfo)(bytes, typeInfo, prefix)
+}
+
+export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: string): _ARC4Encoded => {
+  if (value instanceof _ARC4Encoded) {
     return value
   }
   if (value instanceof AccountCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apat.indexOf(value)
-    return index >= 0 ? new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.bytes)
+    return index >= 0 ? new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.bytes)
   }
   if (value instanceof AssetCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apas.indexOf(value)
-    return index >= 0 ? new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
+    return index >= 0 ? new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
   }
   if (value instanceof ApplicationCls) {
     const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apfa.indexOf(value)
-    return index >= 0 ? new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
+    return index >= 0 ? new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
   }
   if (typeof value === 'boolean') {
-    return new BoolImpl({ name: 'Bool' }, value)
+    return new Bool({ name: 'Bool' }, value)
   }
   if (value instanceof Uint64Cls || typeof value === 'number') {
-    return new UintImpl({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(value))
+    return new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(value))
   }
   if (value instanceof BigUintCls) {
-    return new UintImpl({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value.asBigInt())
+    return new Uint({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value.asBigInt())
   }
   if (typeof value === 'bigint') {
-    return new UintImpl({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value)
+    return new Uint({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value)
   }
   if (value instanceof BytesCls) {
     if (value.fixedLength !== undefined) {
-      return new StaticBytesImpl(
+      return new StaticBytes(
         {
           name: 'StaticBytes',
           genericArgs: { elementType: { name: 'Byte', genericArgs: [{ name: '8' }] }, size: { name: value.fixedLength.toString() } },
@@ -1159,19 +1172,19 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
         value.asAlgoTs(),
       )
     }
-    return new DynamicBytesImpl(
+    return new DynamicBytes(
       { name: 'DynamicBytes', genericArgs: { elementType: { name: 'Byte', genericArgs: [{ name: '8' }] } } },
       value.asAlgoTs(),
     )
   }
   if (typeof value === 'string') {
-    return new StrImpl({ name: 'Str' }, value)
+    return new Str({ name: 'Str' }, value)
   }
-  if (Array.isArray(value) || value instanceof ReferenceArrayImpl || value instanceof FixedArrayImpl) {
+  if (Array.isArray(value) || value instanceof ReferenceArray || value instanceof FixedArray) {
     const sourceTypeInfo = sourceTypeInfoString ? JSON.parse(sourceTypeInfoString) : undefined
     const sourceGenericArgs = ((value as DeliberateAny).typeInfo || sourceTypeInfo || {})?.genericArgs
-    const result: ARC4Encoded[] = (value instanceof ReferenceArrayImpl || value instanceof FixedArrayImpl ? value.items : value).reduce(
-      (acc: ARC4Encoded[], cur: DeliberateAny, currentIndex: number) => {
+    const result: _ARC4Encoded[] = (value instanceof ReferenceArray || value instanceof FixedArray ? value.items : value).reduce(
+      (acc: _ARC4Encoded[], cur: DeliberateAny, currentIndex: number) => {
         const elementTypeInfo = sourceGenericArgs?.elementType || sourceGenericArgs?.[currentIndex]
         const elementTypeInfoString = elementTypeInfo ? JSON.stringify(elementTypeInfo) : undefined
         return acc.concat(getArc4Encoded(cur, elementTypeInfoString))
@@ -1180,29 +1193,29 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
     )
 
     const genericArgs: TypeInfo[] = result.map((x) => (x as DeliberateAny).typeInfo)
-    if (value instanceof FixedArrayImpl) {
+    if (value instanceof FixedArray) {
       const typeInfo = {
         name: `StaticArray<${genericArgs[0].name},${genericArgs.length}>`,
         genericArgs: { elementType: genericArgs[0], size: { name: genericArgs.length.toString() } },
       }
-      return new StaticArrayImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
+      return new StaticArray(typeInfo, ...(result as [_ARC4Encoded, ..._ARC4Encoded[]]))
     } else if (
       sourceTypeInfo?.name?.startsWith('Array') ||
       sourceTypeInfo?.name?.startsWith('ReadonlyArray') ||
-      value instanceof ReferenceArrayImpl
+      value instanceof ReferenceArray
     ) {
       const elementType = genericArgs[0] ?? sourceTypeInfo.genericArgs?.elementType
       const typeInfo = { name: `DynamicArray<${elementType.name}>`, genericArgs: { elementType } }
-      return new DynamicArrayImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
+      return new DynamicArray(typeInfo, ...(result as [_ARC4Encoded, ..._ARC4Encoded[]]))
     } else {
       const typeInfo = { name: `Tuple<[${genericArgs.map((x) => x.name).join(',')}]>`, genericArgs }
-      return new TupleImpl(typeInfo, ...(result as [ARC4Encoded, ...ARC4Encoded[]]))
+      return new Tuple(typeInfo, ...(result as [_ARC4Encoded, ..._ARC4Encoded[]]))
     }
   }
   if (typeof value === 'object') {
     const sourceTypeInfo = sourceTypeInfoString ? JSON.parse(sourceTypeInfoString) : undefined
     const propTypeInfos = (value.typeInfo || sourceTypeInfo || {}).genericArgs
-    const result = Object.entries(value).reduce((acc: ARC4Encoded[], [key, cur]: DeliberateAny) => {
+    const result = Object.entries(value).reduce((acc: _ARC4Encoded[], [key, cur]: DeliberateAny) => {
       const propTypeInfoString = propTypeInfos?.[key] ? JSON.stringify(propTypeInfos[key]) : undefined
       return acc.concat(getArc4Encoded(cur, propTypeInfoString))
     }, [])
@@ -1211,7 +1224,7 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
       name: `Struct<${value.constructor.name}>`,
       genericArgs: Object.fromEntries(Object.keys(value).map((x, i) => [x, genericArgs[i]])),
     }
-    return new StructImpl(typeInfo, Object.fromEntries(Object.keys(value).map((x, i) => [x, result[i]])))
+    return new Struct(typeInfo, Object.fromEntries(Object.keys(value).map((x, i) => [x, result[i]])))
   }
 
   throw new CodeError(`Unsupported type for encoding: ${typeof value}`)
@@ -1237,14 +1250,14 @@ export const toBytes = (val: unknown, sourceTypeInfoString?: string): bytes => {
     return asUint64Cls(val.uint64).toBytes().asAlgoTs()
   }
   if (Array.isArray(val) || typeof val === 'object') {
-    return encodeArc4Impl(sourceTypeInfoString, val)
+    return encodeArc4(sourceTypeInfoString, val)
   }
   throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
 }
 
 export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
   const mutableTupleFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
-    const tuple = TupleImpl.fromBytesImpl(value, typeInfo, prefix)
+    const tuple = Tuple.fromBytes(value, typeInfo, prefix)
     return asNumber(tuple.bytes.length) ? tuple.native : ([] as unknown as typeof tuple.native)
   }
   const readonlyMutableTupleFromBytes = (
@@ -1256,7 +1269,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     return result as Readonly<typeof result>
   }
   const mutableObjectFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
-    const struct = StructImpl.fromBytesImpl(value, typeInfo, prefix)
+    const struct = Struct.fromBytes(value, typeInfo, prefix)
     return asNumber(struct.bytes.length) ? struct.native : ({} as unknown as typeof struct.native)
   }
   const readonlyObjectFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
@@ -1264,7 +1277,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     return result as Readonly<typeof result>
   }
   const arrayFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
-    const dynamicArray = DynamicArrayImpl.fromBytesImpl(value, typeInfo, prefix)
+    const dynamicArray = DynamicArray.fromBytes(value, typeInfo, prefix)
     return asNumber(dynamicArray.bytes.length) ? dynamicArray.native : ([] as unknown as typeof dynamicArray.native)
   }
   const readonlyArrayFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
@@ -1272,15 +1285,15 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     return result as Readonly<typeof result>
   }
   const referenceArrayFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
-    const dynamicArray = DynamicArrayImpl.fromBytesImpl(value, typeInfo, prefix)
-    return new ReferenceArrayImpl(
+    const dynamicArray = DynamicArray.fromBytes(value, typeInfo, prefix)
+    return new ReferenceArray(
       typeInfo,
       ...(asNumber(dynamicArray.bytes.length) ? dynamicArray.native : ([] as unknown as typeof dynamicArray.native)),
     )
   }
   const fixedArrayFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
-    const staticArray = StaticArrayImpl.fromBytesImpl(value, typeInfo, prefix)
-    return new FixedArrayImpl(
+    const staticArray = StaticArray.fromBytes(value, typeInfo, prefix)
+    return new FixedArray(
       typeInfo,
       ...(asNumber(staticArray.bytes.length) ? staticArray.native : ([] as unknown as typeof staticArray.native)),
     )
@@ -1296,21 +1309,21 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     uint64: uint64FromBytes,
     OnCompleteAction: onCompletionFromBytes,
     TransactionType: transactionTypeFromBytes,
-    Address: AddressImpl.fromBytesImpl,
-    Bool: BoolImpl.fromBytesImpl,
-    Byte: ByteImpl.fromBytesImpl,
-    Str: StrImpl.fromBytesImpl,
-    'Uint<.*>': UintImpl.fromBytesImpl,
-    'UFixed<.*>': UFixedImpl.fromBytesImpl,
-    'StaticArray<.*>': StaticArrayImpl.fromBytesImpl,
-    'DynamicArray<.*>': DynamicArrayImpl.fromBytesImpl,
-    'Tuple(<.*>)?': TupleImpl.fromBytesImpl,
+    Address: Address.fromBytes,
+    Bool: Bool.fromBytes,
+    Byte: Byte.fromBytes,
+    Str: Str.fromBytes,
+    'Uint<.*>': Uint.fromBytes,
+    'UFixed<.*>': UFixed.fromBytes,
+    'StaticArray<.*>': StaticArray.fromBytes,
+    'DynamicArray<.*>': DynamicArray.fromBytes,
+    'Tuple(<.*>)?': Tuple.fromBytes,
     'ReadonlyTuple(<.*>)?': readonlyMutableTupleFromBytes,
     'MutableTuple(<.*>)?': mutableTupleFromBytes,
-    'Struct(<.*>)?': StructImpl.fromBytesImpl,
-    DynamicBytes: DynamicBytesImpl.fromBytesImpl,
-    'StaticBytes<.*>': StaticBytesImpl.fromBytesImpl,
-    object: StructImpl.fromBytesImpl,
+    'Struct(<.*>)?': Struct.fromBytes,
+    DynamicBytes: DynamicBytes.fromBytes,
+    'StaticBytes<.*>': StaticBytes.fromBytes,
+    object: Struct.fromBytes,
     'Object<.*>': mutableObjectFromBytes,
     'ReadonlyObject<.*>': readonlyObjectFromBytes,
     'ReferenceArray<.*>': referenceArrayFromBytes,

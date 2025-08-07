@@ -1,14 +1,6 @@
 import { Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type {
-  AddressImpl,
-  BoolImpl,
-  ByteImpl,
-  DynamicBytesImpl,
-  StrImpl,
-} from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
-import { UintImpl } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
-import type { ARC4Encoded, BitSize } from '@algorandfoundation/algorand-typescript/arc4'
+import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import { Address, Bool, Byte, DynamicBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import type { DeliberateAny, FunctionKeys } from '../src/typescript-helpers'
@@ -37,10 +29,9 @@ describe('ARC4 AppGlobal values', async () => {
       abiValue: new Uint<64>(42),
       methodName: `get${implicit}_arc4_uintn64`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as UintImpl<BitSize>
-        const bitSize = UintImpl.getMaxBitsLength(arc4Value.typeInfo)
+        const arc4Value = value as Uint<64>
         expect(arc4Value).toBeInstanceOf(Uint)
-        expect(bitSize).toEqual(64)
+        expect(arc4Value.bytes.length).toEqual(8)
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
@@ -49,7 +40,7 @@ describe('ARC4 AppGlobal values', async () => {
       abiValue: new Str('World'),
       methodName: `get${implicit}_arc4_str`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as StrImpl
+        const arc4Value = value as Str
         expect(arc4Value).toBeInstanceOf(Str)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -59,7 +50,7 @@ describe('ARC4 AppGlobal values', async () => {
       abiValue: new Byte(12),
       methodName: `get${implicit}_arc4_byte`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as ByteImpl
+        const arc4Value = value as Byte
         expect(arc4Value).toBeInstanceOf(Byte)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -69,7 +60,7 @@ describe('ARC4 AppGlobal values', async () => {
       abiValue: new Bool(false),
       methodName: `get${implicit}_arc4_bool`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as BoolImpl
+        const arc4Value = value as Bool
         expect(arc4Value).toBeInstanceOf(Bool)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -79,7 +70,7 @@ describe('ARC4 AppGlobal values', async () => {
       abiValue: new Address(Bytes.fromHex(`${'00'.repeat(31)}ff`)),
       methodName: `get${implicit}_arc4_address`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as AddressImpl
+        const arc4Value = value as Address
         expect(arc4Value).toBeInstanceOf(Address)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -89,10 +80,9 @@ describe('ARC4 AppGlobal values', async () => {
       abiValue: new Uint<128>(2n ** 102n),
       methodName: `get${implicit}_arc4_uintn128`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as UintImpl<BitSize>
-        const bitSize = UintImpl.getMaxBitsLength(arc4Value.typeInfo)
+        const arc4Value = value as Uint<128>
         expect(arc4Value).toBeInstanceOf(Uint)
-        expect(bitSize).toEqual(128)
+        expect(arc4Value.bytes.length).toEqual(16)
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
@@ -101,7 +91,7 @@ describe('ARC4 AppGlobal values', async () => {
       abiValue: new DynamicBytes(Bytes.fromHex(`${'00'.repeat(30)}${'ff'.repeat(2)}`)),
       methodName: `get${implicit}_arc4_dynamic_bytes`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as DynamicBytesImpl
+        const arc4Value = value as DynamicBytes
         expect(arc4Value).toBeInstanceOf(DynamicBytes)
         expect(arc4Value.native).toEqual(expectedValue)
       },

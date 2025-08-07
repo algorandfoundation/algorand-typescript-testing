@@ -46,9 +46,8 @@ export class SourceFileVisitor {
     this.helper = {
       additionalStatements: [],
       resolveType(node: ts.Node): ptypes.PType {
-        let sourceLocation = undefined
+        const sourceLocation = this.sourceLocation(node)
         try {
-          sourceLocation = this.sourceLocation(node)
           return loggingContext.run(() => typeResolver.resolve(node, sourceLocation!))
         } catch (e) {
           const err = e as Error
@@ -69,7 +68,11 @@ export class SourceFileVisitor {
         return s && s.flags & ts.SymbolFlags.Alias ? typeChecker.getAliasedSymbol(s) : s
       },
       sourceLocation(node: ts.Node): SourceLocation {
-        return SourceLocation.fromNode(node, program.getCurrentDirectory())
+        try {
+          return SourceLocation.fromNode(node, program.getCurrentDirectory())
+        } catch {
+          return SourceLocation.None
+        }
       },
     }
   }
@@ -77,7 +80,7 @@ export class SourceFileVisitor {
   public result(): ts.SourceFile {
     const updatedSourceFile = ts.visitNode(this.sourceFile, this.visit) as ts.SourceFile
     return factory.updateSourceFile(updatedSourceFile, [
-      nodeFactory.importHelpers(this.config.testingPackageName),
+      ...nodeFactory.importHelpers(this.config.testingPackageName),
       ...updatedSourceFile.statements,
       ...this.helper.additionalStatements,
     ])
@@ -117,8 +120,11 @@ class ImportDeclarationVisitor {
     if (this.declarationNode.importClause?.isTypeOnly || !algotsModuleRegExp.test(moduleSpecifier)) return this.declarationNode
 
     const namedBindings = this.declarationNode.importClause?.namedBindings
+    // remove `arc4` from named bindings, as it is explicitly imported in the `importHelpers` method
     const nonTypeNamedBindings =
-      namedBindings && ts.isNamedImports(namedBindings) ? (namedBindings as ts.NamedImports).elements.filter((e) => !e.isTypeOnly) : []
+      namedBindings && ts.isNamedImports(namedBindings)
+        ? (namedBindings as ts.NamedImports).elements.filter((e) => !e.isTypeOnly && e.name.getText() !== 'arc4')
+        : []
     return factory.createImportDeclaration(
       this.declarationNode.modifiers,
       nonTypeNamedBindings.length
@@ -148,7 +154,7 @@ class ExpressionVisitor {
   }
 
   private visit = (node: ts.Node): ts.Node => {
-    if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+    handleTypeInfoCaputre: if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
       let type = this.helper.resolveType(node)
 
       // `voted = LocalState<uint64>()` is resolved to FunctionPType with returnType LocalState<uint64>
@@ -171,16 +177,18 @@ class ExpressionVisitor {
         this.stubbedFunctionName = undefined
         let infoArg: TypeInfo | TypeInfo[] | undefined = info
 
+        /// if the function being called is not part of the program being transformed, do not process further
+        const sourceLocation = this.helper.sourceLocation(updatedNode)
+        if (sourceLocation === SourceLocation.None) break handleTypeInfoCaputre
+
         if (
           isCallingEmit(stubbedFunctionName) ||
           isCallingEncodeArc4(stubbedFunctionName) ||
           isCallingArc4EncodedLength(stubbedFunctionName) ||
           isCallingClone(stubbedFunctionName)
         ) {
-          const sourceLocation = this.helper.sourceLocation(updatedNode)
           infoArg = this.helper.resolveTypeParameters(updatedNode).map((t) => getGenericTypeInfo(t, sourceLocation))[0]
         } else if (isCallingDecodeArc4(stubbedFunctionName)) {
-          const sourceLocation = this.helper.sourceLocation(updatedNode)
           const sourceType = ptypes.ptypeToArc4EncodedType(type, sourceLocation)
           const sourceTypeInfo = getGenericTypeInfo(sourceType, sourceLocation)
           const targetTypeInfo = getGenericTypeInfo(type, sourceLocation)
@@ -196,7 +204,7 @@ class ExpressionVisitor {
             if (type instanceof ptypes.BytesPType && type.fixedByteSize)
               updatedNode = nodeFactory.callFixedBytesFunction(stubbedFunctionName, updatedNode, Number(type.fixedByteSize))
           } else {
-            updatedNode = nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
+            updatedNode = nodeFactory.callStubbedFunction(updatedNode, infoArg)
           }
         }
       }
@@ -517,8 +525,8 @@ const tryGetAlgoTsSymbolName = (node: ts.Node, helper: VisitorHelper): string | 
   return s?.getName() ?? (ts.isMemberName(node) ? node.text : node.getText())
 }
 
-const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['decodeArc4'].includes(functionName ?? '')
-const isCallingEncodeArc4 = (functionName: string | undefined): boolean => ['encodeArc4'].includes(functionName ?? '')
+const isCallingDecodeArc4 = (functionName: string | undefined): boolean => 'decodeArc4' === (functionName ?? '')
+const isCallingEncodeArc4 = (functionName: string | undefined): boolean => 'encodeArc4' === (functionName ?? '')
 const isCallingArc4EncodedLength = (functionName: string | undefined): boolean => 'arc4EncodedLength' === (functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
