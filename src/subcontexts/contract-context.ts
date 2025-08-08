@@ -6,17 +6,16 @@ import {
   type contract,
   type LocalState,
 } from '@algorandfoundation/algorand-typescript'
-import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
+import type { ARC4Encoded, ResourceEncodingOptions } from '@algorandfoundation/algorand-typescript/arc4'
 import type { AbiMetadata } from '../abi-metadata'
 import { getArc4Selector, getContractAbiMetadata, getContractMethodAbiMetadata } from '../abi-metadata'
 import { BytesMap } from '../collections/custom-key-map'
 import { checkRoutingConditions } from '../context-helpers/context-util'
 import { lazyContext } from '../context-helpers/internal-context'
-import { type TypeInfo } from '../encoders'
 import { CodeError } from '../errors'
 import { BaseContract, ContractOptionsSymbol } from '../impl/base-contract'
 import { Contract } from '../impl/contract'
-import { getArc4Encoded, UintNImpl } from '../impl/encoded-types'
+import { getArc4Encoded, Uint, type TypeInfo } from '../impl/encoded-types'
 import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
 import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
@@ -88,10 +87,15 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
   return states
 }
 
-const getUintN8Impl = (value: number) => new UintNImpl({ name: 'UintN<8>', genericArgs: [{ name: '8' }] }, value)
+const getUint8 = (value: number) => new Uint({ name: 'Uint<8>', genericArgs: [{ name: '8' }] }, value)
 
 /** @ignore */
-export const extractArraysFromArgs = (app: Application, methodSelector: Uint8Array, args: DeliberateAny[]) => {
+export const extractArraysFromArgs = (
+  app: Application,
+  methodSelector: Uint8Array,
+  resourceEncoding: ResourceEncodingOptions | undefined,
+  args: DeliberateAny[],
+) => {
   const transactions: Transaction[] = []
   const accounts: Account[] = [lazyContext.defaultSender]
   const apps: Application[] = [app]
@@ -102,14 +106,26 @@ export const extractArraysFromArgs = (app: Application, methodSelector: Uint8Arr
     if (isTransaction(arg)) {
       transactions.push(arg)
     } else if (arg instanceof AccountCls) {
-      appArgs.push(getUintN8Impl(accounts.length))
-      accounts.push(arg as Account)
+      if (resourceEncoding === 'index') {
+        appArgs.push(getUint8(accounts.length))
+        accounts.push(arg as Account)
+      } else {
+        appArgs.push(getArc4Encoded(arg.bytes))
+      }
     } else if (arg instanceof ApplicationCls) {
-      appArgs.push(getUintN8Impl(apps.length))
-      apps.push(arg as Application)
+      if (resourceEncoding === 'index') {
+        appArgs.push(getUint8(apps.length))
+        apps.push(arg as Application)
+      } else {
+        appArgs.push(getArc4Encoded(arg.id))
+      }
     } else if (arg instanceof AssetCls) {
-      appArgs.push(getUintN8Impl(assets.length))
-      assets.push(arg as Asset)
+      if (resourceEncoding === 'index') {
+        appArgs.push(getUint8(assets.length))
+        assets.push(arg as Asset)
+      } else {
+        appArgs.push(getArc4Encoded(arg.id))
+      }
     } else if (arg !== undefined) {
       appArgs.push(getArc4Encoded(arg))
     }
@@ -184,7 +200,7 @@ export class ContractContext {
   ): Transaction[] {
     const app = lazyContext.ledger.getApplicationForContract(contract)
     const methodSelector = abiMetadata ? getArc4Selector(abiMetadata) : new Uint8Array()
-    const { transactions, ...appCallArgs } = extractArraysFromArgs(app, methodSelector, args)
+    const { transactions, ...appCallArgs } = extractArraysFromArgs(app, methodSelector, abiMetadata?.resourceEncoding, args)
     const appTxn = lazyContext.any.txn.applicationCall({
       appId: app,
       ...appCallArgs,

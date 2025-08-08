@@ -1,21 +1,21 @@
-import {
-  type AnyTransactionComposeFields,
-  type ApplicationCallComposeFields,
-  type AssetConfigComposeFields,
-  type AssetFreezeComposeFields,
-  type AssetTransferComposeFields,
-  type ComposeItxnParams,
-  type Contract,
-  type ItxnCompose,
-  type KeyRegistrationComposeFields,
-  type PaymentComposeFields,
+import type {
+  ItxnCompose as _ItxnCompose,
+  AnyTransactionComposeFields,
+  ApplicationCallComposeFields,
+  AssetConfigComposeFields,
+  AssetFreezeComposeFields,
+  AssetTransferComposeFields,
+  ComposeItxnParams,
+  Contract,
+  KeyRegistrationComposeFields,
+  PaymentComposeFields,
 } from '@algorandfoundation/algorand-typescript'
 import type { TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { DeliberateAny, InstanceMethod } from '../typescript-helpers'
 import { getApplicationCallInnerTxnContext } from './c2c'
 
-class ItxnComposeImpl {
+class ItxnCompose {
   begin(fields: PaymentComposeFields): void
   begin(fields: KeyRegistrationComposeFields): void
   begin(fields: AssetConfigComposeFields): void
@@ -67,4 +67,4 @@ class ItxnComposeImpl {
   }
 }
 
-export const itxnCompose: ItxnCompose = new ItxnComposeImpl()
+export const itxnCompose: _ItxnCompose = new ItxnCompose()

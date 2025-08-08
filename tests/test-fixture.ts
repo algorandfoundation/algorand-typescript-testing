@@ -246,6 +246,7 @@ async function compilePath(
         dryRun: false,
         logLevel: 'error' as Parameters<typeof compile>[0]['logLevel'],
         skipVersionCheck: true,
+        customPuyaPath: process.env.PUYA_PATH || undefined,
 
         outputSsaIr: false,
         outputOptimizationIr: false,
@@ -262,6 +263,8 @@ async function compilePath(
         outputTeal: false,
         outputSourceMap: true,
         optimizationLevel: 0,
+
+        resourceEncoding: 'foreign_index',
         ...options,
       }),
     )

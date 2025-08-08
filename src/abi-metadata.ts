@@ -1,10 +1,9 @@
-import type { OnCompleteActionStr } from '@algorandfoundation/algorand-typescript'
-import type { CreateOptions } from '@algorandfoundation/algorand-typescript/arc4'
+import type { arc4, OnCompleteActionStr } from '@algorandfoundation/algorand-typescript'
 import js_sha512 from 'js-sha512'
 import { ConventionalRouting } from './constants'
-import type { TypeInfo } from './encoders'
 import { Arc4MethodConfigSymbol, Contract } from './impl/contract'
-import { getArc4TypeName as getArc4TypeNameForARC4Encoded } from './impl/encoded-types'
+import type { TypeInfo } from './impl/encoded-types'
+import { getArc4TypeName } from './impl/encoded-types'
 import type { DeliberateAny } from './typescript-helpers'
 
 export interface AbiMetadata {
@@ -13,8 +12,9 @@ export interface AbiMetadata {
   methodSignature: string | undefined
   argTypes: string[]
   returnType: string
-  onCreate?: CreateOptions
+  onCreate?: arc4.CreateOptions
   allowActions?: OnCompleteActionStr[]
+  resourceEncoding?: arc4.ResourceEncodingOptions
 }
 
 const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> = new WeakMap()
@@ -70,8 +70,8 @@ export const getContractMethodAbiMetadata = <T extends Contract>(contract: T | {
 
 export const getArc4Signature = (metadata: AbiMetadata): string => {
   if (metadata.methodSignature === undefined) {
-    const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map(getArc4TypeName)
-    const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo)
+    const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map((t) => getArc4TypeName(t, metadata.resourceEncoding, 'in'))
+    const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo, metadata.resourceEncoding, 'out')
     metadata.methodSignature = `${metadata.name ?? metadata.methodName}(${argTypes.join(',')})${returnType}`
   }
   return metadata.methodSignature
@@ -80,41 +80,6 @@ export const getArc4Signature = (metadata: AbiMetadata): string => {
 export const getArc4Selector = (metadata: AbiMetadata): Uint8Array => {
   const hash = js_sha512.sha512_256.array(getArc4Signature(metadata))
   return new Uint8Array(hash.slice(0, 4))
-}
-
-const getArc4TypeName = (t: TypeInfo): string => {
-  const map: Record<string, string | ((t: TypeInfo) => string)> = {
-    void: 'void',
-    account: 'account',
-    application: 'application',
-    asset: 'asset',
-    boolean: 'bool',
-    biguint: 'uint512',
-    bytes: 'byte[]',
-    string: 'string',
-    uint64: 'uint64',
-    OnCompleteAction: 'uint64',
-    TransactionType: 'uint64',
-    Transaction: 'txn',
-    PaymentTxn: 'pay',
-    KeyRegistrationTxn: 'keyreg',
-    AssetConfigTxn: 'acfg',
-    AssetTransferTxn: 'axfer',
-    AssetFreezeTxn: 'afrz',
-    ApplicationCallTxn: 'appl',
-    'Tuple(<.*>)?': (t) =>
-      `(${Object.values(t.genericArgs as Record<string, TypeInfo>)
-        .map(getArc4TypeName)
-        .join(',')})`,
-  }
-  const entry = Object.entries(map).find(([k, _]) => new RegExp(`^${k}$`, 'i').test(t.name))?.[1]
-  if (entry === undefined) {
-    return getArc4TypeNameForARC4Encoded(t) ?? t.name
-  }
-  if (entry instanceof Function) {
-    return entry(t)
-  }
-  return entry
 }
 
 /**

@@ -1,18 +1,12 @@
 import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
 import { Account, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import type {
-  AddressImpl,
-  BoolImpl,
-  ByteImpl,
-  DynamicBytesImpl,
-  StrImpl,
-} from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
-import { UintNImpl } from '@algorandfoundation/algorand-typescript-testing/runtime-helpers'
-import type { ARC4Encoded, BitSize } from '@algorandfoundation/algorand-typescript/arc4'
-import { Address, Bool, Byte, DynamicBytes, Str, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
+
+import { Address, Bool, Byte, DynamicBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { OnApplicationComplete } from '../src/constants'
+
 import type { DeliberateAny } from '../src/typescript-helpers'
 import { LocalStateContract } from './artifacts/state-ops/contract.algo'
 import { getAvmResult } from './avm-invoker'
@@ -32,21 +26,21 @@ describe('ARC4 AppLocal values', async () => {
     ctx.reset()
   })
 
-  const testData = ['_implicit_key', ''].flatMap((implicit) => [
+  const testData: DeliberateAny[] = ['_implicit_key', ''].flatMap((implicit) => [
     {
       methodName: `get${implicit}_arc4_uintn64`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as UintNImpl<BitSize>
-        const bitSize = UintNImpl.getMaxBitsLength(arc4Value.typeInfo)
-        expect(arc4Value).toBeInstanceOf(UintN)
-        expect(bitSize).toEqual(64)
+        const arc4Value = value as Uint<64>
+
+        expect(arc4Value).toBeInstanceOf(Uint)
+        expect(arc4Value.bytes.length).toEqual(8)
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
     {
       methodName: `get${implicit}_arc4_str`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as StrImpl
+        const arc4Value = value as Str
         expect(arc4Value).toBeInstanceOf(Str)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -54,7 +48,7 @@ describe('ARC4 AppLocal values', async () => {
     {
       methodName: `get${implicit}_arc4_byte`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as ByteImpl
+        const arc4Value = value as Byte
         expect(arc4Value).toBeInstanceOf(Byte)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -62,7 +56,7 @@ describe('ARC4 AppLocal values', async () => {
     {
       methodName: `get${implicit}_arc4_bool`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as BoolImpl
+        const arc4Value = value as Bool
         expect(arc4Value).toBeInstanceOf(Bool)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -70,7 +64,7 @@ describe('ARC4 AppLocal values', async () => {
     {
       methodName: `get${implicit}_arc4_address`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as AddressImpl
+        const arc4Value = value as Address
         expect(arc4Value).toBeInstanceOf(Address)
         expect(arc4Value.native).toEqual(expectedValue)
       },
@@ -78,21 +72,22 @@ describe('ARC4 AppLocal values', async () => {
     {
       methodName: `get${implicit}_arc4_uintn128`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as UintNImpl<BitSize>
-        const bitSize = UintNImpl.getMaxBitsLength(arc4Value.typeInfo)
-        expect(arc4Value).toBeInstanceOf(UintN)
-        expect(bitSize).toEqual(128)
+        const arc4Value = value as Uint<128>
+        expect(arc4Value).toBeInstanceOf(Uint)
+        expect(arc4Value.bytes.length).toEqual(16)
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
     {
       methodName: `get${implicit}_arc4_dynamic_bytes`,
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
-        const arc4Value = value as DynamicBytesImpl
+        const arc4Value = value as DynamicBytes
         expect(arc4Value).toBeInstanceOf(DynamicBytes)
         expect(arc4Value.native).toEqual(expectedValue)
       },
     },
+  ])
+  testData.push(
     {
       methodName: `get_implicit_key_tuple`,
       assert: (value: DeliberateAny, expectedValue: DeliberateAny) => {
@@ -105,7 +100,7 @@ describe('ARC4 AppLocal values', async () => {
         expect(value).toEqual(expectedValue)
       },
     },
-  ])
+  )
 
   test.for(testData)('should be able to get arc4 state values', async (data, { appClientLocalStateContract: appClient, testAccount }) => {
     const defaultSenderAccountAddress = Bytes.fromBase32(testAccount.addr.toString())

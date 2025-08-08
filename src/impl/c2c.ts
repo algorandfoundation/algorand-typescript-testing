@@ -42,6 +42,7 @@ export function compileArc4<TContract extends Contract>(
               ...methodArgs,
             },
             selector,
+            abiMetadata?.resourceEncoding,
           )
           invokeAbiCall(itxnContext)
           return {
@@ -97,6 +98,7 @@ export function getApplicationCallInnerTxnContext<TArgs extends DeliberateAny[],
       onCompletion: methodArgs.onCompletion ?? abiMetadata?.allowActions?.map((action) => OnCompleteAction[action])[0],
     },
     selector,
+    abiMetadata?.resourceEncoding,
   )
 }
 export function abiCall<TArgs extends DeliberateAny[], TReturn>(

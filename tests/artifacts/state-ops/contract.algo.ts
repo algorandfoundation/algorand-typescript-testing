@@ -4,6 +4,7 @@ import {
   assert,
   BaseContract,
   Bytes,
+  clone,
   contract,
   Global,
   GlobalState,
@@ -15,7 +16,7 @@ import {
   Txn,
   Uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { Address, Bool, Byte, DynamicBytes, Str, UintN128, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, Bool, Byte, DynamicBytes, Str, Uint128 } from '@algorandfoundation/algorand-typescript/arc4'
 
 function get_1st_ref_index(): uint64 {
   return op.btoi(Txn.applicationArgs(1))
@@ -23,7 +24,7 @@ function get_1st_ref_index(): uint64 {
 
 @contract({ name: 'StateAcctParamsGetContract', avmVersion: 11 })
 export class StateAcctParamsGetContract extends arc4.Contract {
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_balance(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctBalance(a)
     const [value_index, funded_index] = op.AcctParams.acctBalance(get_1st_ref_index())
@@ -35,7 +36,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_min_balance(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctMinBalance(a)
     const [value_index, funded_index] = op.AcctParams.acctMinBalance(get_1st_ref_index())
@@ -47,7 +48,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_auth_addr(a: Account): Address {
     const [value, funded] = op.AcctParams.acctAuthAddr(a)
     const [value_index, funded_index] = op.AcctParams.acctAuthAddr(get_1st_ref_index())
@@ -56,7 +57,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return new Address(value)
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_num_uint(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalNumUint(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalNumUint(get_1st_ref_index())
@@ -65,7 +66,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_num_byte_slice(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalNumByteSlice(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalNumByteSlice(get_1st_ref_index())
@@ -74,7 +75,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_extra_app_pages(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalExtraAppPages(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalExtraAppPages(get_1st_ref_index())
@@ -83,7 +84,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_apps_created(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalAppsCreated(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalAppsCreated(get_1st_ref_index())
@@ -92,7 +93,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_apps_opted_in(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalAppsOptedIn(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalAppsOptedIn(get_1st_ref_index())
@@ -101,7 +102,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_assets_created(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalAssetsCreated(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalAssetsCreated(get_1st_ref_index())
@@ -110,7 +111,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_assets(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalAssets(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalAssets(get_1st_ref_index())
@@ -119,7 +120,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_boxes(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalBoxes(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalBoxes(get_1st_ref_index())
@@ -128,7 +129,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_total_box_bytes(a: Account): uint64 {
     const [value, funded] = op.AcctParams.acctTotalBoxBytes(a)
     const [value_index, funded_index] = op.AcctParams.acctTotalBoxBytes(get_1st_ref_index())
@@ -137,7 +138,7 @@ export class StateAcctParamsGetContract extends arc4.Contract {
     return value
   }
 
-  @arc4.abimethod()
+  @arc4.abimethod({ resourceEncoding: 'index' })
   public verify_acct_incentive_eligible(a: Account): boolean {
     const [value, funded] = op.AcctParams.acctIncentiveEligible(a)
     const [value_index, funded_index] = op.AcctParams.acctIncentiveEligible(get_1st_ref_index())
@@ -598,28 +599,28 @@ export class ItxnDemoContract extends BaseContract {
 
 export class GlobalStateContract extends arc4.Contract {
   // Implicit key state variables
-  implicitKeyArc4UintN64 = GlobalState({ initialValue: new UintN64(1337) })
+  implicitKeyArc4UintN64 = GlobalState({ initialValue: new arc4.Uint64(1337) })
   implicitKeyArc4Str = GlobalState({ initialValue: new Str('Hello') })
   implicitKeyArc4Byte = GlobalState({ initialValue: new Byte(0) })
   implicitKeyArc4Bool = GlobalState({ initialValue: new Bool(true) })
   implicitKeyArc4Address = GlobalState({ initialValue: new Address(Global.creatorAddress) })
-  implicitKeyArc4UintN128 = GlobalState({ initialValue: new UintN128(2n ** 100n) })
+  implicitKeyArc4UintN128 = GlobalState({ initialValue: new Uint128(2n ** 100n) })
   implicitKeyArc4DynamicBytes = GlobalState({ initialValue: new DynamicBytes('dynamic bytes') })
   implicitKeyTuple = GlobalState<[uint64, bytes, boolean]>({ initialValue: [Uint64(42), Bytes('Hello'), false] })
   implicitKeyObj = GlobalState<{ a: uint64; b: bytes; c: boolean }>({ initialValue: { a: 42, b: Bytes('World'), c: true } })
 
   // Explicit key state variables
-  arc4UintN64 = GlobalState({ initialValue: new UintN64(1337), key: 'explicit_key_arc4_uintn64' })
+  arc4UintN64 = GlobalState({ initialValue: new arc4.Uint64(1337), key: 'explicit_key_arc4_uintn64' })
   arc4Str = GlobalState({ initialValue: new Str('Hello'), key: 'explicit_key_arc4_str' })
   arc4Byte = GlobalState({ initialValue: new Byte(0), key: 'explicit_key_arc4_byte' })
   arc4Bool = GlobalState({ initialValue: new Bool(true), key: 'explicit_key_arc4_bool' })
   arc4Address = GlobalState({ initialValue: new Address(Global.creatorAddress), key: 'explicit_key_arc4_address' })
-  arc4UintN128 = GlobalState({ initialValue: new UintN128(2n ** 100n), key: 'explicit_key_arc4_uintn128' })
+  arc4UintN128 = GlobalState({ initialValue: new Uint128(2n ** 100n), key: 'explicit_key_arc4_uintn128' })
   arc4DynamicBytes = GlobalState({ initialValue: new DynamicBytes('dynamic bytes'), key: 'explicit_key_arc4_dynamic_bytes' })
 
   // Getter methods for implicit key state variables
   @arc4.abimethod()
-  get_implicit_key_arc4_uintn64(): UintN64 {
+  get_implicit_key_arc4_uintn64(): arc4.Uint64 {
     return this.implicitKeyArc4UintN64.value
   }
 
@@ -644,7 +645,7 @@ export class GlobalStateContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  get_implicit_key_arc4_uintn128(): UintN128 {
+  get_implicit_key_arc4_uintn128(): Uint128 {
     return this.implicitKeyArc4UintN128.value
   }
 
@@ -665,7 +666,7 @@ export class GlobalStateContract extends arc4.Contract {
 
   // Getter methods for explicit key state variables
   @arc4.abimethod()
-  get_arc4_uintn64(): UintN64 {
+  get_arc4_uintn64(): arc4.Uint64 {
     return this.arc4UintN64.value
   }
 
@@ -690,7 +691,7 @@ export class GlobalStateContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  get_arc4_uintn128(): UintN128 {
+  get_arc4_uintn128(): Uint128 {
     return this.arc4UintN128.value
   }
 
@@ -701,7 +702,7 @@ export class GlobalStateContract extends arc4.Contract {
 
   // Setter methods for implicit key state variables
   @arc4.abimethod()
-  set_implicit_key_arc4_uintn64(value: UintN64) {
+  set_implicit_key_arc4_uintn64(value: arc4.Uint64) {
     this.implicitKeyArc4UintN64.value = value
   }
 
@@ -726,7 +727,7 @@ export class GlobalStateContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  set_implicit_key_arc4_uintn128(value: UintN128) {
+  set_implicit_key_arc4_uintn128(value: Uint128) {
     this.implicitKeyArc4UintN128.value = value
   }
 
@@ -737,17 +738,17 @@ export class GlobalStateContract extends arc4.Contract {
 
   @arc4.abimethod()
   set_implicit_key_tuple(value: [uint64, bytes, boolean]) {
-    this.implicitKeyTuple.value = value
+    this.implicitKeyTuple.value = clone(value)
   }
 
   @arc4.abimethod()
   set_implicit_key_obj(value: { a: uint64; b: bytes; c: boolean }) {
-    this.implicitKeyObj.value = value
+    this.implicitKeyObj.value = clone(value)
   }
 
   // Setter methods for explicit key state variables
   @arc4.abimethod()
-  set_arc4_uintn64(value: UintN64) {
+  set_arc4_uintn64(value: arc4.Uint64) {
     this.arc4UintN64.value = value
   }
 
@@ -772,7 +773,7 @@ export class GlobalStateContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  set_arc4_uintn128(value: UintN128) {
+  set_arc4_uintn128(value: Uint128) {
     this.arc4UintN128.value = value
   }
 
@@ -784,49 +785,49 @@ export class GlobalStateContract extends arc4.Contract {
 
 export class LocalStateContract extends arc4.Contract {
   // Implicit key state variables
-  implicitKeyArc4UintN64 = LocalState<UintN64>()
+  implicitKeyArc4UintN64 = LocalState<arc4.Uint64>()
   implicitKeyArc4Str = LocalState<Str>()
   implicitKeyArc4Byte = LocalState<Byte>()
   implicitKeyArc4Bool = LocalState<Bool>()
   implicitKeyArc4Address = LocalState<Address>()
-  implicitKeyArc4UintN128 = LocalState<UintN128>()
+  implicitKeyArc4UintN128 = LocalState<Uint128>()
   implicitKeyArc4DynamicBytes = LocalState<DynamicBytes>()
   implicitKeyTuple = LocalState<[uint64, bytes, boolean]>()
   implicitKeyObj = LocalState<{ a: uint64; b: bytes; c: boolean }>()
 
   // Explicit key state variables
-  arc4UintN64 = LocalState<UintN64>({ key: 'explicit_key_arc4_uintn64' })
+  arc4UintN64 = LocalState<arc4.Uint64>({ key: 'explicit_key_arc4_uintn64' })
   arc4Str = LocalState<Str>({ key: 'explicit_key_arc4_str' })
   arc4Byte = LocalState<Byte>({ key: 'explicit_key_arc4_byte' })
   arc4Bool = LocalState<Bool>({ key: 'explicit_key_arc4_bool' })
   arc4Address = LocalState<Address>({ key: 'explicit_key_arc4_address' })
-  arc4UintN128 = LocalState<UintN128>({ key: 'explicit_key_arc4_uintn128' })
+  arc4UintN128 = LocalState<Uint128>({ key: 'explicit_key_arc4_uintn128' })
   arc4DynamicBytes = LocalState<DynamicBytes>({ key: 'explicit_key_arc4_dynamic_bytes' })
 
   @arc4.abimethod({ allowActions: ['OptIn'] })
   opt_in(): void {
-    this.implicitKeyArc4UintN64(Global.creatorAddress).value = new UintN64(1337)
+    this.implicitKeyArc4UintN64(Global.creatorAddress).value = new arc4.Uint64(1337)
     this.implicitKeyArc4Str(Global.creatorAddress).value = new Str('Hello')
     this.implicitKeyArc4Byte(Global.creatorAddress).value = new Byte(0)
     this.implicitKeyArc4Bool(Global.creatorAddress).value = new Bool(true)
     this.implicitKeyArc4Address(Global.creatorAddress).value = new Address(Global.creatorAddress)
-    this.implicitKeyArc4UintN128(Global.creatorAddress).value = new UintN128(2n ** 100n)
+    this.implicitKeyArc4UintN128(Global.creatorAddress).value = new Uint128(2n ** 100n)
     this.implicitKeyArc4DynamicBytes(Global.creatorAddress).value = new DynamicBytes('dynamic bytes')
     this.implicitKeyTuple(Global.creatorAddress).value = [42, Bytes('dummy_bytes'), true]
     this.implicitKeyObj(Global.creatorAddress).value = { a: Uint64(42), b: Bytes('dummy_bytes'), c: true }
 
-    this.arc4UintN64(Global.creatorAddress).value = new UintN64(1337)
+    this.arc4UintN64(Global.creatorAddress).value = new arc4.Uint64(1337)
     this.arc4Str(Global.creatorAddress).value = new Str('Hello')
     this.arc4Byte(Global.creatorAddress).value = new Byte(0)
     this.arc4Bool(Global.creatorAddress).value = new Bool(true)
     this.arc4Address(Global.creatorAddress).value = new Address(Global.creatorAddress)
-    this.arc4UintN128(Global.creatorAddress).value = new UintN128(2n ** 100n)
+    this.arc4UintN128(Global.creatorAddress).value = new Uint128(2n ** 100n)
     this.arc4DynamicBytes(Global.creatorAddress).value = new DynamicBytes('dynamic bytes')
   }
 
   // Getter methods for implicit key state variables
   @arc4.abimethod()
-  get_implicit_key_arc4_uintn64(a: Account): UintN64 {
+  get_implicit_key_arc4_uintn64(a: Account): arc4.Uint64 {
     return this.implicitKeyArc4UintN64(a).value
   }
 
@@ -851,7 +852,7 @@ export class LocalStateContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  get_implicit_key_arc4_uintn128(a: Account): UintN128 {
+  get_implicit_key_arc4_uintn128(a: Account): Uint128 {
     return this.implicitKeyArc4UintN128(a).value
   }
 
@@ -872,7 +873,7 @@ export class LocalStateContract extends arc4.Contract {
 
   // Getter methods for explicit key state variables
   @arc4.abimethod()
-  get_arc4_uintn64(a: Account): arc4.UintN64 {
+  get_arc4_uintn64(a: Account): arc4.Uint64 {
     return this.arc4UintN64(a).value
   }
 
@@ -897,7 +898,7 @@ export class LocalStateContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  get_arc4_uintn128(a: Account): UintN128 {
+  get_arc4_uintn128(a: Account): Uint128 {
     return this.arc4UintN128(a).value
   }
 

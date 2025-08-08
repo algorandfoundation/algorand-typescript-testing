@@ -1,18 +1,30 @@
 import type { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
-import type { TypeInfo } from '../encoders'
+import type { TypeInfo } from '../impl/encoded-types'
 import type { DeliberateAny } from '../typescript-helpers'
 import { getPropertyNameAsString, trimGenericTypeName } from './helpers'
 
 const factory = ts.factory
 export const nodeFactory = {
   importHelpers(testingPackageName: string) {
-    return factory.createImportDeclaration(
-      undefined,
-      factory.createImportClause(false, undefined, factory.createNamespaceImport(factory.createIdentifier('runtimeHelpers'))),
-      factory.createStringLiteral(`${testingPackageName}/runtime-helpers`),
-      undefined,
-    )
+    return [
+      factory.createImportDeclaration(
+        undefined,
+        factory.createImportClause(false, undefined, factory.createNamespaceImport(factory.createIdentifier('runtimeHelpers'))),
+        factory.createStringLiteral(`${testingPackageName}/runtime-helpers`),
+        undefined,
+      ),
+      factory.createImportDeclaration(
+        undefined,
+        factory.createImportClause(
+          false,
+          undefined,
+          factory.createNamedImports([factory.createImportSpecifier(false, undefined, factory.createIdentifier('arc4'))]),
+        ),
+        factory.createStringLiteral(`${testingPackageName}/internal`),
+        undefined,
+      ),
+    ]
   },
 
   switchableValue(x: ts.Expression) {
@@ -84,30 +96,22 @@ export const nodeFactory = {
     )
   },
 
-  instantiateARC4EncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
+  instantiateEncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
     const infoString = JSON.stringify(typeInfo)
     const classIdentifier = node.expression.getText().replace('arc4.', '')
     return factory.createNewExpression(
-      factory.createIdentifier(`runtimeHelpers.${trimGenericTypeName(typeInfo?.name ?? classIdentifier)}Impl`),
+      factory.createIdentifier(`arc4.${trimGenericTypeName(typeInfo?.name ?? classIdentifier)}`),
       node.typeArguments,
       [infoString ? factory.createStringLiteral(infoString) : undefined, ...(node.arguments ?? [])].filter((arg) => !!arg),
     )
   },
 
-  callStubbedFunction(functionName: string, node: ts.CallExpression, typeInfo?: TypeInfo | TypeInfo[]) {
+  callStubbedFunction(node: ts.CallExpression, typeInfo?: TypeInfo | TypeInfo[]) {
     const typeInfoArgs = typeInfo
       ? (Array.isArray(typeInfo) ? typeInfo : [typeInfo]).map((t) => factory.createStringLiteral(JSON.stringify(t)))
-      : undefined
-    const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
-      factory.createIdentifier('runtimeHelpers'),
-      `${functionName}Impl`,
-    )
+      : []
 
-    return factory.createCallExpression(
-      updatedPropertyAccessExpression,
-      node.typeArguments,
-      [...(typeInfoArgs ?? []), ...(node.arguments ?? [])].filter((arg) => !!arg),
-    )
+    return factory.updateCallExpression(node, node.expression, node.typeArguments, [...typeInfoArgs, ...(node.arguments ?? [])])
   },
 
   callMethodSelectorFunction(node: ts.CallExpression) {
@@ -133,4 +137,17 @@ export const nodeFactory = {
     }
     return node
   },
-} satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>
+
+  callFixedBytesFunction(functionName: string, node: ts.CallExpression, length: number) {
+    const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
+      factory.createIdentifier('runtimeHelpers'),
+      `FixedBytes${functionName === 'Bytes' ? '' : `.${functionName}`}`,
+    )
+
+    return factory.createCallExpression(
+      updatedPropertyAccessExpression,
+      node.typeArguments,
+      [factory.createNumericLiteral(length), ...(node.arguments ?? [])].filter((arg) => !!arg),
+    )
+  },
+} satisfies Record<string, (...args: DeliberateAny[]) => ts.Node | ts.Node[]>
