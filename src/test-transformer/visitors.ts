@@ -177,7 +177,8 @@ class ExpressionVisitor {
         this.stubbedFunctionName = undefined
         let infoArg: TypeInfo | TypeInfo[] | undefined = info
 
-        /// if the function being called is not part of the program being transformed, do not process further
+        // the nodes which have been created or updated by the node factory will not have source location,
+        // and we do not need to process them further
         const sourceLocation = this.helper.sourceLocation(updatedNode)
         if (sourceLocation === SourceLocation.None) break handleTypeInfoCaputre
 
@@ -201,8 +202,8 @@ class ExpressionVisitor {
           } else if (isCallingAbiCall(stubbedFunctionName)) {
             updatedNode = nodeFactory.callAbiCallFunction(updatedNode)
           } else if (isCallingBytes(stubbedFunctionName)) {
-            if (type instanceof ptypes.BytesPType && type.fixedByteSize)
-              updatedNode = nodeFactory.callFixedBytesFunction(stubbedFunctionName, updatedNode, Number(type.fixedByteSize))
+            if (type instanceof ptypes.BytesPType && type.length)
+              updatedNode = nodeFactory.callFixedBytesFunction(stubbedFunctionName, updatedNode, Number(type.length))
           } else {
             updatedNode = nodeFactory.callStubbedFunction(updatedNode, infoArg)
           }
