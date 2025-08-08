@@ -42,6 +42,12 @@ npm i @algorandfoundation/algorand-typescript-testing
 
 Let's write a simple contract and test it using the `algorand-typescript-testing` framework.
 
+#### Simulating AVM
+
+`algorand-typescript-testing` includes a TypeScript transformer (`puyaTsTransformer`) that ensures contracts (with `.algo.ts` extension) and tests (with `.spec.ts` or `.test.ts` extensions) behave consistently between Node.js and AVM environments.
+
+The transformer replicates AVM behavior, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
+
 #### Configuring vitest
 
 If you are using [vitest](https://vitest.dev/) with [@rollup/plugin-typescript](https://www.npmjs.com/package/@rollup/plugin-typescript) plugin, configure `puyaTsTransformer` as a `before` stage transformer of the `typescript` plugin in `vitest.config.mts` file.
