@@ -7,7 +7,7 @@ export interface TransformerConfig {
   testingPackageName: string
 }
 export const defaultTransformerConfig: TransformerConfig = {
-  includeExt: ['.algo.ts', '.spec.ts', '.test.ts'],
+  includeExt: ['.algo.ts', '.algo.spec.ts', '.algo.test.ts'],
   testingPackageName: '@algorandfoundation/algorand-typescript-testing',
 }
 
