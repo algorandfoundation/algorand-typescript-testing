@@ -48,6 +48,8 @@ Let's write a simple contract and test it using the `algorand-typescript-testing
 
 The transformer replicates AVM behavior, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
 
+The transformer also redirects `@algorandfoundation/algorand-typescript` imports to `@algorandfoundation/algorand-typescript-testing/internal` to provide executable implementations of Algorand TypeScript constructs like `Global`, `Box`, `Uint64`, and `clone`.
+
 #### Configuring vitest
 
 If you are using [vitest](https://vitest.dev/) with [@rollup/plugin-typescript](https://www.npmjs.com/package/@rollup/plugin-typescript) plugin, configure `puyaTsTransformer` as a `before` stage transformer of the `typescript` plugin in `vitest.config.mts` file.
