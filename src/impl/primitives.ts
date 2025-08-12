@@ -13,46 +13,6 @@ export type StubBytesCompat = BytesCompat | BytesCls
 export type StubUint64Compat = Uint64Compat | Uint64Cls
 
 /**
- * Converts internal Algorand type representations to their external primitive values.
- *
- * @overload
- * @param {uint64} val - A uint64 value to convert
- * @returns {bigint} The uint64 value as a bigint
- *
- * @overload
- * @param {biguint} val - A biguint value to convert
- * @returns {bigint} The biguint value as a bigint
- *
- * @overload
- * @param {bytes} val - A bytes value to convert
- * @returns {Uint8Array} The bytes value as a Uint8Array
- *
- * @overload
- * @param {string} val - A string value to pass through
- * @returns {string} The original string value unchanged
- *
- * @example
- * ```ts
- * const uint64Val = Uint64(123n)
- * toExternalValue(uint64Val) // returns 123n
- *
- * const bytesVal = Bytes.fromBase64("SGVsbG8=");
- * toExternalValue(bytesVal) // returns Uint8Array([72, 101, 108, 108, 111])
- * ```
- */
-export function toExternalValue(val: uint64): bigint
-export function toExternalValue(val: biguint): bigint
-export function toExternalValue(val: bytes): Uint8Array
-export function toExternalValue(val: string): string
-export function toExternalValue(val: uint64 | biguint | bytes | string) {
-  const instance = val as unknown
-  if (instance instanceof BytesCls) return instance.asUint8Array()
-  if (instance instanceof Uint64Cls) return instance.asBigInt()
-  if (instance instanceof BigUintCls) return instance.asBigInt()
-  if (typeof val === 'string') return val
-}
-
-/**
  * Create a uint64 with the default value of 0
  */
 export function Uint64(): uint64
