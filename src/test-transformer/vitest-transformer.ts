@@ -28,7 +28,7 @@ programTransformer.factory = createProgramFactory(defaultTransformerConfig)
  ** @type {ts.TransformerFactory<ts.SourceFile> & ((config: Partial<TransformerConfig>) => ts.TransformerFactory<ts.SourceFile>)}
  *
  * @param {Partial<TransformerConfig>} [config] Configuration options
- * @param {string[]} [config.includeExt=['.algo.ts', '.spec.ts']] File extensions to process
+ * @param {string[]} [config.includeExt=['.algo.ts', '.algo.spec.ts']] File extensions to process
  * @param {string} [config.testingPackageName='@algorandfoundation/algorand-typescript-testing'] Package name for testing imports
  *
  * @example

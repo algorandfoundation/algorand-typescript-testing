@@ -44,9 +44,13 @@ Let's write a simple contract and test it using the `algorand-typescript-testing
 
 #### Simulating AVM
 
-`algorand-typescript-testing` includes a TypeScript transformer (`puyaTsTransformer`) that ensures contracts (with `.algo.ts` extension) and tests (with `.spec.ts` or `.test.ts` extensions) behave consistently between Node.js and AVM environments.
+`algorand-typescript-testing` includes a TypeScript transformer (`puyaTsTransformer`) that ensures contracts (with `.algo.ts` extension) and tests (with `.algo.spec.ts` or `.algo.test.ts` extensions) behave consistently between Node.js and AVM environments.
 
 The transformer replicates AVM behavior, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
+
+The transformer also redirects `@algorandfoundation/algorand-typescript` imports to `@algorandfoundation/algorand-typescript-testing/internal` to provide executable implementations of Algorand TypeScript constructs like `Global`, `Box`, `Uint64`, and `clone`.
+
+If there are tests which do not need to be executed in the AVM context such as end to end tests, simply use `.test.ts` or `.spec.ts` file extensions without `.algo` part and the transformer would skip them.
 
 #### Configuring vitest
 
@@ -93,7 +97,7 @@ import { createDefaultEsmPreset, type JestConfigWithTsJest } from 'ts-jest'
 const presetConfig = createDefaultEsmPreset({})
 const jestConfig: JestConfigWithTsJest = {
   ...presetConfig,
-  testMatch: ['**/*.test.ts'],
+  testMatch: ['**/*.algo.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
     '^.+\\.tsx?$': [
