@@ -12,6 +12,7 @@ import { asBytes, asBytesCls, asUint8Array, conactUint8Arrays } from '../util'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 import { Bytes, BytesCls, FixedBytes, Uint64Cls } from './primitives'
 
+/** @internal */
 export const sha256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha256.sha256.create().update(bytesA.asUint8Array()).digest()
@@ -19,6 +20,7 @@ export const sha256 = (a: StubBytesCompat): bytes<32> => {
   return hashBytes
 }
 
+/** @internal */
 export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.sha3_256.create().update(bytesA.asUint8Array()).digest()
@@ -26,6 +28,7 @@ export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
   return hashBytes
 }
 
+/** @internal */
 export const keccak256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.keccak256.create().update(bytesA.asUint8Array()).digest()
@@ -33,6 +36,7 @@ export const keccak256 = (a: StubBytesCompat): bytes<32> => {
   return hashBytes
 }
 
+/** @internal */
 export const sha512_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha512.sha512_256.create().update(bytesA.asUint8Array()).digest()
@@ -40,6 +44,7 @@ export const sha512_256 = (a: StubBytesCompat): bytes<32> => {
   return hashBytes
 }
 
+/** @internal */
 export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
   const bytesA = BytesCls.fromCompat(a)
   const bytesB = BytesCls.fromCompat(b)
@@ -47,6 +52,7 @@ export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: Stu
   return nacl.sign.detached.verify(bytesA.asUint8Array(), bytesB.asUint8Array(), bytesC.asUint8Array())
 }
 
+/** @internal */
 export const ed25519verify = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
   const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationCallTxn
   const programBytes = asBytesCls(txn.onCompletion == OnCompleteAction.ClearState ? txn.clearStateProgram : txn.approvalProgram)
@@ -59,6 +65,7 @@ export const ed25519verify = (a: StubBytesCompat, b: StubBytesCompat, c: StubByt
   return ed25519verifyBare(data, b, c)
 }
 
+/** @internal */
 export const ecdsaVerify = (
   v: Ecdsa,
   a: StubBytesCompat,
@@ -82,6 +89,7 @@ export const ecdsaVerify = (
   return keyPair.verify(dataBytes.asUint8Array(), { r: sigRBytes.asUint8Array(), s: sigSBytes.asUint8Array() })
 }
 
+/** @internal */
 export const ecdsaPkRecover = (
   v: Ecdsa,
   a: StubBytesCompat,
@@ -109,6 +117,7 @@ export const ecdsaPkRecover = (
   return [FixedBytes(32, x), FixedBytes(32, y)]
 }
 
+/** @internal */
 export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes<32>, bytes<32>] => {
   const bytesA = BytesCls.fromCompat(a)
 
@@ -121,16 +130,19 @@ export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes
   return [FixedBytes(32, new Uint8Array(x)), FixedBytes(32, new Uint8Array(y))]
 }
 
+/** @internal */
 export const vrfVerify = (_s: VrfVerify, _a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): readonly [bytes<64>, boolean] => {
   throw new NotImplementedError('vrfVerify')
 }
 
+/** @internal */
 export const EllipticCurve = new Proxy({} as typeof op.EllipticCurve, {
   get: (_target, prop) => {
     throw new NotImplementedError(`EllipticCurve.${prop.toString()}`)
   },
 })
 
+/** @internal */
 export const mimc = (_c: MimcConfigurations, _a: StubBytesCompat): bytes => {
   throw new NotImplementedError('mimc')
 }

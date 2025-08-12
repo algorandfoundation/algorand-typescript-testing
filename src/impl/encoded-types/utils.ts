@@ -5,6 +5,7 @@ import { CodeError } from '../../errors'
 import { findBoolTypes, trimGenericTypeName } from './helpers'
 import type { DynamicArrayGenericArgs, StaticArrayGenericArgs, TypeInfo, uFixedGenericArgs } from './types'
 
+/** @internal */
 export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: boolean = true): number => {
   const getMaxBytesLengthForStaticArray = (typeInfo: { genericArgs: StaticArrayGenericArgs }) => {
     const genericArgs = typeInfo.genericArgs
@@ -83,6 +84,7 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
   }
 }
 
+/** @internal */
 export const getArc4TypeName = (
   typeInfo: TypeInfo,
   resourceEncoding: ResourceEncodingOptions | undefined = undefined,
@@ -144,11 +146,13 @@ export const getArc4TypeName = (
   return undefined
 }
 
+/** @internal */
 export const arc4EncodedLength = (typeInfoString: string): uint64 => {
   const typeInfo = JSON.parse(typeInfoString)
   return getMaxLengthOfStaticContentType(typeInfo, true)
 }
 
+/** @internal */
 export const minLengthForType = (typeInfo: TypeInfo): number | undefined => {
   try {
     return getMaxLengthOfStaticContentType(typeInfo, false)

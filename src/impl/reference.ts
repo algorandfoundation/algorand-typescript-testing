@@ -32,6 +32,8 @@ import type { GlobalStateCls, LocalStateCls } from './state'
 export class AssetHolding {
   balance: uint64
   frozen: boolean
+
+  /** @internal */
   constructor(balance: StubUint64Compat, frozen: boolean) {
     this.balance = asUint64(balance)
     this.frozen = frozen
@@ -46,6 +48,7 @@ export class AccountData {
   lastHeartbeat?: uint64
   account: Mutable<Omit<AccountType, 'bytes' | 'isOptedIn'>>
 
+  /** @internal */
   constructor() {
     this.account = {
       totalAppsCreated: 0,
@@ -64,10 +67,12 @@ export class AccountData {
   }
 }
 
+/** @internal */
 export function Account(address?: bytes): AccountType {
   return new AccountCls(address)
 }
 
+/** @internal */
 export class AccountCls extends BytesBackedCls implements AccountType {
   constructor(address?: bytes) {
     const addressBytes = address ?? ZERO_ADDRESS
@@ -143,8 +148,10 @@ export class ApplicationData {
     materialisedBoxes: BytesMap<DeliberateAny>
   }
 
+  /** @internal */
   isCreating: boolean = false
 
+  /** @internal */
   constructor() {
     this.application = {
       approvalProgram: ALWAYS_APPROVE_TEAL_PROGRAM,
@@ -165,10 +172,12 @@ export class ApplicationData {
   }
 }
 
+/** @internal */
 export function Application(id?: uint64): ApplicationType {
   return new ApplicationCls(id)
 }
 
+/** @internal */
 export class ApplicationCls extends Uint64BackedCls implements ApplicationType {
   get id() {
     return this.uint64
@@ -215,6 +224,7 @@ export class ApplicationCls extends Uint64BackedCls implements ApplicationType {
 }
 
 export type AssetData = Mutable<Omit<AssetType, 'id' | 'balance' | 'frozen'>>
+/** @internal */
 export const getDefaultAssetData = (): AssetData => ({
   total: lazyContext.any.uint64(),
   decimals: lazyContext.any.uint64(1, 6),
@@ -230,10 +240,12 @@ export const getDefaultAssetData = (): AssetData => ({
   reserve: Account(ZERO_ADDRESS),
 })
 
+/** @internal */
 export function Asset(id?: uint64): AssetType {
   return new AssetCls(id)
 }
 
+/** @internal */
 export class AssetCls extends Uint64BackedCls implements AssetType {
   get id(): uint64 {
     return this.uint64
@@ -302,10 +314,12 @@ export class AssetCls extends Uint64BackedCls implements AssetType {
   }
 }
 
+/** @internal */
 export const checksumFromPublicKey = (pk: Uint8Array): Uint8Array => {
   return Uint8Array.from(js_sha512.sha512_256.array(pk).slice(HASH_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, HASH_BYTES_LENGTH))
 }
 
+/** @internal */
 export const getApplicationAddress = (appId: StubUint64Compat): AccountType => {
   const toBeSigned = conactUint8Arrays(asUint8Array(APP_ID_PREFIX), encodingUtil.bigIntToUint8Array(asBigInt(appId), 8))
   const appIdHash = js_sha512.sha512_256.array(toBeSigned)
@@ -314,16 +328,19 @@ export const getApplicationAddress = (appId: StubUint64Compat): AccountType => {
   return Account(Bytes.fromBase32(address))
 }
 
+/** @internal */
 export const encodeAddress = (address: Uint8Array): string => {
   const checksum = checksumFromPublicKey(address)
   return encodingUtil.uint8ArrayToBase32(conactUint8Arrays(address, checksum)).slice(0, ALGORAND_ADDRESS_LENGTH)
 }
 
+/** @internal */
 export const decodePublicKey = (address: string): Uint8Array => {
   const decoded = encodingUtil.base32ToUint8Array(address)
   return decoded.slice(0, ALGORAND_ADDRESS_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)
 }
 
+/** @internal */
 export const asAccount = (val: AccountType | bytes | string | undefined): AccountType | undefined => {
   return val instanceof AccountCls
     ? val
@@ -334,10 +351,12 @@ export const asAccount = (val: AccountType | bytes | string | undefined): Accoun
         : undefined
 }
 
+/** @internal */
 export const asAsset = (val: AssetType | uint64 | undefined): AssetType | undefined => {
   return val instanceof Uint64Cls ? Asset(val.asAlgoTs()) : val instanceof AssetCls ? val : undefined
 }
 
+/** @internal */
 export const asApplication = (val: ApplicationType | uint64 | undefined): ApplicationType | undefined => {
   return val instanceof Uint64Cls ? Application(val.asAlgoTs()) : val instanceof ApplicationCls ? val : undefined
 }

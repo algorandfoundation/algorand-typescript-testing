@@ -39,6 +39,7 @@ type VisitorHelper = {
   getConfig(): TransformerConfig
 }
 
+/** @internal */
 export class SourceFileVisitor {
   private helper: VisitorHelper
 

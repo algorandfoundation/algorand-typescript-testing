@@ -9,9 +9,12 @@ import { AccountCls } from './impl/reference'
 import { nameOfType, type DeliberateAny } from './typescript-helpers'
 import { flattenAsBytes } from './util'
 
+/** @internal */
 export { attachAbiMetadata } from './abi-metadata'
+/** @internal */
 export { FixedBytes } from './impl/primitives'
 
+/** @internal */
 export function switchableValue(x: unknown): bigint | string | boolean {
   if (typeof x === 'boolean') return x
   if (typeof x === 'bigint') return x
@@ -31,6 +34,7 @@ function tryGetBigInt(value: unknown): bigint | undefined {
   return undefined
 }
 
+/** @internal */
 export function binaryOp(left: unknown, right: unknown, op: BinaryOps) {
   if (left instanceof ARC4Encoded && right instanceof ARC4Encoded) {
     return arc4EncodedOp(left, right, op)
@@ -68,6 +72,7 @@ export function binaryOp(left: unknown, right: unknown, op: BinaryOps) {
   return defaultBinaryOp(left, right, op)
 }
 
+/** @internal */
 export function unaryOp(operand: unknown, op: UnaryOps) {
   if (operand instanceof Uint64Cls) {
     return uint64UnaryOp(operand, op)
@@ -316,11 +321,13 @@ function defaultUnaryOp(_operand: DeliberateAny, op: UnaryOps): DeliberateAny {
 }
 
 const genericTypeMap = new WeakMap<DeliberateAny, TypeInfo>()
+/** @internal */
 export function captureGenericTypeInfo(target: DeliberateAny, t: string) {
   genericTypeMap.set(target, JSON.parse(t))
   return target
 }
 
+/** @internal */
 export function getGenericTypeInfo(target: DeliberateAny): TypeInfo | undefined {
   return genericTypeMap.get(target)
 }

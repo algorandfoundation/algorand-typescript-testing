@@ -1,5 +1,6 @@
 import type { TestExecutionContext } from '../test-execution-context'
 
+/** @internal */
 export class ContextManager {
   private static _instance: TestExecutionContext | undefined
 

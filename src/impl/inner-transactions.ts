@@ -3,6 +3,7 @@ import type {
   Application as ApplicationType,
   Asset as AssetType,
   bytes,
+  BytesCompat,
   itxn,
 } from '@algorandfoundation/algorand-typescript'
 import { TransactionType } from '@algorandfoundation/algorand-typescript'
@@ -21,7 +22,6 @@ import { getApp } from './app-params'
 import { getAsset } from './asset-params'
 import { encodeArc4 } from './encoded-types'
 import type { InnerTxn, InnerTxnFields } from './itxn'
-import type { StubBytesCompat } from './primitives'
 import { Uint64Cls } from './primitives'
 import { Account, asAccount, asApplication, asAsset } from './reference'
 import type { Transaction } from './transactions'
@@ -46,6 +46,7 @@ const mapCommonFields = <T extends InnerTxnFields>(
     ...rest,
   }
 }
+
 export class PaymentInnerTxn extends PaymentTransaction implements itxn.PaymentInnerTxn {
   readonly isItxn?: true
 
@@ -166,6 +167,7 @@ export class AssetFreezeInnerTxn extends AssetFreezeTransaction implements itxn.
   }
 }
 
+/** @internal */
 export type ApplicationCallFields = itxn.ApplicationCallFields & {
   createdApp?: ApplicationType
   appLogs?: Array<bytes>
@@ -200,6 +202,7 @@ export class ApplicationCallInnerTxn extends ApplicationCallTransaction implemen
   }
 }
 
+/** @internal */
 export const createInnerTxn = <TFields extends InnerTxnFields>(fields: TFields) => {
   switch (fields.type) {
     case TransactionType.Payment:
@@ -219,28 +222,36 @@ export const createInnerTxn = <TFields extends InnerTxnFields>(fields: TFields) 
   }
 }
 
+/** @internal */
 export function submitGroup<TFields extends [...itxn.ItxnParams[]]>(...transactionFields: TFields): itxn.TxnFor<TFields> {
   return transactionFields.map((f: (typeof transactionFields)[number]) => f.submit()) as itxn.TxnFor<TFields>
 }
+/** @internal */
 export function payment(fields: itxn.PaymentFields): itxn.PaymentItxnParams {
   return new ItxnParams<itxn.PaymentFields, itxn.PaymentInnerTxn>(fields, TransactionType.Payment)
 }
+/** @internal */
 export function keyRegistration(fields: itxn.KeyRegistrationFields): itxn.KeyRegistrationItxnParams {
   return new ItxnParams<itxn.KeyRegistrationFields, itxn.KeyRegistrationInnerTxn>(fields, TransactionType.KeyRegistration)
 }
+/** @internal */
 export function assetConfig(fields: itxn.AssetConfigFields): itxn.AssetConfigItxnParams {
   return new ItxnParams<itxn.AssetConfigFields, itxn.AssetConfigInnerTxn>(fields, TransactionType.AssetConfig)
 }
+/** @internal */
 export function assetTransfer(fields: itxn.AssetTransferFields): itxn.AssetTransferItxnParams {
   return new ItxnParams<itxn.AssetTransferFields, itxn.AssetTransferInnerTxn>(fields, TransactionType.AssetTransfer)
 }
+/** @internal */
 export function assetFreeze(fields: itxn.AssetFreezeFields): itxn.AssetFreezeItxnParams {
   return new ItxnParams<itxn.AssetFreezeFields, itxn.AssetFreezeInnerTxn>(fields, TransactionType.AssetFreeze)
 }
+/** @internal */
 export function applicationCall(fields: itxn.ApplicationCallFields): itxn.ApplicationCallItxnParams {
   return new ItxnParams<itxn.ApplicationCallFields, itxn.ApplicationCallInnerTxn>(fields, TransactionType.ApplicationCall)
 }
 
+/** @internal */
 export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends InnerTxn> {
   #fields: TFields & { type: TransactionType }
   constructor(fields: TFields, type: TransactionType) {
@@ -332,7 +343,7 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
     return this.#returnValue === UNSET ? (undefined as TReturn) : this.#returnValue
   }
 
-  override appendLog(value: StubBytesCompat) {
+  override appendLog(value: BytesCompat) {
     /*
     As per https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0004.md#implementing-a-method
     If the method is non-void, the Application MUST encode the return value as described in the Encoding section and then log it with the

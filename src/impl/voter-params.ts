@@ -7,6 +7,7 @@ export class VoterData {
   balance: uint64
   incentiveEligible: boolean
 
+  /** @internal */
   constructor() {
     this.balance = 0
     this.incentiveEligible = false
@@ -18,6 +19,7 @@ const getVoterData = (a: Account | StubUint64Compat): VoterData => {
   return lazyContext.getVoterData(acct)
 }
 
+/** @internal */
 export const VoterParams: typeof op.VoterParams = {
   voterBalance: function (a: Account | StubUint64Compat): readonly [uint64, boolean] {
     const data = getVoterData(a)

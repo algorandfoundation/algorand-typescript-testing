@@ -1,6 +1,7 @@
 import ts from 'typescript'
 import { TransformerError } from './errors'
 
+/** @internal */
 export const getPropertyNameAsString = (name: ts.PropertyName): ts.Identifier | ts.StringLiteral | ts.NoSubstitutionTemplateLiteral => {
   if (ts.isStringLiteralLike(name)) {
     return name
@@ -11,4 +12,5 @@ export const getPropertyNameAsString = (name: ts.PropertyName): ts.Identifier | 
   throw new TransformerError(`Node ${name.kind} cannot be converted to a static string`)
 }
 
+/** @internal */
 export const trimGenericTypeName = (typeName: string) => typeName.replace(/<.*>/, '')

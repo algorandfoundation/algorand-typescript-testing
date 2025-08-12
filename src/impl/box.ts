@@ -6,6 +6,7 @@ import { asBytes, asBytesCls, asNumber, asUint8Array, conactUint8Arrays } from '
 import { toBytes } from './encoded-types'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 
+/** @internal */
 export const Box: typeof op.Box = {
   create(a: StubBytesCompat, b: StubUint64Compat): boolean {
     const name = asBytes(a)

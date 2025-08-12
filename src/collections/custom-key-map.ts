@@ -1,6 +1,5 @@
-import type { Account } from '@algorandfoundation/algorand-typescript'
+import type { Account, BytesCompat, Uint64Compat } from '@algorandfoundation/algorand-typescript'
 import { InternalError } from '../errors'
-import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
 import type { DeliberateAny } from '../typescript-helpers'
 import { asBytesCls, asUint64Cls } from '../util'
 
@@ -75,13 +74,13 @@ export class AccountMap<TValue> extends CustomKeyMap<Account, TValue> {
   }
 }
 
-export class BytesMap<TValue> extends CustomKeyMap<StubBytesCompat, TValue> {
+export class BytesMap<TValue> extends CustomKeyMap<BytesCompat, TValue> {
   constructor() {
     super((bytes) => asBytesCls(bytes).valueOf())
   }
 }
 
-export class Uint64Map<TValue> extends CustomKeyMap<StubUint64Compat, TValue> {
+export class Uint64Map<TValue> extends CustomKeyMap<Uint64Compat, TValue> {
   constructor() {
     super((uint64) => asUint64Cls(uint64).valueOf())
   }

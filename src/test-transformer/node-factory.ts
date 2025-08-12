@@ -5,6 +5,7 @@ import type { DeliberateAny } from '../typescript-helpers'
 import { getPropertyNameAsString, trimGenericTypeName } from './helpers'
 
 const factory = ts.factory
+/** @internal */
 export const nodeFactory = {
   importHelpers(testingPackageName: string) {
     return [

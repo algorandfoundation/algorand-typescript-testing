@@ -7,6 +7,7 @@ import { FixedArray } from './encoded-types/encoded-types'
 import type { StubBytesCompat, Uint64Cls } from './primitives'
 import { BytesCls } from './primitives'
 
+/** @internal */
 export const match: typeof _match = (subject, test): boolean => {
   if (Object.hasOwn(test, 'not')) {
     return !match(subject, (test as DeliberateAny).not)
@@ -56,6 +57,7 @@ export const match: typeof _match = (subject, test): boolean => {
   return false
 }
 
+/** @internal */
 export const assertMatch: typeof _assertMatch = (subject, test, message): void => {
   const isMatching = match(subject, test)
   assert(isMatching, message)

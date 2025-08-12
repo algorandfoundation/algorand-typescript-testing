@@ -3,8 +3,10 @@ import type {
   Application as ApplicationType,
   Asset as AssetType,
   bytes,
+  BytesCompat,
   gtxn,
   uint64,
+  Uint64Compat,
 } from '@algorandfoundation/algorand-typescript'
 import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_ITEMS_IN_LOG } from '../constants'
@@ -13,7 +15,7 @@ import { InternalError } from '../errors'
 import type { Mutable, ObjectKeys } from '../typescript-helpers'
 import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asNumber, asUint64Cls, combineIntoMaxBytePages, getRandomBytes } from '../util'
 import { toBytes } from './encoded-types'
-import { Bytes, Uint64, type StubBytesCompat, type StubUint64Compat } from './primitives'
+import { Bytes, Uint64, type StubBytesCompat } from './primitives'
 import { Account, Application, Asset } from './reference'
 
 const baseDefaultFields = () => ({
@@ -59,7 +61,7 @@ abstract class TransactionBase {
   readonly rekeyTo: AccountType
   readonly scratchSpace: Array<bytes | uint64>
 
-  setScratchSlot(index: StubUint64Compat, value: StubBytesCompat | StubUint64Compat): void {
+  setScratchSlot(index: Uint64Compat, value: BytesCompat | Uint64Compat): void {
     const i = asNumber(index)
     if (i >= this.scratchSpace.length) {
       throw new InternalError('invalid scratch slot')
@@ -69,7 +71,7 @@ abstract class TransactionBase {
     this.scratchSpace[i] = bytesValue?.asAlgoTs() ?? uint64Value?.asAlgoTs() ?? Uint64(0)
   }
 
-  getScratchSlot(index: StubUint64Compat): bytes | uint64 {
+  getScratchSlot(index: Uint64Compat): bytes | uint64 {
     const i = asNumber(index)
     if (i >= this.scratchSpace.length) {
       throw new InternalError('invalid scratch slot')
@@ -324,25 +326,25 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   get apfa() {
     return this.#apps
   }
-  appArgs(index: StubUint64Compat): bytes {
+  appArgs(index: Uint64Compat): bytes {
     return toBytes(this.args[asNumber(index)])
   }
-  accounts(index: StubUint64Compat): AccountType {
+  accounts(index: Uint64Compat): AccountType {
     return this.#accounts[asNumber(index)]
   }
-  assets(index: StubUint64Compat): AssetType {
+  assets(index: Uint64Compat): AssetType {
     return this.#assets[asNumber(index)]
   }
-  apps(index: StubUint64Compat): ApplicationType {
+  apps(index: Uint64Compat): ApplicationType {
     return this.#apps[asNumber(index)]
   }
-  approvalProgramPages(index: StubUint64Compat): bytes {
+  approvalProgramPages(index: Uint64Compat): bytes {
     return combineIntoMaxBytePages(this.#approvalProgramPages)[asNumber(index)]
   }
-  clearStateProgramPages(index: StubUint64Compat): bytes {
+  clearStateProgramPages(index: Uint64Compat): bytes {
     return combineIntoMaxBytePages(this.#clearStateProgramPages)[asNumber(index)]
   }
-  logs(index: StubUint64Compat): bytes {
+  logs(index: Uint64Compat): bytes {
     const i = asNumber(index)
     return this.appLogs[i] ?? lazyContext.getApplicationData(this.appId.id).application.appLogs ?? Bytes()
   }

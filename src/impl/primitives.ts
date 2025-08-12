@@ -8,27 +8,35 @@ import { base32ToUint8Array } from './base-32'
 const MAX_UINT8 = 2 ** 8 - 1
 const MAX_BYTES_SIZE = 4096
 
+/** @internal */
 export type StubBigUintCompat = BigUintCompat | BigUintCls | Uint64Cls
+/** @internal */
 export type StubBytesCompat = BytesCompat | BytesCls
+/** @internal */
 export type StubUint64Compat = Uint64Compat | Uint64Cls
 
 /**
  * Create a uint64 with the default value of 0
+ * @internal
  */
 export function Uint64(): uint64
 /**
+ * @internal
  * Create a uint64 from a string literal
  */
 export function Uint64(v: string): uint64
 /**
+ * @internal
  * Create a uint64 from a bigint literal
  */
 export function Uint64(v: bigint): uint64
 /**
+ * @internal
  * Create a uint64 from a number literal
  */
 export function Uint64(v: number): uint64
 /**
+ * @internal
  * Create a uint64 from a boolean value. True is 1, False is 0
  */
 export function Uint64(v: boolean): uint64
@@ -40,30 +48,37 @@ export function Uint64(v?: Uint64Compat | string): uint64 {
 }
 
 /**
+ * @internal
  * Create a biguint from a bigint literal
  */
 export function BigUint(v: bigint): biguint
 /**
+ * @internal
  * Create a biguint from a boolean value (true = 1, false = 0)
  */
 export function BigUint(v: boolean): biguint
 /**
+ * @internal
  * Create a biguint from a uint64 value
  */
 export function BigUint(v: uint64): biguint
 /**
+ * @internal
  * Create a biguint from a number literal
  */
 export function BigUint(v: number): biguint
 /**
+ * @internal
  * Create a biguint from a byte array interpreted as a big-endian number
  */
 export function BigUint(v: bytes): biguint
 /**
+ * @internal
  * Create a biguint from a string literal containing the decimal digits
  */
 export function BigUint(v: string): biguint
 /**
+ * @internal
  * Create a biguint with the default value of 0
  */
 export function BigUint(): biguint
@@ -74,9 +89,10 @@ export function BigUint(v?: BigUintCompat | string): biguint {
 }
 
 /**
+ * @internal
  * Create a byte array from a string interpolation template and compatible replacements
- * @param value
- * @param replacements
+ * @param value *
+ * @param replacements *
  */
 export function FixedBytes<TLength extends uint64 = uint64>(
   length: TLength,
@@ -84,26 +100,32 @@ export function FixedBytes<TLength extends uint64 = uint64>(
   ...replacements: BytesCompat[]
 ): bytes<TLength>
 /**
+ * @internal
  * Create a byte array from a utf8 string
  */
 export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: string): bytes<TLength>
 /**
+ * @internal
  * No op, returns the provided byte array.
  */
 export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: bytes): bytes<TLength>
 /**
- * Create a byte array from a biguint value encoded as a variable length big-endian number
+ * @internal
+ * Create a byte array from a biguint value encoded as a variable length big-endian number *
  */
 export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: biguint): bytes<TLength>
 /**
+ * @internal
  * Create a byte array from a uint64 value encoded as a fixed length 64-bit number
  */
 export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: uint64): bytes<TLength>
 /**
+ * @internal
  * Create a byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
  */
 export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: Iterable<uint64>): bytes<TLength>
 /**
+ * @internal
  * Create an empty byte array
  */
 export function FixedBytes<TLength extends uint64 = uint64>(length: TLength): bytes<TLength>
@@ -120,6 +142,7 @@ export function FixedBytes<TLength extends uint64 = uint64>(
 }
 
 /**
+ * @internal
  * Create a new bytes value from a hexadecimal encoded string
  * @param hex
  */
@@ -131,6 +154,7 @@ FixedBytes.fromHex = <TLength extends uint64 = uint64>(length: TLength, hex: str
   return result.toFixed({ length })
 }
 /**
+ * @internal
  * Create a new bytes value from a base 64 encoded string
  * @param b64
  */
@@ -143,6 +167,7 @@ FixedBytes.fromBase64 = <TLength extends uint64 = uint64>(length: TLength, b64: 
 }
 
 /**
+ * @internal
  * Create a new bytes value from a base 32 encoded string
  * @param b32
  */
@@ -155,32 +180,39 @@ FixedBytes.fromBase32 = <TLength extends uint64 = uint64>(length: TLength, b32: 
 }
 
 /**
+ * @internal
  * Create a byte array from a string interpolation template and compatible replacements
  * @param value
  * @param replacements
  */
 export function Bytes(value: TemplateStringsArray, ...replacements: BytesCompat[]): bytes
 /**
+ * @internal
  * Create a byte array from a utf8 string
  */
 export function Bytes(value: string): bytes
 /**
+ * @internal
  * No op, returns the provided byte array.
  */
 export function Bytes(value: bytes): bytes
 /**
+ * @internal
  * Create a byte array from a biguint value encoded as a variable length big-endian number
  */
 export function Bytes(value: biguint): bytes
 /**
+ * @internal
  * Create a byte array from a uint64 value encoded as a fixed length 64-bit number
  */
 export function Bytes(value: uint64): bytes
 /**
+ * @internal
  * Create a byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
  */
 export function Bytes(value: Iterable<uint64>): bytes
 /**
+ * @internal
  * Create an empty byte array
  */
 export function Bytes(): bytes
@@ -207,6 +239,7 @@ export function Bytes(
 }
 
 /**
+ * @internal
  * Create a new bytes value from a hexadecimal encoded string
  * @param hex
  */
@@ -214,6 +247,7 @@ Bytes.fromHex = (hex: string): bytes => {
   return BytesCls.fromHex(hex).asAlgoTs()
 }
 /**
+ * @internal
  * Create a new bytes value from a base 64 encoded string
  * @param b64
  */
@@ -222,6 +256,7 @@ Bytes.fromBase64 = (b64: string): bytes => {
 }
 
 /**
+ * @internal
  * Create a new bytes value from a base 32 encoded string
  * @param b32
  */
@@ -230,6 +265,7 @@ Bytes.fromBase32 = (b32: string): bytes => {
 }
 
 /**
+ * @internal
  * Convert a StubUint64Compat value into a 'number' if possible.
  * This value may be negative
  * @param v
@@ -248,33 +284,39 @@ export const getNumber = (v: StubUint64Compat): number => {
   throw new InternalError(`Cannot convert ${v} to number`)
 }
 
+/** @internal */
 export const getUint8Array = (v: StubBytesCompat): Uint8Array => {
   return BytesCls.fromCompat(v).asUint8Array()
 }
 
+/** @internal */
 export const isBytes = (v: unknown): v is StubBytesCompat => {
   if (typeof v === 'string') return true
   if (v instanceof BytesCls) return true
   return v instanceof Uint8Array
 }
 
+/** @internal */
 export const isUint64 = (v: unknown): v is StubUint64Compat => {
   if (typeof v == 'number') return true
   if (typeof v == 'bigint') return true
   return v instanceof Uint64Cls
 }
 
+/** @internal */
 export const checkUint64 = (v: bigint): bigint => {
   const u64 = BigInt.asUintN(64, v)
   if (u64 !== v) throw new AvmError(`Uint64 overflow or underflow`)
   return u64
 }
+/** @internal */
 export const checkBigUint = (v: bigint): bigint => {
   const uBig = BigInt.asUintN(64 * 8, v)
   if (uBig !== v) throw new AvmError(`BigUint overflow or underflow`)
   return uBig
 }
 
+/** @internal */
 export const checkBytes = (v: Uint8Array): Uint8Array => {
   if (v.length > MAX_BYTES_SIZE) throw new AvmError(`Bytes length ${v.length} exceeds maximum length ${MAX_BYTES_SIZE}`)
   return v
@@ -299,6 +341,7 @@ function isInstanceOfTypeByName(subject: unknown, typeCtor: { name: string }): b
   return false
 }
 
+/** @internal */
 export abstract class AlgoTsPrimitiveCls {
   static [Symbol.hasInstance](x: unknown): x is AlgoTsPrimitiveCls {
     return isInstanceOfTypeByName(x, AlgoTsPrimitiveCls)
@@ -308,6 +351,7 @@ export abstract class AlgoTsPrimitiveCls {
   abstract toBytes(): BytesCls
 }
 
+/** @internal */
 export class Uint64Cls extends AlgoTsPrimitiveCls {
   readonly #value: bigint
   constructor(value: bigint | number | string) {
@@ -357,6 +401,7 @@ export class Uint64Cls extends AlgoTsPrimitiveCls {
     return this.#value.toString()
   }
 }
+/** @internal */
 export class BigUintCls extends AlgoTsPrimitiveCls {
   readonly #value: bigint
   constructor(value: bigint) {
@@ -407,6 +452,7 @@ function isTemplateStringsArray(v: unknown): v is TemplateStringsArray {
   return Boolean(v) && Array.isArray(v) && typeof v[0] === 'string'
 }
 
+/** @internal */
 export class BytesCls extends AlgoTsPrimitiveCls {
   readonly #v: Uint8Array
   constructor(
@@ -558,6 +604,7 @@ export class BytesCls extends AlgoTsPrimitiveCls {
   }
 }
 
+/** @internal */
 export const arrayUtil = new (class ArrayUtil {
   arrayAt(arrayLike: Uint8Array, index: StubUint64Compat): Uint8Array
   arrayAt<T>(arrayLike: readonly T[], index: StubUint64Compat): T

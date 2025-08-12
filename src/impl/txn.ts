@@ -5,9 +5,10 @@ import { InternalError } from '../errors'
 import { asNumber, asUint64, asUint64Cls } from '../util'
 import type { StubUint64Compat } from './primitives'
 
+/** @internal */
 export const gaid = (a: StubUint64Compat): uint64 => {
   const group = lazyContext.activeGroup
-  const transaction = group.getTransaction(a)
+  const transaction = group.getTransaction(asUint64(a))
   if (transaction.type === TransactionType.ApplicationCall) {
     return transaction.createdApp.id
   } else if (transaction.type === TransactionType.AssetConfig) {
@@ -17,6 +18,7 @@ export const gaid = (a: StubUint64Compat): uint64 => {
   }
 }
 
+/** @internal */
 export const Txn: typeof op.Txn = {
   get sender(): Account {
     return lazyContext.activeGroup.getTransaction().sender

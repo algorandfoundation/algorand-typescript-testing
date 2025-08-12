@@ -1,3 +1,4 @@
+/** @internal */
 export {
   Address,
   Bool,
@@ -20,5 +21,7 @@ export {
   UFixed,
   Uint,
 } from './encoded-types'
+/** @internal */
 export { TypeInfo } from './types'
+/** @internal */
 export { arc4EncodedLength, getArc4TypeName, getMaxLengthOfStaticContentType, minLengthForType } from './utils'

@@ -79,6 +79,7 @@ import type {
 } from './types'
 import { getMaxLengthOfStaticContentType } from './utils'
 
+/** @internal */
 export class Uint<N extends BitSize> extends _Uint<N> {
   private value: Uint8Array
   private bitSize: N
@@ -130,6 +131,7 @@ export class Uint<N extends BitSize> extends _Uint<N> {
   }
 }
 
+/** @internal */
 export class UFixed<N extends BitSize, M extends number> extends _UFixed<N, M> {
   private value: Uint8Array
   private bitSize: N
@@ -190,6 +192,7 @@ export class UFixed<N extends BitSize, M extends number> extends _UFixed<N, M> {
   }
 }
 
+/** @internal */
 export class Byte extends _Byte {
   typeInfo: TypeInfo
   private value: Uint<8>
@@ -227,6 +230,7 @@ export class Byte extends _Byte {
   }
 }
 
+/** @internal */
 export class Str extends _Str {
   typeInfo: TypeInfo
   private value: Uint8Array
@@ -265,6 +269,7 @@ export class Str extends _Str {
   }
 }
 
+/** @internal */
 export class Bool extends _Bool {
   private value: Uint8Array
   typeInfo: TypeInfo
@@ -302,6 +307,7 @@ export class Bool extends _Bool {
   }
 }
 
+/** @internal */
 export class StaticArray<TItem extends _ARC4Encoded, TLength extends number> extends _StaticArray<TItem, TLength> {
   private value?: NTuple<TItem, TLength>
   private uint8ArrayValue?: Uint8Array
@@ -413,6 +419,7 @@ export class StaticArray<TItem extends _ARC4Encoded, TLength extends number> ext
   }
 }
 
+/** @internal */
 export class Address extends _Address {
   typeInfo: TypeInfo
   private value: StaticArray<Byte, 32>
@@ -471,6 +478,7 @@ export class Address extends _Address {
   }
 }
 
+/** @internal */
 export class DynamicArray<TItem extends _ARC4Encoded> extends _DynamicArray<TItem> {
   private value?: TItem[]
   private uint8ArrayValue?: Uint8Array
@@ -576,6 +584,7 @@ export class DynamicArray<TItem extends _ARC4Encoded> extends _DynamicArray<TIte
   }
 }
 
+/** @internal */
 export class Tuple<TTuple extends [_ARC4Encoded, ..._ARC4Encoded[]]> extends _Tuple<TTuple> {
   private value?: TTuple
   private uint8ArrayValue?: Uint8Array
@@ -657,6 +666,7 @@ export class Tuple<TTuple extends [_ARC4Encoded, ..._ARC4Encoded[]]> extends _Tu
   }
 }
 
+/** @internal */
 export class Struct<T extends StructConstraint> extends (_Struct<StructConstraint> as DeliberateAny) {
   private uint8ArrayValue?: Uint8Array
   genericArgs: Record<string, TypeInfo>
@@ -738,6 +748,7 @@ export class Struct<T extends StructConstraint> extends (_Struct<StructConstrain
   }
 }
 
+/** @internal */
 export class DynamicBytes extends _DynamicBytes {
   typeInfo: TypeInfo
   private value: DynamicArray<Byte>
@@ -799,6 +810,7 @@ export class DynamicBytes extends _DynamicBytes {
   }
 }
 
+/** @internal */
 export class StaticBytes<TLength extends uint64 = 0> extends _StaticBytes<TLength> {
   private value: StaticArray<Byte, TLength>
   typeInfo: TypeInfo
@@ -860,6 +872,7 @@ export class StaticBytes<TLength extends uint64 = 0> extends _StaticBytes<TLengt
   }
 }
 
+/** @internal */
 export class ReferenceArray<TItem> extends _ReferenceArray<TItem> {
   private _values: TItem[]
   typeInfo: TypeInfo
@@ -914,6 +927,7 @@ export class ReferenceArray<TItem> extends _ReferenceArray<TItem> {
   }
 }
 
+/** @internal */
 export class FixedArray<TItem, TLength extends number> extends _FixedArray<TItem, TLength> {
   private _values: NTuple<TItem, TLength>
   private size: number
@@ -1107,11 +1121,13 @@ const isDynamicLengthType = (value: _ARC4Encoded) => {
   )
 }
 
+/** @internal */
 export function encodeArc4<T>(sourceTypeInfoString: string | undefined, source: T): bytes {
   const arc4Encoded = getArc4Encoded(source, sourceTypeInfoString)
   return arc4Encoded.bytes
 }
 
+/** @internal */
 export function decodeArc4<T>(
   sourceTypeInfoString: string,
   targetTypeInfoString: string,
@@ -1125,6 +1141,7 @@ export function decodeArc4<T>(
   return getNativeValue(source, targetTypeInfo) as T
 }
 
+/** @internal */
 export function interpretAsArc4<T extends _ARC4Encoded>(
   typeInfoString: string,
   bytes: StubBytesCompat,
@@ -1134,6 +1151,7 @@ export function interpretAsArc4<T extends _ARC4Encoded>(
   return getEncoder<T>(typeInfo)(bytes, typeInfo, prefix)
 }
 
+/** @internal */
 export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: string): _ARC4Encoded => {
   if (value instanceof _ARC4Encoded) {
     return value
@@ -1230,6 +1248,7 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
   throw new CodeError(`Unsupported type for encoding: ${typeof value}`)
 }
 
+/** @internal */
 export const toBytes = (val: unknown, sourceTypeInfoString?: string): bytes => {
   const uint64Val = asMaybeUint64Cls(val, false)
   if (uint64Val !== undefined) {
@@ -1255,6 +1274,7 @@ export const toBytes = (val: unknown, sourceTypeInfoString?: string): bytes => {
   throw new InternalError(`Invalid type for bytes: ${nameOfType(val)}`)
 }
 
+/** @internal */
 export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
   const mutableTupleFromBytes = (value: StubBytesCompat | Uint8Array, typeInfo: string | TypeInfo, prefix: 'none' | 'log' = 'none') => {
     const tuple = Tuple.fromBytes(value, typeInfo, prefix)

@@ -6,11 +6,12 @@ import { getApp } from './app-params'
 import { toBytes } from './encoded-types'
 import { Bytes, Uint64, type StubBytesCompat, type StubUint64Compat } from './primitives'
 
+/** @internal */
 export const AppLocal: typeof op.AppLocal = {
   delete: function (a: Account | StubUint64Compat, b: StubBytesCompat): void {
     const app = lazyContext.activeApplication
     const account = getAccount(a)
-    lazyContext.ledger.setLocalState(app, account, b, undefined)
+    lazyContext.ledger.setLocalState(app, account, asBytes(b), undefined)
   },
   getBytes: function (a: Account | StubUint64Compat, b: StubBytesCompat): bytes {
     const account = getAccount(a)
@@ -26,7 +27,7 @@ export const AppLocal: typeof op.AppLocal = {
     if (app === undefined || account === undefined) {
       return [Bytes(), false]
     }
-    const [state, exists] = lazyContext.ledger.getLocalState(app, account, c)
+    const [state, exists] = lazyContext.ledger.getLocalState(app, account, asBytes(c))
     if (!exists) {
       return [Bytes(), false]
     }
@@ -38,7 +39,7 @@ export const AppLocal: typeof op.AppLocal = {
     if (app === undefined || account === undefined) {
       return [Uint64(0), false]
     }
-    const [state, exists] = lazyContext.ledger.getLocalState(app, account, c)
+    const [state, exists] = lazyContext.ledger.getLocalState(app, account, asBytes(c))
     if (!exists) {
       return [Uint64(0), false]
     }
@@ -47,6 +48,6 @@ export const AppLocal: typeof op.AppLocal = {
   put: function (a: Account | StubUint64Compat, b: StubBytesCompat, c: uint64 | bytes): void {
     const app = lazyContext.activeApplication
     const account = getAccount(a)
-    lazyContext.ledger.setLocalState(app, account, b, c)
+    lazyContext.ledger.setLocalState(app, account, asBytes(b), c)
   },
 }

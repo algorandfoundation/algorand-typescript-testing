@@ -3,39 +3,41 @@ import type {
   Application as ApplicationType,
   Asset as AssetType,
   biguint,
+  BigUintCompat,
   bytes,
   uint64,
+  Uint64Compat,
 } from '@algorandfoundation/algorand-typescript'
 import { randomBytes } from 'crypto'
 import { MAX_BYTES_SIZE, MAX_UINT512, MAX_UINT64 } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
-import { BigUint, Bytes, Uint64, type StubBigUintCompat, type StubUint64Compat } from '../impl/primitives'
+import { BigUint, Bytes, Uint64 } from '../impl/primitives'
 import type { AssetData } from '../impl/reference'
 import { Account, AccountData, ApplicationCls, ApplicationData, AssetCls, getDefaultAssetData } from '../impl/reference'
-import { asBigInt, asBigUintCls, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
+import { asBigInt, asBigUintCls, asUint64, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
 
 type AccountContextData = Partial<AccountData['account']> & {
   address?: bytes
   incentiveEligible?: boolean
   lastProposed?: uint64
   lastHeartbeat?: uint64
-  optedAssetBalances?: Map<StubUint64Compat, StubUint64Compat>
+  optedAssetBalances?: Map<Uint64Compat, Uint64Compat>
   optedApplications?: ApplicationType[]
 }
 
-type AssetContextData = Partial<AssetData> & { assetId?: StubUint64Compat }
+type AssetContextData = Partial<AssetData> & { assetId?: Uint64Compat }
 
-type ApplicationContextData = Partial<ApplicationData['application']> & { applicationId?: StubUint64Compat }
+type ApplicationContextData = Partial<ApplicationData['application']> & { applicationId?: Uint64Compat }
 
 export class AvmValueGenerator {
   /**
    * Generates a random uint64 value within the specified range.
-   * @param {StubUint64Compat} [minValue=0n] - The minimum value (inclusive).
-   * @param {StubUint64Compat} [maxValue=MAX_UINT64] - The maximum value (inclusive).
+   * @param {Uint64Compat} [minValue=0n] - The minimum value (inclusive).
+   * @param {Uint64Compat} [maxValue=MAX_UINT64] - The maximum value (inclusive).
    * @returns {uint64} - A random uint64 value.
    */
-  uint64(minValue: StubUint64Compat = 0n, maxValue: StubUint64Compat = MAX_UINT64): uint64 {
+  uint64(minValue: Uint64Compat = 0n, maxValue: Uint64Compat = MAX_UINT64): uint64 {
     const min = asBigInt(minValue)
     const max = asBigInt(maxValue)
     if (max > MAX_UINT64) {
@@ -52,10 +54,10 @@ export class AvmValueGenerator {
 
   /**
    * Generates a random biguint value within the specified range.
-   * @param {StubBigUintCompat} [minValue=0n] - The minimum value (inclusive).
+   * @param {BigUintCompat} [minValue=0n] - The minimum value (inclusive).
    * @returns {biguint} - A random biguint value.
    */
-  biguint(minValue: StubBigUintCompat = 0n): biguint {
+  biguint(minValue: BigUintCompat = 0n): biguint {
     const min = asBigUintCls(minValue).asBigInt()
     if (min < 0n) {
       throw new InternalError('minValue must be greater than or equal to 0')
@@ -132,17 +134,17 @@ export class AvmValueGenerator {
    */
   asset(input?: AssetContextData): AssetType {
     const id = input?.assetId
-    if (id && lazyContext.ledger.assetDataMap.has(id)) {
+    if (id && lazyContext.ledger.assetDataMap.has(asUint64(id))) {
       throw new InternalError('Asset with such ID already exists in testing context!')
     }
-    const assetId = asUint64Cls(id ?? lazyContext.ledger.assetIdIter.next().value)
+    const assetId = asUint64Cls(id ?? lazyContext.ledger.assetIdIter.next().value).asAlgoTs()
     const defaultAssetData = getDefaultAssetData()
     const { assetId: _, ...assetData } = input ?? {}
     lazyContext.ledger.assetDataMap.set(assetId, {
       ...defaultAssetData,
       ...assetData,
     })
-    return new AssetCls(assetId.asAlgoTs())
+    return new AssetCls(assetId)
   }
 
   /**
@@ -155,7 +157,7 @@ export class AvmValueGenerator {
     if (id && lazyContext.ledger.applicationDataMap.has(id)) {
       throw new InternalError('Application with such ID already exists in testing context!')
     }
-    const applicationId = asUint64Cls(id ?? lazyContext.ledger.appIdIter.next().value)
+    const applicationId = asUint64Cls(id ?? lazyContext.ledger.appIdIter.next().value).asAlgoTs()
     const data = new ApplicationData()
     const { applicationId: _, ...applicationData } = input ?? {}
     data.application = {
@@ -163,6 +165,6 @@ export class AvmValueGenerator {
       ...applicationData,
     }
     lazyContext.ledger.applicationDataMap.set(applicationId, data)
-    return new ApplicationCls(applicationId.asAlgoTs())
+    return new ApplicationCls(applicationId)
   }
 }

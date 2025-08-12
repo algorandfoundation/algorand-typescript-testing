@@ -67,4 +67,5 @@ class ItxnCompose {
   }
 }
 
+/** @internal */
 export const itxnCompose: _ItxnCompose = new ItxnCompose()

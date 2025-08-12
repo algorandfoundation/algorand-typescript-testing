@@ -24,9 +24,12 @@ import type { StubBytesCompat, StubUint64Compat } from './primitives'
 import { Bytes, Uint64, Uint64Cls } from './primitives'
 
 export class GlobalStateCls<ValueType> {
+  /** @internal */
   private readonly _type: string = GlobalStateCls.name
 
+  /** @internal */
   #value: ValueType | undefined
+
   key: bytes | undefined
 
   get hasKey(): boolean {
@@ -60,6 +63,7 @@ export class GlobalStateCls<ValueType> {
     return this.#value !== undefined
   }
 
+  /** @internal */
   constructor(key?: bytes | string, value?: ValueType) {
     this.key = key !== undefined ? asBytes(key) : undefined
     this.#value = value
@@ -67,7 +71,9 @@ export class GlobalStateCls<ValueType> {
 }
 
 export class LocalStateCls<ValueType> {
+  /** @internal */
   #value: ValueType | undefined
+
   delete: () => void = () => {
     if (this.#value instanceof Uint64Cls) {
       this.#value = Uint64(0) as ValueType
@@ -92,8 +98,10 @@ export class LocalStateCls<ValueType> {
 }
 
 export class LocalStateMapCls<ValueType> {
+  /** @internal */
   private applicationId: uint64
 
+  /** @internal */
   constructor() {
     this.applicationId = lazyContext.activeGroup.activeApplicationId
   }
@@ -107,6 +115,7 @@ export class LocalStateMapCls<ValueType> {
     return localStateMap.getOrFail(account) as LocalStateCls<ValueType>
   }
 
+  /** @internal */
   private ensureApplicationLocalStateMap(key: bytes | string) {
     const applicationData = lazyContext.ledger.applicationDataMap.getOrFail(this.applicationId)!.application
     if (!applicationData.localStateMaps.has(key)) {
@@ -116,10 +125,12 @@ export class LocalStateMapCls<ValueType> {
   }
 }
 
+/** @internal */
 export function GlobalState<ValueType>(options?: GlobalStateOptions<ValueType>): GlobalStateType<ValueType> {
   return new GlobalStateCls(options?.key, options?.initialValue)
 }
 
+/** @internal */
 export function LocalState<ValueType>(options?: { key?: bytes | string }): LocalStateType<ValueType> {
   function localStateInternal(account: Account): LocalStateForAccount<ValueType> {
     return localStateInternal.map.getValue(localStateInternal.key, account)
@@ -130,6 +141,7 @@ export function LocalState<ValueType>(options?: { key?: bytes | string }): Local
   return localStateInternal
 }
 
+/** @internal */
 export class BoxCls<TValue> {
   #key: bytes | undefined
   #app: Application
@@ -191,7 +203,7 @@ export class BoxCls<TValue> {
     }
     const original = lazyContext.ledger.getBox(this.#app, this.key)
     materialised = this.fromBytes(original)
-    lazyContext.ledger.setMatrialisedBox(this.#app, this.key, materialised)
+    lazyContext.ledger.setMaterialisedBox(this.#app, this.key, materialised)
     return materialised
   }
   set value(v: TValue) {
@@ -204,7 +216,7 @@ export class BoxCls<TValue> {
       }
     }
     lazyContext.ledger.setBox(this.#app, this.key, newValueBytes)
-    lazyContext.ledger.setMatrialisedBox(this.#app, this.key, v)
+    lazyContext.ledger.setMaterialisedBox(this.#app, this.key, v)
   }
 
   get hasKey(): boolean {
@@ -252,6 +264,7 @@ export class BoxCls<TValue> {
   }
 }
 
+/** @internal */
 export class BoxMapCls<TKey, TValue> {
   private _keyPrefix: bytes | undefined
   #app: Application
@@ -293,6 +306,7 @@ export class BoxMapCls<TKey, TValue> {
   }
 }
 
+/** @internal */
 export class BoxRefCls {
   #key: bytes | undefined
   #app: Application
@@ -462,10 +476,12 @@ export class BoxRefCls {
   }
 }
 
+/** @internal */
 export function Box<TValue>(options?: { key: bytes | string }): BoxType<TValue> {
   return new BoxCls<TValue>(options?.key)
 }
 
+/** @internal */
 export function BoxMap<TKey, TValue>(options?: { keyPrefix: bytes | string }): BoxMapType<TKey, TValue> {
   const boxMap = new BoxMapCls<TKey, TValue>()
   if (options?.keyPrefix !== undefined) {
@@ -476,6 +492,7 @@ export function BoxMap<TKey, TValue>(options?: { keyPrefix: bytes | string }): B
   return Object.setPrototypeOf(x, boxMap)
 }
 
+/** @internal */
 export function BoxRef(options?: { key: bytes | string }): BoxRefType {
   return new BoxRefCls(options?.key)
 }

@@ -5,6 +5,7 @@ import { AssertError } from '../errors'
 import { ApplicationCallTransaction } from '../impl/transactions'
 import { lazyContext } from './internal-context'
 
+/** @internal */
 export const checkRoutingConditions = (appId: uint64, metadata: AbiMetadata) => {
   const appData = lazyContext.getApplicationData(appId)
   const isCreating = appData.isCreating
