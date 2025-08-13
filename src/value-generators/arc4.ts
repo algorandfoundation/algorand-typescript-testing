@@ -20,8 +20,8 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random Uint8 within the specified range.
-   * @param minValue: Minimum value (inclusive). Defaults to 0.
-   * @param maxValue: Maximum value (inclusive). Defaults to 2 ** 8 - 1.
+   * @param minValue Minimum value (inclusive). Defaults to 0.
+   * @param maxValue Maximum value (inclusive). Defaults to 2 ** 8 - 1.
    * @returns: A random Uint8 value.
    * */
   uint8(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT8): arc4.Uint8 {
@@ -30,8 +30,8 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random Uint16 within the specified range.
-   * @param minValue: Minimum value (inclusive). Defaults to 0.
-   * @param maxValue: Maximum value (inclusive). Defaults to 2 ** 16 - 1.
+   * @param minValue Minimum value (inclusive). Defaults to 0.
+   * @param maxValue Maximum value (inclusive). Defaults to 2 ** 16 - 1.
    * @returns: A random Uint16 value.
    * */
   uint16(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT16): arc4.Uint16 {
@@ -40,8 +40,8 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random Uint32 within the specified range.
-   * @param minValue: Minimum value (inclusive). Defaults to 0.
-   * @param maxValue: Maximum value (inclusive). Defaults to 2 ** 32 - 1.
+   * @param minValue Minimum value (inclusive). Defaults to 0.
+   * @param maxValue Maximum value (inclusive). Defaults to 2 ** 32 - 1.
    * @returns: A random Uint32 value.
    * */
   uint32(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT32): arc4.Uint32 {
@@ -50,8 +50,8 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random Uint64 within the specified range.
-   * @param minValue: Minimum value (inclusive). Defaults to 0.
-   * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 64n - 1n.
+   * @param minValue Minimum value (inclusive). Defaults to 0.
+   * @param maxValue Maximum value (inclusive). Defaults to 2n ** 64n - 1n.
    * @returns: A random Uint64 value.
    * */
   uint64(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT64): arc4.Uint64 {
@@ -60,9 +60,9 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random Uint128 within the specified range.
-   * @param minValue: Minimum value (inclusive). Defaults to 0.
-   * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 128n - 1n.
-   * @returns: A random Uint128 value.
+   * @param minValue Minimum value (inclusive). Defaults to 0.
+   * @param maxValue Maximum value (inclusive). Defaults to 2n ** 128n - 1n.
+   * @returns A random Uint128 value.
    * */
   uint128(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT128): arc4.Uint128 {
     return new Uint({ name: 'Uint', genericArgs: [{ name: '128' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint128
@@ -70,9 +70,9 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random Uint256 within the specified range.
-   * @param minValue: Minimum value (inclusive). Defaults to 0.
-   * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 256n - 1n.
-   * @returns: A random Uint256 value.
+   * @param minValue Minimum value (inclusive). Defaults to 0.
+   * @param maxValue Maximum value (inclusive). Defaults to 2n ** 256n - 1n.
+   * @returns A random Uint256 value.
    * */
   uint256(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT256): arc4.Uint256 {
     return new Uint({ name: 'Uint', genericArgs: [{ name: '256' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint256
@@ -80,9 +80,9 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random Uint512 within the specified range.
-   * @param minValue: Minimum value (inclusive). Defaults to 0.
-   * @param maxValue: Maximum value (inclusive). Defaults to 2n ** 512n - 1n.
-   * @returns: A random Uint512 value.
+   * @param minValue Minimum value (inclusive). Defaults to 0.
+   * @param maxValue Maximum value (inclusive). Defaults to 2n ** 512n - 1n.
+   * @returns A random Uint512 value.
    * */
   uint512(minValue: number | bigint = 0, maxValue: number | bigint = MAX_UINT512): arc4.Uint<512> {
     return new Uint({ name: 'Uint', genericArgs: [{ name: '512' }] }, getRandomBigInt(minValue, maxValue)) as arc4.Uint<512>
@@ -90,9 +90,9 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random dynamic bytes of size `n` bits.
-   * @param n: The number of bits for the dynamic bytes. Must be a multiple of 8, otherwise
+   * @param n The number of bits for the dynamic bytes. Must be a multiple of 8, otherwise
    * the last byte will be truncated.
-   * @returns: A new, random dynamic bytes of size `n` bits.
+   * @returns A new, random dynamic bytes of size `n` bits.
    * */
   dynamicBytes(n: number): arc4.DynamicBytes {
     return new DynamicBytes(
@@ -103,8 +103,8 @@ export class Arc4ValueGenerator {
 
   /**
    * Generate a random dynamic string of size `n` bits.
-   * @param n: The number of bits for the string.
-   * @returns: A new, random string of size `n` bits.
+   * @param n The number of bits for the string.
+   * @returns A new, random string of size `n` bits.
    * */
   str(n: number): arc4.Str {
     // Calculate the number of characters needed (rounding up)

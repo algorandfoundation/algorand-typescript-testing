@@ -38,9 +38,9 @@ export class ApplicationSpy<TContract extends Contract = Contract> {
    * The `on` property is a proxy that allows you to register callbacks for specific method signatures.
    * It dynamically creates methods based on the contract's methods.
    */
-  readonly on: _TypedApplicationSpyCallBacks<TContract>
+  readonly on: TypedApplicationSpyCallBacks<TContract>
 
-  /* @internal */
+  /** @internal */
   contract?: TContract | ConstructorFor<TContract>
 
   constructor(contract?: TContract | ConstructorFor<TContract>) {
@@ -48,7 +48,7 @@ export class ApplicationSpy<TContract extends Contract = Contract> {
     this.on = this.createOnProxy()
   }
 
-  /* @internal */
+  /** @internal */
   notify(itxn: ApplicationCallInnerTxnContext) {
     for (const cb of this.#spyFns) {
       cb(itxn)
@@ -100,9 +100,9 @@ export class ApplicationSpy<TContract extends Contract = Contract> {
     }
   }
 
-  private createOnProxy(spy: ApplicationSpy<TContract> = this): _TypedApplicationSpyCallBacks<TContract> {
-    return new Proxy({} as _TypedApplicationSpyCallBacks<TContract>, {
-      get(_: _TypedApplicationSpyCallBacks<TContract>, methodName) {
+  private createOnProxy(spy: ApplicationSpy<TContract> = this): TypedApplicationSpyCallBacks<TContract> {
+    return new Proxy({} as TypedApplicationSpyCallBacks<TContract>, {
+      get(_: TypedApplicationSpyCallBacks<TContract>, methodName) {
         const fn = spy._tryGetMethod(methodName)
         if (fn === undefined) return fn
         return function (callback: AppSpyCb) {
@@ -116,11 +116,11 @@ export class ApplicationSpy<TContract extends Contract = Contract> {
           spy.onAbiCall(selector, ocas, callback)
         }
       },
-    }) as _TypedApplicationSpyCallBacks<TContract>
+    }) as TypedApplicationSpyCallBacks<TContract>
   }
 }
 
-type _TypedApplicationSpyCallBacks<TContract> = {
+export type TypedApplicationSpyCallBacks<TContract> = {
   [key in keyof TContract as key extends 'approvalProgram' | 'clearStateProgram'
     ? never
     : TContract[key] extends AnyFunction

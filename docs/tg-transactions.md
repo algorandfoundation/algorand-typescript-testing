@@ -1,3 +1,7 @@
+---
+title: Transactions
+---
+
 # Transactions
 
 The testing framework follows the Transaction definitions described in [`algorand-typescript` docs](https://github.com/algorandfoundation/puya-ts/blob/main/docs/lg-transactions.md). This section focuses on _value generators_ and interactions with inner transactions, it also explains how the framework identifies _active_ transaction group during contract method/subroutine/logicsig invocation.
@@ -12,7 +16,7 @@ const ctx = new TestExecutionContext()
 
 ## Group Transactions
 
-Refers to test implementation of transaction stubs available under `algots.gtxn.*` namespace. Available under [`TxnValueGenerator`](../code/value-generators/txn/classes/TxnValueGenerator.md) instance accessible via `ctx.any.txn` property:
+Refers to test implementation of transaction stubs available under `algots.gtxn.*` namespace. Available under [`TxnValueGenerator`](../classes/value-generators._internal_.TxnValueGenerator.html) instance accessible via `ctx.any.txn` property:
 
 ```ts
 // Generate a random payment transaction
@@ -82,7 +86,7 @@ const assetFreezeTxn = ctx.any.txn.assetFreeze({
 
 When a smart contract instance (application) is interacted with on the Algorand network, it must be performed in relation to a specific transaction or transaction group where one or many transactions are application calls to target smart contract instances.
 
-To emulate this behaviour, the `createScope` context manager is available on [`TransactionContext`](../code/subcontexts/transaction-context/classes/TransactionContext.md) instance that allows setting temporary transaction fields within a specific scope, passing in emulated transaction objects and identifying the active transaction index within the transaction group
+To emulate this behaviour, the `createScope` context manager is available on [`TransactionContext`](../classes/index._internal_.TransactionContext.html) instance that allows setting temporary transaction fields within a specific scope, passing in emulated transaction objects and identifying the active transaction index within the transaction group
 
 ```ts
 import { arc4, Txn } from '@algorandfoundation/algorand-typescript'
@@ -408,9 +412,9 @@ describe('pre compiled typed app calls', () => {
 
 ## References
 
-- [API](../api.md) for more details on the test context manager and inner transactions related methods that perform implicit inner transaction type validation.
-- [Examples](../examples.md) for more examples of smart contracts and associated tests that interact with inner transactions.
-- [ApplicationSpy](./application-spy.md) for detailed explanation on the usage of it
+- [API](../modules/index.html) for more details on the test context manager and inner transactions related methods that perform implicit inner transaction type validation.
+- [Examples](./examples.md) for more examples of smart contracts and associated tests that interact with inner transactions.
+- [ApplicationSpy](./tg-application-spy.md) for detailed explanation on the usage of it
 
 ```ts
 // test cleanup

@@ -1,3 +1,7 @@
+---
+title: Examples
+---
+
 # Examples
 
 Below is a showcase of various examples of unit testing real and sample Algorand Python smart contracts using `algorand-typescript-testing`.

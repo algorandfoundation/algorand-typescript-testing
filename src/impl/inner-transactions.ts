@@ -50,12 +50,12 @@ const mapCommonFields = <T extends InnerTxnFields>(
 export class PaymentInnerTxn extends PaymentTransaction implements itxn.PaymentInnerTxn {
   readonly isItxn?: true
 
-  /* @internal */
+  /** @internal */
   static create(fields: itxn.PaymentFields) {
     return new PaymentInnerTxn(fields)
   }
 
-  /* @internal */
+  /** @internal */
   constructor(fields: itxn.PaymentFields) {
     super({
       ...mapCommonFields(fields),
@@ -68,12 +68,12 @@ export class PaymentInnerTxn extends PaymentTransaction implements itxn.PaymentI
 export class KeyRegistrationInnerTxn extends KeyRegistrationTransaction implements itxn.KeyRegistrationInnerTxn {
   readonly isItxn?: true
 
-  /* @internal */
+  /** @internal */
   static create(fields: itxn.KeyRegistrationFields) {
     return new KeyRegistrationInnerTxn(fields)
   }
 
-  /* @internal */
+  /** @internal */
   constructor(fields: itxn.KeyRegistrationFields) {
     super(mapCommonFields(fields))
   }
@@ -82,12 +82,12 @@ export class KeyRegistrationInnerTxn extends KeyRegistrationTransaction implemen
 export class AssetConfigInnerTxn extends AssetConfigTransaction implements itxn.AssetConfigInnerTxn {
   readonly isItxn?: true
 
-  /* @internal */
+  /** @internal */
   static create(fields: itxn.AssetConfigFields) {
     return new AssetConfigInnerTxn(fields)
   }
 
-  /* @internal */
+  /** @internal */
   constructor(fields: itxn.AssetConfigFields) {
     const { assetName, unitName, url, manager, reserve, freeze, clawback, configAsset, ...rest } = mapCommonFields(fields)
     const createdAsset =
@@ -122,7 +122,7 @@ export class AssetConfigInnerTxn extends AssetConfigTransaction implements itxn.
 export class AssetTransferInnerTxn extends AssetTransferTransaction implements itxn.AssetTransferInnerTxn {
   readonly isItxn?: true
 
-  /* @internal */
+  /** @internal */
   static create(fields: Partial<itxn.AssetTransferFields>) {
     if (fields.xferAsset === undefined) {
       throw new Error('xferAsset is required')
@@ -130,7 +130,7 @@ export class AssetTransferInnerTxn extends AssetTransferTransaction implements i
     return new AssetTransferInnerTxn(fields as itxn.AssetTransferFields)
   }
 
-  /* @internal */
+  /** @internal */
   constructor(fields: itxn.AssetTransferFields) {
     super({
       ...mapCommonFields(fields),
@@ -145,7 +145,7 @@ export class AssetTransferInnerTxn extends AssetTransferTransaction implements i
 export class AssetFreezeInnerTxn extends AssetFreezeTransaction implements itxn.AssetFreezeInnerTxn {
   readonly isItxn?: true
 
-  /* @internal */
+  /** @internal */
   static create(fields: Partial<itxn.AssetFreezeFields>) {
     if (fields.freezeAsset === undefined) {
       throw new Error('freezeAsset is required')
@@ -153,7 +153,7 @@ export class AssetFreezeInnerTxn extends AssetFreezeTransaction implements itxn.
     return new AssetFreezeInnerTxn(fields as itxn.AssetFreezeFields)
   }
 
-  /* @internal */
+  /** @internal */
   constructor(fields: itxn.AssetFreezeFields) {
     const { freezeAsset, freezeAccount, ...rest } = mapCommonFields(fields)
     const asset: AssetType | undefined = freezeAsset instanceof Uint64Cls ? getAsset(freezeAsset) : (freezeAsset as AssetType)
@@ -176,12 +176,12 @@ export type ApplicationCallFields = itxn.ApplicationCallFields & {
 export class ApplicationCallInnerTxn extends ApplicationCallTransaction implements itxn.ApplicationCallInnerTxn {
   readonly isItxn?: true
 
-  /* @internal */
+  /** @internal */
   static create(fields: Partial<ApplicationCallFields>) {
     return new ApplicationCallInnerTxn(fields)
   }
 
-  /* @internal */
+  /** @internal */
   constructor(fields: Partial<ApplicationCallFields>) {
     const { appId, approvalProgram, clearStateProgram, onCompletion, appArgs, accounts, assets, apps, ...rest } = mapCommonFields(fields)
     super({
@@ -293,17 +293,19 @@ export class ItxnParams<TFields extends InnerTxnFields, TTransaction extends Inn
     return new ItxnParams<TFields, TTransaction>(this.#fields, this.#fields.type)
   }
 }
+
+/** @internal */
 const UNSET = Symbol('UNSET_SYMBOL')
 /**
  * The ApplicationCallInnerTxnContext class is a specialized version of the ApplicationCallInnerTxn class.
  * It is used to handle the context of an application call transaction, including managing the return value.
  */
 export class ApplicationCallInnerTxnContext<TReturn = unknown> extends ApplicationCallInnerTxn {
-  /* @internal */
+  /** @internal */
   static createFromFields(fields: ApplicationCallFields) {
     return new ApplicationCallInnerTxnContext(fields)
   }
-  /* @internal */
+  /** @internal */
   static createFromTypedApplicationCallFields<TReturn = unknown>(
     methodArgs: TypedApplicationCallFields<DeliberateAny>,
     methodSelector: bytes,
@@ -321,7 +323,7 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
     }
     return new ApplicationCallInnerTxnContext<TReturn>(fields, transactions)
   }
-  /* @internal */
+  /** @internal */
   static createFromBareCreateApplicationCallFields(methodArgs: BareCreateApplicationCallFields) {
     return new ApplicationCallInnerTxnContext(methodArgs)
   }
@@ -338,7 +340,7 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
     this.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(encodeArc4(undefined, value)))
     this.#returnValue = value
   }
-  /* @internal */
+  /** @internal */
   get loggedReturnValue(): TReturn {
     return this.#returnValue === UNSET ? (undefined as TReturn) : this.#returnValue
   }

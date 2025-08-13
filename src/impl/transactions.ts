@@ -18,6 +18,7 @@ import { toBytes } from './encoded-types'
 import { Bytes, Uint64, type StubBytesCompat } from './primitives'
 import { Account, Application, Asset } from './reference'
 
+/** @internal */
 const baseDefaultFields = () => ({
   sender: lazyContext.defaultSender,
   fee: Uint64(0),
@@ -81,7 +82,7 @@ abstract class TransactionBase {
 }
 
 export class PaymentTransaction extends TransactionBase implements gtxn.PaymentTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.PaymentTxn>) {
     return new PaymentTransaction(fields)
   }
@@ -101,7 +102,7 @@ export class PaymentTransaction extends TransactionBase implements gtxn.PaymentT
 }
 
 export class KeyRegistrationTransaction extends TransactionBase implements gtxn.KeyRegistrationTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.KeyRegistrationTxn>) {
     return new KeyRegistrationTransaction(fields)
   }
@@ -135,7 +136,7 @@ export class KeyRegistrationTransaction extends TransactionBase implements gtxn.
 }
 
 export class AssetConfigTransaction extends TransactionBase implements gtxn.AssetConfigTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.AssetConfigTxn>) {
     return new AssetConfigTransaction(fields)
   }
@@ -175,7 +176,7 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
 }
 
 export class AssetTransferTransaction extends TransactionBase implements gtxn.AssetTransferTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.AssetTransferTxn>) {
     return new AssetTransferTransaction(fields)
   }
@@ -200,7 +201,7 @@ export class AssetTransferTransaction extends TransactionBase implements gtxn.As
 }
 
 export class AssetFreezeTransaction extends TransactionBase implements gtxn.AssetFreezeTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.AssetFreezeTxn>) {
     return new AssetFreezeTransaction(fields)
   }
@@ -233,7 +234,7 @@ export type ApplicationCallTransactionFields = TxnFields<gtxn.ApplicationCallTxn
   }>
 
 export class ApplicationCallTransaction extends TransactionBase implements gtxn.ApplicationCallTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: ApplicationCallTransactionFields) {
     return new ApplicationCallTransaction(fields)
   }
@@ -351,18 +352,18 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   readonly type: TransactionType.ApplicationCall = TransactionType.ApplicationCall
   readonly typeBytes: bytes = asUint64Cls(TransactionType.ApplicationCall).toBytes().asAlgoTs()
 
-  /* @internal */
+  /** @internal */
   get appLogs() {
     return this.#appLogs
   }
-  /* @internal */
+  /** @internal */
   appendLog(value: StubBytesCompat): void {
     if (this.#appLogs.length + 1 > MAX_ITEMS_IN_LOG) {
       throw new InternalError(`Too many log calls in program, up to ${MAX_ITEMS_IN_LOG} is allowed`)
     }
     this.#appLogs.push(asBytes(value))
   }
-  /* @internal */
+  /** @internal */
   logArc4ReturnValue(value: unknown): void {
     this.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(toBytes(value)))
   }

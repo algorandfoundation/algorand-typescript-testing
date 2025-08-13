@@ -90,8 +90,8 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
 
 const getUint8 = (value: number) => new Uint({ name: 'Uint<8>', genericArgs: [{ name: '8' }] }, value)
 
-/** @ignore
- *  @internal
+/**
+ * @internal
  */
 export const extractArraysFromArgs = (
   app: Application,
@@ -214,7 +214,9 @@ export class ContractContext {
     return txns
   }
 
-  /** @internal */
+  /**
+   * @internal
+   */
   private isArc4<T extends BaseContract>(type: IConstructor<T>): boolean {
     const result = (type as DeliberateAny as typeof BaseContract).isArc4
     if (result !== undefined && result !== null) {
@@ -234,7 +236,9 @@ export class ContractContext {
     return this.isArc4(proto)
   }
 
-  /** @internal */
+  /**
+   * @internal
+   */
   private getContractProxyHandler<T extends BaseContract>(isArc4: boolean): ProxyHandler<IConstructor<T>> {
     const onConstructed = (application: Application, instance: T, conrtactOptions: ContractOptionsParameter | undefined) => {
       const states = extractStates(instance, conrtactOptions)

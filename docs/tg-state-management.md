@@ -1,3 +1,7 @@
+---
+title: State Management
+---
+
 # State Management
 
 `algorand-typescript-testing` provides tools to test state-related abstractions in Algorand smart contracts. This guide covers global state, local state, boxes, and scratch space management.
@@ -98,7 +102,7 @@ const scratchSpace = ctx.txn.lastGroup.getScratchSpace()
 expect(scratchSpace[1]).toEqual(5)
 ```
 
-For more detailed information, explore the example contracts in the `examples/` directory, the [coverage](../coverage.md) page, and the [API documentation](../api.md).
+For more detailed information, explore the example contracts in the `examples/` directory, the [coverage](./coverage.md) page, and the [API documentation](../modules/index.html).
 
 ```ts
 // test cleanup

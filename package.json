@@ -60,8 +60,9 @@
     "rollup": "^4.38.0",
     "semantic-release": "^24.2.3",
     "tsx": "4.19.3",
-    "typedoc": "^0.28.1",
-    "typedoc-plugin-markdown": "^4.6.0",
+    "typedoc": "^0.28.7",
+    "typedoc-plugin-markdown": "^4.7.1",
+    "typedoc-plugin-missing-exports": "^4.0.0",
     "typescript": "^5.8.3",
     "upath": "^2.0.1",
     "vitest": "3.2.4"
