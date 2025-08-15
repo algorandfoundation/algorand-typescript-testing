@@ -287,7 +287,7 @@ To dig deeper into the capabilities of `algorand-typescript-testing`, continue w
 
 #### Contents
 
-- [Testing Guide](./docs/testing-guide/index.md)
+- [Testing Guide](./docs/testing-guide.md)
 - [Examples](./docs/examples.md)
 - [Coverage](./docs/coverage.md)
 - [FQA](./docs/faq.md)

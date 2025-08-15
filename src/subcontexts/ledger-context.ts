@@ -210,7 +210,7 @@ export class LedgerContext {
 
   /**
    * Patches asset data with the provided partial data.
-   * @param account - The asset.
+   * @param asset - The asset.
    * @param data - The partial asset data.
    */
   patchAssetData(asset: AssetType, data: Partial<AssetData>) {
