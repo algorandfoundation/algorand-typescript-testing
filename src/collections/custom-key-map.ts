@@ -8,6 +8,7 @@ export abstract class CustomKeyMap<TKey, TValue> implements Map<TKey, TValue> {
   #keySerializer: (key: TKey) => Primitive
   #map = new Map<Primitive, [TKey, TValue]>()
 
+  /** @internal */
   constructor(keySerializer: (key: TKey) => number | bigint | string) {
     this.#keySerializer = keySerializer
   }
@@ -65,22 +66,26 @@ export abstract class CustomKeyMap<TKey, TValue> implements Map<TKey, TValue> {
 }
 
 export class AccountMap<TValue> extends CustomKeyMap<Account, TValue> {
+  /** @internal */
   constructor() {
     super(AccountMap.getAddressStrFromAccount)
   }
 
+  /** @internal */
   private static getAddressStrFromAccount = (acc: Account) => {
     return asBytesCls(acc.bytes).valueOf()
   }
 }
 
 export class BytesMap<TValue> extends CustomKeyMap<BytesCompat, TValue> {
+  /** @internal */
   constructor() {
     super((bytes) => asBytesCls(bytes).valueOf())
   }
 }
 
 export class Uint64Map<TValue> extends CustomKeyMap<Uint64Compat, TValue> {
+  /** @internal */
   constructor() {
     super((uint64) => asUint64Cls(uint64).valueOf())
   }

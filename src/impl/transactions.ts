@@ -35,6 +35,7 @@ const baseDefaultFields = () => ({
 export type TxnFields<TTxn> = Partial<Mutable<Pick<TTxn, ObjectKeys<TTxn>>>>
 
 abstract class TransactionBase {
+  /** @internal */
   protected constructor(fields: Partial<ReturnType<typeof baseDefaultFields>>) {
     const baseDefaults = baseDefaultFields()
     this.sender = fields.sender ?? baseDefaults.sender
@@ -87,6 +88,7 @@ export class PaymentTransaction extends TransactionBase implements gtxn.PaymentT
     return new PaymentTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.PaymentTxn>) {
     super(fields)
     this.receiver = fields.receiver ?? Account()
@@ -107,6 +109,7 @@ export class KeyRegistrationTransaction extends TransactionBase implements gtxn.
     return new KeyRegistrationTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.KeyRegistrationTxn>) {
     super(fields)
     this.voteKey = fields.voteKey ?? (Bytes() as bytes<32>)
@@ -141,6 +144,7 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
     return new AssetConfigTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.AssetConfigTxn>) {
     super(fields)
     this.configAsset = fields.configAsset ?? Asset()
@@ -181,6 +185,7 @@ export class AssetTransferTransaction extends TransactionBase implements gtxn.As
     return new AssetTransferTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.AssetTransferTxn>) {
     super(fields)
     this.xferAsset = fields.xferAsset ?? Asset()
@@ -206,6 +211,7 @@ export class AssetFreezeTransaction extends TransactionBase implements gtxn.Asse
     return new AssetFreezeTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.AssetFreezeTxn>) {
     super(fields)
     this.freezeAsset = fields.freezeAsset ?? Asset()
@@ -238,6 +244,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   static create(fields: ApplicationCallTransactionFields) {
     return new ApplicationCallTransaction(fields)
   }
+  /** @internal */
   private args: Array<unknown>
   #accounts: Array<AccountType>
   #assets: Array<AssetType>
@@ -247,6 +254,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   #appLogs: Array<bytes>
   #appId: ApplicationType
 
+  /** @internal */
   protected constructor(fields: ApplicationCallTransactionFields) {
     super(fields)
     this.#appId = fields.appId ?? Application()

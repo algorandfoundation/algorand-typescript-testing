@@ -355,6 +355,7 @@ export class ApplicationCallInnerTxnContext<TReturn = unknown> extends Applicati
     super.appendLog(value)
   }
 
+  /** @internal */
   private constructor(
     fields: ApplicationCallFields,
     public itxns?: Transaction[],

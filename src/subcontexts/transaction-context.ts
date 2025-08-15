@@ -59,10 +59,15 @@ interface ExecutionScope {
 export class DeferredAppCall<TParams extends unknown[], TReturn> {
   /** @internal */
   constructor(
+    /** @internal */
     private readonly appId: uint64,
+    /** @internal */
     readonly txns: Transaction[],
+    /** @internal */
     private readonly method: (...args: TParams) => TReturn,
+    /** @internal */
     private readonly abiMetadata: AbiMetadata,
+    /** @internal */
     private readonly args: TParams,
   ) {}
 
