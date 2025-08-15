@@ -2,6 +2,7 @@
 title: Algorand TypeScript Testing Guide
 children:
   - ./tg-concepts.md
+  - ./tg-application-spy.md
   - ./tg-avm-types.md
   - ./tg-arc4-types.md
   - ./tg-transactions.md

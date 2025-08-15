@@ -4,7 +4,7 @@ title: Transactions
 
 # Transactions
 
-The testing framework follows the Transaction definitions described in [`algorand-typescript` docs](https://github.com/algorandfoundation/puya-ts/blob/main/docs/lg-transactions.md). This section focuses on _value generators_ and interactions with inner transactions, it also explains how the framework identifies _active_ transaction group during contract method/subroutine/logicsig invocation.
+The testing framework follows the Transaction definitions described in [`algorand-typescript` docs](https://algorandfoundation.github.io/puya-ts/documents/Algorand_TypeScript_Language_Guide.Types.html#group-transactions). This section focuses on _value generators_ and interactions with inner transactions, it also explains how the framework identifies _active_ transaction group during contract method/subroutine/logicsig invocation.
 
 ```ts
 import * as algots from '@algorandfoundation/algorand-typescript'
