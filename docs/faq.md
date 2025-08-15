@@ -1,8 +1,12 @@
+---
+title: FAQ
+---
+
 # FAQ
 
 ## What is a Test Context?
 
-A Test Context is a context manager that provides a simulated Algorand environment for testing TypeScript smart contracts. It allows developers to create and manipulate a virtual Algorand ecosystem for testing purposes. For more details, see the [Test Context section](testing-guide/concepts.md#test-context) in our documentation.
+A Test Context is a context manager that provides a simulated Algorand environment for testing TypeScript smart contracts. It allows developers to create and manipulate a virtual Algorand ecosystem for testing purposes. For more details, see the [Test Context section](tg-concepts.md#test-context) in our documentation.
 
 ## What is the Algorand Virtual Machine (AVM)?
 
@@ -14,7 +18,7 @@ Operational Codes, or opcodes, are AVM instructions that are executed directly b
 
 ## What are Value Generators?
 
-Value Generators are helper methods that generate randomized values for testing when the specific value of the tested type is not important. In the context of Algorand TypeScript testing, these are represented by property on the context manager, accessed via `any.*` (`any.txn.*`, or `any.arc4.*`. in the case of ARC 4 types). To understand how to use Value Generators effectively, check out our [Value Generators section](testing-guide/concepts.md#value-generators) in the documentation.
+Value Generators are helper methods that generate randomized values for testing when the specific value of the tested type is not important. In the context of Algorand TypeScript testing, these are represented by property on the context manager, accessed via `any.*` (`any.txn.*`, or `any.arc4.*`. in the case of ARC 4 types). To understand how to use Value Generators effectively, check out our [Value Generators section](tg-concepts.md#value-generators) in the documentation.
 
 ## What are the limitations of the Algorand TypeScript Testing framework?
 
@@ -52,7 +56,7 @@ While this framework is useful for unit testing and local development, it should
 
 Yes, the `algokit-typescript-template`, accessible via `algokit init`, provides a working example of how to structure `algorand-typecript-testing` along with regular integration tests against localnet.
 
-```{hint}
+```
 An `algokit-typescript-template` accessible via `algokit init -t typescript`, provides a comprehensive and customizable working example of how to structure `algorand-typescript-testing` along with regular integration tests against localnet.
 ```
 

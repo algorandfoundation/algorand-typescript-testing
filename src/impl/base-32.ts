@@ -2,6 +2,7 @@ const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'.split('')
 
 const CHAR_TO_NUM = BASE32_ALPHABET.reduce((acc, cur, index) => ((acc[cur] = index), acc), {} as Record<string, number>)
 
+/** @internal */
 export const base32ToUint8Array = (value: string): Uint8Array => {
   let allChars = value
     .split('')
@@ -29,6 +30,7 @@ export const base32ToUint8Array = (value: string): Uint8Array => {
   return new Uint8Array(bytes)
 }
 
+/** @internal */
 export const uint8ArrayToBase32 = (value: Uint8Array): string => {
   let allBytes = Array.from(value)
   let base32str = ''

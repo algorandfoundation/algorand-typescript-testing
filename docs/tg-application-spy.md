@@ -1,3 +1,7 @@
+---
+title: Application Spy
+---
+
 # ApplicationSpy
 
 The `ApplicationSpy` class provides a way to mock making method calls for from within contracts. This is particularly useful when testing contracts that deploy and interact with other contracts in a type safe manner. It can be used with all the approaches for making method calls supported by `algorand-typescript`.

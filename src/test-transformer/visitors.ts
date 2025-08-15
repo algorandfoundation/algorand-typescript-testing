@@ -22,6 +22,13 @@ const algotsModulePaths = [
   '/puya-ts/packages/algo-ts/',
   `${path.sep}puya-ts${path.sep}packages${path.sep}algo-ts${path.sep}`,
 ]
+const algotsTestingModulePaths = (testingPackageName: string) => [
+  testingPackageName,
+  `${path.sep}algorand-typescript-testing${path.sep}src${path.sep}`,
+  `${path.sep}algorand-typescript-testing${path.sep}dist${path.sep}`,
+]
+
+const testingExamplePath = `${path.sep}algorand-typescript-testing${path.sep}examples${path.sep}`
 
 type VisitorHelper = {
   additionalStatements: ts.Statement[]
@@ -29,8 +36,10 @@ type VisitorHelper = {
   resolveTypeParameters(node: ts.CallExpression): ptypes.PType[]
   sourceLocation(node: ts.Node): SourceLocation
   tryGetSymbol(node: ts.Node): ts.Symbol | undefined
+  getConfig(): TransformerConfig
 }
 
+/** @internal */
 export class SourceFileVisitor {
   private helper: VisitorHelper
 
@@ -38,7 +47,7 @@ export class SourceFileVisitor {
     private context: ts.TransformationContext,
     private sourceFile: ts.SourceFile,
     program: ts.Program,
-    private config: TransformerConfig,
+    config: TransformerConfig,
   ) {
     const typeChecker = program.getTypeChecker()
     const loggingContext = LoggingContext.create()
@@ -74,13 +83,16 @@ export class SourceFileVisitor {
           return SourceLocation.None
         }
       },
+      getConfig(): TransformerConfig {
+        return config
+      },
     }
   }
 
   public result(): ts.SourceFile {
     const updatedSourceFile = ts.visitNode(this.sourceFile, this.visit) as ts.SourceFile
     return factory.updateSourceFile(updatedSourceFile, [
-      ...nodeFactory.importHelpers(this.config.testingPackageName),
+      ...nodeFactory.importHelpers(this.helper.getConfig().testingPackageName),
       ...updatedSourceFile.statements,
       ...this.helper.additionalStatements,
     ])
@@ -88,7 +100,7 @@ export class SourceFileVisitor {
 
   private visit = (node: ts.Node): ts.Node => {
     if (ts.isImportDeclaration(node)) {
-      return new ImportDeclarationVisitor(this.context, this.helper, this.config, node).result()
+      return new ImportDeclarationVisitor(node, this.helper).result()
     }
     if (ts.isFunctionLike(node)) {
       return new FunctionLikeDecVisitor(this.context, this.helper, node).result()
@@ -109,10 +121,8 @@ export class SourceFileVisitor {
 
 class ImportDeclarationVisitor {
   constructor(
-    private context: ts.TransformationContext,
-    private helper: VisitorHelper,
-    private config: TransformerConfig,
     private declarationNode: ts.ImportDeclaration,
+    private helper: VisitorHelper,
   ) {}
 
   public result(): ts.ImportDeclaration {
@@ -132,7 +142,7 @@ class ImportDeclarationVisitor {
         : this.declarationNode.importClause,
       factory.createStringLiteral(
         moduleSpecifier
-          .replace(algotsModuleSpecifier, testingInternalModuleSpecifier(this.config.testingPackageName))
+          .replace(algotsModuleSpecifier, testingInternalModuleSpecifier(this.helper.getConfig().testingPackageName))
           .replace(/^("|')/, '')
           .replace(/("|')$/, ''),
       ),
@@ -154,7 +164,9 @@ class ExpressionVisitor {
   }
 
   private visit = (node: ts.Node): ts.Node => {
-    handleTypeInfoCaputre: if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+    handleTypeInfoCapture: if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+      if (!tryGetAlgoTsSymbolName(node.expression, this.helper)) break handleTypeInfoCapture
+
       let type = this.helper.resolveType(node)
 
       // `voted = LocalState<uint64>()` is resolved to FunctionPType with returnType LocalState<uint64>
@@ -180,7 +192,7 @@ class ExpressionVisitor {
         // the nodes which have been created or updated by the node factory will not have source location,
         // and we do not need to process them further
         const sourceLocation = this.helper.sourceLocation(updatedNode)
-        if (sourceLocation === SourceLocation.None) break handleTypeInfoCaputre
+        if (sourceLocation === SourceLocation.None) break handleTypeInfoCapture
 
         if (
           isCallingEmit(stubbedFunctionName) ||
@@ -518,12 +530,20 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
 }
 
 const tryGetAlgoTsSymbolName = (node: ts.Node, helper: VisitorHelper): string | undefined => {
-  const s = helper.tryGetSymbol(node)
-  if (s) {
-    const sourceFileName = s.valueDeclaration?.getSourceFile().fileName
-    if (sourceFileName && !algotsModulePaths.some((s) => sourceFileName.includes(s))) return undefined
-  }
-  return s?.getName() ?? (ts.isMemberName(node) ? node.text : node.getText())
+  const symbol = helper.tryGetSymbol(node)
+  if (!symbol) return undefined
+
+  const sourceFileName = symbol.valueDeclaration?.getSourceFile().fileName
+  if (!sourceFileName) return undefined
+
+  // If the symbol is from algorand-typescript package or testing example path, return its name
+  if (algotsModulePaths.some((path) => sourceFileName.includes(path)) || sourceFileName.includes(testingExamplePath))
+    return symbol.getName()
+
+  // If the symbol is from algorand-typescript-testing package, return undefined as they do not need to be processed
+  if (algotsTestingModulePaths(helper.getConfig().testingPackageName).some((path) => sourceFileName.includes(path))) return undefined
+
+  return symbol.getName()
 }
 
 const isCallingDecodeArc4 = (functionName: string | undefined): boolean => 'decodeArc4' === (functionName ?? '')

@@ -2,6 +2,7 @@ import type { Uint64Compat } from '@algorandfoundation/algorand-typescript'
 import { AvmError } from '../../errors'
 import { arrayUtil } from '../primitives'
 
+/** @internal */
 export const arrayProxyHandler = <TItem>() => ({
   get(target: { items: readonly TItem[] }, prop: PropertyKey) {
     const idx = prop ? parseInt(prop.toString(), 10) : NaN

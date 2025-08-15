@@ -1,5 +1,3 @@
-# Algorand TypeScript Testing
-
 [![docs-repository](https://img.shields.io/badge/url-repository-74dfdc?logo=github&style=flat.svg)](https://github.com/algorandfoundation/algorand-typescript-testing/)
 [![learn-AlgoKit](https://img.shields.io/badge/learn-AlgoKit-74dfdc?logo=algorand&mac=flat.svg)](https://developer.algorand.org/algokit/)
 [![github-stars](https://img.shields.io/github/stars/algorandfoundation/algorand-typescript-testing?color=74dfdc&logo=star&style=flat)](https://github.com/algorandfoundation/algorand-typescript-testing)
@@ -287,9 +285,9 @@ To dig deeper into the capabilities of `algorand-typescript-testing`, continue w
 
 #### Contents
 
-- [Testing Guide](./docs/testing-guide.md)
-- [Examples](./docs/examples.md)
-- [Coverage](./docs/coverage.md)
-- [FQA](./docs/faq.md)
-- [API Reference](./docs/api.md)
-- [Algorand TypeScript](./docs/algots.md)
+- [Testing Guide](./testing-guide.md)
+- [Examples](./examples.md)
+- [Coverage](./coverage.md)
+- [FQA](./faq.md)
+- [API Reference](./api.md)
+- [Algorand TypeScript](./algots.md)

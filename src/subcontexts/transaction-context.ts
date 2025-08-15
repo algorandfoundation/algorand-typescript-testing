@@ -1,4 +1,4 @@
-import type { bytes, Contract, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { bytes, Contract, uint64, Uint64Compat } from '@algorandfoundation/algorand-typescript'
 import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
 import { getContractAbiMetadata, type AbiMetadata } from '../abi-metadata'
 import { TRANSACTION_GROUP_MAX_SIZE } from '../constants'
@@ -17,7 +17,7 @@ import type {
 } from '../impl/inner-transactions'
 import { ApplicationCallInnerTxnContext, createInnerTxn, ItxnParams } from '../impl/inner-transactions'
 import type { InnerTxn, InnerTxnFields } from '../impl/itxn'
-import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
+import type { StubBytesCompat } from '../impl/primitives'
 import type {
   AllTransactionFields,
   ApplicationCallTransaction,
@@ -57,11 +57,17 @@ interface ExecutionScope {
  * Represents a deferred application call.
  */
 export class DeferredAppCall<TParams extends unknown[], TReturn> {
+  /** @internal */
   constructor(
+    /** @internal */
     private readonly appId: uint64,
+    /** @internal */
     readonly txns: Transaction[],
+    /** @internal */
     private readonly method: (...args: TParams) => TReturn,
+    /** @internal */
     private readonly abiMetadata: AbiMetadata,
+    /** @internal */
     private readonly args: TParams,
   ) {}
 
@@ -231,12 +237,15 @@ export class TransactionContext {
  * Represents a group of transactions.
  */
 export class TransactionGroup {
-  activeTransactionIndex: number
   latestTimestamp: number
   transactions: Transaction[]
   itxnGroups: ItxnGroup[] = []
+  /** @internal */
+  activeTransactionIndex: number
+  /** @internal */
   constructingItxnGroup: InnerTxnFields[] = []
 
+  /** @internal */
   constructor(transactions: Transaction[], activeTransactionIndex?: number) {
     this.latestTimestamp = Date.now()
     if (transactions.length > TRANSACTION_GROUP_MAX_SIZE) {
@@ -290,7 +299,7 @@ export class TransactionGroup {
    * @param index The index of the scratch slot.
    * @returns The scratch slot value.
    */
-  getScratchSlot(index: StubUint64Compat): bytes | uint64 {
+  getScratchSlot(index: Uint64Compat): bytes | uint64 {
     return this.activeTransaction.getScratchSlot(index)
   }
 
@@ -384,7 +393,7 @@ export class TransactionGroup {
    * @returns The inner transaction group.
    * @throws If the index is invalid or there are no previous inner transactions.
    */
-  getItxnGroup(index?: StubUint64Compat): ItxnGroup {
+  getItxnGroup(index?: Uint64Compat): ItxnGroup {
     const i = index !== undefined ? asNumber(index) : undefined
 
     invariant(this.itxnGroups.length > 0, 'no previous inner transactions')
@@ -402,7 +411,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The application transaction.
    */
-  getApplicationCallTransaction(index?: StubUint64Compat): ApplicationCallTransaction {
+  getApplicationCallTransaction(index?: Uint64Compat): ApplicationCallTransaction {
     return this._getTransaction({ type: TransactionType.ApplicationCall, index }) as ApplicationCallTransaction
   }
 
@@ -411,7 +420,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The asset configuration transaction.
    */
-  getAssetConfigTransaction(index?: StubUint64Compat): AssetConfigTransaction {
+  getAssetConfigTransaction(index?: Uint64Compat): AssetConfigTransaction {
     return this._getTransaction({ type: TransactionType.AssetConfig, index }) as AssetConfigTransaction
   }
 
@@ -420,7 +429,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The asset transfer transaction.
    */
-  getAssetTransferTransaction(index?: StubUint64Compat): AssetTransferTransaction {
+  getAssetTransferTransaction(index?: Uint64Compat): AssetTransferTransaction {
     return this._getTransaction({ type: TransactionType.AssetTransfer, index }) as AssetTransferTransaction
   }
 
@@ -429,7 +438,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The asset freeze transaction.
    */
-  getAssetFreezeTransaction(index?: StubUint64Compat): AssetFreezeTransaction {
+  getAssetFreezeTransaction(index?: Uint64Compat): AssetFreezeTransaction {
     return this._getTransaction({ type: TransactionType.AssetFreeze, index }) as AssetFreezeTransaction
   }
 
@@ -438,7 +447,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The key registration transaction.
    */
-  getKeyRegistrationTransaction(index?: StubUint64Compat): KeyRegistrationTransaction {
+  getKeyRegistrationTransaction(index?: Uint64Compat): KeyRegistrationTransaction {
     return this._getTransaction({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationTransaction
   }
 
@@ -447,7 +456,7 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The payment transaction.
    */
-  getPaymentTransaction(index?: StubUint64Compat): PaymentTransaction {
+  getPaymentTransaction(index?: Uint64Compat): PaymentTransaction {
     return this._getTransaction({ type: TransactionType.Payment, index }) as PaymentTransaction
   }
 
@@ -456,10 +465,11 @@ export class TransactionGroup {
    * @param index The index of the transaction.
    * @returns The transaction.
    */
-  getTransaction(index?: StubUint64Compat): Transaction {
+  getTransaction(index?: Uint64Compat): Transaction {
     return this._getTransaction({ index })
   }
-  private _getTransaction({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
+  /** @internal */
+  private _getTransaction({ type, index }: { type?: TransactionType; index?: Uint64Compat }) {
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= lazyContext.activeGroup.transactions.length) {
       throw new InternalError('Invalid group index')
@@ -495,6 +505,7 @@ export class TransactionGroup {
  */
 export class ItxnGroup {
   itxns: InnerTxn[] = []
+  /** @internal */
   constructor(itxns: InnerTxn[]) {
     this.itxns = itxns
   }
@@ -504,7 +515,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The application inner transaction.
    */
-  getApplicationCallInnerTxn(index?: StubUint64Compat): ApplicationCallInnerTxn {
+  getApplicationCallInnerTxn(index?: Uint64Compat): ApplicationCallInnerTxn {
     return this._getInnerTxn({ type: TransactionType.ApplicationCall, index }) as ApplicationCallInnerTxn
   }
 
@@ -513,7 +524,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The asset configuration inner transaction.
    */
-  getAssetConfigInnerTxn(index?: StubUint64Compat): AssetConfigInnerTxn {
+  getAssetConfigInnerTxn(index?: Uint64Compat): AssetConfigInnerTxn {
     return this._getInnerTxn({ type: TransactionType.AssetConfig, index }) as AssetConfigInnerTxn
   }
 
@@ -522,7 +533,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The asset transfer inner transaction.
    */
-  getAssetTransferInnerTxn(index?: StubUint64Compat): AssetTransferInnerTxn {
+  getAssetTransferInnerTxn(index?: Uint64Compat): AssetTransferInnerTxn {
     return this._getInnerTxn({ type: TransactionType.AssetTransfer, index }) as AssetTransferInnerTxn
   }
 
@@ -531,7 +542,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The asset freeze inner transaction.
    */
-  getAssetFreezeInnerTxn(index?: StubUint64Compat): AssetFreezeInnerTxn {
+  getAssetFreezeInnerTxn(index?: Uint64Compat): AssetFreezeInnerTxn {
     return this._getInnerTxn({ type: TransactionType.AssetFreeze, index }) as AssetFreezeInnerTxn
   }
 
@@ -540,7 +551,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The key registration inner transaction.
    */
-  getKeyRegistrationInnerTxn(index?: StubUint64Compat): KeyRegistrationInnerTxn {
+  getKeyRegistrationInnerTxn(index?: Uint64Compat): KeyRegistrationInnerTxn {
     return this._getInnerTxn({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationInnerTxn
   }
 
@@ -549,7 +560,7 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The payment inner transaction.
    */
-  getPaymentInnerTxn(index?: StubUint64Compat): PaymentInnerTxn {
+  getPaymentInnerTxn(index?: Uint64Compat): PaymentInnerTxn {
     return this._getInnerTxn({ type: TransactionType.Payment, index }) as PaymentInnerTxn
   }
 
@@ -558,11 +569,12 @@ export class ItxnGroup {
    * @param index The index of the transaction.
    * @returns The inner transaction.
    */
-  getInnerTxn(index?: StubUint64Compat): InnerTxn {
+  getInnerTxn(index?: Uint64Compat): InnerTxn {
     return this._getInnerTxn({ index })
   }
 
-  private _getInnerTxn({ type, index }: { type?: TransactionType; index?: StubUint64Compat }) {
+  /** @internal */
+  private _getInnerTxn({ type, index }: { type?: TransactionType; index?: Uint64Compat }) {
     invariant(this.itxns.length > 0, 'no previous inner transactions')
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= this.itxns.length) {

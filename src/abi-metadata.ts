@@ -6,6 +6,7 @@ import type { TypeInfo } from './impl/encoded-types'
 import { getArc4TypeName } from './impl/encoded-types'
 import type { DeliberateAny } from './typescript-helpers'
 
+/** @internal */
 export interface AbiMetadata {
   methodName: string
   name?: string
@@ -18,6 +19,7 @@ export interface AbiMetadata {
 }
 
 const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> = new WeakMap()
+/** @internal */
 export const attachAbiMetadata = (contract: { new (): Contract }, methodName: string, metadata: AbiMetadata): void => {
   if (!metadataStore.has(contract)) {
     metadataStore.set(contract, {})
@@ -31,6 +33,7 @@ export const attachAbiMetadata = (contract: { new (): Contract }, methodName: st
   }
 }
 
+/** @internal */
 export const getContractAbiMetadata = <T extends Contract>(contract: T | { new (): T }): Record<string, AbiMetadata> => {
   // Initialize result object to store merged metadata
   const result: Record<string, AbiMetadata> = {}
@@ -63,11 +66,13 @@ export const getContractAbiMetadata = <T extends Contract>(contract: T | { new (
   return result
 }
 
+/** @internal */
 export const getContractMethodAbiMetadata = <T extends Contract>(contract: T | { new (): T }, methodName: string): AbiMetadata => {
   const metadatas = getContractAbiMetadata(contract)
   return metadatas[methodName]
 }
 
+/** @internal */
 export const getArc4Signature = (metadata: AbiMetadata): string => {
   if (metadata.methodSignature === undefined) {
     const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map((t) => getArc4TypeName(t, metadata.resourceEncoding, 'in'))
@@ -77,6 +82,7 @@ export const getArc4Signature = (metadata: AbiMetadata): string => {
   return metadata.methodSignature
 }
 
+/** @internal */
 export const getArc4Selector = (metadata: AbiMetadata): Uint8Array => {
   const hash = js_sha512.sha512_256.array(getArc4Signature(metadata))
   return new Uint8Array(hash.slice(0, 4))

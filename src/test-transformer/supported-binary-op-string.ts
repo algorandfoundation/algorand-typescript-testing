@@ -1,6 +1,7 @@
 import type { BinaryOperator, PrefixUnaryOperator } from 'typescript'
 import ts from 'typescript'
 
+/** @internal */
 export function supportedBinaryOpString(x: BinaryOperator): string | undefined {
   switch (x) {
     case ts.SyntaxKind.MinusToken:
@@ -60,6 +61,7 @@ export function supportedBinaryOpString(x: BinaryOperator): string | undefined {
   }
 }
 
+/** @internal */
 export function supportedAugmentedAssignmentBinaryOpString(x: BinaryOperator): string | undefined {
   switch (x) {
     case ts.SyntaxKind.PlusEqualsToken:
@@ -79,6 +81,7 @@ export function supportedAugmentedAssignmentBinaryOpString(x: BinaryOperator): s
   }
 }
 
+/** @internal */
 export function supportedPrefixUnaryOpString(x: PrefixUnaryOperator): string | undefined {
   switch (x) {
     case ts.SyntaxKind.TildeToken:

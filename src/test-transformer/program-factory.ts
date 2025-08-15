@@ -6,11 +6,13 @@ export interface TransformerConfig {
   includeExt: string[]
   testingPackageName: string
 }
+/** @internal */
 export const defaultTransformerConfig: TransformerConfig = {
   includeExt: ['.algo.ts', '.algo.spec.ts', '.algo.test.ts'],
   testingPackageName: '@algorandfoundation/algorand-typescript-testing',
 }
 
+/** @internal */
 export function programFactory(config: TransformerConfig, program: ts.Program): ts.TransformerFactory<ts.SourceFile> {
   registerPTypes(typeRegistry)
   return (context) => {

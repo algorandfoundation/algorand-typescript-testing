@@ -65,7 +65,7 @@ class InternalContext {
   }
 
   getApplicationData(id: StubUint64Compat | BaseContract): ApplicationData {
-    const uint64Id = id instanceof BaseContract ? this.ledger.getApplicationForContract(id).id : Uint64Cls.fromCompat(id)
+    const uint64Id = id instanceof BaseContract ? this.ledger.getApplicationForContract(id).id : Uint64Cls.fromCompat(id).asAlgoTs()
     const data = this.ledger.applicationDataMap.get(uint64Id)
     if (!data) {
       throw new InternalError('Unknown application, check correct testing context is active')
@@ -82,4 +82,5 @@ class InternalContext {
   }
 }
 
+/** @internal */
 export const lazyContext = new InternalContext()

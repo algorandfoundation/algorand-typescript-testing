@@ -35,6 +35,7 @@ export class GlobalData {
   payoutsPercent: uint64
   payoutsMinBalance: uint64
 
+  /** @internal */
   constructor() {
     this.minTxnFee = Uint64(MIN_TXN_FEE)
     this.minBalance = Uint64(DEFAULT_ACCOUNT_MIN_BALANCE)
@@ -57,6 +58,7 @@ const getGlobalData = (): GlobalData => {
 const getMissingValueErrorMessage = (name: keyof GlobalData) =>
   `'Global' object has no value set for attribute named '${name}'. Use \`context.ledger.patchGlobalData({${name}: your_value})\` to set the value in your test setup."`
 
+/** @internal */
 export const Global: typeof op.Global = {
   /**
    * microalgos

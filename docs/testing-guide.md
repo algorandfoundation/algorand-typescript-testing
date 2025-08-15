@@ -1,8 +1,22 @@
+---
+title: Algorand TypeScript Testing Guide
+children:
+  - ./tg-concepts.md
+  - ./tg-application-spy.md
+  - ./tg-avm-types.md
+  - ./tg-arc4-types.md
+  - ./tg-transactions.md
+  - ./tg-contract-testing.md
+  - ./tg-signature-testing.md
+  - ./tg-state-management.md
+  - ./tg-opcodes.md
+---
+
 # Testing Guide
 
 The Algorand TypeScript Testing framework provides powerful tools for testing Algorand TypeScript smart contracts within a Node.js environment. This guide covers the main features and concepts of the framework, helping you write effective tests for your Algorand applications.
 
-```{note}
+```
 For all code examples in the _Testing Guide_ section, assume `context` is an instance of `TestExecutionContext` obtained using the initialising an instance of `TestExecutionContext` class. All subsequent code is executed within this context.
 ```
 
@@ -31,11 +45,11 @@ The framework is designed to work seamlessly with Algorand TypeScript smart cont
 
 ## Table of Contents
 
-- [Concepts](./concepts.md)
-- [AVM Types](./avm-types.md)
-- [ARC4 Types](./arc4-types.md)
-- [Transactions](./transactions.md)
-- [Smart Contract Testing](./contract-testing.md)
-- [Smart Signature Testing](./signature-testing.md)
-- [State Management](./state-management.md)
-- [AVM Opcodes](./opcodes.md)
+- [Concepts](./tg-concepts.md)
+- [AVM Types](./tg-avm-types.md)
+- [ARC4 Types](./tg-arc4-types.md)
+- [Transactions](./tg-transactions.md)
+- [Smart Contract Testing](./tg-contract-testing.md)
+- [Smart Signature Testing](./tg-signature-testing.md)
+- [State Management](./tg-state-management.md)
+- [AVM Opcodes](./tg-opcodes.md)

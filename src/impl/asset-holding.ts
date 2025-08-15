@@ -20,6 +20,7 @@ const getAssetHolding = (acctOrIndex: Account | StubUint64Compat, assetOrIndex: 
   return holding
 }
 
+/** @internal */
 export const AssetHolding: typeof op.AssetHolding = {
   assetBalance(a: Account | StubUint64Compat, b: Asset | StubUint64Compat): readonly [uint64, boolean] {
     const holding = getAssetHolding(a, b)

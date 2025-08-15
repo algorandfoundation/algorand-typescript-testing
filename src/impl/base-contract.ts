@@ -1,6 +1,7 @@
 import type { contract as contractType, uint64 } from '@algorandfoundation/algorand-typescript'
 import type { ConstructorFor } from '../typescript-helpers'
 
+/** @internal */
 export abstract class BaseContract {
   static isArc4 = false
 
@@ -10,7 +11,9 @@ export abstract class BaseContract {
   }
 }
 
+/** @internal */
 export const ContractOptionsSymbol = Symbol('ContractOptions')
+/** @internal */
 export function contract(options: Parameters<typeof contractType>[0]) {
   return <T extends ConstructorFor<BaseContract>>(contract: T, ctx: ClassDecoratorContext) => {
     ctx.addInitializer(function () {

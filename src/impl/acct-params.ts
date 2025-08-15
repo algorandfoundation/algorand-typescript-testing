@@ -5,6 +5,7 @@ import { getApp } from './app-params'
 import { Global } from './global'
 import type { StubUint64Compat } from './primitives'
 
+/** @internal */
 export const getAccount = (acct: Account | StubUint64Compat): Account => {
   const acctId = asMaybeUint64Cls(acct)
   if (acctId !== undefined) {
@@ -14,16 +15,19 @@ export const getAccount = (acct: Account | StubUint64Compat): Account => {
   return acct as Account
 }
 
+/** @internal */
 export const balance = (a: Account | StubUint64Compat): uint64 => {
   const acct = getAccount(a)
   return acct.balance
 }
 
+/** @internal */
 export const minBalance = (a: Account | StubUint64Compat): uint64 => {
   const acct = getAccount(a)
   return acct.minBalance
 }
 
+/** @internal */
 export const appOptedIn = (a: Account | StubUint64Compat, b: Application | StubUint64Compat): boolean => {
   const account = getAccount(a)
   const app = getApp(b)
@@ -34,6 +38,7 @@ export const appOptedIn = (a: Account | StubUint64Compat, b: Application | StubU
   return account.isOptedIn(app)
 }
 
+/** @internal */
 export const AcctParams: typeof op.AcctParams = {
   acctBalance(a: Account | StubUint64Compat): readonly [uint64, boolean] {
     const acct = getAccount(a)

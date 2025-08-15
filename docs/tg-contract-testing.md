@@ -1,8 +1,12 @@
+---
+title: Smart Contract Testing
+---
+
 # Smart Contract Testing
 
 This guide provides an overview of how to test smart contracts using the [Algorand Typescript Testing package](https://www.npmjs.com/package/@algorandfoundation/algorand-typescript-testing). We will cover the basics of testing `arc4.Contract` and `BaseContract` classes, focusing on `abimethod` and `baremethod` decorators.
 
-```{note}
+```
 The code snippets showcasing the contract testing capabilities are using [vitest](https://vitest.dev/) as the test framework. However, note that the `algorand-typescript-testing` package can be used with any other test framework that supports TypeScript. `vitest` is used for demonstration purposes in this documentation.
 ```
 
@@ -18,7 +22,7 @@ const ctx = new TestExecutionContext()
 
 Subclasses of `arc4.Contract` are **required** to be instantiated with an active test context. As part of instantiation, the test context will automatically create a matching `Application` object instance.
 
-Within the class implementation, methods decorated with `arc4.abimethod` and `arc4.baremethod` will automatically assemble an `gtxn.ApplicationCallTxn` transaction to emulate the AVM application call. This behavior can be overriden by setting the transaction group manually as part of test setup, this is done via implicit invocation of `ctx.any.txn.applicationCall` _value generator_ (refer to [APIs](../apis.md) for more details).
+Within the class implementation, methods decorated with `arc4.abimethod` and `arc4.baremethod` will automatically assemble an `gtxn.ApplicationCallTxn` transaction to emulate the AVM application call. This behavior can be overriden by setting the transaction group manually as part of test setup, this is done via implicit invocation of `ctx.any.txn.applicationCall` _value generator_ (refer to [APIs](../modules/index.html) for more details).
 
 ```ts
 class SimpleVotingContract extends arc4.Contract {
@@ -71,7 +75,7 @@ expect(contract.topic.value).toEqual(initialTopic)
 expect(contract.votes.value).toEqual(Uint64(0))
 
 // Act - Vote
-// The method `.vote()` is decorated with `algopy.arc4.abimethod`, which means it will assemble a transaction to emulate the AVM application call
+// The method `.vote()` is decorated with `arc4.abimethod`, which means it will assemble a transaction to emulate the AVM application call
 const result = contract.vote()
 
 // Assert - you can access the corresponding auto generated application call transaction via test context
@@ -98,7 +102,7 @@ const votes = contract.getVotes()
 expect(votes).toEqual(0)
 ```
 
-For more examples of tests using `arc4.Contract`, see the [examples](../examples.md) section.
+For more examples of tests using `arc4.Contract`, see the [examples](./examples.md) section.
 
 ## `BaseContract``
 

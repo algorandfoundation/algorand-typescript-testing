@@ -20,6 +20,7 @@ const resolveAppIndex = (appIdOrIndex: StubUint64Compat): uint64 => {
   return txn.apps(input).id
 }
 
+/** @internal */
 export const getApp = (app: ApplicationType | StubUint64Compat): ApplicationType | undefined => {
   try {
     const appId = asMaybeUint64Cls(app)
@@ -32,6 +33,7 @@ export const getApp = (app: ApplicationType | StubUint64Compat): ApplicationType
   }
 }
 
+/** @internal */
 export const AppParams: typeof op.AppParams = {
   appApprovalProgram(a: ApplicationType | StubUint64Compat): readonly [bytes, boolean] {
     const app = getApp(a)

@@ -1,8 +1,12 @@
+---
+title: AVM Types
+---
+
 # AVM Types
 
 These types are available directly under the `algorand-typescript` namespace. They represent the basic AVM primitive types and can be instantiated directly or via _value generators_:
 
-```{note}
+```
 For 'primitive `algorand-typescript` types such as `Account`, `Application`, `Asset`, `uint64`, `biguint`, `bytes`, `string` with and without respective _value generator_, instantiation can be performed directly. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
 ```
 
@@ -119,7 +123,7 @@ const account = algots.Account(rawAddress) // zero address by default
 const randomAccount = ctx.any.account({
   address: rawAddress, // Optional: Specify a custom address, defaults to a random address
   optedAssetBalances: new Map([]), // Optional: Specify opted asset balances as dict of assets to balance
-  optedApplications: [], // Optional: Specify opted apps as sequence of algopy.Application objects
+  optedApplications: [], // Optional: Specify opted apps as sequence of Application objects
   totalAppsCreated: 0, // Optional: Specify the total number of created applications
   totalAppsOptedIn: 0, // Optional: Specify the total number of applications opted into
   totalAssets: 0, // Optional: Specify the total number of assets

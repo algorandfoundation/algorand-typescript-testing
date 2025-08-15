@@ -1,6 +1,10 @@
+/** @internal */
 export * from '@algorandfoundation/algorand-typescript/arc4'
+/** @internal */
 export { abiCall, compileArc4 } from '../impl/c2c'
+/** @internal */
 export { abimethod, baremethod, Contract } from '../impl/contract'
+/** @internal */
 export {
   Address,
   arc4EncodedLength,
@@ -21,4 +25,5 @@ export {
   UFixed,
   Uint,
 } from '../impl/encoded-types'
+/** @internal */
 export { methodSelector } from '../impl/method-selector'

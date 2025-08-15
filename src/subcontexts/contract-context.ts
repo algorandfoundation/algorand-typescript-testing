@@ -1,3 +1,4 @@
+import type { BaseContract as BaseContractType } from '@algorandfoundation/algorand-typescript'
 import {
   OnCompleteAction,
   type Account,
@@ -89,7 +90,9 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
 
 const getUint8 = (value: number) => new Uint({ name: 'Uint<8>', genericArgs: [{ name: '8' }] }, value)
 
-/** @ignore */
+/**
+ * @internal
+ */
 export const extractArraysFromArgs = (
   app: Application,
   methodSelector: Uint8Array,
@@ -171,7 +174,7 @@ export class ContractContext {
    * const ctx = new TestExecutionContext();
    * const contract = ctx.contract.create(MyContract);
    */
-  create<T extends BaseContract>(type: IConstructor<T>, ...args: DeliberateAny[]): T {
+  create<T extends BaseContractType>(type: IConstructor<T>, ...args: DeliberateAny[]): T {
     const proxy = new Proxy(type, this.getContractProxyHandler<T>(this.isArc4(type)))
     return new proxy(...args)
   }
@@ -211,6 +214,9 @@ export class ContractContext {
     return txns
   }
 
+  /**
+   * @internal
+   */
   private isArc4<T extends BaseContract>(type: IConstructor<T>): boolean {
     const result = (type as DeliberateAny as typeof BaseContract).isArc4
     if (result !== undefined && result !== null) {
@@ -230,6 +236,9 @@ export class ContractContext {
     return this.isArc4(proto)
   }
 
+  /**
+   * @internal
+   */
   private getContractProxyHandler<T extends BaseContract>(isArc4: boolean): ProxyHandler<IConstructor<T>> {
     const onConstructed = (application: Application, instance: T, conrtactOptions: ContractOptionsParameter | undefined) => {
       const states = extractStates(instance, conrtactOptions)

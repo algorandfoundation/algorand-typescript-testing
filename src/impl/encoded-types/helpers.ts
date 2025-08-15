@@ -14,22 +14,31 @@ import { asBytes, asUint8Array } from '../../util'
 import { BigUint, Uint64 } from '../primitives'
 import type { fromBytes } from './types'
 
+/** @internal */
 export const validBitSizes = [...Array(64).keys()].map((x) => (x + 1) * 8)
+/** @internal */
 export const maxBigIntValue = (bitSize: number) => 2n ** BigInt(bitSize) - 1n
+/** @internal */
 export const maxBytesLength = (bitSize: number) => Math.floor(bitSize / BITS_IN_BYTE)
+/** @internal */
 export const regExpNxM = (maxPrecision: number) => new RegExp(`^\\d*\\.?\\d{0,${maxPrecision}}$`)
+/** @internal */
 export const trimTrailingDecimalZeros = (v: string) => v.replace(/(\d+\.\d*?)0+$/, '$1').replace(/\.$/, '')
 
+/** @internal */
 export const trimGenericTypeName = (typeName: string): string => typeName.replace(/<.*>/, '')
 
+/** @internal */
 export const areAllARC4Encoded = <T extends ARC4Encoded>(items: T[]): items is T[] => items.every((item) => item instanceof ARC4Encoded)
 
+/** @internal */
 export const checkItemTypeName = (type: TypeInfo, value: ARC4Encoded) => {
   const typeName = trimGenericTypeName(type.name)
   const validTypeNames = [typeName]
   assert(validTypeNames.includes(value.constructor.name), `item must be of type ${typeName}, not ${value.constructor.name}`)
 }
 
+/** @internal */
 export const findBoolTypes = (values: TypeInfo[], index: number, delta: number): number => {
   // Helper function to find consecutive booleans from current index in a tuple.
   let until = 0
@@ -50,6 +59,7 @@ export const findBoolTypes = (values: TypeInfo[], index: number, delta: number):
   return until
 }
 
+/** @internal */
 export const getNativeValue = (value: DeliberateAny, targetTypeInfo: TypeInfo | undefined): DeliberateAny => {
   if (value.typeInfo && value.typeInfo.name === targetTypeInfo?.name) {
     return value
@@ -79,16 +89,19 @@ export const getNativeValue = (value: DeliberateAny, targetTypeInfo: TypeInfo | 
   return native
 }
 
+/** @internal */
 export const readLength = (value: Uint8Array): readonly [number, Uint8Array] => {
   const length = Number(encodingUtil.uint8ArrayToBigInt(value.slice(0, ABI_LENGTH_SIZE)))
   const data = value.slice(ABI_LENGTH_SIZE)
   return [length, data]
 }
 
+/** @internal */
 export const encodeLength = (length: number): BytesCls => {
   return asBytesCls(encodingUtil.bigIntToUint8Array(BigInt(length), ABI_LENGTH_SIZE))
 }
 
+/** @internal */
 export const findBool = (values: ARC4Encoded[], index: number, delta: number) => {
   let until = 0
   const length = values.length
@@ -108,6 +121,7 @@ export const findBool = (values: ARC4Encoded[], index: number, delta: number) =>
   return until
 }
 
+/** @internal */
 export const compressMultipleBool = (values: Bool[]): number => {
   let result = 0
   if (values.length > 8) {
@@ -122,6 +136,7 @@ export const compressMultipleBool = (values: Bool[]): number => {
   return result
 }
 
+/** @internal */
 export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
   const itemTypeName = trimGenericTypeName(value.name)
 
@@ -146,30 +161,37 @@ export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
   )
 }
 
+/** @internal */
 export const booleanFromBytes: fromBytes<boolean> = (val) => {
   return encodingUtil.uint8ArrayToBigInt(asUint8Array(val)) > 0n
 }
 
+/** @internal */
 export const bigUintFromBytes: fromBytes<biguint> = (val) => {
   return BigUint(encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
 }
 
+/** @internal */
 export const bytesFromBytes: fromBytes<bytes> = (val) => {
   return asBytes(val)
 }
 
+/** @internal */
 export const stringFromBytes: fromBytes<string> = (val) => {
   return asBytes(val).toString()
 }
 
+/** @internal */
 export const uint64FromBytes: fromBytes<uint64> = (val) => {
   return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
 }
 
+/** @internal */
 export const onCompletionFromBytes: fromBytes<OnCompleteAction> = (val) => {
   return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as OnCompleteAction
 }
 
+/** @internal */
 export const transactionTypeFromBytes: fromBytes<TransactionType> = (val) => {
   return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as TransactionType
 }

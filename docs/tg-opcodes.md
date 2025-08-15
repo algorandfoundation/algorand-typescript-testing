@@ -1,3 +1,7 @@
+---
+title: AVM Opcodes
+---
+
 # AVM Opcodes
 
 The [coverage](coverage.md) file provides a comprehensive list of all opcodes and their respective types, categorized as _Mockable_, _Emulated_, or _Native_ within the `algorand-typescript-testing` package. This section highlights a **subset** of opcodes and types that typically require interaction with the test execution context.
@@ -66,13 +70,13 @@ const isBitSet = op.getBit(value, 3)
 const newValue = op.setBit(value, 2, 1)
 ```
 
-For a comprehensive list of all opcodes and types, refer to the [coverage](../coverage.md) page.
+For a comprehensive list of all opcodes and types, refer to the [coverage](./coverage.md) page.
 
 ## Emulated Types Requiring Transaction Context
 
 These types necessitate interaction with the transaction context:
 
-### algopy.op.Global
+### op.Global
 
 ```ts
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
@@ -98,7 +102,7 @@ const result = contract.checkGlobals()
 expect(result).toEqual(101000)
 ```
 
-### algopy.op.Txn
+### op.Txn
 
 ```ts
 import { op, arc4 } from '@algorandfoundation/algorand-typescript'
@@ -122,7 +126,7 @@ ctx.txn.createScope([ctx.any.txn.applicationCall({ sender: customSender })]).exe
 })
 ```
 
-### algopy.op.AssetHoldingGet
+### op.AssetHoldingGet
 
 ```ts
 import { Account, arc4, Asset, op, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
@@ -147,7 +151,7 @@ const result = contract.checkAssetHolding(account, asset)
 expect(result).toEqual(5000)
 ```
 
-### algopy.op.AppGlobal
+### op.AppGlobal
 
 ```ts
 import { arc4, bytes, Bytes, op, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
@@ -174,7 +178,7 @@ const [storedValue, _] = ctx.ledger.getGlobalState(contract, key)
 expect(storedValue?.value).toEqual(42)
 ```
 
-### algopy.op.Block
+### op.Block
 
 ```ts
 import { arc4, bytes, op } from '@algorandfoundation/algorand-typescript'
@@ -196,7 +200,7 @@ const seed = contract.getBlockSeed()
 expect(seed).toEqual(op.itob(123456))
 ```
 
-### algopy.op.AcctParamsGet
+### op.AcctParamsGet
 
 ```ts
 import type { Account, uint64 } from '@algorandfoundation/algorand-typescript'
@@ -221,7 +225,7 @@ const balance = contract.getAccountBalance(account)
 expect(balance).toEqual(Uint64(1000000))
 ```
 
-### algopy.op.AppParamsGet
+### op.AppParamsGet
 
 ```ts
 import type { Application } from '@algorandfoundation/algorand-typescript'
@@ -245,7 +249,7 @@ const creator = contract.getAppCreator(app)
 expect(creator).toEqual(ctx.defaultSender)
 ```
 
-### algopy.op.AssetParamsGet
+### op.AssetParamsGet
 
 ```ts
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
@@ -269,7 +273,7 @@ const total = contract.getAssetTotal(asset.id)
 expect(total).toEqual(1000000)
 ```
 
-### algopy.op.Box
+### op.Box
 
 ```ts
 import type { bytes } from '@algorandfoundation/algorand-typescript'
@@ -299,7 +303,7 @@ const storedValue = ctx.ledger.getBox(contract, key)
 expect(storedValue).toEqual(value)
 ```
 
-### algopy.compile_contract
+### compile_contract
 
 ```ts
 import { arc4, compile, uint64 } from '@algorandfoundation/algorand-typescript'
@@ -329,7 +333,7 @@ expect(result).toBe(4)
 
 These opcodes are mockable in `algorand-typescript-testing`, allowing for controlled testing of complex operations. Note that the module being mocked is `@algorandfoundation/algorand-typescript-testing/internal` which holds the stub implementations of `algorand-typescript` functions to be executed in Node.js environment.
 
-### algopy.op.vrf_verify
+### op.vrf_verify
 
 ```ts
 import { expect, Mock, test, vi } from 'vitest'
@@ -356,7 +360,7 @@ test('mock vrfVerify', () => {
 })
 ```
 
-### algopy.op.EllipticCurve
+### op.EllipticCurve
 
 ```ts
 import { expect, Mock, test, vi } from 'vitest'

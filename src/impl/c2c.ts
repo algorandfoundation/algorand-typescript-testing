@@ -12,6 +12,7 @@ import { ApplicationCallInnerTxnContext } from './inner-transactions'
 import { methodSelector } from './method-selector'
 import type { ApplicationData } from './reference'
 
+/** @internal */
 export function compileArc4<TContract extends Contract>(
   contract: ConstructorFor<TContract>,
   options?: CompileContractOptions,
@@ -71,6 +72,7 @@ export function compileArc4<TContract extends Contract>(
   } as unknown as ContractProxy<TContract>
 }
 
+/** @internal */
 export const invokeAbiCall = (itxnContext: ApplicationCallInnerTxnContext) => {
   lazyContext.value.notifyApplicationSpies(itxnContext)
   lazyContext.txn.activeGroup.addInnerTransactionGroup(...(itxnContext.itxns ?? []), itxnContext)
@@ -85,6 +87,7 @@ const getCommonApplicationCallFields = (app: ApplicationData | undefined, option
   localNumBytes: options?.localBytes ?? app?.application.localNumBytes ?? lazyContext.any.uint64(),
 })
 
+/** @internal */
 export function getApplicationCallInnerTxnContext<TArgs extends DeliberateAny[], TReturn = void>(
   method: InstanceMethod<Contract, TArgs, TReturn>,
   methodArgs: TypedApplicationCallFields<TArgs>,
@@ -101,6 +104,7 @@ export function getApplicationCallInnerTxnContext<TArgs extends DeliberateAny[],
     abiMetadata?.resourceEncoding,
   )
 }
+/** @internal */
 export function abiCall<TArgs extends DeliberateAny[], TReturn>(
   method: InstanceMethod<Contract, TArgs, TReturn>,
   methodArgs: TypedApplicationCallFields<TArgs>,
