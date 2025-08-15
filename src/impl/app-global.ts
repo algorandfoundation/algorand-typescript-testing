@@ -11,10 +11,12 @@ export const AppGlobal: typeof op.AppGlobal = {
     lazyContext.ledger.setGlobalState(lazyContext.activeApplication, asBytes(a), undefined)
   },
   getBytes(a: StubBytesCompat): bytes {
-    return this.getExBytes(0, asBytes(a))[0]
+    const app = lazyContext.activeApplication
+    return this.getExBytes(app, asBytes(a))[0]
   },
   getUint64(a: StubBytesCompat): uint64 {
-    return this.getExUint64(0, asBytes(a))[0]
+    const app = lazyContext.activeApplication
+    return this.getExUint64(app, asBytes(a))[0]
   },
   getExBytes(a: Application | StubUint64Compat, b: StubBytesCompat): readonly [bytes, boolean] {
     const app = getApp(a)

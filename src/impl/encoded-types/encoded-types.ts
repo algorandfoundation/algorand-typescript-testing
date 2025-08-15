@@ -19,7 +19,6 @@ import {
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import assert from 'assert'
 import { ABI_RETURN_VALUE_LOG_PREFIX, ALGORAND_ADDRESS_BYTE_LENGTH, ALGORAND_CHECKSUM_BYTE_LENGTH, UINT64_SIZE } from '../../constants'
-import { lazyContext } from '../../context-helpers/internal-context'
 import { AvmError, avmInvariant, CodeError, InternalError } from '../../errors'
 import { nameOfType, type DeliberateAny } from '../../typescript-helpers'
 import {
@@ -42,7 +41,6 @@ import { BytesBackedCls, Uint64BackedCls } from '../base'
 import type { StubBytesCompat } from '../primitives'
 import { BigUintCls, Bytes, BytesCls, getUint8Array, isBytes, Uint64Cls } from '../primitives'
 import { Account, AccountCls, ApplicationCls, AssetCls } from '../reference'
-import type { ApplicationCallTransaction } from '../transactions'
 import { arrayProxyHandler } from './array-proxy'
 import { ABI_LENGTH_SIZE, FALSE_BIGINT_VALUE, IS_INITIALISING_FROM_BYTES_SYMBOL, TRUE_BIGINT_VALUE } from './constants'
 import {
@@ -1157,16 +1155,13 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
     return value
   }
   if (value instanceof AccountCls) {
-    const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apat.indexOf(value)
-    return index >= 0 ? new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.bytes)
+    return getArc4Encoded(value.bytes)
   }
   if (value instanceof AssetCls) {
-    const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apas.indexOf(value)
-    return index >= 0 ? new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
+    return getArc4Encoded(value.id)
   }
   if (value instanceof ApplicationCls) {
-    const index = (lazyContext.activeGroup.activeTransaction as ApplicationCallTransaction).apfa.indexOf(value)
-    return index >= 0 ? new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(index)) : getArc4Encoded(value.id)
+    return getArc4Encoded(value.id)
   }
   if (typeof value === 'boolean') {
     return new Bool({ name: 'Bool' }, value)

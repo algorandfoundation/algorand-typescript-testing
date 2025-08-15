@@ -3,6 +3,7 @@ import {
   arc4,
   assert,
   BaseContract,
+  BoxMap,
   Bytes,
   clone,
   contract,
@@ -905,5 +906,17 @@ export class LocalStateContract extends arc4.Contract {
   @arc4.abimethod()
   get_arc4_dynamic_bytes(a: Account): DynamicBytes {
     return this.arc4DynamicBytes(a).value
+  }
+}
+
+export class BoxMapContract extends arc4.Contract {
+  allowedCreators = BoxMap<[Account, Account], boolean>({
+    keyPrefix: Bytes(),
+  })
+
+  allowOptInsFrom(creator: Account): void {
+    assert(Txn.accounts(0) === Txn.sender)
+    assert(Txn.applications(0) === Global.currentApplicationId)
+    this.allowedCreators([Txn.sender, creator]).value = true
   }
 }
