@@ -14,12 +14,14 @@ export const AppLocal: typeof op.AppLocal = {
     lazyContext.ledger.setLocalState(app, account, asBytes(b), undefined)
   },
   getBytes: function (a: Account | StubUint64Compat, b: StubBytesCompat): bytes {
+    const app = lazyContext.activeApplication
     const account = getAccount(a)
-    return this.getExBytes(account, 0, asBytes(b))[0]
+    return this.getExBytes(account, app, asBytes(b))[0]
   },
   getUint64: function (a: Account | StubUint64Compat, b: StubBytesCompat): uint64 {
+    const app = lazyContext.activeApplication
     const account = getAccount(a)
-    return this.getExUint64(account, 0, asBytes(b))[0]
+    return this.getExUint64(account, app, asBytes(b))[0]
   },
   getExBytes: function (a: Account | StubUint64Compat, b: Application | StubUint64Compat, c: StubBytesCompat): readonly [bytes, boolean] {
     const app = getApp(b)

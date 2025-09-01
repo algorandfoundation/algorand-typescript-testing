@@ -17,6 +17,7 @@ import type { DeliberateAny } from '../src/typescript-helpers'
 import { asBigInt, asNumber, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
 import { AppExpectingEffects } from './artifacts/created-app-asset/contract.algo'
 import {
+  BoxMapContract,
   ItxnDemoContract,
   ITxnOpsContract,
   StateAcctParamsGetContract,
@@ -765,6 +766,18 @@ describe('State op codes', async () => {
       const bytesResult = contract.verify_get_ex_bytes(account, secondApp, Bytes(key))
 
       expect(bytesResult).toEqual(bytesAvmResult)
+    })
+  })
+
+  describe('BoxMap', async () => {
+    test('should be able to use tuple of reference types as key', () => {
+      const creatorVerifier = ctx.contract.create(BoxMapContract)
+      const creator = ctx.any.arc4.address()
+
+      creatorVerifier.allowOptInsFrom(creator.native)
+
+      const isAllowed = creatorVerifier.allowedCreators([ctx.defaultSender, creator.native]).value
+      expect(isAllowed).toBe(true)
     })
   })
 })

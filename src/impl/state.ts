@@ -246,7 +246,7 @@ export class BoxCls<TValue> {
   }
 
   get ref(): BoxRefCls {
-    return new BoxRefCls(this.key)
+    return new BoxRefCls(this.key, this.#app)
   }
 
   get(options: { default: TValue }): TValue {
@@ -317,9 +317,9 @@ export class BoxRefCls {
     return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === BoxRefCls.name
   }
 
-  constructor(key?: StubBytesCompat) {
+  constructor(key?: StubBytesCompat, app?: Application) {
     this.#key = key ? asBytes(key) : undefined
-    this.#app = lazyContext.activeApplication
+    this.#app = app ?? lazyContext.activeApplication
   }
 
   get hasKey(): boolean {

@@ -43,6 +43,10 @@ class InternalContext {
     return this.ledger.getApplication(this.activeGroup.activeApplicationId)
   }
 
+  get hasActiveGroup(): boolean {
+    return this.value.txn.hasActiveGroup
+  }
+
   get activeGroup(): TransactionGroup {
     return this.value.txn.activeGroup
   }

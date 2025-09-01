@@ -146,6 +146,10 @@ export class TransactionContext {
     }
   }
 
+  get hasActiveGroup(): boolean {
+    return !!this.#activeGroup
+  }
+
   /**
    * Gets the active transaction group.
    * @returns The active transaction group.
