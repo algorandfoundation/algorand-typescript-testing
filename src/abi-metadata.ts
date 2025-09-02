@@ -19,8 +19,10 @@ export interface AbiMetadata {
 }
 
 const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> = new WeakMap()
+const contractMap: Map<string, { new (): Contract }> = new Map()
 /** @internal */
-export const attachAbiMetadata = (contract: { new (): Contract }, methodName: string, metadata: AbiMetadata): void => {
+export const attachAbiMetadata = (fileName: string, contract: { new (): Contract }, methodName: string, metadata: AbiMetadata): void => {
+  contractMap.set(`${fileName}::${contract.prototype.constructor.name}`, contract)
   if (!metadataStore.has(contract)) {
     metadataStore.set(contract, {})
   }
@@ -31,6 +33,10 @@ export const attachAbiMetadata = (contract: { new (): Contract }, methodName: st
     allowActions: metadata.allowActions ?? conventionalRoutingConfig?.allowActions,
     onCreate: metadata.onCreate ?? conventionalRoutingConfig?.onCreate,
   }
+}
+
+export const getContractByName = (contractFullame: string): { new (): Contract } | undefined => {
+  return contractMap.get(contractFullame)
 }
 
 /** @internal */

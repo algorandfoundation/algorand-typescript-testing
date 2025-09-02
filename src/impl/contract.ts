@@ -28,6 +28,17 @@ export function abimethod<TContract extends Contract>(config?: arc4.AbiMethodCon
 }
 
 /** @internal */
+export function readonly<TContract extends Contract, TArgs extends DeliberateAny[], TReturn>(
+  target: { [Arc4MethodConfigSymbol]: arc4.AbiMethodConfig<TContract> } & ((this: TContract, ...args: TArgs) => TReturn),
+): (this: TContract, ...args: TArgs) => TReturn {
+  target[Arc4MethodConfigSymbol] = {
+    ...target[Arc4MethodConfigSymbol],
+    readonly: true,
+  }
+  return target
+}
+
+/** @internal */
 export function baremethod<TContract extends Contract>(config?: arc4.BareMethodConfig) {
   return function <TArgs extends DeliberateAny[], TReturn>(
     target: { [Arc4MethodConfigSymbol]: arc4.AbiMethodConfig<TContract> } & ((this: TContract, ...args: TArgs) => TReturn),

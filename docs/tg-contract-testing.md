@@ -47,7 +47,7 @@ class SimpleVotingContract extends arc4.Contract {
     return this.votes.value
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   getVotes(): uint64 {
     return this.votes.value
   }

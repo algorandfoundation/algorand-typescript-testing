@@ -1,4 +1,4 @@
-import type { ptypes } from '@algorandfoundation/puya-ts'
+import { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
 import type { TypeInfo } from '../impl/encoded-types'
 import type { DeliberateAny } from '../typescript-helpers'
@@ -62,9 +62,9 @@ export const nodeFactory = {
   },
 
   attachMetaData(
+    sourceFileName: string,
     classIdentifier: ts.Identifier,
     method: ts.MethodDeclaration,
-    functionType: ptypes.FunctionPType,
     argTypes: string[],
     returnType: string,
   ) {
@@ -81,7 +81,7 @@ export const nodeFactory = {
       factory.createCallExpression(
         factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('attachAbiMetadata')),
         undefined,
-        [classIdentifier, methodName, metadata],
+        [factory.createStringLiteral(sourceFileName), classIdentifier, methodName, metadata],
       ),
     )
   },
@@ -127,7 +127,18 @@ export const nodeFactory = {
     return node
   },
 
-  callAbiCallFunction(node: ts.CallExpression) {
+  callAbiCallFunction(node: ts.CallExpression, typeParams: ptypes.PType[]) {
+    if (typeParams.length === 1 && typeParams[0] instanceof ptypes.FunctionPType && typeParams[0].declaredIn) {
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [
+        factory.createStringLiteral(typeParams[0].declaredIn.fullName),
+        factory.createStringLiteral(typeParams[0].name),
+        ...node.arguments,
+      ])
+    }
+    return node
+  },
+
+  callItxnComposeFunction(node: ts.CallExpression) {
     if (
       node.arguments.length === 2 &&
       ts.isPropertyAccessExpression(node.arguments[0]) &&

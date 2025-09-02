@@ -1,5 +1,5 @@
 import type { Asset, gtxn, uint64 } from '@algorandfoundation/algorand-typescript'
-import { arc4, assert, BoxMap, clone, Global, itxn, op, Txn } from '@algorandfoundation/algorand-typescript'
+import { arc4, assert, BoxMap, clone, Global, itxn, op, readonly, Txn } from '@algorandfoundation/algorand-typescript'
 
 export class ListingKey extends arc4.Struct<{
   owner: arc4.Address
@@ -52,7 +52,7 @@ export default class DigitalMarketplace extends arc4.Contract {
     return amountToBePaid
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   getListingsMbr(): uint64 {
     return this.listingsBoxMbr()
   }

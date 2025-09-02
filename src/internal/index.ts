@@ -7,7 +7,7 @@ export { clone } from '../impl/clone'
 /** @internal */
 export { compile } from '../impl/compiled'
 /** @internal */
-export { abimethod, baremethod, Contract } from '../impl/contract'
+export { abimethod, baremethod, Contract, readonly } from '../impl/contract'
 /** @internal */
 export { emit } from '../impl/emit'
 /** @internal */

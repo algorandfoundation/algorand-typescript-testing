@@ -34,7 +34,7 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | Txn                          | Emulated            |
 | Uint64                       | Native              |
 | abiCall                      | Mockable            |
-| arc4EncodedLength            | Native              |
+| sizeOf                       | Native              |
 | compile                      | Mockable            |
 | compileArc4                  | Mockable            |
 | decodeArc4                   | Native              |

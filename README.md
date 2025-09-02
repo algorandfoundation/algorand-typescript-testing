@@ -169,7 +169,19 @@ After the setup, the examples provided using `vitest` can be converted to work w
 #### Contract Definition
 
 ```typescript
-import { arc4, assert, Bytes, GlobalState, gtxn, LocalState, op, Txn, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
+import {
+  arc4,
+  assert,
+  Bytes,
+  GlobalState,
+  gtxn,
+  LocalState,
+  op,
+  readonly,
+  Txn,
+  uint64,
+  Uint64,
+} from '@algorandfoundation/algorand-typescript'
 
 export default class VotingContract extends arc4.Contract {
   topic = GlobalState({ initialValue: 'default_topic', key: Bytes('topic') })
@@ -195,7 +207,7 @@ export default class VotingContract extends arc4.Contract {
     return true
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   public getVotes(): uint64 {
     return this.votes.value
   }
@@ -262,7 +274,7 @@ This example demonstrates key aspects of testing with `algorand-typescript-testi
 
    - Use of `arc4.Contract` as the base class for the contract.
    - ABI methods defined using the `@arc4.abimethod` decorator.
-   - Readonly method annotation with `@arc4.abimethod({readonly: true})`.
+   - Readonly method annotation with `@arc4.abimethod({readonly: true})` or `@readonly`.
 
 2. Testing ARC4 Contracts:
 

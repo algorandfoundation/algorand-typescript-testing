@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { MAX_BYTES_SIZE } from '../../src/constants'
 
 import type { Byte, StaticArray } from '@algorandfoundation/algorand-typescript/arc4'
-import { arc4EncodedLength, decodeArc4, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { decodeArc4, interpretAsArc4, sizeOf } from '@algorandfoundation/algorand-typescript/arc4'
 import { sha256 } from '../../src/impl'
 import { BytesCls } from '../../src/impl/primitives'
 import { asUint8Array } from '../../src/util'
@@ -221,8 +221,8 @@ describe('Bytes', async () => {
     })
 
     it('should be treated as statically sized', () => {
-      expect(arc4EncodedLength<bytes<32>>()).toEqual(32)
-      expect(arc4EncodedLength<FixedArray<bytes<32>, 2>>()).toEqual(64)
+      expect(sizeOf<bytes<32>>()).toEqual(32)
+      expect(sizeOf<FixedArray<bytes<32>, 2>>()).toEqual(64)
 
       const x1 = new FixedArray<bytes<32>, 2>()
       expect(x1.length).toEqual(2)

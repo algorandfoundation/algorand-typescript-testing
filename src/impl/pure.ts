@@ -156,14 +156,14 @@ export const extractUint64 = (a: StubBytesCompat, b: StubUint64Compat): uint64 =
 }
 
 /** @internal */
-export const getBit = (a: StubUint64Compat | StubBytesCompat, b: StubUint64Compat): uint64 => {
+export const getBit = (a: StubUint64Compat | StubBytesCompat, b: StubUint64Compat): boolean => {
   const binaryString = toBinaryString(isUint64(a) ? asUint64Cls(a).toBytes().asAlgoTs() : asBytes(a))
   const index = Uint64Cls.fromCompat(b).asNumber()
   const adjustedIndex = asMaybeUint64Cls(a) ? binaryString.length - index - 1 : index
   if (adjustedIndex < 0 || adjustedIndex >= binaryString.length) {
     throw new CodeError(`getBit index ${index} is beyond length`)
   }
-  return binaryString[adjustedIndex] === '1' ? 1 : 0
+  return binaryString[adjustedIndex] === '1'
 }
 
 /** @internal */

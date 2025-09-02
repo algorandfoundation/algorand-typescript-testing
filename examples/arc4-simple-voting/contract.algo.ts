@@ -1,5 +1,5 @@
 import type { gtxn, uint64 } from '@algorandfoundation/algorand-typescript'
-import { arc4, assert, Bytes, GlobalState, LocalState, op, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, assert, Bytes, GlobalState, LocalState, op, readonly, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
 
 export default class VotingContract extends arc4.Contract {
   topic = GlobalState({ initialValue: Bytes('default_topic'), key: Bytes('topic') })
@@ -25,7 +25,7 @@ export default class VotingContract extends arc4.Contract {
     return new arc4.Bool(true)
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   public getVotes(): arc4.Uint64 {
     return new arc4.Uint64(this.votes.value)
   }

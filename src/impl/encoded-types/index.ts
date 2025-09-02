@@ -24,4 +24,4 @@ export {
 /** @internal */
 export { TypeInfo } from './types'
 /** @internal */
-export { arc4EncodedLength, getArc4TypeName, getMaxLengthOfStaticContentType, minLengthForType } from './utils'
+export { getArc4TypeName, getMaxLengthOfStaticContentType, minLengthForType, sizeOf } from './utils'

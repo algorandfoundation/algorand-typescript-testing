@@ -68,13 +68,14 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "@algorandfoundation/algorand-typescript": "1.0.0-alpha.74",
-    "@algorandfoundation/puya-ts": "1.0.0-alpha.74",
+    "@algorandfoundation/algorand-typescript": "1.0.0-alpha.79",
+    "@algorandfoundation/puya-ts": "1.0.0-alpha.79",
     "elliptic": "^6.6.1",
     "js-sha256": "^0.11.0",
     "js-sha3": "^0.9.3",
     "js-sha512": "^0.9.0",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "upath": "^2.0.1"
   },
   "overrides": {
     "cross-spawn": "7.0.6",

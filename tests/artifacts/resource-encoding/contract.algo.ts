@@ -13,7 +13,7 @@ import {
 } from '@algorandfoundation/algorand-typescript'
 import { abiCall, compileArc4 } from '@algorandfoundation/algorand-typescript/arc4'
 
-class ByIndex extends Contract {
+export class ByIndex extends Contract {
   @abimethod({ resourceEncoding: 'index' })
   testExplicitIndex(account: Account) {
     return account.balance
@@ -61,7 +61,7 @@ class EchoResource extends Contract {
 
 export class C2C extends Contract {
   testCallToIndex(account: Account, appId: Application) {
-    const { returnValue: res1 } = abiCall(ByIndex.prototype.testExplicitIndex, {
+    const { returnValue: res1 } = abiCall<typeof ByIndex.prototype.testExplicitIndex>({
       appId,
       args: [account],
     })
@@ -69,7 +69,8 @@ export class C2C extends Contract {
     assert(res1 === account.balance)
   }
   testCallToValue(account: Account, appId: Application) {
-    const { returnValue: res1 } = abiCall(ByValue.prototype.testExplicitValue, {
+    const { returnValue: res1 } = abiCall({
+      method: ByValue.prototype.testExplicitValue,
       appId,
       args: [account],
     })
