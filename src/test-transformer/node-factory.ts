@@ -81,7 +81,7 @@ export const nodeFactory = {
       factory.createCallExpression(
         factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('attachAbiMetadata')),
         undefined,
-        [factory.createStringLiteral(sourceFileName), classIdentifier, methodName, metadata],
+        [classIdentifier, methodName, metadata, factory.createStringLiteral(sourceFileName)],
       ),
     )
   },
