@@ -376,7 +376,7 @@ export class Hello extends Contract {
 
 export class HelloFactoryTyped extends Contract {
   test_compile_contract(app: Application) {
-    const result2 = abiCall(Hello.prototype.greet, {
+    const result2 = abiCall<typeof Hello.prototype.greet>({
       appId: app,
       args: ['abi'],
     }).returnValue
