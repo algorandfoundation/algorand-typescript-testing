@@ -2,7 +2,7 @@ import { assert, Contract, Global, itxn, Txn } from '@algorandfoundation/algoran
 import { abiCall, compileArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Hello,
-  HelloStubbed,
+  type HelloStubbed,
   HelloTemplate,
   HelloTemplateCustomPrefix,
   LargeProgram,
@@ -24,14 +24,15 @@ export class HelloFactoryTyped extends Contract {
     }).returnValue
     assert(result === 'hello world')
 
-    const result2 = abiCall(Hello.prototype.greet, {
+    const result2 = abiCall({
+      method: Hello.prototype.greet,
       appId: app,
       args: ['abi'],
     }).returnValue
 
     assert(result2 === 'hello abi')
 
-    const result3 = abiCall(HelloStubbed.prototype.greet, {
+    const result3 = abiCall<typeof HelloStubbed.prototype.greet>({
       appId: app,
       args: ['stubbed'],
     }).returnValue

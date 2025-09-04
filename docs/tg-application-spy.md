@@ -170,7 +170,7 @@ spy.onAbiCall(methodSelector('greet(string)string'), (itxnContext) => {
 **3. Strongly typed ABI calls**
 
 ```ts
-const result = abiCall(Hello.prototype.greet, {
+const result = abiCall<typeof Hello.prototype.greet>({
   appId: app,
   args: ['abi'],
 }).returnValue

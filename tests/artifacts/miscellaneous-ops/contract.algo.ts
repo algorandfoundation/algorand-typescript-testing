@@ -121,13 +121,13 @@ export class MiscellaneousOpsContract extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  public verify_getbit_bytes(a: bytes, b: uint64): uint64 {
+  public verify_getbit_bytes(a: bytes, b: uint64): boolean {
     const result = op.getBit(a, b)
     return result
   }
 
   @arc4.abimethod()
-  public verify_getbit_uint64(a: uint64, b: uint64): uint64 {
+  public verify_getbit_uint64(a: uint64, b: uint64): boolean {
     const result = op.getBit(a, b)
     return result
   }

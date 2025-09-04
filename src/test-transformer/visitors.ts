@@ -4,6 +4,7 @@ import ts from 'typescript'
 import { CodeError } from '../errors'
 import type { TypeInfo } from '../impl/encoded-types'
 import { instanceOfAny } from '../typescript-helpers'
+import { normalisePath } from './helpers'
 import { nodeFactory } from './node-factory'
 import type { TransformerConfig } from './program-factory'
 import {
@@ -39,16 +40,20 @@ type VisitorHelper = {
   getConfig(): TransformerConfig
 }
 
+type Context = ts.TransformationContext & { currentDirectory: string }
+
 /** @internal */
 export class SourceFileVisitor {
   private helper: VisitorHelper
+  private context: Context
 
   constructor(
-    private context: ts.TransformationContext,
+    context: ts.TransformationContext,
     private sourceFile: ts.SourceFile,
     program: ts.Program,
     config: TransformerConfig,
   ) {
+    this.context = { ...context, currentDirectory: program.getCurrentDirectory() }
     const typeChecker = program.getTypeChecker()
     const loggingContext = LoggingContext.create()
     const typeResolver = new TypeResolver(typeChecker, program.getCurrentDirectory())
@@ -153,7 +158,7 @@ class ImportDeclarationVisitor {
 
 class ExpressionVisitor {
   constructor(
-    private context: ts.TransformationContext,
+    private context: Context,
     private helper: VisitorHelper,
     private expressionNode: ts.Expression,
     private stubbedFunctionName?: string,
@@ -167,10 +172,7 @@ class ExpressionVisitor {
     handleTypeInfoCapture: if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
       if (!tryGetAlgoTsSymbolName(node.expression, this.helper)) break handleTypeInfoCapture
 
-      let type = this.helper.resolveType(node)
-
-      // `voted = LocalState<uint64>()` is resolved to FunctionPType with returnType LocalState<uint64>
-      if (type instanceof ptypes.FunctionPType) type = type.returnType
+      const type = this.helper.resolveType(node)
 
       const isGeneric = isGenericType(type)
       const needsToCaptureTypeInfo = isGeneric && isStateOrBoxType(type)
@@ -197,7 +199,7 @@ class ExpressionVisitor {
         if (
           isCallingEmit(stubbedFunctionName) ||
           isCallingEncodeArc4(stubbedFunctionName) ||
-          isCallingArc4EncodedLength(stubbedFunctionName) ||
+          isCallingSizeOf(stubbedFunctionName) ||
           isCallingClone(stubbedFunctionName)
         ) {
           infoArg = this.helper.resolveTypeParameters(updatedNode).map((t) => getGenericTypeInfo(t, sourceLocation))[0]
@@ -212,7 +214,10 @@ class ExpressionVisitor {
           if (isCallingMethodSelector(stubbedFunctionName)) {
             updatedNode = nodeFactory.callMethodSelectorFunction(updatedNode)
           } else if (isCallingAbiCall(stubbedFunctionName)) {
-            updatedNode = nodeFactory.callAbiCallFunction(updatedNode)
+            const typeParams = this.helper.resolveTypeParameters(updatedNode)
+            updatedNode = nodeFactory.callAbiCallFunction(updatedNode, typeParams)
+          } else if (isCallingItxnCompose(stubbedFunctionName)) {
+            updatedNode = nodeFactory.callItxnComposeFunction(updatedNode)
           } else if (isCallingBytes(stubbedFunctionName)) {
             if (type instanceof ptypes.BytesPType && type.length)
               updatedNode = nodeFactory.callFixedBytesFunction(stubbedFunctionName, updatedNode, Number(type.length))
@@ -230,7 +235,7 @@ class ExpressionVisitor {
 }
 class VariableInitializerVisitor {
   constructor(
-    private context: ts.TransformationContext,
+    private context: Context,
     private helper: VisitorHelper,
     private declarationNode: ts.VariableDeclaration,
   ) {}
@@ -253,7 +258,7 @@ class VariableInitializerVisitor {
 
 class FunctionOrMethodVisitor {
   constructor(
-    protected context: ts.TransformationContext,
+    protected context: Context,
     protected helper: VisitorHelper,
   ) {}
   protected visit = (node: ts.Node): ts.Node => {
@@ -325,7 +330,7 @@ class FunctionOrMethodVisitor {
 
 class FunctionLikeDecVisitor extends FunctionOrMethodVisitor {
   constructor(
-    context: ts.TransformationContext,
+    context: Context,
     helper: VisitorHelper,
     private funcNode: ts.SignatureDeclaration,
   ) {
@@ -338,7 +343,7 @@ class FunctionLikeDecVisitor extends FunctionOrMethodVisitor {
 }
 class MethodDecVisitor extends FunctionOrMethodVisitor {
   constructor(
-    context: ts.TransformationContext,
+    context: Context,
     helper: VisitorHelper,
     private methodNode: ts.MethodDeclaration,
   ) {
@@ -353,7 +358,7 @@ class MethodDecVisitor extends FunctionOrMethodVisitor {
 class ClassVisitor {
   private isArc4: boolean
   constructor(
-    private context: ts.TransformationContext,
+    private context: Context,
     private helper: VisitorHelper,
     private classDec: ts.ClassDeclaration,
   ) {
@@ -372,7 +377,8 @@ class ClassVisitor {
         if (methodType instanceof ptypes.FunctionPType) {
           const argTypes = methodType.parameters.map((p) => JSON.stringify(getGenericTypeInfo(p[1])))
           const returnType = JSON.stringify(getGenericTypeInfo(methodType.returnType))
-          this.helper.additionalStatements.push(nodeFactory.attachMetaData(this.classDec.name, node, methodType, argTypes, returnType))
+          const sourceFileName = normalisePath(this.classDec.parent.getSourceFile().fileName, this.context.currentDirectory)
+          this.helper.additionalStatements.push(nodeFactory.attachMetaData(sourceFileName, this.classDec.name, node, argTypes, returnType))
         }
       }
 
@@ -506,7 +512,7 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     'encodeArc4',
     'emit',
     'methodSelector',
-    'arc4EncodedLength',
+    'sizeOf',
     'abiCall',
     'clone',
     'Bytes',
@@ -548,10 +554,11 @@ const tryGetAlgoTsSymbolName = (node: ts.Node, helper: VisitorHelper): string | 
 
 const isCallingDecodeArc4 = (functionName: string | undefined): boolean => 'decodeArc4' === (functionName ?? '')
 const isCallingEncodeArc4 = (functionName: string | undefined): boolean => 'encodeArc4' === (functionName ?? '')
-const isCallingArc4EncodedLength = (functionName: string | undefined): boolean => 'arc4EncodedLength' === (functionName ?? '')
+const isCallingSizeOf = (functionName: string | undefined): boolean => 'sizeOf' === (functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
-const isCallingAbiCall = (functionName: string | undefined): boolean => ['abiCall', 'begin', 'next'].includes(functionName ?? '')
+const isCallingAbiCall = (functionName: string | undefined): boolean => ['abiCall'].includes(functionName ?? '')
+const isCallingItxnCompose = (functionName: string | undefined): boolean => ['begin', 'next'].includes(functionName ?? '')
 const isCallingClone = (functionName: string | undefined): boolean => 'clone' === (functionName ?? '')
 const isCallingBytes = (functionName: string | undefined): boolean =>
   ['Bytes', 'fromHex', 'fromBase64', 'fromBase32'].includes(functionName ?? '')

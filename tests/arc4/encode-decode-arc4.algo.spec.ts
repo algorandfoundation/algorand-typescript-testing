@@ -3,12 +3,12 @@ import { arc4, assertMatch, Bytes } from '@algorandfoundation/algorand-typescrip
 import type { StaticBytes, UFixed, Uint64 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   Address,
-  arc4EncodedLength,
   Bool,
   decodeArc4,
   DynamicArray,
   DynamicBytes,
   encodeArc4,
+  sizeOf,
   StaticArray,
   Str,
   Struct,
@@ -224,20 +224,20 @@ class StaticStruct extends Struct<{
   e: Address
   f: StaticArray<UFixed<256, 16>, 10>
 }> {}
-describe('arc4EncodedLength', () => {
+describe('sizeOf', () => {
   test('should return the correct length', () => {
-    expect(arc4EncodedLength<uint64>()).toEqual(8)
-    expect(arc4EncodedLength<biguint>()).toEqual(64)
-    expect(arc4EncodedLength<Bool>()).toEqual(1)
-    expect(arc4EncodedLength<boolean>()).toEqual(1)
-    expect(arc4EncodedLength<Uint<512>>()).toEqual(64)
-    expect(arc4EncodedLength<[uint64, uint64, boolean]>()).toEqual(17)
-    expect(arc4EncodedLength<[uint64, uint64, boolean, boolean]>()).toEqual(17)
-    expect(arc4EncodedLength<Tuple<[StaticArray<Bool, 10>, Bool]>>()).toEqual(3)
-    expect(arc4EncodedLength<StaticStruct>()).toEqual(395)
-    expect(arc4EncodedLength<[StaticArray<Bool, 10>, boolean, boolean]>()).toEqual(3)
+    expect(sizeOf<uint64>()).toEqual(8)
+    expect(sizeOf<biguint>()).toEqual(64)
+    expect(sizeOf<Bool>()).toEqual(1)
+    expect(sizeOf<boolean>()).toEqual(1)
+    expect(sizeOf<Uint<512>>()).toEqual(64)
+    expect(sizeOf<[uint64, uint64, boolean]>()).toEqual(17)
+    expect(sizeOf<[uint64, uint64, boolean, boolean]>()).toEqual(17)
+    expect(sizeOf<Tuple<[StaticArray<Bool, 10>, Bool]>>()).toEqual(3)
+    expect(sizeOf<StaticStruct>()).toEqual(395)
+    expect(sizeOf<[StaticArray<Bool, 10>, boolean, boolean]>()).toEqual(3)
     expect(
-      arc4EncodedLength<[[boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean], boolean, boolean]>(),
+      sizeOf<[[boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean], boolean, boolean]>(),
     ).toEqual(3)
   })
 })

@@ -12,6 +12,7 @@ import {
   itxn,
   op,
   OpUpFeeSource,
+  readonly,
   Txn,
   Uint64,
 } from '@algorandfoundation/algorand-typescript'
@@ -81,14 +82,14 @@ export default class ProofOfAttendance extends arc4.Contract {
 
     this.boxMap(Txn.sender.bytes).value = mintedAsset.id
   }
-  @arc4.abimethod({ readonly: true })
+  @readonly
   getPoaId(): uint64 {
     const [poaId, exists] = op.Box.get(Txn.sender.bytes)
     assert(exists, 'POA not found')
     return op.btoi(poaId)
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   getPoaIdWithBox(): uint64 {
     const box = Box<uint64>({ key: Txn.sender.bytes })
     const [poaId, exists] = box.maybe()
@@ -96,7 +97,7 @@ export default class ProofOfAttendance extends arc4.Contract {
     return poaId
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   getPoaIdWithBoxRef(): uint64 {
     const boxRef = BoxRef({ key: Txn.sender.bytes })
     const [poaId, exists] = boxRef.maybe()
@@ -104,7 +105,7 @@ export default class ProofOfAttendance extends arc4.Contract {
     return op.btoi(poaId)
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   getPoaIdWithBoxMap(): uint64 {
     const [poaId, exists] = this.boxMap(Txn.sender.bytes).maybe()
     assert(exists, 'POA not found')

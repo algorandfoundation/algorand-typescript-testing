@@ -14,8 +14,9 @@ import { BytesMap } from '../collections/custom-key-map'
 import { checkRoutingConditions } from '../context-helpers/context-util'
 import { lazyContext } from '../context-helpers/internal-context'
 import { CodeError } from '../errors'
-import { BaseContract, ContractOptionsSymbol } from '../impl/base-contract'
-import { Contract } from '../impl/contract'
+import type { BaseContract } from '../impl/base-contract'
+import { ContractOptionsSymbol } from '../impl/base-contract'
+import type { Contract } from '../impl/contract'
 import { getArc4Encoded, Uint, type TypeInfo } from '../impl/encoded-types'
 import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
@@ -222,18 +223,8 @@ export class ContractContext {
     if (result !== undefined && result !== null) {
       return result
     }
-    // TODO: uncomment the following line once version puya-ts 1.0.0 is released and delete the rest of the function
-    // throw new internal.errors.CodeError('Cannot create a contract for class as it does not extend Contract or BaseContract')
 
-    const proto = Object.getPrototypeOf(type)
-    if (proto === BaseContract) {
-      return false
-    } else if (proto === Contract) {
-      return true
-    } else if (proto === Object || proto === null) {
-      throw new CodeError('Cannot create a contract for class as it does not extend Contract or BaseContract')
-    }
-    return this.isArc4(proto)
+    throw new CodeError('Cannot create a contract for class as it does not extend Contract or BaseContract')
   }
 
   /**

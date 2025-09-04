@@ -539,8 +539,8 @@ export class BytesCls extends AlgoTsPrimitiveCls {
     return encodingUtil.uint8ArrayToHex(this.#v)
   }
 
-  toFixed<TNewLength extends uint64>(options: { length: TNewLength; checked?: boolean }): bytes<TNewLength> {
-    if (options.checked !== false) {
+  toFixed<TNewLength extends uint64>(options: { length: TNewLength; strategy?: 'assert-length' | 'unsafe-cast' }): bytes<TNewLength> {
+    if (options.strategy === undefined || options.strategy === 'assert-length') {
       if (this.#v.length !== options.length) {
         throw new CodeError(`Invalid bytes constant length of ${this.#v.length}, expected ${options.length}`)
       }

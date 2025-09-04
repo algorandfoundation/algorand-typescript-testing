@@ -4,8 +4,9 @@ import type {
   ContractProxy,
   TypedApplicationCallFields,
 } from '@algorandfoundation/algorand-typescript/arc4'
-import { getContractMethodAbiMetadata } from '../abi-metadata'
+import { getContractByName, getContractMethodAbiMetadata } from '../abi-metadata'
 import { lazyContext } from '../context-helpers/internal-context'
+import { InternalError } from '../errors'
 import type { ConstructorFor, DeliberateAny, InstanceMethod } from '../typescript-helpers'
 import type { ApplicationCallInnerTxn } from './inner-transactions'
 import { ApplicationCallInnerTxnContext } from './inner-transactions'
@@ -106,11 +107,15 @@ export function getApplicationCallInnerTxnContext<TArgs extends DeliberateAny[],
 }
 /** @internal */
 export function abiCall<TArgs extends DeliberateAny[], TReturn>(
-  method: InstanceMethod<Contract, TArgs, TReturn>,
+  contractFullName: string,
+  method: string,
   methodArgs: TypedApplicationCallFields<TArgs>,
-  contract?: Contract | { new (): Contract },
 ): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
-  const itxnContext = getApplicationCallInnerTxnContext(method, methodArgs, contract)
+  const contract = getContractByName(contractFullName)
+  if (contract === undefined || typeof contract !== 'function') throw new InternalError(`Unknown contract: ${contractFullName}`)
+  if (!Object.hasOwn(contract.prototype, method)) throw new InternalError(`Unknown method: ${method} in contract: ${contractFullName}`)
+
+  const itxnContext = getApplicationCallInnerTxnContext<TArgs, TReturn>(contract.prototype[method], methodArgs, contract)
 
   invokeAbiCall(itxnContext)
 

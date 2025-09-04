@@ -15,6 +15,7 @@ import {
   log,
   op,
   OpUpFeeSource,
+  readonly,
   Txn,
   Uint64,
   urange,
@@ -158,7 +159,7 @@ export class VotingRoundApp extends arc4.Contract {
       .submit().createdAsset
   }
 
-  @abimethod({ readonly: true })
+  @readonly
   public getPreconditions(signature: bytes<64>): VotingPreconditions {
     return {
       is_allowed_to_vote: Uint64(this.allowedToVote(signature)),

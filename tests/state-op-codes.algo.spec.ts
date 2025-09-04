@@ -269,7 +269,7 @@ describe('State op codes', async () => {
       'should return the correct field value of the asset',
       async ([methodName, expectedValue], { appClientStateAssetParamsContract: appClient, testAccount, assetFactory }) => {
         const creator = Account(Bytes.fromBase32(testAccount.addr.toString()))
-        const metadataHash = Bytes(`test${' '.repeat(28)}`).toFixed({ length: 32 })
+        const metadataHash = Bytes(`test${' '.repeat(28)}`).toFixed({ length: 32, strategy: 'assert-length' })
         const mockAsset = ctx.any.asset({
           total: 100,
           decimals: 0,
@@ -529,12 +529,12 @@ describe('State op codes', async () => {
   describe('Block', async () => {
     test('should return the correct field value of the block', async () => {
       const index = 42
-      const seed = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
+      const seed = getRandomBytes(32).asAlgoTs().toFixed({ length: 32, strategy: 'unsafe-cast' })
       const timestamp = 1234567890
       const proposer = ctx.any.account()
       const feesCollected = 1000
       const bonus = 12
-      const branch = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
+      const branch = getRandomBytes(32).asAlgoTs().toFixed({ length: 32, strategy: 'unsafe-cast' })
       const feeSink = ctx.any.account()
       const protocol = getRandomBytes(32).asAlgoTs()
       const txnCounter = 32
