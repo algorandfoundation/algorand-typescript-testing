@@ -54,7 +54,7 @@ describe('arc4.Uint', async () => {
 
     const result = new Uint32(value)
 
-    expect(result.native).toEqual(expected)
+    expect(result.asUint64()).toEqual(expected)
     expect(avmResult).toEqual(expected)
   })
 
@@ -70,7 +70,7 @@ describe('arc4.Uint', async () => {
 
     const result = new Uint256(value)
 
-    expect(result.native).toEqual(BigInt(expected))
+    expect(result.asBigUint()).toEqual(BigInt(expected))
     expect(avmResult).toEqual(BigInt(expected))
   })
 
@@ -119,13 +119,13 @@ describe('arc4.Uint', async () => {
           case '!==':
             return a !== b
           case '<':
-            return a.native < b.native
+            return a.asBigUint() < b.asBigUint()
           case '<=':
-            return a.native <= b.native
+            return a.asBigUint() <= b.asBigUint()
           case '>':
-            return a.native > b.native
+            return a.asBigUint() > b.asBigUint()
           case '>=':
-            return a.native >= b.native
+            return a.asBigUint() >= b.asBigUint()
           default:
             throw new Error(`Unknown operator: ${op}`)
         }
@@ -173,7 +173,7 @@ describe('arc4.Uint', async () => {
 
     const result = interpretAsArc4<Uint32>(Bytes(value))
 
-    expect(result.native).toEqual(avmResult)
+    expect(result.asUint64()).toEqual(avmResult)
   })
 
   test.for([
@@ -187,7 +187,7 @@ describe('arc4.Uint', async () => {
       await expect(getAvmResult({ appClient }, 'verify_uintn_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(32))
 
       const result = interpretAsArc4<Uint32>(Bytes(value))
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
 
@@ -200,7 +200,7 @@ describe('arc4.Uint', async () => {
     const avmResult = await getAvmResult({ appClient }, 'verify_biguintn_from_bytes', value)
     const result = interpretAsArc4<Uint256>(Bytes(value))
 
-    expect(result.native).toEqual(avmResult)
+    expect(result.asBigUint()).toEqual(avmResult)
   })
 
   test.for([
@@ -214,7 +214,7 @@ describe('arc4.Uint', async () => {
       await expect(getAvmResult({ appClient }, 'verify_biguintn_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(256))
 
       const result = interpretAsArc4<Uint256>(Bytes(value))
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(result.asBigUint()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
 
@@ -229,7 +229,7 @@ describe('arc4.Uint', async () => {
 
     const result = interpretAsArc4<Uint<32>>(Bytes(logValue), 'log')
     expect(BigInt(avmResult as number)).toEqual(expected)
-    expect(result.native).toEqual(expected)
+    expect(result.asUint64()).toEqual(expected)
   })
 
   test.for([
@@ -256,7 +256,7 @@ describe('arc4.Uint', async () => {
       await expect(() => getAvmResult({ appClient }, 'verify_uintn_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError(32))
 
       const result = interpretAsArc4<Uint<32>>(Bytes(logValue), 'log')
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
 
@@ -271,7 +271,7 @@ describe('arc4.Uint', async () => {
 
     const result = interpretAsArc4<Uint<256>>(Bytes(logValue), 'log')
     expect(avmResult).toEqual(expected)
-    expect(result.native).toEqual(expected)
+    expect(result.asBigUint()).toEqual(expected)
   })
 
   test.for([
@@ -300,7 +300,53 @@ describe('arc4.Uint', async () => {
       )
 
       const result = interpretAsArc4<Uint<256>>(Bytes(logValue), 'log')
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(result.asBigUint()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+    },
+  )
+
+  test.for([encodingUtil.bigIntToUint8Array(1n, 32), encodingUtil.bigIntToUint8Array(MAX_UINT64, 32)])(
+    'get uint64 from arc4 big uintn',
+    async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+      const avm_result = await getAvmResult({ appClient }, 'verify_biguintn_as_uint64', value)
+      const result = interpretAsArc4<Uint256>(Bytes(value)).asUint64()
+      expect(avm_result).toEqual(result)
+    },
+  )
+
+  test.for([encodingUtil.bigIntToUint8Array(MAX_UINT64 + 1n, 32), encodingUtil.bigIntToUint8Array(2n ** 256n - 1n, 32)])(
+    'should throw error when getting uint64 from arc4 big uintn that overflows uint64',
+    async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+      await expect(() => getAvmResult({ appClient }, 'verify_biguintn_as_uint64', value)).rejects.toThrowError('overflow')
+      expect(() => interpretAsArc4<Uint256>(Bytes(value)).asUint64()).toThrowError('value too large to fit in uint64')
+    },
+  )
+
+  test.for([
+    encodingUtil.bigIntToUint8Array(1n, 32),
+    encodingUtil.bigIntToUint8Array(MAX_UINT64, 32),
+    encodingUtil.bigIntToUint8Array(MAX_UINT64 + 1n, 32),
+    encodingUtil.bigIntToUint8Array(2n ** 256n - 1n, 32),
+  ])('get biguint from arc4 big uintn', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+    const avm_result = await getAvmResult({ appClient }, 'verify_biguintn_as_biguint', value)
+    const result = interpretAsArc4<Uint256>(Bytes(value)).asBigUint()
+    expect(avm_result).toEqual(result)
+  })
+
+  test.for([encodingUtil.bigIntToUint8Array(1n, 8), encodingUtil.bigIntToUint8Array(MAX_UINT64, 8)])(
+    'get uint64 from arc4 uintn',
+    async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+      const avm_result = await getAvmResult({ appClient }, 'verify_uintn64_as_uint64', value)
+      const result = interpretAsArc4<arc4.Uint64>(Bytes(value)).asUint64()
+      expect(avm_result).toEqual(result)
+    },
+  )
+
+  test.for([encodingUtil.bigIntToUint8Array(1n, 8), encodingUtil.bigIntToUint8Array(MAX_UINT64, 8)])(
+    'get biguint from arc4 uintn64',
+    async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
+      const avm_result = await getAvmResult({ appClient }, 'verify_uintn64_as_biguint', value)
+      const result = interpretAsArc4<arc4.Uint64>(Bytes(value)).asBigUint()
+      expect(avm_result).toEqual(result)
     },
   )
 })

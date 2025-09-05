@@ -117,7 +117,7 @@ export default class DigitalMarketplace extends arc4.Contract {
       bidUnitaryPrice: existing.bidUnitaryPrice,
       bidder: existing.bidder,
       unitaryPrice: existing.unitaryPrice,
-      deposited: new arc4.Uint64(existing.deposited.native + xfer.assetAmount),
+      deposited: new arc4.Uint64(existing.deposited.asUint64() + xfer.assetAmount),
     })
   }
 
@@ -149,7 +149,7 @@ export default class DigitalMarketplace extends arc4.Contract {
 
     const listing = clone(this.listings(key).value)
 
-    const amountToBePaid = this.quantityPrice(quantity, listing.unitaryPrice.native, asset.decimals)
+    const amountToBePaid = this.quantityPrice(quantity, listing.unitaryPrice.asUint64(), asset.decimals)
 
     assert(buyPay.sender === Txn.sender)
     assert(buyPay.receiver.bytes === owner.bytes)
@@ -160,7 +160,7 @@ export default class DigitalMarketplace extends arc4.Contract {
       bidUnitaryPrice: listing.bidUnitaryPrice,
       bidder: listing.bidder,
       unitaryPrice: listing.unitaryPrice,
-      deposited: new arc4.Uint64(listing.deposited.native - quantity),
+      deposited: new arc4.Uint64(listing.deposited.asUint64() - quantity),
     })
 
     itxn
@@ -182,7 +182,7 @@ export default class DigitalMarketplace extends arc4.Contract {
 
     const listing = clone(this.listings(key).value)
     if (listing.bidder !== new arc4.Address()) {
-      const currentBidDeposit = this.quantityPrice(listing.bid.native, listing.bidUnitaryPrice.native, asset.decimals)
+      const currentBidDeposit = this.quantityPrice(listing.bid.asUint64(), listing.bidUnitaryPrice.asUint64(), asset.decimals)
       itxn.payment({ receiver: listing.bidder.native, amount: currentBidDeposit }).submit()
     }
 
@@ -194,7 +194,7 @@ export default class DigitalMarketplace extends arc4.Contract {
       .assetTransfer({
         xferAsset: asset,
         assetReceiver: Txn.sender,
-        assetAmount: listing.deposited.native,
+        assetAmount: listing.deposited.asUint64(),
       })
       .submit()
   }
@@ -205,14 +205,14 @@ export default class DigitalMarketplace extends arc4.Contract {
 
     const listing = clone(this.listings(key).value)
     if (listing.bidder !== new arc4.Address()) {
-      assert(unitaryPrice.native > listing.bidUnitaryPrice.native)
+      assert(unitaryPrice.asUint64() > listing.bidUnitaryPrice.asUint64())
 
-      const currentBidAmount = this.quantityPrice(listing.bid.native, listing.bidUnitaryPrice.native, asset.decimals)
+      const currentBidAmount = this.quantityPrice(listing.bid.asUint64(), listing.bidUnitaryPrice.asUint64(), asset.decimals)
 
       itxn.payment({ receiver: listing.bidder.native, amount: currentBidAmount }).submit()
     }
 
-    const amountToBeBid = this.quantityPrice(quantity.native, unitaryPrice.native, asset.decimals)
+    const amountToBeBid = this.quantityPrice(quantity.asUint64(), unitaryPrice.asUint64(), asset.decimals)
 
     assert(bidPay.sender === Txn.sender)
     assert(bidPay.receiver === Global.currentApplicationAddress)
@@ -234,9 +234,9 @@ export default class DigitalMarketplace extends arc4.Contract {
     const listing = clone(this.listings(key).value)
     assert(listing.bidder !== new arc4.Address())
 
-    const minQuantity = listing.deposited.native < listing.bid.native ? listing.deposited.native : listing.bid.native
+    const minQuantity = listing.deposited.asUint64() < listing.bid.asUint64() ? listing.deposited.asUint64() : listing.bid.asUint64()
 
-    const bestBidAmount = this.quantityPrice(minQuantity, listing.bidUnitaryPrice.native, asset.decimals)
+    const bestBidAmount = this.quantityPrice(minQuantity, listing.bidUnitaryPrice.asUint64(), asset.decimals)
 
     itxn.payment({ receiver: Txn.sender, amount: bestBidAmount }).submit()
 
@@ -252,8 +252,8 @@ export default class DigitalMarketplace extends arc4.Contract {
       bidder: listing.bidder,
       bidUnitaryPrice: listing.bidUnitaryPrice,
       unitaryPrice: listing.unitaryPrice,
-      deposited: new arc4.Uint64(listing.deposited.native - minQuantity),
-      bid: new arc4.Uint64(listing.bid.native - minQuantity),
+      deposited: new arc4.Uint64(listing.deposited.asUint64() - minQuantity),
+      bid: new arc4.Uint64(listing.bid.asUint64() - minQuantity),
     })
   }
 }

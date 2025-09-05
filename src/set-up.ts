@@ -33,6 +33,15 @@ function doAddEqualityTesters(expectObj: ExpectObj) {
       // Defer to other testers
       return undefined
     },
+    function NumericLiteralIsNumericPrimitive(this: TesterContext, subject, test, customTesters): boolean | undefined {
+      if (typeof subject === 'bigint' || typeof subject === 'number') {
+        const testValue = test instanceof Uint64Cls || test instanceof BigUintCls ? test.valueOf() : undefined
+        if (testValue !== undefined) return this.equals(BigInt(subject), testValue, customTesters)
+        return undefined
+      }
+      // Defer to other testers
+      return undefined
+    },
     function BytesPrimitiveIsUint8Array(this: TesterContext, subject, test, customTesters): boolean | undefined {
       if (subject instanceof BytesCls) {
         const testValue = test instanceof Uint8Array ? test : undefined

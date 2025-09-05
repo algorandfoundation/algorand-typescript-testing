@@ -40,6 +40,6 @@ describe('Voting contract', () => {
 
     contract.votes.value = Uint64(5)
     const votes = contract.getVotes()
-    expect(votes.native).toEqual(5)
+    expect(votes.asUint64()).toEqual(5)
   })
 })

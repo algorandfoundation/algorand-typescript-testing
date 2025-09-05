@@ -44,7 +44,7 @@ describe('arc4.Address', () => {
     const result = new Address(value)
     let i = 0
     for (const entry of result) {
-      expect(entry.native).toEqual(uint8ArrayValue[i++])
+      expect(entry.asUint64()).toEqual(uint8ArrayValue[i++])
     }
     expect(result.length).toEqual(uint8ArrayValue.length)
   })
@@ -54,7 +54,7 @@ describe('arc4.Address', () => {
     const result = new Address(stringValue)
     let i = 0
     for (const entry of result) {
-      expect(entry.native).toEqual(uint8ArrayValue[i++])
+      expect(entry.asUint64()).toEqual(uint8ArrayValue[i++])
     }
     expect(result.length).toEqual(uint8ArrayValue.length)
   })
@@ -64,7 +64,7 @@ describe('arc4.Address', () => {
     const result = new Address(accountValue)
     let i = 0
     for (const entry of result) {
-      expect(entry.native).toEqual(uint8ArrayValue[i++])
+      expect(entry.asUint64()).toEqual(uint8ArrayValue[i++])
     }
     expect(result.length).toEqual(uint8ArrayValue.length)
   })

@@ -69,7 +69,7 @@ describe('arc4.UFixed', async () => {
     const avmResult = await getAvmResult({ appClient }, 'verify_ufixed_from_bytes', value)
     const result = interpretAsArc4<UFixed<32, 8>>(Bytes(value))
 
-    expect(result.native).toEqual(avmResult)
+    expect(asBigUint(result.bytes)).toEqual(avmResult)
   })
 
   test.for([
@@ -98,7 +98,7 @@ describe('arc4.UFixed', async () => {
 
     const result = interpretAsArc4<UFixed<32, 8>>(Bytes(logValue), 'log')
     expect(avmResult).toEqual(expected)
-    expect(result.native).toEqual(expected)
+    expect(asBigUint(result.bytes)).toEqual(expected)
   })
 
   test.for([
@@ -125,7 +125,7 @@ describe('arc4.UFixed', async () => {
       await expect(() => getAvmResult({ appClient }, 'verify_ufixed_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError(32))
 
       const result = interpretAsArc4<UFixed<32, 8>>(Bytes(logValue), 'log')
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(asBigUint(result.bytes)).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
 
@@ -138,7 +138,7 @@ describe('arc4.UFixed', async () => {
     const avmResult = await getAvmResult({ appClient }, 'verify_bigufixed_from_bytes', value)
     const result = interpretAsArc4<UFixed<256, 16>>(Bytes(value))
 
-    expect(result.native).toEqual(avmResult)
+    expect(asBigUint(result.bytes)).toEqual(avmResult)
   })
 
   test.for([
@@ -167,7 +167,7 @@ describe('arc4.UFixed', async () => {
 
     const result = interpretAsArc4<UFixed<256, 16>>(Bytes(logValue), 'log')
     expect(avmResult).toEqual(expected)
-    expect(result.native).toEqual(expected)
+    expect(asBigUint(result.bytes)).toEqual(expected)
   })
 
   test.for([
@@ -196,7 +196,7 @@ describe('arc4.UFixed', async () => {
       )
 
       const result = interpretAsArc4<UFixed<256, 16>>(Bytes(logValue), 'log')
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(asBigUint(result.bytes)).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
 })

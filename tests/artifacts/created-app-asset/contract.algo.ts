@@ -18,6 +18,6 @@ export class AppExpectingEffects extends arc4.Contract {
   public log_group(appCall: gtxn.ApplicationCallTxn): void {
     assert(appCall.appArgs(0) === methodSelector('some_value()uint64'), 'expected correct method called')
     assert(appCall.numLogs === 1, 'expected logs')
-    assert(interpretAsArc4<Uint64>(appCall.lastLog, 'log').native === (appCall.groupIndex + 1) * Global.groupSize)
+    assert(interpretAsArc4<Uint64>(appCall.lastLog, 'log').asUint64() === (appCall.groupIndex + 1) * Global.groupSize)
   }
 }

@@ -60,7 +60,7 @@ export class SignaturesContract extends arc4.Contract {
   withApp(value: arc4.Str, app: Application, appId: arc4.Uint64, arr: UInt8Array) {
     assert(value.native)
     assert(arr.length)
-    assert(app.id === appId.native, 'expected app id to match provided app id')
+    assert(app.id === appId.asUint64(), 'expected app id to match provided app id')
     assert(app.creator === op.Global.creatorAddress, 'expected other app to have same creator')
     const appTxn = gtxn.ApplicationCallTxn(0)
     assert(appTxn.apps(0) === op.Global.currentApplicationId)
@@ -83,12 +83,12 @@ export class SignaturesContract extends arc4.Contract {
     assert(Txn.numAppArgs === 4)
 
     // struct
-    assert(struct1.anotherStruct.one.native === 1)
+    assert(struct1.anotherStruct.one.asUint64() === 1)
     assert(struct1.anotherStruct.two.native === '2')
-    assert(struct1.anotherStructAlias.one.native === 1)
+    assert(struct1.anotherStructAlias.one.asUint64() === 1)
     assert(struct1.anotherStructAlias.two.native === '2')
-    assert(struct1.three.native === 3n)
-    assert(struct1.four.native === 4n)
+    assert(struct1.three.asBigUint() === 3n)
+    assert(struct1.four.asBigUint() === 4n)
 
     // txn
     assert(txn.groupIndex === Txn.groupIndex - 1)
@@ -96,7 +96,7 @@ export class SignaturesContract extends arc4.Contract {
     // acc
     assert(Txn.applicationArgs(2) === new arc4.Uint8(1).bytes) // acc array ref
     assert(acc.balance === acc.minBalance + 1234)
-    assert(five[0].native === 5)
+    assert(five[0].asUint64() === 5)
 
     return [clone(struct1.anotherStruct), clone(struct1)]
   }
