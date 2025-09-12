@@ -260,8 +260,8 @@ describe('Box', () => {
       const [oca, txn] = deferredReadCall.submit().native
 
       const app = ctx.ledger.getApplicationForContract(contract)
-      expect(toBytes(ctx.ledger.getBox(app, 'oca'))).toEqual(itob(oca.native))
-      expect(toBytes(ctx.ledger.getBox(app, 'txn'))).toEqual(itob(txn.native))
+      expect(toBytes(ctx.ledger.getBox(app, 'oca'))).toEqual(itob(oca.asUint64()))
+      expect(toBytes(ctx.ledger.getBox(app, 'txn'))).toEqual(itob(txn.asUint64()))
     })
   })
 
@@ -295,21 +295,21 @@ describe('Box', () => {
       const value = new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200))
       box.value = value
       expect(box.value.length).toEqual(2)
-      expect(box.value.at(-1).native).toEqual(200)
+      expect(box.value.at(-1).asUint64()).toEqual(200)
 
       // newly pushed value should be retained
       box.value.push(new arc4.Uint64(300))
       expect(box.value.length).toEqual(3)
-      expect(box.value.at(-1).native).toEqual(300)
+      expect(box.value.at(-1).asUint64()).toEqual(300)
 
       // setting bytes value through op should be reflected in the box value.
       const copy = clone(box.value)
       copy[2] = new arc4.Uint64(400)
-      expect(box.value.at(-1).native).toEqual(300)
+      expect(box.value.at(-1).asUint64()).toEqual(300)
 
       op.Box.put(key, toBytes(copy))
       expect(box.value.length).toEqual(3)
-      expect(box.value.at(-1).native).toEqual(400)
+      expect(box.value.at(-1).asUint64()).toEqual(400)
     })
   })
 
@@ -320,11 +320,11 @@ describe('Box', () => {
 
       const boxRef1 = box.ref
       boxRef1.replace(1, new Uint8(123).bytes)
-      expect(box.value[0].native).toEqual(123)
+      expect(box.value[0].asUint64()).toEqual(123)
 
       const boxRef2 = box.ref
       boxRef2.replace(2, new Uint8(255).bytes)
-      expect(box.value[1].native).toEqual(65280)
+      expect(box.value[1].asUint64()).toEqual(65280)
     })
   })
 

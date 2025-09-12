@@ -46,7 +46,7 @@ describe('arc4.StaticBytes', async () => {
     const staticArray = data.staticBytes()
     const nativeValue = data.nativeValue()
     for (let i = 0; i < staticArray.length; i++) {
-      expect(staticArray[i].native).toEqual(nativeValue[i])
+      expect(staticArray[i].asUint64()).toEqual(nativeValue[i])
     }
     expect(staticArray.length).toEqual(nativeValue.length)
   })
@@ -56,7 +56,7 @@ describe('arc4.StaticBytes', async () => {
     const sdkEncodedBytes = getABIEncodedValue(nativeValue, data.abiTypeString(), {})
     const result = interpretAsArc4<StaticBytes>(Bytes(sdkEncodedBytes))
     for (let i = 0; i < result.length; i++) {
-      expect(result[i].native).toEqual(nativeValue[i])
+      expect(result[i].asUint64()).toEqual(nativeValue[i])
     }
   })
 })

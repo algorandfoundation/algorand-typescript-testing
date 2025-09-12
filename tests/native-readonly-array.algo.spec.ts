@@ -345,7 +345,7 @@ describe('native readonly array', () => {
 
       assertMatch(interpreted.length, arr.length)
       for (let i = 0; i < arr.length; i++) {
-        assertMatch(interpreted[i].native, arr[i])
+        assertMatch(interpreted[i].asUint64(), arr[i])
       }
       assertMatch(decoded, arr)
     })
@@ -399,7 +399,7 @@ describe('native readonly array', () => {
       for (let i = 0; i < arr.length; i++) {
         assertMatch(interpreted[i].length, arr[i].length)
         for (let j = 0; j < arr[i].length; j++) {
-          assertMatch(interpreted[i][j].native, arr[i][j])
+          assertMatch(interpreted[i][j].asUint64(), arr[i][j])
         }
       }
       assertMatch(decoded, arr)
@@ -419,7 +419,7 @@ describe('native readonly array', () => {
       for (let i = 0; i < arr.length; i++) {
         assertMatch(interpreted[i].length, arr[i].length)
         for (let j = 0; j < arr[i].length; j++) {
-          assertMatch(interpreted[i][j].native, arr[i][j])
+          assertMatch(interpreted[i][j].asUint64(), arr[i][j])
         }
       }
       assertMatch(decoded, arr)
@@ -437,7 +437,7 @@ describe('native readonly array', () => {
 
       assertMatch(interpreted.length, arr.length)
       for (let i = 0; i < arr.length; i++) {
-        assertMatch(interpreted[i].native[0].native, arr[i][0])
+        assertMatch(interpreted[i].native[0].asUint64(), arr[i][0])
         assertMatch(interpreted[i].native[1].native, arr[i][1])
       }
       assertMatch(decoded, arr)
@@ -457,8 +457,8 @@ describe('native readonly array', () => {
 
       assertMatch(interpreted.length, arr.length)
       for (let i = 0; i < arr.length; i++) {
-        assertMatch(interpreted[i].x.native, arr[i].x)
-        assertMatch(interpreted[i].y.native, arr[i].y)
+        assertMatch(interpreted[i].x.asUint64(), arr[i].x)
+        assertMatch(interpreted[i].y.asUint64(), arr[i].y)
       }
       assertMatch(decoded, arr)
     })

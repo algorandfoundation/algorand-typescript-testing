@@ -44,7 +44,7 @@ describe('arc4.Byte', async () => {
 
     const result = new Byte(value)
 
-    expect(result.native).toEqual(expected)
+    expect(result.asUint64()).toEqual(expected)
     expect(avmResult).toEqual(expected)
   })
 
@@ -85,13 +85,13 @@ describe('arc4.Byte', async () => {
           case '!==':
             return a !== b
           case '<':
-            return a.native < b.native
+            return a.asUint64() < b.asUint64()
           case '<=':
-            return a.native <= b.native
+            return a.asUint64() <= b.asUint64()
           case '>':
-            return a.native > b.native
+            return a.asUint64() > b.asUint64()
           case '>=':
-            return a.native >= b.native
+            return a.asUint64() >= b.asUint64()
           default:
             throw new Error(`Unknown operator: ${op}`)
         }
@@ -118,7 +118,7 @@ describe('arc4.Byte', async () => {
     const avmResult = await getAvmResult({ appClient }, 'verify_byte_from_bytes', value)
     const result = interpretAsArc4<Byte>(Bytes(value))
 
-    expect(result.native).toEqual(avmResult)
+    expect(result.asUint64()).toEqual(avmResult)
   })
 
   test.for([encodingUtil.bigIntToUint8Array(0n, 2), encodingUtil.bigIntToUint8Array(255n, 8)])(
@@ -127,7 +127,7 @@ describe('arc4.Byte', async () => {
       await expect(getAvmResult({ appClient }, 'verify_byte_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError)
 
       const result = interpretAsArc4<Byte>(Bytes(value))
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
 
@@ -141,7 +141,7 @@ describe('arc4.Byte', async () => {
 
     const result = interpretAsArc4<Byte>(Bytes(logValue), 'log')
     expect(avmResult).toEqual(expected)
-    expect(result.native).toEqual(expected)
+    expect(result.asUint64()).toEqual(expected)
   })
 
   test.for([
@@ -169,7 +169,7 @@ describe('arc4.Byte', async () => {
       await expect(() => getAvmResult({ appClient }, 'verify_byte_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError)
 
       const result = interpretAsArc4<Byte>(Bytes(logValue), 'log')
-      expect(result.native).toEqual(encodingUtil.uint8ArrayToBigInt(value))
+      expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
 })

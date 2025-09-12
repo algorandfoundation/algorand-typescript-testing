@@ -18,7 +18,13 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import assert from 'assert'
-import { ABI_RETURN_VALUE_LOG_PREFIX, ALGORAND_ADDRESS_BYTE_LENGTH, ALGORAND_CHECKSUM_BYTE_LENGTH, UINT64_SIZE } from '../../constants'
+import {
+  ABI_RETURN_VALUE_LOG_PREFIX,
+  ALGORAND_ADDRESS_BYTE_LENGTH,
+  ALGORAND_CHECKSUM_BYTE_LENGTH,
+  MAX_UINT64,
+  UINT64_SIZE,
+} from '../../constants'
 import { AvmError, avmInvariant, CodeError, InternalError } from '../../errors'
 import { nameOfType, type DeliberateAny } from '../../typescript-helpers'
 import {
@@ -99,7 +105,20 @@ export class Uint<N extends BitSize> extends _Uint<N> {
 
   get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as _Uint<N>['native']
+    return this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)
+  }
+
+  asUint64() {
+    const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
+    if (bigIntValue > MAX_UINT64) {
+      throw new CodeError('value too large to fit in uint64')
+    }
+    return asUint64(bigIntValue)
+  }
+
+  asBigUint() {
+    const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
+    return asBigUint(bigIntValue)
   }
 
   get bytes(): bytes {
@@ -155,7 +174,7 @@ export class UFixed<N extends BitSize, M extends number> extends _UFixed<N, M> {
 
   get native() {
     const bigIntValue = encodingUtil.uint8ArrayToBigInt(this.value)
-    return (this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)) as _UFixed<N, M>['native']
+    return this.bitSize <= UINT64_SIZE ? asUint64(bigIntValue) : asBigUint(bigIntValue)
   }
 
   get bytes(): bytes {
@@ -201,8 +220,12 @@ export class Byte extends _Byte {
     this.value = new Uint<8>(typeInfo, v)
   }
 
-  get native() {
-    return this.value.native
+  asUint64() {
+    return this.value.asUint64()
+  }
+
+  asBigUint() {
+    return this.value.asBigUint()
   }
 
   get bytes(): bytes {

@@ -18,7 +18,7 @@ import { afterEach, describe, expect, it, test } from 'vitest'
 import { Bytes, type StubBytesCompat } from '../../src/impl/primitives'
 import { AccountCls } from '../../src/impl/reference'
 import type { DeliberateAny } from '../../src/typescript-helpers'
-import { asBytes, asUint8Array } from '../../src/util'
+import { asBigUint, asBytes, asUint8Array } from '../../src/util'
 
 const addressDynamicArray = {
   abiTypeString: 'address[]',
@@ -106,7 +106,7 @@ const uint256DynamicArray = {
 const ufixedDynamicArray = {
   abiTypeString: 'ufixed256x16[]',
   nativeValues() {
-    return this.abiValues().map((v) => v.native.valueOf())
+    return this.abiValues().map((v) => asBigUint(v.bytes).valueOf())
   },
   abiValues() {
     return [

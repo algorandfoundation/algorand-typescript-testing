@@ -32,7 +32,7 @@ describe('ARC4 AppGlobal values', async () => {
         const arc4Value = value as Uint<64>
         expect(arc4Value).toBeInstanceOf(Uint)
         expect(arc4Value.bytes.length).toEqual(8)
-        expect(arc4Value.native).toEqual(expectedValue)
+        expect(arc4Value.asUint64()).toEqual(expectedValue)
       },
     },
     {
@@ -52,7 +52,7 @@ describe('ARC4 AppGlobal values', async () => {
       assert: (value: ARC4Encoded, expectedValue: DeliberateAny) => {
         const arc4Value = value as Byte
         expect(arc4Value).toBeInstanceOf(Byte)
-        expect(arc4Value.native).toEqual(expectedValue)
+        expect(arc4Value.asUint64()).toEqual(expectedValue)
       },
     },
     {
@@ -83,7 +83,7 @@ describe('ARC4 AppGlobal values', async () => {
         const arc4Value = value as Uint<128>
         expect(arc4Value).toBeInstanceOf(Uint)
         expect(arc4Value.bytes.length).toEqual(16)
-        expect(arc4Value.native).toEqual(expectedValue)
+        expect(arc4Value.asBigUint()).toEqual(expectedValue)
       },
     },
     {

@@ -594,7 +594,7 @@ describe('native mutable object', () => {
       const interpreted = interpretAsArc4<SimpleObjStruct>(encoded)
       const decoded = decodeArc4<SimpleObj>(encoded)
 
-      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.a.asUint64(), obj.a)
       assertMatch(interpreted.b.native, obj.b)
       assertMatch(interpreted.c.native, obj.c)
       assertMatch(interpreted.d.native, obj.d)
@@ -625,10 +625,10 @@ describe('native mutable object', () => {
       const interpreted = interpretAsArc4<NestedObjStruct>(encoded)
       const decoded = decodeArc4<NestedObj>(encoded)
 
-      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.a.asUint64(), obj.a)
       assertMatch(interpreted.b.native, obj.b)
       assertMatch(interpreted.c.native, obj.c)
-      assertMatch(interpreted.d.x.native, obj.d.x)
+      assertMatch(interpreted.d.x.asUint64(), obj.d.x)
       assertMatch(interpreted.d.y.native, obj.d.y)
       assertMatch(interpreted.d.z.native, obj.d.z)
       assertMatch(decoded, obj)
@@ -653,12 +653,12 @@ describe('native mutable object', () => {
       const interpreted = interpretAsArc4<ArrayObjStruct>(encoded)
       const decoded = decodeArc4<ArrayObj>(encoded)
 
-      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.a.asUint64(), obj.a)
       assertMatch(interpreted.b.native, obj.b)
       assertMatch(interpreted.c.native, obj.c)
       assertMatch(interpreted.d.length, obj.d.length)
       for (let i = 0; i < obj.d.length; i++) {
-        assertMatch(interpreted.d[i].native, obj.d[i])
+        assertMatch(interpreted.d[i].asUint64(), obj.d[i])
       }
       assertMatch(decoded, obj)
     })
@@ -682,12 +682,12 @@ describe('native mutable object', () => {
       const interpreted = interpretAsArc4<FixedArrayObjStruct>(encoded)
       const decoded = decodeArc4<FixedArrayObj>(encoded)
 
-      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.a.asUint64(), obj.a)
       assertMatch(interpreted.b.native, obj.b)
       assertMatch(interpreted.c.native, obj.c)
       assertMatch(interpreted.d.length, obj.d.length)
       for (let i = 0; i < obj.d.length; i++) {
-        assertMatch(interpreted.d[i].native, obj.d[i])
+        assertMatch(interpreted.d[i].asUint64(), obj.d[i])
       }
       assertMatch(decoded, obj)
     })
@@ -711,10 +711,10 @@ describe('native mutable object', () => {
       const interpreted = interpretAsArc4<TupleObjStruct>(encoded)
       const decoded = decodeArc4<TupleObj>(encoded)
 
-      assertMatch(interpreted.a.native, obj.a)
+      assertMatch(interpreted.a.asUint64(), obj.a)
       assertMatch(interpreted.b.native, obj.b)
       assertMatch(interpreted.c.native, obj.c)
-      assertMatch(interpreted.d.native[0].native, obj.d[0])
+      assertMatch(interpreted.d.native[0].asUint64(), obj.d[0])
       assertMatch(interpreted.d.native[1].native, obj.d[1])
       assertMatch(interpreted.d.native[2].native, obj.d[2])
       assertMatch(decoded, obj)
@@ -776,14 +776,14 @@ describe('native mutable object', () => {
       const interpreted = interpretAsArc4<DeepNestedObjStruct>(encoded)
       const decoded = decodeArc4<DeepNestedObj>(encoded)
 
-      assertMatch(interpreted.a.native, obj.a)
-      assertMatch(interpreted.b.x.p.native, obj.b.x.p)
+      assertMatch(interpreted.a.asUint64(), obj.a)
+      assertMatch(interpreted.b.x.p.asUint64(), obj.b.x.p)
       assertMatch(interpreted.b.x.q.native, obj.b.x.q)
       assertMatch(interpreted.b.y.length, obj.b.y.length)
       for (let i = 0; i < obj.b.y.length; i++) {
         assertMatch(interpreted.b.y[i].native, obj.b.y[i])
       }
-      assertMatch(interpreted.b.z.native[0].native, obj.b.z[0])
+      assertMatch(interpreted.b.z.native[0].asUint64(), obj.b.z[0])
       assertMatch(interpreted.b.z.native[1].native, obj.b.z[1])
       assertMatch(interpreted.c.native, obj.c)
       assertMatch(decoded, obj)

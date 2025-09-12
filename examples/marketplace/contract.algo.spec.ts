@@ -40,7 +40,7 @@ describe('DigitalMarketplace', () => {
       nonce: testNonce,
     })
     const listingValue = interpretAsArc4<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))))
-    expect(listingValue.deposited.native).toEqual(10)
+    expect(listingValue.deposited.asUint64()).toEqual(10)
   })
 
   test('deposit', () => {
@@ -101,7 +101,7 @@ describe('DigitalMarketplace', () => {
 
     // Assert
     const updatedListing = interpretAsArc4<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))))
-    expect(updatedListing.unitaryPrice.native).toEqual(testUnitaryPrice.native)
+    expect(updatedListing.unitaryPrice.asUint64()).toEqual(testUnitaryPrice.asUint64())
   })
 
   test('buy', () => {
@@ -130,14 +130,14 @@ describe('DigitalMarketplace', () => {
       testNonce,
       ctx.any.txn.payment({
         receiver: ctx.defaultSender,
-        amount: contract.quantityPrice(testBuyQuantity.native, testUnitaryPrice.native, testAsset.decimals),
+        amount: contract.quantityPrice(testBuyQuantity.asUint64(), testUnitaryPrice.asUint64(), testAsset.decimals),
       }),
-      testBuyQuantity.native,
+      testBuyQuantity.asUint64(),
     )
 
     // Assert
     const updatedListing = interpretAsArc4<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))))
-    expect(updatedListing.deposited.native).toEqual(initialDeposit.native - testBuyQuantity.native)
+    expect(updatedListing.deposited.asUint64()).toEqual(initialDeposit.asUint64() - testBuyQuantity.asUint64())
     expect(ctx.txn.lastGroup.getItxnGroup(0).getAssetTransferInnerTxn(0).assetReceiver).toEqual(ctx.defaultSender)
   })
 
@@ -176,7 +176,7 @@ describe('DigitalMarketplace', () => {
     const assetTransferTxn = ctx.txn.lastGroup.getItxnGroup(1).getAssetTransferInnerTxn(0)
     expect(assetTransferTxn.xferAsset).toEqual(testAsset)
     expect(assetTransferTxn.assetReceiver).toEqual(testOwner.native)
-    expect(assetTransferTxn.assetAmount).toEqual(initialDeposit.native)
+    expect(assetTransferTxn.assetAmount).toEqual(initialDeposit.asUint64())
   })
 
   test('bid', () => {
@@ -200,9 +200,9 @@ describe('DigitalMarketplace', () => {
     })
 
     const bidder = ctx.any.account()
-    const bidQuantity = ctx.any.arc4.uint64(0, BigInt(initialDeposit.native))
-    const bidPrice = ctx.any.arc4.uint64(initialPrice.native + 1, 10000000n)
-    const bidAmount = contract.quantityPrice(bidQuantity.native, bidPrice.native, testAsset.decimals)
+    const bidQuantity = ctx.any.arc4.uint64(0, BigInt(initialDeposit.asUint64()))
+    const bidPrice = ctx.any.arc4.uint64(initialPrice.asUint64() + 1, 10000000n)
+    const bidAmount = contract.quantityPrice(bidQuantity.asUint64(), bidPrice.asUint64(), testAsset.decimals)
 
     // Act
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: app, sender: bidder })]).execute(() => {
@@ -223,8 +223,8 @@ describe('DigitalMarketplace', () => {
     // Assert
     const updatedListing = contract.listings(listingKey).value
     expect(updatedListing.bidder.native).toEqual(bidder)
-    expect(updatedListing.bid.native).toEqual(bidQuantity.native)
-    expect(updatedListing.bidUnitaryPrice.native).toEqual(bidPrice.native)
+    expect(updatedListing.bid.asUint64()).toEqual(bidQuantity.asUint64())
+    expect(updatedListing.bidUnitaryPrice.asUint64()).toEqual(bidPrice.asUint64())
   })
 
   test('acceptBid', () => {
@@ -234,7 +234,7 @@ describe('DigitalMarketplace', () => {
     // Arrange
     const owner = ctx.defaultSender
     const initialDeposit = ctx.any.arc4.uint64(1, 10000000n)
-    const bidQuantity = ctx.any.arc4.uint64(0, BigInt(initialDeposit.native))
+    const bidQuantity = ctx.any.arc4.uint64(0, BigInt(initialDeposit.asUint64()))
     const bidPrice = ctx.any.arc4.uint64(0, 10000000n)
     const bidder = ctx.any.account()
 
@@ -251,15 +251,15 @@ describe('DigitalMarketplace', () => {
       bidUnitaryPrice: bidPrice,
     })
 
-    const minQuantity = initialDeposit.native < bidQuantity.native ? initialDeposit.native : bidQuantity.native
-    const expectedPayment = contract.quantityPrice(minQuantity, bidPrice.native, testAsset.decimals)
+    const minQuantity = initialDeposit.asUint64() < bidQuantity.asUint64() ? initialDeposit.asUint64() : bidQuantity.asUint64()
+    const expectedPayment = contract.quantityPrice(minQuantity, bidPrice.asUint64(), testAsset.decimals)
 
     // Act
     contract.acceptBid(testAsset, testNonce)
 
     // Assert
     const updatedListing = contract.listings(listingKey).value
-    expect(updatedListing.deposited.native).toEqual(initialDeposit.native - minQuantity)
+    expect(updatedListing.deposited.asUint64()).toEqual(initialDeposit.asUint64() - minQuantity)
 
     expect(ctx.txn.lastGroup.itxnGroups.length).toEqual(2)
 

@@ -312,22 +312,22 @@ describe('BoxMap', () => {
       const value = new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200))
       boxMap(key).value = value
       expect(boxMap(key).value.length).toEqual(2)
-      expect(boxMap(key).value.at(-1).native).toEqual(200)
+      expect(boxMap(key).value.at(-1).asUint64()).toEqual(200)
 
       // newly pushed value should be retained
       boxMap(key).value.push(new arc4.Uint64(300))
       expect(boxMap(key).value.length).toEqual(3)
-      expect(boxMap(key).value.at(-1).native).toEqual(300)
+      expect(boxMap(key).value.at(-1).asUint64()).toEqual(300)
 
       // setting bytes value through op should be reflected in the box value.
       const copy = clone(boxMap(key).value)
       copy[2] = new arc4.Uint64(400)
-      expect(boxMap(key).value.at(-1).native).toEqual(300)
+      expect(boxMap(key).value.at(-1).asUint64()).toEqual(300)
 
       const fullKey = keyPrefix.concat(toBytes(key))
       op.Box.put(fullKey, toBytes(copy))
       expect(boxMap(key).value.length).toEqual(3)
-      expect(boxMap(key).value.at(-1).native).toEqual(400)
+      expect(boxMap(key).value.at(-1).asUint64()).toEqual(400)
     })
   })
 
@@ -340,26 +340,26 @@ describe('BoxMap', () => {
 
       const boxRefA = box1.ref
       boxRefA.replace(1, new Uint8(123).bytes)
-      expect(box1.value[0].native).toEqual(123)
-      expect(boxMap(1).value[0].native).toEqual(123)
+      expect(box1.value[0].asUint64()).toEqual(123)
+      expect(boxMap(1).value[0].asUint64()).toEqual(123)
 
       const boxRefB = box1.ref
       boxRefB.replace(2, new Uint8(255).bytes)
-      expect(box1.value[1].native).toEqual(65280)
-      expect(boxMap(1).value[1].native).toEqual(65280)
+      expect(box1.value[1].asUint64()).toEqual(65280)
+      expect(boxMap(1).value[1].asUint64()).toEqual(65280)
 
       const box2 = boxMap(2)
       box2.create()
 
       const boxRefC = box2.ref
       boxRefC.replace(1, new Uint8(223).bytes)
-      expect(box2.value[0].native).toEqual(223)
-      expect(boxMap(2).value[0].native).toEqual(223)
+      expect(box2.value[0].asUint64()).toEqual(223)
+      expect(boxMap(2).value[0].asUint64()).toEqual(223)
 
       const boxRefD = box2.ref
       boxRefD.replace(3, new Uint8(255).bytes)
-      expect(box2.value[1].native).toEqual(255)
-      expect(boxMap(2).value[1].native).toEqual(255)
+      expect(box2.value[1].asUint64()).toEqual(255)
+      expect(boxMap(2).value[1].asUint64()).toEqual(255)
     })
   })
 })
