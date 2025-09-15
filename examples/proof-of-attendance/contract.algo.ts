@@ -4,7 +4,6 @@ import {
   assert,
   Box,
   BoxMap,
-  BoxRef,
   Bytes,
   ensureBudget,
   Global,
@@ -63,11 +62,11 @@ export default class ProofOfAttendance extends arc4.Contract {
     const mintedAsset = this.mintPoa(Txn.sender)
     this.totalAttendees.value += 1
 
-    const boxRef = BoxRef({ key: Txn.sender.bytes })
+    const boxRef = Box<bytes>({ key: Txn.sender.bytes })
     const hasClaimed = boxRef.exists
     assert(!hasClaimed, 'Already claimed POA')
 
-    boxRef.put(op.itob(mintedAsset.id))
+    boxRef.value = op.itob(mintedAsset.id)
   }
 
   @arc4.abimethod()
@@ -99,7 +98,7 @@ export default class ProofOfAttendance extends arc4.Contract {
 
   @readonly
   getPoaIdWithBoxRef(): uint64 {
-    const boxRef = BoxRef({ key: Txn.sender.bytes })
+    const boxRef = Box<bytes>({ key: Txn.sender.bytes })
     const [poaId, exists] = boxRef.maybe()
     assert(exists, 'POA not found')
     return op.btoi(poaId)
@@ -153,7 +152,7 @@ export default class ProofOfAttendance extends arc4.Contract {
 
   @arc4.abimethod()
   claimPoaWithBoxRef(optInTxn: gtxn.AssetTransferTxn) {
-    const boxRef = BoxRef({ key: Txn.sender.bytes })
+    const boxRef = Box<bytes>({ key: Txn.sender.bytes })
     const [poaId, exists] = boxRef.maybe()
     assert(exists, 'POA not found, attendance validation failed!')
     assert(optInTxn.xferAsset.id === op.btoi(poaId), 'POA ID mismatch')

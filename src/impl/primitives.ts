@@ -318,7 +318,9 @@ export const checkBigUint = (v: bigint): bigint => {
 
 /** @internal */
 export const checkBytes = (v: Uint8Array): Uint8Array => {
-  if (v.length > MAX_BYTES_SIZE) throw new AvmError(`Bytes length ${v.length} exceeds maximum length ${MAX_BYTES_SIZE}`)
+  if (v.length > MAX_BYTES_SIZE) {
+    throw new AvmError(`Bytes length ${v.length} exceeds maximum length ${MAX_BYTES_SIZE}`)
+  }
   return v
 }
 

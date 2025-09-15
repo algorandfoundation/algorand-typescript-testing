@@ -4,7 +4,7 @@ import path from 'path'
 import { beforeAll, expect } from 'vitest'
 import { addEqualityTesters } from './src/set-up'
 
-dotenv.config({ path: path.join(__dirname, '.env') })
+dotenv.config({ path: path.join(__dirname, '.env'), ignore: ['MISSING_ENV_FILE'], })
 
 beforeAll(() => {
   addEqualityTesters({ expect })

@@ -338,26 +338,22 @@ describe('BoxMap', () => {
       const box1 = boxMap(1)
       box1.create()
 
-      const boxRefA = box1.ref
-      boxRefA.replace(1, new Uint8(123).bytes)
+      box1.replace(1, new Uint8(123).bytes)
       expect(box1.value[0].asUint64()).toEqual(123)
       expect(boxMap(1).value[0].asUint64()).toEqual(123)
 
-      const boxRefB = box1.ref
-      boxRefB.replace(2, new Uint8(255).bytes)
+      box1.replace(2, new Uint8(255).bytes)
       expect(box1.value[1].asUint64()).toEqual(65280)
       expect(boxMap(1).value[1].asUint64()).toEqual(65280)
 
       const box2 = boxMap(2)
       box2.create()
 
-      const boxRefC = box2.ref
-      boxRefC.replace(1, new Uint8(223).bytes)
+      box2.replace(1, new Uint8(223).bytes)
       expect(box2.value[0].asUint64()).toEqual(223)
       expect(boxMap(2).value[0].asUint64()).toEqual(223)
 
-      const boxRefD = box2.ref
-      boxRefD.replace(3, new Uint8(255).bytes)
+      box2.replace(3, new Uint8(255).bytes)
       expect(box2.value[1].asUint64()).toEqual(255)
       expect(boxMap(2).value[1].asUint64()).toEqual(255)
     })

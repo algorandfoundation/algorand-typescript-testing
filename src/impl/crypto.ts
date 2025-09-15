@@ -8,7 +8,7 @@ import nacl from 'tweetnacl'
 import { LOGIC_DATA_PREFIX, PROGRAM_TAG } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError, NotImplementedError } from '../errors'
-import { asBytes, asBytesCls, asUint8Array, conactUint8Arrays } from '../util'
+import { asBytes, asBytesCls, asUint8Array, concatUint8Arrays } from '../util'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 import { Bytes, BytesCls, FixedBytes, Uint64Cls } from './primitives'
 
@@ -57,7 +57,7 @@ export const ed25519verify = (a: StubBytesCompat, b: StubBytesCompat, c: StubByt
   const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationCallTxn
   const programBytes = asBytesCls(txn.onCompletion == OnCompleteAction.ClearState ? txn.clearStateProgram : txn.approvalProgram)
 
-  const logicSig = conactUint8Arrays(asUint8Array(PROGRAM_TAG), programBytes.asUint8Array())
+  const logicSig = concatUint8Arrays(asUint8Array(PROGRAM_TAG), programBytes.asUint8Array())
   const logicSigAddress = js_sha512.sha512_256.array(logicSig)
 
   const addressBytes = Bytes(logicSigAddress)

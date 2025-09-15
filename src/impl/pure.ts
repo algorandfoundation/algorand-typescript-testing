@@ -50,7 +50,7 @@ export const bsqrt = (a: StubBigUintCompat): biguint => {
 export const btoi = (a: StubBytesCompat): uint64 => {
   const bytesValue = BytesCls.fromCompat(a)
   if (bytesValue.length.asAlgoTs() > BITS_IN_BYTE) {
-    throw new AvmError(`btoi arg too long, got [${bytesValue.length.valueOf()}]bytes`)
+    throw new AvmError(`btoi arg too long, got ${bytesValue.length.valueOf()} bytes`)
   }
   return bytesValue.toUint64().asAlgoTs()
 }

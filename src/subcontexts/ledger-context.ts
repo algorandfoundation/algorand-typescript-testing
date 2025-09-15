@@ -13,7 +13,7 @@ import { AccountMap, Uint64Map } from '../collections/custom-key-map'
 import { MAX_UINT64 } from '../constants'
 import { InternalError } from '../errors'
 import { BlockData } from '../impl/block'
-import { toBytes } from '../impl/encoded-types'
+import { toUint8Array } from '../impl/encoded-types/encoded-types'
 import { GlobalData } from '../impl/global'
 import { Uint64Cls } from '../impl/primitives'
 import type { AssetData } from '../impl/reference'
@@ -354,7 +354,9 @@ export class LedgerContext {
     const appData = this.applicationDataMap.getOrFail(appId)
     const materialised = appData.application.materialisedBoxes.get(key)
     if (materialised !== undefined) {
-      return asUint8Array(toBytes(materialised))
+      const uint8ArrayValue = toUint8Array(materialised)
+      appData.application.boxes.set(key, uint8ArrayValue)
+      appData.application.materialisedBoxes.set(key, undefined)
     }
     return appData.application.boxes.get(key) ?? new Uint8Array()
   }

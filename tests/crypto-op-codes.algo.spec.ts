@@ -12,7 +12,7 @@ import { TestExecutionContext } from '../src'
 import { LOGIC_DATA_PREFIX, MAX_BYTES_SIZE, PROGRAM_TAG } from '../src/constants'
 import { BytesCls, Uint64Cls } from '../src/impl/primitives'
 import { decodePublicKey } from '../src/impl/reference'
-import { asBytes, asUint64, asUint8Array, conactUint8Arrays } from '../src/util'
+import { asBytes, asUint64, asUint8Array, concatUint8Arrays } from '../src/util'
 import { getAvmResult, INITIAL_BALANCE_MICRO_ALGOS } from './avm-invoker'
 import { createArc4TestFixture } from './test-fixture'
 import { getPaddedBytes } from './util'
@@ -137,10 +137,10 @@ describe('crypto op codes', async () => {
       })
 
       const publicKey = decodePublicKey(account.addr.toString())
-      const logicSig = conactUint8Arrays(asUint8Array(PROGRAM_TAG), approval.compiledBase64ToBytes)
+      const logicSig = concatUint8Arrays(asUint8Array(PROGRAM_TAG), approval.compiledBase64ToBytes)
       const logicSigAddress = js_sha512.sha512_256.array(logicSig)
-      const parts = conactUint8Arrays(new Uint8Array(logicSigAddress), asUint8Array(message))
-      const toBeSigned = conactUint8Arrays(asUint8Array(LOGIC_DATA_PREFIX), parts)
+      const parts = concatUint8Arrays(new Uint8Array(logicSigAddress), asUint8Array(message))
+      const toBeSigned = concatUint8Arrays(asUint8Array(LOGIC_DATA_PREFIX), parts)
       const signature = nacl.sign.detached(toBeSigned, account.sk)
 
       const avmResult = await getAvmResult(

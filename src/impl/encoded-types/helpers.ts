@@ -39,10 +39,13 @@ export const checkItemTypeName = (type: TypeInfo, value: ARC4Encoded) => {
 }
 
 /** @internal */
-export const findBoolTypes = (values: TypeInfo[], index: number, delta: number): number => {
+export const findBoolTypes = (values: TypeInfo[], index: number, delta: number, isHomogenous?: boolean): number => {
   // Helper function to find consecutive booleans from current index in a tuple.
   let until = 0
   const length = values.length
+  if (isHomogenous) {
+    return delta < 0 ? 0 : length - index - 1
+  }
   while (true) {
     const curr = index + delta * until
     if (['Bool', 'boolean'].includes(values[curr].name)) {
@@ -102,9 +105,12 @@ export const encodeLength = (length: number): BytesCls => {
 }
 
 /** @internal */
-export const findBool = (values: ARC4Encoded[], index: number, delta: number) => {
+export const findBool = (values: ARC4Encoded[], index: number, delta: number, isHomogenous?: boolean) => {
   let until = 0
   const length = values.length
+  if (isHomogenous) {
+    return delta < 0 ? 0 : length - index - 1
+  }
   while (true) {
     const curr = index + delta * until
     if (values[curr] instanceof Bool) {
