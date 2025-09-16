@@ -14,7 +14,7 @@ import {
   Uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { decodeArc4, encodeArc4, interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, decodeArc4, encodeArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, it } from 'vitest'
 
 class TestContract extends Contract {
@@ -340,7 +340,7 @@ describe('native readonly array', () => {
     it('should decode and encode readonly uint64 array', () => {
       const arr: readonly uint64[] = [10, 20, 30, 40]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Uint64>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly uint64[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -353,7 +353,7 @@ describe('native readonly array', () => {
     it('should decode and encode readonly string array', () => {
       const arr: readonly string[] = ['hello', 'world', 'test']
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Str>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Str>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly string[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -366,7 +366,7 @@ describe('native readonly array', () => {
     it('should decode and encode readonly boolean array', () => {
       const arr: readonly boolean[] = [true, false, true, false, true, true, false, true, false, true]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Bool>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Bool>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly boolean[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -379,7 +379,7 @@ describe('native readonly array', () => {
     it('should decode and encode readonly bytes array', () => {
       const arr: readonly bytes[] = [Bytes('hello'), Bytes('world'), Bytes('test')]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicBytes>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.DynamicBytes>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly bytes[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -392,7 +392,7 @@ describe('native readonly array', () => {
     it('should decode and encode readonly nested array', () => {
       const arr: readonly (readonly uint64[])[] = [[1, 2], [3, 4, 5], [6]]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicArray<arc4.Uint64>>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.DynamicArray<arc4.Uint64>>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly (readonly uint64[])[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -412,7 +412,7 @@ describe('native readonly array', () => {
         new FixedArray<uint64, 2>(5, 6),
       ]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.StaticArray<arc4.Uint64, 2>>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.StaticArray<arc4.Uint64, 2>>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly FixedArray<uint64, 2>[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -432,7 +432,9 @@ describe('native readonly array', () => {
         [30, 'third'],
       ]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Tuple<readonly [arc4.Uint64, arc4.Str]>>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Tuple<readonly [arc4.Uint64, arc4.Str]>>>(encoded, {
+        strategy: 'unsafe-cast',
+      })
       const decoded = decodeArc4<readonly (readonly [uint64, string])[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -452,7 +454,7 @@ describe('native readonly array', () => {
       ]
       class PointStruct extends arc4.Struct<{ x: arc4.Uint64; y: arc4.Uint64 }> {}
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<PointStruct>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<PointStruct>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly Point[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -466,7 +468,7 @@ describe('native readonly array', () => {
     it('should decode and encode readonly arc4 array', () => {
       const arr: readonly arc4.Uint64[] = [new arc4.Uint64(100), new arc4.Uint64(200), new arc4.Uint64(300)]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Uint64>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly arc4.Uint64[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -479,7 +481,7 @@ describe('native readonly array', () => {
     it('should decode and encode empty readonly array', () => {
       const arr: readonly uint64[] = []
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Uint64>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<readonly uint64[]>(encoded)
 
       assertMatch(interpreted.length, 0)

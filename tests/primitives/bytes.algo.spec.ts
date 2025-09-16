@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { MAX_BYTES_SIZE } from '../../src/constants'
 
 import type { Byte, StaticArray } from '@algorandfoundation/algorand-typescript/arc4'
-import { decodeArc4, interpretAsArc4, sizeOf } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, decodeArc4, sizeOf } from '@algorandfoundation/algorand-typescript/arc4'
 import { sha256 } from '../../src/impl'
 import { BytesCls } from '../../src/impl/primitives'
 import { asUint8Array } from '../../src/util'
@@ -236,7 +236,7 @@ describe('Bytes', async () => {
       expect(x2[0].length).toEqual(32)
       expect(x2[1].length).toEqual(32)
 
-      const x3 = interpretAsArc4<StaticArray<StaticArray<Byte, 32>, 2>>(Bytes<64>())
+      const x3 = convertBytes<StaticArray<StaticArray<Byte, 32>, 2>>(Bytes<64>(), { strategy: 'unsafe-cast' })
       expect(x3.length).toEqual(2)
       expect(x3[0].bytes).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))
       expect(x3[1].bytes).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))

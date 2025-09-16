@@ -1,6 +1,6 @@
 import { arc4, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect, test } from 'vitest'
 import DigitalMarketplace, { ListingKey, ListingValue } from './contract.algo'
 
@@ -39,7 +39,9 @@ describe('DigitalMarketplace', () => {
       asset: new arc4.Uint64(testAsset.id),
       nonce: testNonce,
     })
-    const listingValue = interpretAsArc4<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))))
+    const listingValue = convertBytes<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))), {
+      strategy: 'unsafe-cast',
+    })
     expect(listingValue.deposited.asUint64()).toEqual(10)
   })
 
@@ -100,7 +102,9 @@ describe('DigitalMarketplace', () => {
     contract.setPrice(testAsset, testNonce, testUnitaryPrice)
 
     // Assert
-    const updatedListing = interpretAsArc4<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))))
+    const updatedListing = convertBytes<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))), {
+      strategy: 'unsafe-cast',
+    })
     expect(updatedListing.unitaryPrice.asUint64()).toEqual(testUnitaryPrice.asUint64())
   })
 
@@ -136,7 +140,9 @@ describe('DigitalMarketplace', () => {
     )
 
     // Assert
-    const updatedListing = interpretAsArc4<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))))
+    const updatedListing = convertBytes<ListingValue>(Bytes(ctx.ledger.getBox(contract, Bytes('listings').concat(listingKey.bytes))), {
+      strategy: 'unsafe-cast',
+    })
     expect(updatedListing.deposited.asUint64()).toEqual(initialDeposit.asUint64() - testBuyQuantity.asUint64())
     expect(ctx.txn.lastGroup.getItxnGroup(0).getAssetTransferInnerTxn(0).assetReceiver).toEqual(ctx.defaultSender)
   })

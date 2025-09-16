@@ -1,6 +1,6 @@
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { interpretAsArc4, Str } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, Str } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_LOG_SIZE } from '../../src/constants'
@@ -73,7 +73,7 @@ describe('arc4.Str', async () => {
   ])('create Str from bytes', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
     const paddedValue = new Uint8Array([...encodingUtil.bigIntToUint8Array(BigInt(value.length), 2), ...value])
     const avmResult = await getAvmResult({ appClient }, 'verify_string_from_bytes', paddedValue)
-    const result = interpretAsArc4<Str>(Bytes(paddedValue))
+    const result = convertBytes<Str>(Bytes(paddedValue), { strategy: 'unsafe-cast' })
     expect(result.native).toEqual(avmResult)
   })
 
@@ -88,7 +88,7 @@ describe('arc4.Str', async () => {
       ...value,
     ])
     const avmResult = await getAvmResult({ appClient }, 'verify_string_from_log', paddedValue)
-    const result = interpretAsArc4<Str>(Bytes(paddedValue), 'log')
+    const result = convertBytes<Str>(Bytes(paddedValue), { prefix: 'log', strategy: 'unsafe-cast' })
     expect(result.native).toEqual(avmResult)
   })
 
@@ -101,6 +101,8 @@ describe('arc4.Str', async () => {
     await expect(() => getAvmResult({ appClient }, 'verify_string_from_log', paddedValue)).rejects.toThrowError(
       new RegExp('(has valid prefix)|(extraction start \\d+ is beyond length)'),
     )
-    expect(() => interpretAsArc4<Str>(Bytes(paddedValue), 'log')).toThrowError('ABI return prefix not found')
+    expect(() => convertBytes<Str>(Bytes(paddedValue), { prefix: 'log', strategy: 'unsafe-cast' })).toThrowError(
+      'ABI return prefix not found',
+    )
   })
 })

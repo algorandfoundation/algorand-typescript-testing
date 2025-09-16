@@ -1217,13 +1217,13 @@ export function decodeArc4<T>(
 }
 
 /** @internal */
-export function interpretAsArc4<T extends _ARC4Encoded>(
+export function convertBytes<T extends _ARC4Encoded>(
   typeInfoString: string,
   bytes: StubBytesCompat,
-  prefix: 'none' | 'log' = 'none',
+  options: { prefix?: 'none' | 'log'; strategy: 'unsafe-cast' },
 ): T {
   const typeInfo = JSON.parse(typeInfoString)
-  return getEncoder<T>(typeInfo)(bytes, typeInfo, prefix)
+  return getEncoder<T>(typeInfo)(bytes, typeInfo, options.prefix)
 }
 
 /** @internal */

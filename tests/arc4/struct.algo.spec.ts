@@ -1,6 +1,6 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
-import { Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Struct, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
+import { Bool, convertBytes, DynamicArray, StaticArray, Str, Struct, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { describe, expect, it, test } from 'vitest'
 import type { StubBytesCompat } from '../../src/impl/primitives'
@@ -71,7 +71,7 @@ const testData = [
       return new Swapped1(this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Swapped1>(asBytes(value))
+      return convertBytes<Swapped1>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -99,7 +99,7 @@ const testData = [
       return new Swapped2(this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Swapped2>(asBytes(value))
+      return convertBytes<Swapped2>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -138,7 +138,7 @@ const testData = [
       return new Swapped3(this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Swapped3>(asBytes(value))
+      return convertBytes<Swapped3>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -167,7 +167,7 @@ const testData = [
       return new Swapped4(this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Swapped4>(asBytes(value))
+      return convertBytes<Swapped4>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -198,7 +198,7 @@ const testData = [
       return new Swapped5(this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Swapped5>(asBytes(value))
+      return convertBytes<Swapped5>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -229,7 +229,7 @@ const testData = [
       return new Swapped6(this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Swapped6>(asBytes(value))
+      return convertBytes<Swapped6>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
 ]

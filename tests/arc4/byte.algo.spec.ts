@@ -1,7 +1,7 @@
 import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Byte, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { Byte, convertBytes } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_UINT64 } from '../../src/constants'
@@ -116,7 +116,7 @@ describe('arc4.Byte', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 8n - 1n, 1),
   ])('create Byte from bytes', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_byte_from_bytes', value)
-    const result = interpretAsArc4<Byte>(Bytes(value))
+    const result = convertBytes<Byte>(Bytes(value), { strategy: 'unsafe-cast' })
 
     expect(result.asUint64()).toEqual(avmResult)
   })
@@ -126,7 +126,7 @@ describe('arc4.Byte', async () => {
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       await expect(getAvmResult({ appClient }, 'verify_byte_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError)
 
-      const result = interpretAsArc4<Byte>(Bytes(value))
+      const result = convertBytes<Byte>(Bytes(value), { strategy: 'unsafe-cast' })
       expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
@@ -139,7 +139,7 @@ describe('arc4.Byte', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value as Uint8Array)))
     const avmResult = await getAvmResult({ appClient }, 'verify_byte_from_log', logValue)
 
-    const result = interpretAsArc4<Byte>(Bytes(logValue), 'log')
+    const result = convertBytes<Byte>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
     expect(avmResult).toEqual(expected)
     expect(result.asUint64()).toEqual(expected)
   })
@@ -154,7 +154,9 @@ describe('arc4.Byte', async () => {
       await expect(() => getAvmResult({ appClient }, 'verify_byte_from_log', logValue)).rejects.toThrowError(
         new RegExp('(has valid prefix)|(extraction start \\d+ is beyond length)'),
       )
-      expect(() => interpretAsArc4<Byte>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
+      expect(() => convertBytes<Byte>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })).toThrowError(
+        'ABI return prefix not found',
+      )
     },
   )
 
@@ -168,7 +170,7 @@ describe('arc4.Byte', async () => {
       const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
       await expect(() => getAvmResult({ appClient }, 'verify_byte_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError)
 
-      const result = interpretAsArc4<Byte>(Bytes(logValue), 'log')
+      const result = convertBytes<Byte>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
       expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )

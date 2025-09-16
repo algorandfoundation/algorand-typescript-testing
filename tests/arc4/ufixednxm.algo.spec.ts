@@ -1,7 +1,7 @@
 import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { interpretAsArc4, UFixed } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, UFixed } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
@@ -67,7 +67,7 @@ describe('arc4.UFixed', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 32n - 1n),
   ])('create UFixed<32,8> from bytes', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_ufixed_from_bytes', value)
-    const result = interpretAsArc4<UFixed<32, 8>>(Bytes(value))
+    const result = convertBytes<UFixed<32, 8>>(Bytes(value), { strategy: 'unsafe-cast' })
 
     expect(asBigUint(result.bytes)).toEqual(avmResult)
   })
@@ -82,7 +82,7 @@ describe('arc4.UFixed', async () => {
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       await expect(getAvmResult({ appClient }, 'verify_ufixed_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(32))
 
-      const result = interpretAsArc4<UFixed<32, 8>>(Bytes(value))
+      const result = convertBytes<UFixed<32, 8>>(Bytes(value), { strategy: 'unsafe-cast' })
       expect(result.bytes).toEqual(value)
     },
   )
@@ -96,7 +96,7 @@ describe('arc4.UFixed', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value as Uint8Array)))
     const avmResult = await getAvmResult({ appClient }, 'verify_ufixed_from_log', logValue)
 
-    const result = interpretAsArc4<UFixed<32, 8>>(Bytes(logValue), 'log')
+    const result = convertBytes<UFixed<32, 8>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
     expect(avmResult).toEqual(expected)
     expect(asBigUint(result.bytes)).toEqual(expected)
   })
@@ -109,7 +109,9 @@ describe('arc4.UFixed', async () => {
     async ([value, prefix], { appClientArc4PrimitiveOpsContract: appClient }) => {
       const logValue = asUint8Array(Bytes(prefix as Uint8Array).concat(Bytes(value as bytes)))
       await expect(() => getAvmResult({ appClient }, 'verify_ufixed_from_log', logValue)).rejects.toThrowError('has valid prefix')
-      expect(() => interpretAsArc4<UFixed<32, 8>>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
+      expect(() => convertBytes<UFixed<32, 8>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })).toThrowError(
+        'ABI return prefix not found',
+      )
     },
   )
 
@@ -124,7 +126,7 @@ describe('arc4.UFixed', async () => {
       const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
       await expect(() => getAvmResult({ appClient }, 'verify_ufixed_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError(32))
 
-      const result = interpretAsArc4<UFixed<32, 8>>(Bytes(logValue), 'log')
+      const result = convertBytes<UFixed<32, 8>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
       expect(asBigUint(result.bytes)).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
@@ -136,7 +138,7 @@ describe('arc4.UFixed', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 256n - 1n),
   ])('create UFixed<256,16> from bytes', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_bigufixed_from_bytes', value)
-    const result = interpretAsArc4<UFixed<256, 16>>(Bytes(value))
+    const result = convertBytes<UFixed<256, 16>>(Bytes(value), { strategy: 'unsafe-cast' })
 
     expect(asBigUint(result.bytes)).toEqual(avmResult)
   })
@@ -151,7 +153,7 @@ describe('arc4.UFixed', async () => {
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       await expect(getAvmResult({ appClient }, 'verify_bigufixed_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(256))
 
-      const result = interpretAsArc4<UFixed<256, 16>>(Bytes(value))
+      const result = convertBytes<UFixed<256, 16>>(Bytes(value), { strategy: 'unsafe-cast' })
       expect(result.bytes).toEqual(value)
     },
   )
@@ -165,7 +167,7 @@ describe('arc4.UFixed', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value as Uint8Array)))
     const avmResult = await getAvmResult({ appClient }, 'verify_bigufixed_from_log', logValue)
 
-    const result = interpretAsArc4<UFixed<256, 16>>(Bytes(logValue), 'log')
+    const result = convertBytes<UFixed<256, 16>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
     expect(avmResult).toEqual(expected)
     expect(asBigUint(result.bytes)).toEqual(expected)
   })
@@ -178,7 +180,9 @@ describe('arc4.UFixed', async () => {
     async ([value, prefix], { appClientArc4PrimitiveOpsContract: appClient }) => {
       const logValue = asUint8Array(Bytes(prefix as Uint8Array).concat(Bytes(value as bytes)))
       await expect(() => getAvmResult({ appClient }, 'verify_bigufixed_from_log', logValue)).rejects.toThrowError('has valid prefix')
-      expect(() => interpretAsArc4<UFixed<256, 16>>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
+      expect(() => convertBytes<UFixed<256, 16>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })).toThrowError(
+        'ABI return prefix not found',
+      )
     },
   )
 
@@ -195,7 +199,7 @@ describe('arc4.UFixed', async () => {
         invalidBytesLengthError(256),
       )
 
-      const result = interpretAsArc4<UFixed<256, 16>>(Bytes(logValue), 'log')
+      const result = convertBytes<UFixed<256, 16>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
       expect(asBigUint(result.bytes)).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )

@@ -1,7 +1,7 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Address, Bool, DynamicArray, interpretAsArc4, StaticArray, Str, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, Bool, convertBytes, DynamicArray, StaticArray, Str, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, describe, expect, test } from 'vitest'
 import type { StubBytesCompat } from '../../src/impl/primitives'
@@ -46,7 +46,7 @@ const testData = [
       return new Tuple<[StaticArray<Bool, 10>, Bool, Bool]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[StaticArray<Bool, 10>, Bool, Bool]>>(asBytes(value))
+      return convertBytes<Tuple<[StaticArray<Bool, 10>, Bool, Bool]>>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -61,7 +61,7 @@ const testData = [
       return new Tuple<[Uint<8>, Bool, Bool, Address]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Uint<8>, Bool, Bool, Address]>>(asBytes(value))
+      return convertBytes<Tuple<[Uint<8>, Bool, Bool, Address]>>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -76,7 +76,7 @@ const testData = [
       return new Tuple<[Str, Uint<8>, Bool]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Str, Uint<8>, Bool]>>(asBytes(value))
+      return convertBytes<Tuple<[Str, Uint<8>, Bool]>>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -97,7 +97,7 @@ const testData = [
       return new Tuple<[Tuple<[Uint<8>, Bool, Bool]>, Tuple<[Uint<8>, Bool, Bool]>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[Uint<8>, Bool, Bool]>, Tuple<[Uint<8>, Bool, Bool]>]>>(asBytes(value))
+      return convertBytes<Tuple<[Tuple<[Uint<8>, Bool, Bool]>, Tuple<[Uint<8>, Bool, Bool]>]>>(asBytes(value), { strategy: 'unsafe-cast' })
     },
   },
   {
@@ -126,7 +126,9 @@ const testData = [
       return new Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]>>(asBytes(value))
+      return convertBytes<Tuple<[DynamicArray<Str>, DynamicArray<Str>, Str, Uint<8>, Bool, StaticArray<Uint<8>, 3>]>>(asBytes(value), {
+        strategy: 'unsafe-cast',
+      })
     },
   },
   {
@@ -145,7 +147,9 @@ const testData = [
       return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]>>(asBytes(value))
+      return convertBytes<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Uint<8>, StaticArray<Uint<8>, 3>]>>(asBytes(value), {
+        strategy: 'unsafe-cast',
+      })
     },
   },
   {
@@ -166,7 +170,9 @@ const testData = [
       return new Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>(...this.abiValues())
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>>(asBytes(value))
+      return convertBytes<Tuple<[Tuple<[Bool, DynamicArray<Str>, Str]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>>(asBytes(value), {
+        strategy: 'unsafe-cast',
+      })
     },
   },
   {
@@ -192,8 +198,9 @@ const testData = [
       )
     },
     create(value: StubBytesCompat) {
-      return interpretAsArc4<Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>>(
+      return convertBytes<Tuple<[Tuple<[Bool, Tuple<[DynamicArray<Str>, Str, Address]>]>, Tuple<[Uint<8>, StaticArray<Uint<8>, 3>]>]>>(
         asBytes(value),
+        { strategy: 'unsafe-cast' },
       )
     },
   },
