@@ -23,7 +23,7 @@ export { BigUint, Bytes, Uint64 } from '../impl/primitives'
 /** @internal */
 export { Account, Application, Asset } from '../impl/reference'
 /** @internal */
-export { Box, BoxMap, BoxRef, GlobalState, LocalState } from '../impl/state'
+export { Box, BoxMap, GlobalState, LocalState } from '../impl/state'
 /** @internal */
 export { TemplateVar } from '../impl/template-var'
 /** @internal */

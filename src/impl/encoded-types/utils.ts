@@ -15,7 +15,7 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
     let size = 0
     if (['Bool', 'boolean'].includes(genericArgs.elementType.name)) {
       while (i < childTypes.length) {
-        const after = findBoolTypes(childTypes, i, 1)
+        const after = findBoolTypes(childTypes, i, 1, true)
         const boolNum = after + 1
         size += Math.floor(boolNum / BITS_IN_BYTE)
         size += boolNum % BITS_IN_BYTE ? 1 : 0

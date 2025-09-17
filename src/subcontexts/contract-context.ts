@@ -20,7 +20,7 @@ import type { Contract } from '../impl/contract'
 import { getArc4Encoded, Uint, type TypeInfo } from '../impl/encoded-types'
 import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
-import { BoxCls, BoxMapCls, BoxRefCls, GlobalStateCls } from '../impl/state'
+import { BoxCls, BoxMapCls, GlobalStateCls } from '../impl/state'
 import type { Transaction } from '../impl/transactions'
 import {
   ApplicationCallTransaction,
@@ -58,9 +58,8 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
     const isLocalState = value instanceof Function && value.name === 'localStateInternal'
     const isGlobalState = value instanceof GlobalStateCls
     const isBox = value instanceof BoxCls
-    const isBoxRef = value instanceof BoxRefCls
     const isBoxMap = value instanceof BoxMapCls
-    if (isLocalState || isGlobalState || isBox || isBoxRef) {
+    if (isLocalState || isGlobalState || isBox) {
       // set key using property name if not already set
       if (!value.hasKey) value.key = Bytes(key)
     } else if (isBoxMap) {

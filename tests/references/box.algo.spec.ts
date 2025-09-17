@@ -1,4 +1,4 @@
-import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { biguint, bytes, FixedArray, uint64 } from '@algorandfoundation/algorand-typescript'
 import { arc4, BigUint, Box, Bytes, clone, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type { Uint16 } from '@algorandfoundation/algorand-typescript/arc4'
@@ -16,9 +16,10 @@ import {
 } from '@algorandfoundation/algorand-typescript/arc4'
 import { itob } from '@algorandfoundation/algorand-typescript/op'
 import { afterEach, describe, expect, it, test } from 'vitest'
+import { MAX_BYTES_SIZE } from '../../src/constants'
 import { toBytes } from '../../src/impl/encoded-types'
 import type { DeliberateAny } from '../../src/typescript-helpers'
-import { asBytes } from '../../src/util'
+import { asBytes, asUint8Array, concatUint8Arrays } from '../../src/util'
 import { BoxContract } from '../artifacts/box-contract/contract.algo'
 
 const BOX_NOT_CREATED_ERROR = 'Box has not been created'
@@ -318,13 +319,53 @@ describe('Box', () => {
       const box = Box<StaticArray<Uint16, 4>>({ key: 'a' })
       box.create()
 
-      const boxRef1 = box.ref
-      boxRef1.replace(1, new Uint8(123).bytes)
+      box.replace(1, new Uint8(123).bytes)
       expect(box.value[0].asUint64()).toEqual(123)
 
-      const boxRef2 = box.ref
-      boxRef2.replace(2, new Uint8(255).bytes)
+      box.replace(2, new Uint8(255).bytes)
       expect(box.value[1].asUint64()).toEqual(65280)
+    })
+  })
+
+  it('should be able to store large boolean array', () => {
+    ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
+      const boxBool = Box<FixedArray<boolean, 33_000>>({ key: 'tooManyBools' })
+      boxBool.create()
+      expect(boxBool.length).toEqual(4125)
+
+      boxBool.value[0] = true
+      boxBool.value[42] = true
+      boxBool.value[500] = true
+      boxBool.value[32_999] = true
+
+      expect(boxBool.value[0]).toBe(true)
+      expect(boxBool.value[42]).toBe(true)
+      expect(boxBool.value[500]).toBe(true)
+      expect(boxBool.value[32_999]).toBe(true)
+
+      const box_length = op.Box.length(Bytes('tooManyBools'))[0]
+      expect(box_length).toBe(4125)
+      const bytes1 = op.Box.extract(Bytes('tooManyBools'), 0, MAX_BYTES_SIZE)
+      const bytes2 = op.Box.extract(Bytes('tooManyBools'), MAX_BYTES_SIZE, box_length - MAX_BYTES_SIZE)
+      const allBytes = concatUint8Arrays(asUint8Array(bytes1), asUint8Array(bytes2))
+      expect(allBytes.length).toBe(4125)
+
+      const tooManyBools = Array(33_000).fill(false)
+      tooManyBools[0] = true
+      tooManyBools[42] = true
+      tooManyBools[500] = true
+      tooManyBools[32_999] = true
+
+      const expectedBytes = new Uint8Array(
+        Array.from({ length: Math.ceil(tooManyBools.length / 8) }, (_, index) =>
+          tooManyBools
+            .slice(index * 8, index * 8 + 8)
+            .reverse()
+            .reduce((sum, val, bit) => sum + (val ? 1 << bit : 0), 0),
+        ),
+      )
+
+      expect(allBytes).toEqual(expectedBytes)
     })
   })
 

@@ -23,7 +23,7 @@ import {
 import { lazyContext } from '../context-helpers/internal-context'
 import { AvmError, InternalError } from '../errors'
 import type { DeliberateAny, Mutable } from '../typescript-helpers'
-import { asBigInt, asBytes, asUint64, asUint64Cls, asUint8Array, conactUint8Arrays } from '../util'
+import { asBigInt, asBytes, asUint64, asUint64Cls, asUint8Array, concatUint8Arrays } from '../util'
 import { BytesBackedCls, Uint64BackedCls } from './base'
 import type { StubUint64Compat } from './primitives'
 import { Bytes, BytesCls, Uint64Cls } from './primitives'
@@ -321,7 +321,7 @@ export const checksumFromPublicKey = (pk: Uint8Array): Uint8Array => {
 
 /** @internal */
 export const getApplicationAddress = (appId: StubUint64Compat): AccountType => {
-  const toBeSigned = conactUint8Arrays(asUint8Array(APP_ID_PREFIX), encodingUtil.bigIntToUint8Array(asBigInt(appId), 8))
+  const toBeSigned = concatUint8Arrays(asUint8Array(APP_ID_PREFIX), encodingUtil.bigIntToUint8Array(asBigInt(appId), 8))
   const appIdHash = js_sha512.sha512_256.array(toBeSigned)
   const publicKey = Uint8Array.from(appIdHash)
   const address = encodeAddress(publicKey)
@@ -331,7 +331,7 @@ export const getApplicationAddress = (appId: StubUint64Compat): AccountType => {
 /** @internal */
 export const encodeAddress = (address: Uint8Array): string => {
   const checksum = checksumFromPublicKey(address)
-  return encodingUtil.uint8ArrayToBase32(conactUint8Arrays(address, checksum)).slice(0, ALGORAND_ADDRESS_LENGTH)
+  return encodingUtil.uint8ArrayToBase32(concatUint8Arrays(address, checksum)).slice(0, ALGORAND_ADDRESS_LENGTH)
 }
 
 /** @internal */

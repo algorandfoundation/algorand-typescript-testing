@@ -31,7 +31,7 @@ describe('Simple voting contract', () => {
           .execute(contract.approvalProgram)
 
         expect(result).toEqual(1)
-        expect(contract.topic.value).toBe(topic)
+        expect(contract.topic.value).toEqual(topic)
       })
     })
   })

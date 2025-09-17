@@ -15,7 +15,6 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | BigUint                      | Native              |
 | Box                          | Emulated            |
 | BoxMap                       | Emulated            |
-| BoxRef                       | Emulated            |
 | Bytes                        | Native              |
 | CompiledContract             | Mockable            |
 | CompiledLogicSig             | Mockable            |
