@@ -197,7 +197,7 @@ export const GTxn: typeof op.GTxn = {
   lastLog(t: StubUint64Compat): bytes {
     return lazyContext.activeGroup.getApplicationCallTransaction(asUint64(t)).lastLog
   },
-  stateProofPk(t: StubUint64Compat): bytes {
+  stateProofPk(t: StubUint64Compat): bytes<64> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction(asUint64(t)).stateProofKey
   },
   approvalProgramPages(a: StubUint64Compat, b: StubUint64Compat): bytes {
@@ -211,6 +211,9 @@ export const GTxn: typeof op.GTxn = {
   },
   numClearStateProgramPages(t: StubUint64Compat): uint64 {
     return lazyContext.activeGroup.getApplicationCallTransaction(asUint64(t)).numClearStateProgramPages
+  },
+  rejectVersion: function (a: uint64): uint64 {
+    return lazyContext.activeGroup.getApplicationCallTransaction(asUint64(a)).rejectVersion
   },
 }
 

@@ -462,7 +462,7 @@ export const Txn: typeof op.Txn = {
   /**
    * 64 byte state proof public key
    */
-  get stateProofPk(): bytes {
+  get stateProofPk(): bytes<64> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().stateProofKey
   },
 
@@ -492,5 +492,8 @@ export const Txn: typeof op.Txn = {
    */
   get numClearStateProgramPages(): uint64 {
     return lazyContext.activeGroup.getApplicationCallTransaction().numClearStateProgramPages
+  },
+  get rejectVersion(): uint64 {
+    return lazyContext.activeGroup.getApplicationCallTransaction().rejectVersion
   },
 }
