@@ -13,7 +13,7 @@ import type {
   Uint64,
   Uint8,
 } from '@algorandfoundation/algorand-typescript/arc4'
-import { interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class PrimitiveOpsContract extends arc4.Contract {
   @arc4.abimethod()
@@ -422,9 +422,9 @@ export class PrimitiveOpsContract extends arc4.Contract {
     n: bytes,
   ) {
     const d_biguint = BigUint(d)
-    const arc4_k = interpretAsArc4<StaticArray<Uint8, 3>>(k)
-    const arc4_m = interpretAsArc4<DynamicArray<Uint16>>(m)
-    const arc4_n = interpretAsArc4<Tuple<[Uint32, Uint64, Str]>>(n)
+    const arc4_k = convertBytes<StaticArray<Uint8, 3>>(k, { strategy: 'unsafe-cast' })
+    const arc4_m = convertBytes<DynamicArray<Uint16>>(m, { strategy: 'unsafe-cast' })
+    const arc4_n = convertBytes<Tuple<[Uint32, Uint64, Str]>>(n, { strategy: 'unsafe-cast' })
     log(a, b, c, d_biguint, e, f, g, h, i, j, arc4_k, arc4_m, arc4_n)
   }
 }

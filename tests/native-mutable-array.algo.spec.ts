@@ -14,7 +14,7 @@ import {
   Uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { decodeArc4, encodeArc4, interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, decodeArc4, encodeArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, it } from 'vitest'
 
 class TestContract extends Contract {
@@ -309,7 +309,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable uint64 array', () => {
       const arr: uint64[] = [10, 20, 30, 40]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Uint64>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<uint64[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -322,7 +322,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable string array', () => {
       const arr: string[] = ['hello', 'world', 'test', 'mutable']
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Str>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Str>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<string[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -335,7 +335,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable boolean array', () => {
       const arr: boolean[] = [true, false, true, false, true, true, false, true, false, true]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Bool>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Bool>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<boolean[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -348,7 +348,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable bytes array', () => {
       const arr: bytes[] = [Bytes('hello'), Bytes('world'), Bytes('test'), Bytes('data')]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicBytes>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.DynamicBytes>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<bytes[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -361,7 +361,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable nested array', () => {
       const arr: uint64[][] = [[1, 2], [3, 4, 5], [6], [7, 8, 9, 10]]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.DynamicArray<arc4.Uint64>>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.DynamicArray<arc4.Uint64>>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<uint64[][]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -381,7 +381,7 @@ describe('native mutable array', () => {
         new FixedArray<uint64, 2>(5, 6),
       ]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.StaticArray<arc4.Uint64, 2>>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.StaticArray<arc4.Uint64, 2>>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<FixedArray<uint64, 2>[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -401,7 +401,7 @@ describe('native mutable array', () => {
         [30, 'third'],
       ]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Tuple<[arc4.Uint64, arc4.Str]>>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Tuple<[arc4.Uint64, arc4.Str]>>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<[uint64, string][]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -421,7 +421,7 @@ describe('native mutable array', () => {
       ]
       class PointStruct extends arc4.Struct<{ x: arc4.Uint64; y: arc4.Uint64 }> {}
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<PointStruct>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<PointStruct>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<Point[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -435,7 +435,7 @@ describe('native mutable array', () => {
     it('should decode and encode mutable arc4 array', () => {
       const arr: arc4.Uint64[] = [new arc4.Uint64(100), new arc4.Uint64(200), new arc4.Uint64(300), new arc4.Uint64(400)]
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Uint64>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<arc4.Uint64[]>(encoded)
 
       assertMatch(interpreted.length, arr.length)
@@ -448,7 +448,7 @@ describe('native mutable array', () => {
     it('should decode and encode empty mutable array', () => {
       const arr: uint64[] = []
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Uint64>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<uint64[]>(encoded)
 
       assertMatch(interpreted.length, 0)
@@ -463,7 +463,7 @@ describe('native mutable array', () => {
       arr[0] = 10
 
       const encoded = encodeArc4(arr)
-      const interpreted = interpretAsArc4<arc4.DynamicArray<arc4.Uint64>>(encoded)
+      const interpreted = convertBytes<arc4.DynamicArray<arc4.Uint64>>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<uint64[]>(encoded)
 
       const expected = [10, 2, 3, 4, 5]

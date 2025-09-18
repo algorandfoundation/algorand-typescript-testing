@@ -42,7 +42,7 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | encodeArc4                   | Native              |
 | ensureBudget                 | Emulated            |
 | err                          | Native              |
-| interpretAsArc4              | Native              |
+| convertBytes                 | Native              |
 | itxnCompose                  | Emulated            |
 | log                          | Emulated            |
 | logicSig                     | Emulated            |

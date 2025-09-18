@@ -5,9 +5,9 @@ import type { Uint16 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
   ARC4Encoded,
   Bool,
+  convertBytes,
   DynamicArray,
   DynamicBytes,
-  interpretAsArc4,
   StaticArray,
   Str,
   Tuple,
@@ -89,7 +89,7 @@ describe('Box', () => {
     {
       value: new Str('Test1'),
       newValue: new Str('hello'),
-      emptyValue: interpretAsArc4<Str>(Bytes('')),
+      emptyValue: convertBytes<Str>(Bytes(''), { strategy: 'unsafe-cast' }),
       withBoxContext: (test: (boxMap: Box<Str>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = Box<Str>({ key })
@@ -100,7 +100,7 @@ describe('Box', () => {
     {
       value: new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200)),
       newValue: new DynamicArray(new arc4.Uint64(200), new arc4.Uint64(300)),
-      emptyValue: interpretAsArc4<DynamicArray<arc4.Uint64>>(Bytes('')),
+      emptyValue: convertBytes<DynamicArray<arc4.Uint64>>(Bytes(''), { strategy: 'unsafe-cast' }),
       withBoxContext: (test: (boxMap: Box<DynamicArray<arc4.Uint64>>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = Box<DynamicArray<arc4.Uint64>>({ key })

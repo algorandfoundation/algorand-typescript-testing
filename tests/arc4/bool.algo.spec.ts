@@ -1,6 +1,6 @@
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Bool, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { Bool, convertBytes } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
 import { asUint8Array } from '../../src/util'
@@ -34,7 +34,7 @@ describe('arc4.Bool', async () => {
     'create Bool from bytes',
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_bytes', value)
-      const result = interpretAsArc4<Bool>(Bytes(value))
+      const result = convertBytes<Bool>(Bytes(value), { strategy: 'unsafe-cast' })
       expect(result.native).toEqual(avmResult)
     },
   )
@@ -44,7 +44,7 @@ describe('arc4.Bool', async () => {
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       const paddedValue = new Uint8Array([...asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX), ...value])
       const avmResult = await getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)
-      const result = interpretAsArc4<Bool>(Bytes(paddedValue), 'log')
+      const result = convertBytes<Bool>(Bytes(paddedValue), { prefix: 'log', strategy: 'unsafe-cast' })
       expect(result.native).toEqual(avmResult)
     },
   )
@@ -60,7 +60,9 @@ describe('arc4.Bool', async () => {
       await expect(() => getAvmResult({ appClient }, 'verify_bool_from_log', paddedValue)).rejects.toThrowError(
         new RegExp('(has valid prefix)|(extraction start \\d+ is beyond length)'),
       )
-      expect(() => interpretAsArc4<Bool>(Bytes(paddedValue), 'log')).toThrowError('ABI return prefix not found')
+      expect(() => convertBytes<Bool>(Bytes(paddedValue), { prefix: 'log', strategy: 'unsafe-cast' })).toThrowError(
+        'ABI return prefix not found',
+      )
     },
   )
 })

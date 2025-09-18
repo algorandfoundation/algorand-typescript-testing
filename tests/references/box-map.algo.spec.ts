@@ -5,9 +5,9 @@ import type { StaticArray, Uint16 } from '@algorandfoundation/algorand-typescrip
 import {
   ARC4Encoded,
   Bool,
+  convertBytes,
   DynamicArray,
   DynamicBytes,
-  interpretAsArc4,
   Str,
   Struct,
   Uint8,
@@ -91,7 +91,7 @@ describe('BoxMap', () => {
       key: Uint64(456),
       value: new Str('Test1'),
       newValue: new Str('hello'),
-      emptyValue: interpretAsArc4<Str>(Bytes('')),
+      emptyValue: convertBytes<Str>(Bytes(''), { strategy: 'unsafe-cast' }),
       withBoxContext: (test: (boxMap: BoxMap<uint64, Str>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = BoxMap<uint64, Str>({ keyPrefix })
@@ -103,7 +103,7 @@ describe('BoxMap', () => {
       key: new Str('jkl'),
       value: new DynamicArray(new arc4.Uint64(100), new arc4.Uint64(200)),
       newValue: new DynamicArray(new arc4.Uint64(200), new arc4.Uint64(300)),
-      emptyValue: interpretAsArc4<DynamicArray<arc4.Uint64>>(Bytes('')),
+      emptyValue: convertBytes<DynamicArray<arc4.Uint64>>(Bytes(''), { strategy: 'unsafe-cast' }),
       withBoxContext: (test: (boxMap: BoxMap<Str, DynamicArray<arc4.Uint64>>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = BoxMap<Str, DynamicArray<arc4.Uint64>>({ keyPrefix })
@@ -139,7 +139,7 @@ describe('BoxMap', () => {
       key: new Str('OTest'),
       value: { a: 'hello', b: Bytes('world'), c: true } as unknown as MyStruct,
       newValue: { a: 'world', b: Bytes('hello'), c: false } as unknown as MyStruct,
-      emptyValue: interpretAsArc4<MyStruct>(Bytes('')),
+      emptyValue: convertBytes<MyStruct>(Bytes(''), { strategy: 'unsafe-cast' }),
       withBoxContext: (test: (boxMap: BoxMap<Str, MyStruct>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {
           const boxMap = BoxMap<Str, MyStruct>({ keyPrefix })

@@ -13,7 +13,7 @@ import {
   LocalState,
 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { decodeArc4, encodeArc4, interpretAsArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, decodeArc4, encodeArc4, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { describe, expect, it } from 'vitest'
 
 type SimpleObj = Readonly<{
@@ -602,7 +602,7 @@ describe('native readonly object', () => {
       }> {}
       const obj: SimpleObj = { a: 1, b: true, c: 'hello', d: Bytes('world') }
       const encoded = encodeArc4(obj)
-      const interpreted = interpretAsArc4<SimpleObjStruct>(encoded)
+      const interpreted = convertBytes<SimpleObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<SimpleObj>(encoded)
 
       assertMatch(interpreted.a.asUint64(), obj.a)
@@ -633,7 +633,7 @@ describe('native readonly object', () => {
       }
 
       const encoded = encodeArc4(obj)
-      const interpreted = interpretAsArc4<NestedObjStruct>(encoded)
+      const interpreted = convertBytes<NestedObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<NestedObj>(encoded)
 
       assertMatch(interpreted.a.asUint64(), obj.a)
@@ -661,7 +661,7 @@ describe('native readonly object', () => {
       }
 
       const encoded = encodeArc4(obj)
-      const interpreted = interpretAsArc4<ArrayObjStruct>(encoded)
+      const interpreted = convertBytes<ArrayObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<ArrayObj>(encoded)
 
       assertMatch(interpreted.a.asUint64(), obj.a)
@@ -690,7 +690,7 @@ describe('native readonly object', () => {
       }
 
       const encoded = encodeArc4(obj)
-      const interpreted = interpretAsArc4<FixedArrayObjStruct>(encoded)
+      const interpreted = convertBytes<FixedArrayObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<FixedArrayReadonlyObj>(encoded)
 
       assertMatch(interpreted.a.asUint64(), obj.a)
@@ -719,7 +719,7 @@ describe('native readonly object', () => {
       }
 
       const encoded = encodeArc4(obj)
-      const interpreted = interpretAsArc4<TupleObjStruct>(encoded)
+      const interpreted = convertBytes<TupleObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<TupleObj>(encoded)
 
       assertMatch(interpreted.a.asUint64(), obj.a)
@@ -747,7 +747,7 @@ describe('native readonly object', () => {
       }
 
       const encoded = encodeArc4(obj)
-      const interpreted = interpretAsArc4<Arc4PrimitiveObjStruct>(encoded)
+      const interpreted = convertBytes<Arc4PrimitiveObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<Arc4PrimitiveReadonlyObj>(encoded)
 
       assertMatch(interpreted.a, obj.a)
@@ -784,7 +784,7 @@ describe('native readonly object', () => {
       }
 
       const encoded = encodeArc4(obj)
-      const interpreted = interpretAsArc4<DeepNestedObjStruct>(encoded)
+      const interpreted = convertBytes<DeepNestedObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<DeepNestedReadonlyObj>(encoded)
 
       assertMatch(interpreted.a.asUint64(), obj.a)

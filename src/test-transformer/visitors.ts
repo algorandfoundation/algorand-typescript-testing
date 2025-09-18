@@ -506,17 +506,7 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     : (node.expression as ts.Identifier)
   const functionName = tryGetAlgoTsSymbolName(identityExpression, helper)
   if (functionName === undefined) return undefined
-  const stubbedFunctionNames = [
-    'interpretAsArc4',
-    'decodeArc4',
-    'encodeArc4',
-    'emit',
-    'methodSelector',
-    'sizeOf',
-    'abiCall',
-    'clone',
-    'Bytes',
-  ]
+  const stubbedFunctionNames = ['convertBytes', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'sizeOf', 'abiCall', 'clone', 'Bytes']
 
   if (stubbedFunctionNames.includes(functionName)) {
     if (ts.isPropertyAccessExpression(node.expression)) {

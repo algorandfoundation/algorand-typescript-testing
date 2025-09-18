@@ -1,7 +1,7 @@
 import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Account, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { Address, interpretAsArc4 } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, convertBytes } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect, test } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
 import { encodeAddress } from '../../src/impl/reference'
@@ -71,14 +71,14 @@ describe('arc4.Address', () => {
 
   test.each(testData)('fromBytes method', (value) => {
     const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString, {})
-    const result = interpretAsArc4<Address>(value)
+    const result = convertBytes<Address>(value, { strategy: 'unsafe-cast' })
     expect(result.bytes).toEqual(sdkResult)
   })
 
   test.each(testData)('fromLog method', (value) => {
     const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString, {})
     const paddedValue = Bytes([...asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX), ...asUint8Array(value)])
-    const result = interpretAsArc4<Address>(paddedValue, 'log')
+    const result = convertBytes<Address>(paddedValue, { prefix: 'log', strategy: 'unsafe-cast' })
     expect(result.bytes).toEqual(sdkResult)
   })
 })

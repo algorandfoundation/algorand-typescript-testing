@@ -1,7 +1,7 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { arc4, BigUint, clone, emit } from '@algorandfoundation/algorand-typescript'
 import type { Bool, UFixed } from '@algorandfoundation/algorand-typescript/arc4'
-import { Byte, Contract, interpretAsArc4, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
+import { Byte, Contract, convertBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class Arc4PrimitiveOpsContract extends Contract {
   @arc4.abimethod()
@@ -261,47 +261,47 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_uintn_from_bytes(a: bytes): Uint<32> {
-    return interpretAsArc4<Uint<32>>(a)
+    return convertBytes<Uint<32>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_biguintn_from_bytes(a: bytes): Uint<256> {
-    return interpretAsArc4<Uint<256>>(a)
+    return convertBytes<Uint<256>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_byte_from_bytes(a: bytes): Byte {
-    return interpretAsArc4<Byte>(a)
+    return convertBytes<Byte>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_uintn_from_log(a: bytes): Uint<32> {
-    return interpretAsArc4<Uint<32>>(a, 'log')
+    return convertBytes<Uint<32>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_biguintn_from_log(a: bytes): Uint<256> {
-    return interpretAsArc4<Uint<256>>(a, 'log')
+    return convertBytes<Uint<256>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_biguintn_as_uint64(a: bytes): uint64 {
-    return interpretAsArc4<Uint<256>>(a).asUint64()
+    return convertBytes<Uint<256>>(a, { strategy: 'unsafe-cast' }).asUint64()
   }
 
   @arc4.abimethod()
   public verify_biguintn_as_biguint(a: bytes): biguint {
-    return interpretAsArc4<Uint<256>>(a).asBigUint()
+    return convertBytes<Uint<256>>(a, { strategy: 'unsafe-cast' }).asBigUint()
   }
 
   @arc4.abimethod()
   public verify_uintn64_as_uint64(a: bytes): uint64 {
-    return interpretAsArc4<arc4.Uint64>(a).asUint64()
+    return convertBytes<arc4.Uint64>(a, { strategy: 'unsafe-cast' }).asUint64()
   }
 
   @arc4.abimethod()
   public verify_uintn64_as_biguint(a: bytes): biguint {
-    return interpretAsArc4<arc4.Uint64>(a).asBigUint()
+    return convertBytes<arc4.Uint64>(a, { strategy: 'unsafe-cast' }).asBigUint()
   }
 
   @arc4.abimethod()
   public verify_byte_from_log(a: bytes): Byte {
-    return interpretAsArc4<Byte>(a, 'log')
+    return convertBytes<Byte>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_ufixed_bytes(a: UFixed<32, 8>): bytes {
@@ -313,19 +313,19 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_ufixed_from_bytes(a: bytes): UFixed<32, 8> {
-    return interpretAsArc4<UFixed<32, 8>>(a)
+    return convertBytes<UFixed<32, 8>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_bigufixed_from_bytes(a: bytes): UFixed<256, 16> {
-    return interpretAsArc4<UFixed<256, 16>>(a)
+    return convertBytes<UFixed<256, 16>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_ufixed_from_log(a: bytes): UFixed<32, 8> {
-    return interpretAsArc4<UFixed<32, 8>>(a, 'log')
+    return convertBytes<UFixed<32, 8>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_bigufixed_from_log(a: bytes): UFixed<256, 16> {
-    return interpretAsArc4<UFixed<256, 16>>(a, 'log')
+    return convertBytes<UFixed<256, 16>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_string_init(a: string): Str {
@@ -348,11 +348,11 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_string_from_bytes(a: bytes): Str {
-    return interpretAsArc4<Str>(a)
+    return convertBytes<Str>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_string_from_log(a: bytes): Str {
-    return interpretAsArc4<Str>(a, 'log')
+    return convertBytes<Str>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_bool_bytes(a: Bool): bytes {
@@ -360,11 +360,11 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_bool_from_bytes(a: bytes): Bool {
-    return interpretAsArc4<Bool>(a)
+    return convertBytes<Bool>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_bool_from_log(a: bytes): Bool {
-    return interpretAsArc4<Bool>(a, 'log')
+    return convertBytes<Bool>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
 
   // TODO: recompile when puya-ts is updated
@@ -387,9 +387,9 @@ export class Arc4PrimitiveOpsContract extends Contract {
     s: bytes,
     t: bytes,
   ): void {
-    const arc4_r = interpretAsArc4<arc4.StaticArray<arc4.Uint8, 3>>(r)
-    const arc4_s = interpretAsArc4<arc4.DynamicArray<arc4.Uint16>>(s)
-    const arc4_t = interpretAsArc4<arc4.Tuple<[arc4.Uint32, arc4.Uint64, arc4.Str]>>(t)
+    const arc4_r = convertBytes<arc4.StaticArray<arc4.Uint8, 3>>(r, { strategy: 'unsafe-cast' })
+    const arc4_s = convertBytes<arc4.DynamicArray<arc4.Uint16>>(s, { strategy: 'unsafe-cast' })
+    const arc4_t = convertBytes<arc4.Tuple<[arc4.Uint32, arc4.Uint64, arc4.Str]>>(t, { strategy: 'unsafe-cast' })
 
     emit(new SwappedArc4({ m, n, o, p, q, r: clone(arc4_r), s: clone(arc4_s), t: clone(arc4_t) }))
     emit('Swapped', a, b, c, d, e, f, g, h, m, n, o, p, q, arc4_r, arc4_s, arc4_t)

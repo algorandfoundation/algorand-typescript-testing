@@ -4,8 +4,8 @@ import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-te
 import {
   Address,
   Bool,
+  convertBytes,
   DynamicArray,
-  interpretAsArc4,
   StaticArray,
   Str,
   Struct,
@@ -43,7 +43,7 @@ const addressDynamicArray = {
     return isEmpty ? new DynamicArray<Address>() : new DynamicArray<Address>(...this.abiValues())
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<Address>>(asBytes(value))
+    return convertBytes<DynamicArray<Address>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -67,7 +67,7 @@ const boolDynamicArray = {
     return isEmpty ? new DynamicArray<Bool>() : new DynamicArray<Bool>(...this.abiValues())
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<Bool>>(asBytes(value))
+    return convertBytes<DynamicArray<Bool>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -91,7 +91,7 @@ const uint256DynamicArray = {
     return isEmpty ? new DynamicArray<Uint<256>>() : new DynamicArray<Uint<256>>(...this.abiValues())
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<Uint<256>>>(asBytes(value))
+    return convertBytes<DynamicArray<Uint<256>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -126,7 +126,7 @@ const ufixedDynamicArray = {
     return isEmpty ? new DynamicArray<UFixed<256, 16>>() : new DynamicArray<UFixed<256, 16>>(...this.abiValues())
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<UFixed<256, 16>>>(asBytes(value))
+    return convertBytes<DynamicArray<UFixed<256, 16>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -161,7 +161,7 @@ const stringDynamicArray = {
     return isEmpty ? new DynamicArray<Str>() : new DynamicArray<Str>(...this.abiValues())
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<Str>>(asBytes(value))
+    return convertBytes<DynamicArray<Str>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -187,7 +187,7 @@ const boolDynamicArrayOfArray = {
       : new DynamicArray<DynamicArray<Bool>>(...this.abiValues().map((a) => new DynamicArray<Bool>(...a)))
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<DynamicArray<Bool>>>(asBytes(value))
+    return convertBytes<DynamicArray<DynamicArray<Bool>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -213,7 +213,7 @@ const addressDynamicArrayOfArray = {
       : new DynamicArray<DynamicArray<Address>>(...this.abiValues().map((a) => new DynamicArray<Address>(...a)))
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<DynamicArray<Address>>>(asBytes(value))
+    return convertBytes<DynamicArray<DynamicArray<Address>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -239,7 +239,7 @@ const uint256DynamicArrayOfArray = {
       : new DynamicArray<DynamicArray<Uint<256>>>(...this.abiValues().map((a) => new DynamicArray<Uint<256>>(...a)))
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<DynamicArray<Uint<256>>>>(asBytes(value))
+    return convertBytes<DynamicArray<DynamicArray<Uint<256>>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -267,7 +267,7 @@ const uint256DynamicArrayOfStaticArray = {
         )
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<StaticArray<Uint<256>, 10>>>(asBytes(value))
+    return convertBytes<DynamicArray<StaticArray<Uint<256>, 10>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -293,7 +293,7 @@ const stringDynamicArrayOfArray = {
       : new DynamicArray<DynamicArray<Str>>(...this.abiValues().map((a) => new DynamicArray<Str>(...a)))
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<DynamicArray<Str>>>(asBytes(value))
+    return convertBytes<DynamicArray<DynamicArray<Str>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -324,7 +324,7 @@ const stringDynamicArrayOfArrayOfArray = {
       : new DynamicArray<DynamicArray<DynamicArray<Str>>>(...this.abiValues().map((x) => new DynamicArray<DynamicArray<Str>>(...x)))
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<DynamicArray<DynamicArray<Str>>>>(asBytes(value))
+    return convertBytes<DynamicArray<DynamicArray<DynamicArray<Str>>>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -376,9 +376,9 @@ const tupleDynamicArray = {
         )
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<
+    return convertBytes<
       DynamicArray<Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, Uint<256>, Address]>, Bool, StaticArray<Uint<256>, 3>]>>
-    >(asBytes(value))
+    >(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())
@@ -440,7 +440,7 @@ const structDynamicArray = {
     return isEmpty ? new DynamicArray<Swapped>() : new DynamicArray<Swapped>(...this.abiValues())
   },
   create(value: StubBytesCompat) {
-    return interpretAsArc4<DynamicArray<Swapped>>(asBytes(value))
+    return convertBytes<DynamicArray<Swapped>>(asBytes(value), { strategy: 'unsafe-cast' })
   },
   concat() {
     return this.array().concat(this.array())

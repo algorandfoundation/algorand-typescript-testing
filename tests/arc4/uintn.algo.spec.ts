@@ -2,7 +2,7 @@ import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { arc4, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type { BitSize } from '@algorandfoundation/algorand-typescript/arc4'
-import { interpretAsArc4, Uint, Uint16, Uint256, Uint32, Uint8 } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, Uint, Uint16, Uint256, Uint32, Uint8 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { afterEach, beforeAll, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_UINT512, MAX_UINT64 } from '../../src/constants'
@@ -171,7 +171,7 @@ describe('arc4.Uint', async () => {
   ])('create Uint<32> from bytes', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_uintn_from_bytes', value)
 
-    const result = interpretAsArc4<Uint32>(Bytes(value))
+    const result = convertBytes<Uint32>(Bytes(value), { strategy: 'unsafe-cast' })
 
     expect(result.asUint64()).toEqual(avmResult)
   })
@@ -186,7 +186,7 @@ describe('arc4.Uint', async () => {
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       await expect(getAvmResult({ appClient }, 'verify_uintn_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(32))
 
-      const result = interpretAsArc4<Uint32>(Bytes(value))
+      const result = convertBytes<Uint32>(Bytes(value), { strategy: 'unsafe-cast' })
       expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
@@ -198,7 +198,7 @@ describe('arc4.Uint', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 256n - 1n),
   ])('create Uint<256> from bytes', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
     const avmResult = await getAvmResult({ appClient }, 'verify_biguintn_from_bytes', value)
-    const result = interpretAsArc4<Uint256>(Bytes(value))
+    const result = convertBytes<Uint256>(Bytes(value), { strategy: 'unsafe-cast' })
 
     expect(result.asBigUint()).toEqual(avmResult)
   })
@@ -213,7 +213,7 @@ describe('arc4.Uint', async () => {
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       await expect(getAvmResult({ appClient }, 'verify_biguintn_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(256))
 
-      const result = interpretAsArc4<Uint256>(Bytes(value))
+      const result = convertBytes<Uint256>(Bytes(value), { strategy: 'unsafe-cast' })
       expect(result.asBigUint()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
@@ -227,7 +227,7 @@ describe('arc4.Uint', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value as Uint8Array)))
     const avmResult = await getAvmResult({ appClient }, 'verify_uintn_from_log', logValue)
 
-    const result = interpretAsArc4<Uint<32>>(Bytes(logValue), 'log')
+    const result = convertBytes<Uint<32>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
     expect(BigInt(avmResult as number)).toEqual(expected)
     expect(result.asUint64()).toEqual(expected)
   })
@@ -240,7 +240,9 @@ describe('arc4.Uint', async () => {
     async ([value, prefix], { appClientArc4PrimitiveOpsContract: appClient }) => {
       const logValue = asUint8Array(Bytes(prefix as Uint8Array).concat(Bytes(value as bytes)))
       await expect(() => getAvmResult({ appClient }, 'verify_uintn_from_log', logValue)).rejects.toThrowError('has valid prefix')
-      expect(() => interpretAsArc4<Uint<32>>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
+      expect(() => convertBytes<Uint<32>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })).toThrowError(
+        'ABI return prefix not found',
+      )
     },
   )
 
@@ -255,7 +257,7 @@ describe('arc4.Uint', async () => {
       const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
       await expect(() => getAvmResult({ appClient }, 'verify_uintn_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError(32))
 
-      const result = interpretAsArc4<Uint<32>>(Bytes(logValue), 'log')
+      const result = convertBytes<Uint<32>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
       expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
@@ -269,7 +271,7 @@ describe('arc4.Uint', async () => {
     const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value as Uint8Array)))
     const avmResult = await getAvmResult({ appClient }, 'verify_biguintn_from_log', logValue)
 
-    const result = interpretAsArc4<Uint<256>>(Bytes(logValue), 'log')
+    const result = convertBytes<Uint<256>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
     expect(avmResult).toEqual(expected)
     expect(result.asBigUint()).toEqual(expected)
   })
@@ -282,7 +284,9 @@ describe('arc4.Uint', async () => {
     async ([value, prefix], { appClientArc4PrimitiveOpsContract: appClient }) => {
       const logValue = asUint8Array(Bytes(prefix as Uint8Array).concat(Bytes(value as bytes)))
       await expect(() => getAvmResult({ appClient }, 'verify_biguintn_from_log', logValue)).rejects.toThrowError('has valid prefix')
-      expect(() => interpretAsArc4<Uint<256>>(Bytes(logValue), 'log')).toThrowError('ABI return prefix not found')
+      expect(() => convertBytes<Uint<256>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })).toThrowError(
+        'ABI return prefix not found',
+      )
     },
   )
 
@@ -299,7 +303,7 @@ describe('arc4.Uint', async () => {
         invalidBytesLengthError(256),
       )
 
-      const result = interpretAsArc4<Uint<256>>(Bytes(logValue), 'log')
+      const result = convertBytes<Uint<256>>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
       expect(result.asBigUint()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
     },
   )
@@ -308,7 +312,7 @@ describe('arc4.Uint', async () => {
     'get uint64 from arc4 big uintn',
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       const avm_result = await getAvmResult({ appClient }, 'verify_biguintn_as_uint64', value)
-      const result = interpretAsArc4<Uint256>(Bytes(value)).asUint64()
+      const result = convertBytes<Uint256>(Bytes(value), { strategy: 'unsafe-cast' }).asUint64()
       expect(avm_result).toEqual(result)
     },
   )
@@ -317,7 +321,9 @@ describe('arc4.Uint', async () => {
     'should throw error when getting uint64 from arc4 big uintn that overflows uint64',
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       await expect(() => getAvmResult({ appClient }, 'verify_biguintn_as_uint64', value)).rejects.toThrowError('overflow')
-      expect(() => interpretAsArc4<Uint256>(Bytes(value)).asUint64()).toThrowError('value too large to fit in uint64')
+      expect(() => convertBytes<Uint256>(Bytes(value), { strategy: 'unsafe-cast' }).asUint64()).toThrowError(
+        'value too large to fit in uint64',
+      )
     },
   )
 
@@ -328,7 +334,7 @@ describe('arc4.Uint', async () => {
     encodingUtil.bigIntToUint8Array(2n ** 256n - 1n, 32),
   ])('get biguint from arc4 big uintn', async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
     const avm_result = await getAvmResult({ appClient }, 'verify_biguintn_as_biguint', value)
-    const result = interpretAsArc4<Uint256>(Bytes(value)).asBigUint()
+    const result = convertBytes<Uint256>(Bytes(value), { strategy: 'unsafe-cast' }).asBigUint()
     expect(avm_result).toEqual(result)
   })
 
@@ -336,7 +342,7 @@ describe('arc4.Uint', async () => {
     'get uint64 from arc4 uintn',
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       const avm_result = await getAvmResult({ appClient }, 'verify_uintn64_as_uint64', value)
-      const result = interpretAsArc4<arc4.Uint64>(Bytes(value)).asUint64()
+      const result = convertBytes<arc4.Uint64>(Bytes(value), { strategy: 'unsafe-cast' }).asUint64()
       expect(avm_result).toEqual(result)
     },
   )
@@ -345,7 +351,7 @@ describe('arc4.Uint', async () => {
     'get biguint from arc4 uintn64',
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       const avm_result = await getAvmResult({ appClient }, 'verify_uintn64_as_biguint', value)
-      const result = interpretAsArc4<arc4.Uint64>(Bytes(value)).asBigUint()
+      const result = convertBytes<arc4.Uint64>(Bytes(value), { strategy: 'unsafe-cast' }).asBigUint()
       expect(avm_result).toEqual(result)
     },
   )
