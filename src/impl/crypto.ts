@@ -147,6 +147,11 @@ export const mimc = (_c: MimcConfigurations, _a: StubBytesCompat): bytes => {
   throw new NotImplementedError('mimc')
 }
 
+/** @internal */
+export const falconVerify = (_a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): boolean => {
+  throw new NotImplementedError('falconVerify')
+}
+
 const curveMap = {
   [Ecdsa.Secp256k1]: 'secp256k1',
   [Ecdsa.Secp256r1]: 'p256',

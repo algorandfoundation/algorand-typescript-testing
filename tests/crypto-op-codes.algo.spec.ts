@@ -30,6 +30,7 @@ vi.mock('../src/impl/crypto', async (importOriginal) => {
     ...mod,
     vrfVerify: vi.fn(mod.vrfVerify),
     mimc: vi.fn(mod.mimc),
+    falconVerify: vi.fn(mod.falconVerify),
   }
 })
 
@@ -360,6 +361,27 @@ describe('crypto op codes', async () => {
       expect(() => op.EllipticCurve.subgroupCheck(Ec.BN254g2, Bytes(''))).toThrow(
         'EllipticCurve.subgroupCheck is not available in test context',
       )
+    })
+  })
+
+  describe('falconVerify', async () => {
+    const a = Bytes.fromHex('528b9e23d93d0e020a119d7ba213f6beb1c1f3495a217166ecd20f5a70e7c2d7')
+    const b = op.bzero(1232).toFixed({ length: 1232 })
+
+    const c = op.bzero(1793).toFixed({ length: 1793 })
+
+    test('should throw not available error', async () => {
+      const mockedFalconVerify = op.falconVerify as Mock<typeof op.falconVerify>
+      // restore to original stub implemention which should throw not available error
+      mockedFalconVerify.mockRestore()
+      expect(() => op.falconVerify(a, b, c)).toThrow('falconVerify is not available in test context')
+    })
+
+    test('should return mocked result', () => {
+      const mockedFalconVerify = op.falconVerify as Mock<typeof op.falconVerify>
+      mockedFalconVerify.mockReturnValue(true)
+      const result = op.falconVerify(a, b, c)
+      expect(result).toBe(true)
     })
   })
 })
