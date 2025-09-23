@@ -243,7 +243,7 @@ export const GITxn: typeof op.GITxn = {
   lastLog: function (t: StubUint64Compat): bytes {
     return getApplicationCallInnerTxn(t).lastLog
   },
-  stateProofPk: function (t: StubUint64Compat): bytes {
+  stateProofPk: function (t: StubUint64Compat): bytes<64> {
     return getKeyRegistrationInnerTxn(t).stateProofKey
   },
   approvalProgramPages: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
@@ -257,6 +257,9 @@ export const GITxn: typeof op.GITxn = {
   },
   numClearStateProgramPages: function (t: StubUint64Compat): uint64 {
     return getApplicationCallInnerTxn(t).numClearStateProgramPages
+  },
+  rejectVersion: function (t: StubUint64Compat): uint64 {
+    return getApplicationCallInnerTxn(t).rejectVersion
   },
 }
 /** @internal */
@@ -643,7 +646,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 64 byte state proof public key
    */
-  get stateProofPk(): bytes {
+  get stateProofPk(): bytes<64> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn().stateProofKey
   },
   /**
@@ -669,6 +672,9 @@ export const ITxn: typeof op.ITxn = {
    */
   get numClearStateProgramPages(): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numClearStateProgramPages
+  },
+  get rejectVersion(): uint64 {
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().rejectVersion
   },
 }
 
@@ -861,6 +867,9 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     }
     pages.push(asBytes(a))
     setConstructingItxnField({ clearStateProgram: pages })
+  },
+  setRejectVersion: function (a: StubUint64Compat): void {
+    setConstructingItxnField({ rejectVersion: asUint64(a) })
   },
   next: function (): void {
     lazyContext.activeGroup.appendInnerTransactionGroup()

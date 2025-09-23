@@ -71,4 +71,8 @@ export const AppParams: typeof op.AppParams = {
     const app = getApp(a)
     return app === undefined ? [Account(), false] : [app.address, true]
   },
+  appVersion: function (a: ApplicationType | uint64): readonly [uint64, boolean] {
+    const app = getApp(a)
+    return app === undefined ? [Uint64(0), false] : [app.version, true]
+  },
 }

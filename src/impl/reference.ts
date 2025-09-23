@@ -168,6 +168,7 @@ export class ApplicationData {
       localStateMaps: new BytesMap(),
       boxes: new BytesMap(),
       materialisedBoxes: new BytesMap(),
+      version: 0,
     }
   }
 }
@@ -220,6 +221,9 @@ export class ApplicationCls extends Uint64BackedCls implements ApplicationType {
       lazyContext.any.account({ address: result.bytes })
     }
     return result
+  }
+  get version(): uint64 {
+    return this.data.application.version
   }
 }
 

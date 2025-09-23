@@ -24,6 +24,7 @@ export {
   ed25519verify,
   ed25519verifyBare,
   EllipticCurve,
+  falconVerify,
   keccak256,
   mimc,
   sha256,

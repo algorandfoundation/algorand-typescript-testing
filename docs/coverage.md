@@ -151,3 +151,4 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | op.sqrt                      | Native              |
 | op.substring                 | Native              |
 | op.vrfVerify                 | Mockable            |
+| op.falconVerify              | Mockable            |

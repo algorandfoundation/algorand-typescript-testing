@@ -253,6 +253,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   #clearStateProgramPages: Array<bytes>
   #appLogs: Array<bytes>
   #appId: ApplicationType
+  #rejectVersion: uint64
 
   /** @internal */
   protected constructor(fields: ApplicationCallTransactionFields) {
@@ -272,6 +273,7 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
     this.#apps = fields.apps ?? []
     this.#approvalProgramPages = fields.approvalProgramPages ?? (fields.approvalProgram ? [fields.approvalProgram] : [])
     this.#clearStateProgramPages = fields.clearStateProgramPages ?? (fields.clearStateProgram ? [fields.clearStateProgram] : [])
+    this.#rejectVersion = fields.rejectVersion ?? Uint64(0)
     Object.entries(fields.scratchSpace ?? {}).forEach(([k, v]) => this.setScratchSlot(Number(k), v))
   }
 
@@ -334,6 +336,9 @@ export class ApplicationCallTransaction extends TransactionBase implements gtxn.
   }
   get apfa() {
     return this.#apps
+  }
+  get rejectVersion() {
+    return this.#rejectVersion
   }
   appArgs(index: Uint64Compat): bytes {
     return toBytes(this.args[asNumber(index)])
