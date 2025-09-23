@@ -1,7 +1,6 @@
 import type { biguint, BigUintCompat, bytes, BytesCompat, uint64, Uint64Compat } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { avmError, AvmError, avmInvariant, CodeError, InternalError } from '../errors'
-import type { DeliberateAny } from '../typescript-helpers'
 import { nameOfType } from '../typescript-helpers'
 import { base32ToUint8Array } from './base-32'
 
@@ -86,97 +85,6 @@ export function BigUint(v?: BigUintCompat | string): biguint {
   if (typeof v === 'string') v = BigInt(v)
   else if (v === undefined) v = 0n
   return BigUintCls.fromCompat(v).asAlgoTs()
-}
-
-/**
- * @internal
- * Create a byte array from a string interpolation template and compatible replacements
- * @param value *
- * @param replacements *
- */
-export function FixedBytes<TLength extends uint64 = uint64>(
-  length: TLength,
-  value: TemplateStringsArray,
-  ...replacements: BytesCompat[]
-): bytes<TLength>
-/**
- * @internal
- * Create a byte array from a utf8 string
- */
-export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: string): bytes<TLength>
-/**
- * @internal
- * No op, returns the provided byte array.
- */
-export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: bytes): bytes<TLength>
-/**
- * @internal
- * Create a byte array from a biguint value encoded as a variable length big-endian number *
- */
-export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: biguint): bytes<TLength>
-/**
- * @internal
- * Create a byte array from a uint64 value encoded as a fixed length 64-bit number
- */
-export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: uint64): bytes<TLength>
-/**
- * @internal
- * Create a byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
- */
-export function FixedBytes<TLength extends uint64 = uint64>(length: TLength, value: Iterable<uint64>): bytes<TLength>
-/**
- * @internal
- * Create an empty byte array
- */
-export function FixedBytes<TLength extends uint64 = uint64>(length: TLength): bytes<TLength>
-export function FixedBytes<TLength extends uint64 = uint64>(
-  length: TLength,
-  value?: BytesCompat | TemplateStringsArray | biguint | uint64 | Iterable<number>,
-  ...replacements: BytesCompat[]
-): bytes<TLength> {
-  const result = Bytes((value ?? new Uint8Array(length)) as DeliberateAny, ...replacements)
-  if (length && length !== getNumber(result.length)) {
-    throw new CodeError(`Invalid bytes constant length of ${result.length}, expected ${length}`)
-  }
-  return result.toFixed({ length })
-}
-
-/**
- * @internal
- * Create a new bytes value from a hexadecimal encoded string
- * @param hex
- */
-FixedBytes.fromHex = <TLength extends uint64 = uint64>(length: TLength, hex: string): bytes<TLength> => {
-  const result = BytesCls.fromHex(hex).asAlgoTs()
-  if (length && length !== getNumber(result.length)) {
-    throw new CodeError(`Expected decoded bytes value of length ${length}, received ${result.length}`)
-  }
-  return result.toFixed({ length })
-}
-/**
- * @internal
- * Create a new bytes value from a base 64 encoded string
- * @param b64
- */
-FixedBytes.fromBase64 = <TLength extends uint64 = uint64>(length: TLength, b64: string): bytes<TLength> => {
-  const result = BytesCls.fromBase64(b64).asAlgoTs()
-  if (length && length !== getNumber(result.length)) {
-    throw new CodeError(`Expected decoded bytes value of length ${length}, received ${result.length}`)
-  }
-  return result.toFixed({ length })
-}
-
-/**
- * @internal
- * Create a new bytes value from a base 32 encoded string
- * @param b32
- */
-FixedBytes.fromBase32 = <TLength extends uint64 = uint64>(length: TLength, b32: string): bytes<TLength> => {
-  const result = BytesCls.fromBase32(b32).asAlgoTs()
-  if (length && length !== getNumber(result.length)) {
-    throw new CodeError(`Expected decoded bytes value of length ${length}, received ${result.length}`)
-  }
-  return result.toFixed({ length })
 }
 
 /**

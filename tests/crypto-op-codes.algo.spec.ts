@@ -163,17 +163,17 @@ describe('crypto op codes', async () => {
       })
     })
     test('should throw error when no active txn group', async () => {
-      expect(() => op.ed25519verify(Bytes(''), Bytes<64>(), Bytes<32>())).toThrow('no active txn group')
+      expect(() => op.ed25519verify(Bytes(''), op.bzero(64), op.bzero(32))).toThrow('no active txn group')
     })
   })
 
   describe('ecdsaVerify', async () => {
     test('should be able to verify k1 signature', async ({ appClientCryptoOpsContract: appClient }) => {
-      const messageHash = Bytes.fromHex<32>('f809fd0aa0bb0f20b354c6b2f86ea751957a4e262a546bd716f34f69b9516ae1')
-      const sigR = Bytes.fromHex<32>('f7f913754e5c933f3825d3aef22e8bf75cfe35a18bede13e15a6e4adcfe816d2')
-      const sigS = Bytes.fromHex<32>('0b5599159aa859d79677f33280848ae4c09c2061e8b5881af8507f8112966754')
-      const pubkeyX = Bytes.fromHex<32>('a710244d62747aa8db022ddd70617240adaf881b439e5f69993800e614214076')
-      const pubkeyY = Bytes.fromHex<32>('48d0d337704fe2c675909d2c93f7995e199156f302f63c74a8b96827b28d777b')
+      const messageHash = Bytes.fromHex('f809fd0aa0bb0f20b354c6b2f86ea751957a4e262a546bd716f34f69b9516ae1').toFixed({ length: 32 })
+      const sigR = Bytes.fromHex('f7f913754e5c933f3825d3aef22e8bf75cfe35a18bede13e15a6e4adcfe816d2').toFixed({ length: 32 })
+      const sigS = Bytes.fromHex('0b5599159aa859d79677f33280848ae4c09c2061e8b5881af8507f8112966754').toFixed({ length: 32 })
+      const pubkeyX = Bytes.fromHex('a710244d62747aa8db022ddd70617240adaf881b439e5f69993800e614214076').toFixed({ length: 32 })
+      const pubkeyY = Bytes.fromHex('48d0d337704fe2c675909d2c93f7995e199156f302f63c74a8b96827b28d777b').toFixed({ length: 32 })
 
       const avmResult = await getAvmResult(
         {
@@ -194,11 +194,11 @@ describe('crypto op codes', async () => {
       expect(result).toEqual(avmResult)
     })
     test('should be able to verify r1 signature', async ({ appClientCryptoOpsContract: appClient }) => {
-      const messageHash = Bytes.fromHex<32>('f809fd0aa0bb0f20b354c6b2f86ea751957a4e262a546bd716f34f69b9516ae1')
-      const sigR = Bytes.fromHex<32>('18d96c7cda4bc14d06277534681ded8a94828eb731d8b842e0da8105408c83cf')
-      const sigS = Bytes.fromHex<32>('7d33c61acf39cbb7a1d51c7126f1718116179adebd31618c4604a1f03b5c274a')
-      const pubkeyX = Bytes.fromHex<32>('f8140e3b2b92f7cbdc8196bc6baa9ce86cf15c18e8ad0145d50824e6fa890264')
-      const pubkeyY = Bytes.fromHex<32>('bd437b75d6f1db67155a95a0da4b41f2b6b3dc5d42f7db56238449e404a6c0a3')
+      const messageHash = Bytes.fromHex('f809fd0aa0bb0f20b354c6b2f86ea751957a4e262a546bd716f34f69b9516ae1').toFixed({ length: 32 })
+      const sigR = Bytes.fromHex('18d96c7cda4bc14d06277534681ded8a94828eb731d8b842e0da8105408c83cf').toFixed({ length: 32 })
+      const sigS = Bytes.fromHex('7d33c61acf39cbb7a1d51c7126f1718116179adebd31618c4604a1f03b5c274a').toFixed({ length: 32 })
+      const pubkeyX = Bytes.fromHex('f8140e3b2b92f7cbdc8196bc6baa9ce86cf15c18e8ad0145d50824e6fa890264').toFixed({ length: 32 })
+      const pubkeyY = Bytes.fromHex('bd437b75d6f1db67155a95a0da4b41f2b6b3dc5d42f7db56238449e404a6c0a3').toFixed({ length: 32 })
 
       const avmResult = await getAvmResult(
         {
@@ -291,11 +291,11 @@ describe('crypto op codes', async () => {
 
   describe('vrfVerify', async () => {
     const a = Bytes.fromHex('528b9e23d93d0e020a119d7ba213f6beb1c1f3495a217166ecd20f5a70e7c2d7')
-    const b = Bytes.fromHex<80>(
+    const b = Bytes.fromHex(
       '372a3afb42f55449c94aaa5f274f26543e77e8d8af4babee1a6fbc1c0391aa9e6e0b8d8d7f4ed045d5b517fea8ad3566025ae90d2f29f632e38384b4c4f5b9eb741c6e446b0f540c1b3761d814438b04',
-    )
+    ).toFixed({ length: 80 })
 
-    const c = Bytes.fromHex<32>('3a2740da7a0788ebb12a52154acbcca1813c128ca0b249e93f8eb6563fee418d')
+    const c = Bytes.fromHex('3a2740da7a0788ebb12a52154acbcca1813c128ca0b249e93f8eb6563fee418d').toFixed({ length: 32 })
 
     test('should throw not available error', async () => {
       const mockedVrfVerify = op.vrfVerify as Mock<typeof op.vrfVerify>
@@ -313,7 +313,7 @@ describe('crypto op codes', async () => {
         asUint8Array(c),
       )
       const mockedVrfVerify = op.vrfVerify as Mock<typeof op.vrfVerify>
-      mockedVrfVerify.mockReturnValue([Bytes<64>(new Uint8Array(avmResult[0])), avmResult[1]])
+      mockedVrfVerify.mockReturnValue([Bytes(new Uint8Array(avmResult[0])).toFixed({ length: 64 }), avmResult[1]])
       const result = op.vrfVerify(VrfVerify.VrfAlgorand, asBytes(a), b, c)
 
       expect(asUint8Array(result[0])).toEqual(new Uint8Array(avmResult[0]))
@@ -338,7 +338,7 @@ describe('crypto op codes', async () => {
         asUint8Array(a),
       )
       const mockedMimc = op.mimc as Mock<typeof op.mimc>
-      mockedMimc.mockReturnValue(Bytes(avmResult))
+      mockedMimc.mockReturnValue(Bytes(avmResult).toFixed({ length: 32 }))
       const result = op.mimc(MimcConfigurations.BN254Mp110, Bytes(a))
 
       expect(result).toEqual(avmResult)
@@ -396,9 +396,9 @@ const generateEcdsaTestData = (v: Ecdsa) => {
   const recoveryId = 0 // Recovery ID is typically 0 or 1
 
   return {
-    data: Bytes<32>(new Uint8Array(messageHash)),
-    r: Bytes<32>(new Uint8Array(signature.r.toArray('be', 32))),
-    s: Bytes<32>(new Uint8Array(signature.s.toArray('be', 32))),
+    data: Bytes(new Uint8Array(messageHash)).toFixed({ length: 32 }),
+    r: Bytes(new Uint8Array(signature.r.toArray('be', 32))).toFixed({ length: 32 }),
+    s: Bytes(new Uint8Array(signature.s.toArray('be', 32))).toFixed({ length: 32 }),
     recoveryId: Uint64Cls.fromCompat(recoveryId),
     pubkeyX: Bytes(new Uint8Array(pk.slice(0, 32))),
     pubkeyY: Bytes(new Uint8Array(pk.slice(32))),

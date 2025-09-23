@@ -218,9 +218,6 @@ class ExpressionVisitor {
             updatedNode = nodeFactory.callAbiCallFunction(updatedNode, typeParams)
           } else if (isCallingItxnCompose(stubbedFunctionName)) {
             updatedNode = nodeFactory.callItxnComposeFunction(updatedNode)
-          } else if (isCallingBytes(stubbedFunctionName)) {
-            if (type instanceof ptypes.BytesPType && type.length)
-              updatedNode = nodeFactory.callFixedBytesFunction(stubbedFunctionName, updatedNode, Number(type.length))
           } else {
             updatedNode = nodeFactory.callStubbedFunction(updatedNode, infoArg)
           }
@@ -506,7 +503,7 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     : (node.expression as ts.Identifier)
   const functionName = tryGetAlgoTsSymbolName(identityExpression, helper)
   if (functionName === undefined) return undefined
-  const stubbedFunctionNames = ['convertBytes', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'sizeOf', 'abiCall', 'clone', 'Bytes']
+  const stubbedFunctionNames = ['convertBytes', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'sizeOf', 'abiCall', 'clone']
 
   if (stubbedFunctionNames.includes(functionName)) {
     if (ts.isPropertyAccessExpression(node.expression)) {
@@ -516,10 +513,10 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
     return functionName
   }
 
-  if (['begin', 'next', 'fromHex', 'fromBase64', 'fromBase32'].includes(functionName) && ts.isPropertyAccessExpression(node.expression)) {
+  if (['begin', 'next'].includes(functionName) && ts.isPropertyAccessExpression(node.expression)) {
     const objectExpression = node.expression.expression
     const objectName = tryGetAlgoTsSymbolName(objectExpression, helper)
-    if (['itxnCompose', 'Bytes'].includes(objectName || '')) return functionName
+    if (['itxnCompose'].includes(objectName || '')) return functionName
   }
 
   return undefined
@@ -550,5 +547,3 @@ const isCallingMethodSelector = (functionName: string | undefined): boolean => '
 const isCallingAbiCall = (functionName: string | undefined): boolean => ['abiCall'].includes(functionName ?? '')
 const isCallingItxnCompose = (functionName: string | undefined): boolean => ['begin', 'next'].includes(functionName ?? '')
 const isCallingClone = (functionName: string | undefined): boolean => 'clone' === (functionName ?? '')
-const isCallingBytes = (functionName: string | undefined): boolean =>
-  ['Bytes', 'fromHex', 'fromBase64', 'fromBase32'].includes(functionName ?? '')
