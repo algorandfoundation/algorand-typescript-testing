@@ -1,5 +1,5 @@
 import type { bytes } from '@algorandfoundation/algorand-typescript'
-import { Bytes, FixedArray } from '@algorandfoundation/algorand-typescript'
+import { Bytes, FixedArray, op } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { MAX_BYTES_SIZE } from '../../src/constants'
@@ -200,19 +200,19 @@ describe('Bytes', async () => {
 
   describe('fixed size', () => {
     it('should be able to create fixed size bytes with no parameter', () => {
-      const x = Bytes<32>()
+      const x = op.bzero(32)
       expect(x.length).toEqual(32)
-      expect(x).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))
-      expect(x).toEqual(Bytes.fromBase64<32>('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='))
-      expect(x).toEqual(Bytes.fromBase32<32>('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=='))
+      expect(x).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000').toFixed({ length: 32 }))
+      expect(x).toEqual(Bytes.fromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=').toFixed({ length: 32 }))
+      expect(x).toEqual(Bytes.fromBase32('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==').toFixed({ length: 32 }))
     })
 
     it('should be able to create fixed size bytes with parameter', () => {
-      const x1 = Bytes<32>(new Uint8Array(32))
+      const x1 = Bytes(new Uint8Array(32)).toFixed({ length: 32 })
       expect(x1.length).toEqual(32)
-      expect(x1).toEqual(Bytes<32>())
+      expect(x1).toEqual(op.bzero(32))
 
-      const x2 = Bytes<32>('abcdefghijklmnopqrstuvwxyz123456')
+      const x2 = Bytes('abcdefghijklmnopqrstuvwxyz123456').toFixed({ length: 32 })
       expect(x2.length).toEqual(32)
       expect(x2).toEqual(Bytes('abcdefghijklmnopqrstuvwxyz123456'))
       expect(x2).toEqual(Bytes.fromHex('6162636465666768696a6b6c6d6e6f707172737475767778797a313233343536'))
@@ -228,18 +228,18 @@ describe('Bytes', async () => {
       expect(x1.length).toEqual(2)
       expect(x1[0].length).toEqual(32)
       expect(x1[1].length).toEqual(32)
-      expect(x1[0]).toEqual(Bytes<32>(new Uint8Array(32)))
-      expect(x1[1]).toEqual(Bytes<32>(new Uint8Array(32)))
+      expect(x1[0]).toEqual(op.bzero(32))
+      expect(x1[1]).toEqual(op.bzero(32))
 
-      const x2 = decodeArc4<FixedArray<bytes<32>, 2>>(Bytes<64>())
+      const x2 = decodeArc4<FixedArray<bytes<32>, 2>>(op.bzero(64))
       expect(x2.length).toEqual(2)
       expect(x2[0].length).toEqual(32)
       expect(x2[1].length).toEqual(32)
 
-      const x3 = convertBytes<StaticArray<StaticArray<Byte, 32>, 2>>(Bytes<64>(), { strategy: 'unsafe-cast' })
+      const x3 = convertBytes<StaticArray<StaticArray<Byte, 32>, 2>>(op.bzero(64), { strategy: 'unsafe-cast' })
       expect(x3.length).toEqual(2)
-      expect(x3[0].bytes).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))
-      expect(x3[1].bytes).toEqual(Bytes.fromHex<32>('0000000000000000000000000000000000000000000000000000000000000000'))
+      expect(x3[0].bytes).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000').toFixed({ length: 32 }))
+      expect(x3[1].bytes).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000').toFixed({ length: 32 }))
     })
   })
 })

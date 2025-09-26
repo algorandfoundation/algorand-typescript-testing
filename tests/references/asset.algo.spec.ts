@@ -1,4 +1,4 @@
-import { Account, Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { Account, op, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { afterEach, describe, expect, it, test } from 'vitest'
 import { TestExecutionContext } from '../../src'
 import { AssetCls } from '../../src/impl/reference'
@@ -55,7 +55,7 @@ describe('Asset', () => {
       unitName: asBytes('TEST'),
       name: asBytes('Test Asset'),
       url: asBytes('https://test.com'),
-      metadataHash: Bytes<32>(new Uint8Array(32)),
+      metadataHash: op.bzero(32),
       manager: Account(),
       freeze: Account(),
       clawback: Account(),

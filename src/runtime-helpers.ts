@@ -11,8 +11,6 @@ import { flattenAsBytes } from './util'
 
 /** @internal */
 export { attachAbiMetadata } from './abi-metadata'
-/** @internal */
-export { FixedBytes } from './impl/primitives'
 
 /** @internal */
 export function switchableValue(x: unknown): bigint | string | boolean {
