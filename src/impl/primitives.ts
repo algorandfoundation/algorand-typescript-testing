@@ -87,63 +87,95 @@ export function BigUint(v?: BigUintCompat | string): biguint {
   return BigUintCls.fromCompat(v).asAlgoTs()
 }
 
+type ToFixedBytesOptions<TLength extends uint64 = uint64> = {
+  /**
+   * The length for the bounded type
+   */
+  length: TLength
+  /**
+   * The strategy to use for converting to a fixed length bytes type (default: 'assert-length')
+   *
+   * - 'assert-length': Asserts that the byte sequence has the specified length and fails if it differs
+   * - 'unsafe-cast': Reinterprets the byte sequence as a fixed length type without any checks. This will succeed even if the value
+   *              is not of the specified length but will result in undefined behaviour for any code that makes use of this value.
+   *
+   */
+  strategy?: 'assert-length' | 'unsafe-cast'
+}
+
 /**
- * @internal
  * Create a byte array from a string interpolation template and compatible replacements
  * @param value
  * @param replacements
  */
-export function Bytes(value: TemplateStringsArray, ...replacements: BytesCompat[]): bytes
+export function Bytes(value: TemplateStringsArray, ...replacements: BytesCompat[]): bytes<uint64>
 /**
- * @internal
  * Create a byte array from a utf8 string
  */
-export function Bytes(value: string): bytes
+export function Bytes(value: string): bytes<uint64>
 /**
- * @internal
+ * Create a byte array from a utf8 string
+ */
+export function Bytes<TLength extends uint64>(value: string, options: ToFixedBytesOptions<TLength>): bytes<TLength>
+/**
  * No op, returns the provided byte array.
  */
-export function Bytes(value: bytes): bytes
+export function Bytes(value: bytes): bytes<uint64>
 /**
- * @internal
+ * No op, returns the provided byte array.
+ */
+export function Bytes<TLength extends uint64>(value: bytes, options: ToFixedBytesOptions<TLength>): bytes<TLength>
+/**
  * Create a byte array from a biguint value encoded as a variable length big-endian number
  */
-export function Bytes(value: biguint): bytes
+export function Bytes(value: biguint): bytes<uint64>
 /**
- * @internal
- * Create a byte array from a uint64 value encoded as a fixed length 64-bit number
+ * Create a byte array from a biguint value encoded as a variable length big-endian number
  */
-export function Bytes(value: uint64): bytes
+export function Bytes<TLength extends uint64>(value: biguint, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
- * @internal
+ * Create a byte array from a uint64 value encoded as a a variable length 64-bit number
+ */
+export function Bytes(value: uint64): bytes<uint64>
+/**
+ * Create a byte array from a uint64 value encoded as a a variable length 64-bit number
+ */
+export function Bytes<TLength extends uint64 = 8>(value: uint64, options: ToFixedBytesOptions<TLength>): bytes<TLength>
+/**
  * Create a byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
  */
-export function Bytes(value: Iterable<uint64>): bytes
+export function Bytes(value: Iterable<uint64>): bytes<uint64>
 /**
- * @internal
+ * Create a byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
+ */
+export function Bytes<TLength extends uint64>(value: Iterable<uint64>, options: ToFixedBytesOptions<TLength>): bytes<TLength>
+/**
  * Create an empty byte array
  */
-export function Bytes(): bytes
-export function Bytes(
-  value?: BytesCompat | TemplateStringsArray | biguint | uint64 | Iterable<number>,
-  ...replacements: BytesCompat[]
-): bytes {
-  if (isTemplateStringsArray(value)) {
-    return BytesCls.fromInterpolation(value, replacements).asAlgoTs()
-  } else if (typeof value === 'bigint' || value instanceof BigUintCls) {
-    return BigUintCls.fromCompat(value).toBytes().asAlgoTs()
-  } else if (typeof value === 'number' || value instanceof Uint64Cls) {
-    return Uint64Cls.fromCompat(value).toBytes().asAlgoTs()
-  } else if (typeof value === 'object' && Symbol.iterator in value) {
-    const valueItems = Array.from(value).map((v) => getNumber(v))
-    const invalidValue = valueItems.find((v) => v < 0 && v > 255)
-    if (invalidValue) {
-      throw new CodeError(`Cannot convert ${invalidValue} to a byte`)
-    }
-    return new BytesCls(new Uint8Array(value)).asAlgoTs()
-  } else {
-    return BytesCls.fromCompat(value).asAlgoTs()
+export function Bytes(): bytes<uint64>
+/**
+ * Create an empty byte array
+ */
+export function Bytes<TLength extends uint64 = uint64>(options: ToFixedBytesOptions<TLength>): bytes<TLength>
+export function Bytes<TLength extends uint64 = uint64>(
+  value?: BytesCompat | TemplateStringsArray | biguint | uint64 | Iterable<number> | ToFixedBytesOptions<TLength>,
+  ...replacements: [ToFixedBytesOptions<TLength>] | BytesCompat[] | undefined[]
+): bytes<TLength> {
+  // Handle the case where only options are provided (empty bytes with fixed length)
+  if (isOptionsOnly(value)) {
+    const options = value as ToFixedBytesOptions<TLength>
+    const emptyBytes = new BytesCls(new Uint8Array(options.length))
+    return emptyBytes.toFixed(options)
   }
+
+  // Convert the input value to a BytesCls instance
+  const result = convertValueToBytes(value, replacements)
+
+  // Extract options from replacements if provided
+  const options = isTemplateStringsArray(value) ? undefined : extractOptionsFromReplacements(replacements)
+
+  // Return either fixed-length or variable-length bytes
+  return options ? result.toFixed(options) : (result.asAlgoTs() as bytes<TLength>)
 }
 
 /**
@@ -151,16 +183,16 @@ export function Bytes(
  * Create a new bytes value from a hexadecimal encoded string
  * @param hex
  */
-Bytes.fromHex = (hex: string): bytes => {
-  return BytesCls.fromHex(hex).asAlgoTs()
+Bytes.fromHex = <TLength extends uint64 = uint64>(hex: string, options?: ToFixedBytesOptions<TLength>): bytes<TLength> => {
+  return options ? BytesCls.fromHex(hex).toFixed(options) : (BytesCls.fromHex(hex).asAlgoTs() as bytes<TLength>)
 }
 /**
  * @internal
  * Create a new bytes value from a base 64 encoded string
  * @param b64
  */
-Bytes.fromBase64 = (b64: string): bytes => {
-  return BytesCls.fromBase64(b64).asAlgoTs()
+Bytes.fromBase64 = <TLength extends uint64 = uint64>(b64: string, options?: ToFixedBytesOptions<TLength>): bytes<TLength> => {
+  return options ? BytesCls.fromBase64(b64).toFixed(options) : (BytesCls.fromBase64(b64).asAlgoTs() as bytes<TLength>)
 }
 
 /**
@@ -168,8 +200,110 @@ Bytes.fromBase64 = (b64: string): bytes => {
  * Create a new bytes value from a base 32 encoded string
  * @param b32
  */
-Bytes.fromBase32 = (b32: string): bytes => {
-  return BytesCls.fromBase32(b32).asAlgoTs()
+Bytes.fromBase32 = <TLength extends uint64 = uint64>(b32: string, options?: ToFixedBytesOptions<TLength>): bytes<TLength> => {
+  return options ? BytesCls.fromBase32(b32).toFixed(options) : (BytesCls.fromBase32(b32).asAlgoTs() as bytes<TLength>)
+}
+
+/**
+ * Helper function to check if the value parameter is options-only (for empty bytes with fixed length)
+ */
+function isOptionsOnly<TLength extends uint64>(
+  value?: BytesCompat | TemplateStringsArray | biguint | uint64 | Iterable<number> | ToFixedBytesOptions<TLength>,
+): value is ToFixedBytesOptions<TLength> {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    !isTemplateStringsArray(value) &&
+    !(Symbol.iterator in value) &&
+    !(value instanceof BigUintCls) &&
+    !(value instanceof Uint64Cls) &&
+    !(value instanceof BytesCls) &&
+    !(value instanceof Uint8Array) &&
+    Object.keys(value).length <= 2 &&
+    Object.keys(value).includes('length')
+  )
+}
+
+/**
+ * Helper function to convert various input types to BytesCls
+ */
+function convertValueToBytes<TLength extends uint64>(
+  value?: BytesCompat | TemplateStringsArray | biguint | uint64 | Iterable<number> | ToFixedBytesOptions<TLength>,
+  replacements?: [ToFixedBytesOptions<TLength>] | BytesCompat[] | undefined[],
+): BytesCls {
+  if (value === undefined) {
+    return new BytesCls(new Uint8Array(0))
+  }
+
+  if (isTemplateStringsArray(value)) {
+    return BytesCls.fromInterpolation(value, replacements as BytesCompat[])
+  }
+
+  if (typeof value === 'bigint' || value instanceof BigUintCls) {
+    return BigUintCls.fromCompat(value).toBytes()
+  }
+
+  if (typeof value === 'number' || value instanceof Uint64Cls) {
+    return Uint64Cls.fromCompat(value).toBytes()
+  }
+
+  if (isIterable(value)) {
+    return convertIterableToBytes(value)
+  }
+
+  // Default case: treat as BytesCompat
+  return BytesCls.fromCompat(value as BytesCompat)
+}
+
+/**
+ * Helper function to check if a value is iterable (but not string or Uint8Array)
+ */
+function isIterable(value: unknown): value is Iterable<number> {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    Symbol.iterator in value &&
+    !isTemplateStringsArray(value) &&
+    !(value instanceof Uint8Array) &&
+    !(value instanceof BytesCls)
+  )
+}
+
+/**
+ * Helper function to convert an iterable of numbers to BytesCls
+ */
+function convertIterableToBytes(value: Iterable<number>): BytesCls {
+  const valueItems = Array.from(value).map((v) => getNumber(v))
+  const invalidValue = valueItems.find((v) => v < 0 || v > 255)
+  if (invalidValue !== undefined) {
+    throw new CodeError(`Cannot convert ${invalidValue} to a byte`)
+  }
+  return new BytesCls(new Uint8Array(valueItems))
+}
+
+/**
+ * Helper function to extract options from the replacements parameter
+ */
+function extractOptionsFromReplacements<TLength extends uint64>(
+  replacements: [ToFixedBytesOptions<TLength>] | BytesCompat[] | undefined[],
+): ToFixedBytesOptions<TLength> | undefined {
+  if (!replacements || replacements.length !== 1) {
+    return undefined
+  }
+
+  const potentialOptions = replacements[0]
+  // Check if the replacement looks like options
+  if (
+    typeof potentialOptions === 'object' &&
+    potentialOptions !== null &&
+    Object.keys(potentialOptions).length <= 2 &&
+    Object.keys(potentialOptions).includes('length')
+  ) {
+    return potentialOptions as ToFixedBytesOptions<TLength>
+  }
+
+  return undefined
 }
 
 /**

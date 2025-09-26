@@ -16,7 +16,7 @@ describe('VotingRoundApp', () => {
 
   const createContract = () => {
     const contract = ctx.contract.create(VotingRoundApp)
-    const snapshotPublicKey = Bytes(keyPair.publicKey).toFixed({ length: 32 })
+    const snapshotPublicKey = Bytes(keyPair.publicKey, { length: 32 })
     const metadataIpfsCid = ctx.any.string(16)
     const startTime = ctx.any.uint64(Date.now() - 10_000, Date.now())
     const endTime = ctx.any.uint64(Date.now() + 10_000, Date.now() + 100_000)
@@ -52,7 +52,7 @@ describe('VotingRoundApp', () => {
     const account = ctx.any.account()
     const signature = nacl.sign.detached(toExternalValue(account.bytes), keyPair.secretKey)
     ctx.txn.createScope([ctx.any.txn.applicationCall({ sender: account })]).execute(() => {
-      const preconditions = contract.getPreconditions(Bytes(signature).toFixed({ length: 64 }))
+      const preconditions = contract.getPreconditions(Bytes(signature, { length: 64 }))
 
       expect(preconditions.is_allowed_to_vote).toEqual(1)
       expect(preconditions.is_voting_open).toEqual(1)
@@ -75,11 +75,7 @@ describe('VotingRoundApp', () => {
     )
 
     ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: app, sender: account })]).execute(() => {
-      contract.vote(
-        ctx.any.txn.payment({ receiver: app.address, amount: voteMinBalanceReq }),
-        Bytes(signature).toFixed({ length: 64 }),
-        answerIds,
-      )
+      contract.vote(ctx.any.txn.payment({ receiver: app.address, amount: voteMinBalanceReq }), Bytes(signature, { length: 64 }), answerIds)
 
       expect(contract.votesByAccount(account).value.bytes).toEqual(answerIds.bytes)
       expect(contract.voterCount.value).toEqual(13)
