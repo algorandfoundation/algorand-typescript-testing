@@ -3,21 +3,21 @@
 [![github-stars](https://img.shields.io/github/stars/algorandfoundation/algorand-typescript-testing?color=74dfdc&logo=star&style=flat)](https://github.com/algorandfoundation/algorand-typescript-testing)
 [![visitor-badge](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Falgorandfoundation%2Falgorand-typescript-testing&countColor=%2374dfdc&style=flat)](https://github.com/algorandfoundation/algorand-typescript-testing/)
 
-`algorand-typescript-testing` is a companion package to [Algorand Typescript](https://github.com/algorandfoundation/puya-ts/tree/main/packages/algo-ts) that enables efficient unit testing of Algorand TypeScript smart contracts in an offline environment. This package emulates key AVM behaviors without requiring a network connection, offering fast and reliable testing capabilities with a familiar TypeScript interface.
+`algorand-typescript-testing` is a companion package to [Algorand TypeScript](https://github.com/algorandfoundation/puya-ts/tree/main/packages/algo-ts) that enables efficient unit testing of Algorand TypeScript smart contracts in an offline environment. This package emulates key AVM behaviours without requiring a network connection, offering fast and reliable testing through a familiar TypeScript interface.
 
 The `algorand-typescript-testing` package provides:
 
 - A simple interface for fast and reliable unit testing
 - An offline testing environment that simulates core AVM functionality
-- A familiar TypeScript experience, compatible with testing frameworks like [vitest](https://vitest.dev/), and [jest](https://jestjs.io/)
+- A familiar TypeScript experience, compatible with testing frameworks like [vitest](https://vitest.dev/) and [jest](https://jestjs.io/)
 
 ## Quick Start
 
-`algorand-typescript` is a prerequisite for `algorand-typescript-testing`, providing stubs and type annotations for Algorand TypeScript syntax. It enhances code completion and type checking when writing smart contracts. Note that this code isn't directly executable in standard Node.js environment; it's compiled by `puya-ts` into TEAL for Algorand Network deployment.
+`algorand-typescript` is a prerequisite for `algorand-typescript-testing`, providing stubs and type annotations for Algorand TypeScript syntax. It improves code completion and type checking when writing smart contracts. Note that this code isn't directly executable in a standard Node.js environment; it's compiled by `puya-ts` into TEAL for Algorand Network deployment.
 
-Traditionally, testing Algorand smart contracts involved deployment on sandboxed networks and interacting with live instances. While robust, this approach can be inefficient and lacks versatility for testing Algorand TypeScript code.
+Traditionally, testing Algorand smart contracts involved deployment on sandboxed networks and interacting with live instances. While robust, this approach can be inefficient and lacks versatility for unit testing Algorand TypeScript code.
 
-Enter `algorand-typescript-testing`: it leverages TypeScript's rich testing ecosystem for unit testing without network deployment. This enables rapid iteration and granular logic testing.
+`algorand-typescript-testing` leverages TypeScript's testing ecosystem for unit testing without network deployment, enabling rapid iteration and granular logic testing.
 
 > **NOTE**: While `algorand-typescript-testing` offers valuable unit testing capabilities, it's not a replacement for comprehensive testing. Use it alongside other test types, particularly those running against the actual Algorand Network, for thorough contract validation.
 
@@ -44,11 +44,11 @@ Let's write a simple contract and test it using the `algorand-typescript-testing
 
 `algorand-typescript-testing` includes a TypeScript transformer (`puyaTsTransformer`) that ensures contracts (with `.algo.ts` extension) and tests (with `.algo.spec.ts` or `.algo.test.ts` extensions) behave consistently between Node.js and AVM environments.
 
-The transformer replicates AVM behavior, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
+The transformer replicates AVM behaviour, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
 
 The transformer also redirects `@algorandfoundation/algorand-typescript` imports to `@algorandfoundation/algorand-typescript-testing/internal` to provide executable implementations of Algorand TypeScript constructs like `Global`, `Box`, `Uint64`, and `clone`.
 
-If there are tests which do not need to be executed in the AVM context such as end to end tests, simply use `.test.ts` or `.spec.ts` file extensions without `.algo` part and the transformer would skip them.
+If there are tests that do not need to be executed in the AVM context, such as end-to-end tests, simply use `.test.ts` or `.spec.ts` file extensions without `.algo` part and the transformer will skip them.
 
 #### Configuring vitest
 
@@ -74,7 +74,7 @@ export default defineConfig({
 })
 ```
 
-`algorand-typescript-testing` package also exposes additional equality testers which enables the smart contract developers to write terser test by avoiding type casting in assertions. It can setup in `beforeAll` hook point in the setup file, `vitest.setup.ts`.
+`algorand-typescript-testing` package also exposes additional equality testers which enable smart contract developers to write terser tests by avoiding type casting in assertions. They can be set up in the `beforeAll` hook in the setup file, `vitest.setup.ts`.
 
 ```typescript
 import { beforeAll, expect } from 'vitest'
@@ -113,7 +113,7 @@ const jestConfig: JestConfigWithTsJest = {
 export default jestConfig
 ```
 
-`algorand-typescript-testing` package also exposes additional equality testers which enables the smart contract developers to write terser test by avoiding type casting in assertions. It can setup in `beforeAll` hook point in the setup file, `jest.setup.ts`.
+`algorand-typescript-testing` package also exposes additional equality testers which enable smart contract developers to write terser tests by avoiding type casting in assertions. They can be set up in the `beforeAll` hook in the setup file, `jest.setup.ts`.
 
 ```typescript
 import { beforeAll, expect } from '@jest/globals'
@@ -138,7 +138,7 @@ You'll also need to run `jest` with the `--experimental-vm-modules` and `--exper
 }
 ```
 
-There is also a patch file `ts-jest+29.2.5.patch` that needs to be applied to `ts-jest` package to for the `puyaTsTransformer` to work with the test files.
+There is also a patch file `ts-jest+29.2.5.patch` that needs to be applied to `ts-jest` package for the `puyaTsTransformer` to work with the test files.
 
 1. Place the file in `<rootDir>\patches` folder.
 1. Install [patch-package](https://www.npmjs.com/package/patch-package) package as a dev dependency.
@@ -300,6 +300,6 @@ To dig deeper into the capabilities of `algorand-typescript-testing`, continue w
 - [Testing Guide](./testing-guide.md)
 - [Examples](./examples.md)
 - [Coverage](./coverage.md)
-- [FQA](./faq.md)
+- [FAQ](./faq.md)
 - [API Reference](./api.md)
 - [Algorand TypeScript](./algots.md)

@@ -4,14 +4,14 @@ title: ARC4 Types
 
 # ARC4 Types
 
-These types are available under the `arc4` namespace. Refer to the [ARC4 specification](https://arc.algorand.foundation/ARCs/arc-0004) for more details on the spec.
+These types are available under the `arc4` namespace. Refer to the [ARC4 specification](https://dev.algorand.co/arc-standards/arc-0004/) for more details on the spec.
 
 ```
 Test execution context provides _value generators_ for ARC4 types. To access their _value generators_, use `{context_instance}.any.arc4` property. See more examples below.
 ```
 
 ```
-For all `arc4` types with and without respective _value generator_, instantiation can be performed directly. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
+For all `arc4` types, with or without a respective _value generator_, instantiation can be performed directly. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
 ```
 
 ```ts
@@ -59,7 +59,7 @@ const addressValue = new arc4.Address('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 // Generate a random address
 const randomAddress = ctx.any.arc4.address()
 
-// Access native underlaying type
+// Access native underlying type
 const native = randomAddress.native
 ```
 
@@ -84,6 +84,6 @@ const randomString = ctx.any.arc4.str(12) // n is the number of bits in the arc4
 ```
 
 ```ts
-// test cleanup
+// Test cleanup
 ctx.reset()
 ```

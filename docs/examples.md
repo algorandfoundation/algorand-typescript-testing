@@ -4,7 +4,7 @@ title: Examples
 
 # Examples
 
-Below is a showcase of various examples of unit testing real and sample Algorand Python smart contracts using `algorand-typescript-testing`.
+Below is a showcase of various examples of unit testing real and sample Algorand TypeScript smart contracts using `algorand-typescript-testing`.
 
 | Contract Name       | Test File                                                                                                                                     | Key Features Demonstrated                                                                                                                                                                                      | Test versions of Algorand TypeScript Abstractions used                                               |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |

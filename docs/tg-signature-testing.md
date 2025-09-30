@@ -75,6 +75,6 @@ expect(ctx.executeLogicSig(new HashedTimeLockedLogicSig(), secret))
 For more details on available operations, see the [coverage](./coverage.md).
 
 ```ts
-// test cleanup
+// Test cleanup
 ctx.reset()
 ```

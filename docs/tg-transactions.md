@@ -274,7 +274,7 @@ describe('pre compiled app calls', () => {
 
 ## Strongly typed contract to contract
 
-Assuming the contract you wish to compile extends the ARC4 `Contract` type, you can make use of `compileArc4` to produce a contract proxy object that makes it easy to invoke application methods with compile time type safety. You can use the same `ctx.setCompiledApp` method set up the mock result for `compile` call and `ApplicationSpy` for mocking subsequent calls to the compiled contract.
+Assuming the contract you wish to compile extends the ARC4 `Contract` type, you can make use of `compileArc4` to produce a contract proxy object that makes it easy to invoke application methods with compile-time type safety. You can use the same `ctx.setCompiledApp` method to set up the mock result for `compile` calls and `ApplicationSpy` for mocking subsequent calls to the compiled contract.
 
 ```ts
 import { assert, Contract, GlobalState } from '@algorandfoundation/algorand-typescript'
@@ -417,6 +417,6 @@ describe('pre compiled typed app calls', () => {
 - [ApplicationSpy](./tg-application-spy.md) for detailed explanation on the usage of it
 
 ```ts
-// test cleanup
+// Test cleanup
 ctx.reset()
 ```

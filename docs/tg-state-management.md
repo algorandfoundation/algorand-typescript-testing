@@ -105,6 +105,6 @@ expect(scratchSpace[1]).toEqual(5)
 For more detailed information, explore the example contracts in the `examples/` directory, the [coverage](./coverage.md) page, and the [API documentation](../modules/index.html).
 
 ```ts
-// test cleanup
+// Test cleanup
 ctx.reset()
 ```

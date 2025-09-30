@@ -8,7 +8,7 @@ The following sections provide an overview of key concepts and features in the A
 
 ## Test Context
 
-The main abstraction for interacting with the testing framework is the [`TestExecutionContext`](../classes/index.TestExecutionContext.html). It creates an emulated Algorand environment that closely mimics AVM behavior relevant to unit testing the contracts and provides a TypeScript interface for interacting with the emulated environment.
+The main abstraction for interacting with the testing framework is the [`TestExecutionContext`](../classes/index.TestExecutionContext.html). It creates an emulated Algorand environment that closely mimics AVM behaviour relevant to unit testing the contracts and provides a TypeScript interface for interacting with the emulated environment.
 
 ```typescript
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
@@ -18,7 +18,7 @@ describe('MyContract', () => {
   // Recommended way to instantiate the test context
   const ctx = new TestExecutionContext()
   afterEach(() => {
-    // ctx should be reset after each test is executed
+    // The context should be reset after each test is executed
     ctx.reset()
   })
 
@@ -30,7 +30,7 @@ describe('MyContract', () => {
 
 The context manager interface exposes four main properties:
 
-1. `contract`: An instance of `ContractContext` for creating instances of Contract under test and register them with the test execution context.
+1. `contract`: An instance of `ContractContext` for creating instances of Contract under test and registering them with the test execution context.
 1. `ledger`: An instance of `LedgerContext` for interacting with and querying the emulated Algorand ledger state.
 1. `txn`: An instance of `TransactionContext` for creating and managing transaction groups, submitting transactions, and accessing transaction results.
 1. `any`: An instance of `ValueGenerator` for generating randomized test data.
@@ -65,8 +65,8 @@ As explained in the [introduction](testing-guide.md), `algorand-typescript-testi
 
 1. **Native**: Fully matches AVM computation in Python. For example, `op.sha256` and other cryptographic operations behave identically in AVM and unit tests. This implies that the majority of opcodes that are 'pure' functions in AVM also have a native TypeScript implementation provided by this package. These abstractions and opcodes can be used within and outside of the testing context.
 
-2. **Emulated**: Uses `TestExecutionContext` to mimic AVM behavior. For example, `Box.put` on an `Box` within a test context stores data in the test manager, not the real Algorand network, but provides the same interface.
+2. **Emulated**: Uses `TestExecutionContext` to mimic AVM behaviour. For example, `Box.put` on a `Box` within a test context stores data in the test manager, not the real Algorand network, but provides the same interface.
 
-3. **Mockable**: Not implemented, but can be mocked or patched. For example, `op.onlineStake` can be mocked to return specific values or behaviors; otherwise, it raises a `NotImplementedError`. This category covers cases where native or emulated implementation in a unit test context is impractical or overly complex.
+3. **Mockable**: Not implemented, but can be mocked or patched. For example, `op.onlineStake` can be mocked to return specific values or behaviours; otherwise, it raises a `NotImplementedError`. This category covers cases where native or emulated implementation in a unit test context is impractical or overly complex.
 
 For a full list of all public `algorand-typescript` types and their corresponding implementation category, refer to the [Coverage](./coverage.md) section.

@@ -35,7 +35,7 @@ describe('VotingRoundApp', () => {
     ctx.reset()
   })
 
-  it('shoulld be able to bootstrap', () => {
+  it('should be able to bootstrap', () => {
     const contract = createContract()
     const app = ctx.ledger.getApplicationForContract(contract)
     contract.bootstrap(ctx.any.txn.payment({ receiver: app.address, amount: boostrapMinBalanceReq }))
