@@ -4,10 +4,10 @@ title: Smart Contract Testing
 
 # Smart Contract Testing
 
-This guide provides an overview of how to test smart contracts using the [Algorand Typescript Testing package](https://www.npmjs.com/package/@algorandfoundation/algorand-typescript-testing). We will cover the basics of testing `arc4.Contract` and `BaseContract` classes, focusing on `abimethod` and `baremethod` decorators.
+This guide provides an overview of how to test smart contracts using the [Algorand TypeScript Testing package](https://www.npmjs.com/package/@algorandfoundation/algorand-typescript-testing). We cover the basics of testing `arc4.Contract` and `BaseContract` classes, with a focus on the `abimethod` and `baremethod` decorators.
 
 ```
-The code snippets showcasing the contract testing capabilities are using [vitest](https://vitest.dev/) as the test framework. However, note that the `algorand-typescript-testing` package can be used with any other test framework that supports TypeScript. `vitest` is used for demonstration purposes in this documentation.
+The code snippets demonstrating contract testing use [vitest](https://vitest.dev/) as the test framework. Note that `algorand-typescript-testing` works with any test framework that supports TypeScript; `vitest` is used here for demonstration.
 ```
 
 ```ts
@@ -20,9 +20,9 @@ const ctx = new TestExecutionContext()
 
 ## `arc4.Contract`
 
-Subclasses of `arc4.Contract` are **required** to be instantiated with an active test context. As part of instantiation, the test context will automatically create a matching `Application` object instance.
+Subclasses of `arc4.Contract` must be instantiated with an active test context. As part of instantiation, the test context automatically creates a matching `Application` object instance.
 
-Within the class implementation, methods decorated with `arc4.abimethod` and `arc4.baremethod` will automatically assemble an `gtxn.ApplicationCallTxn` transaction to emulate the AVM application call. This behavior can be overriden by setting the transaction group manually as part of test setup, this is done via implicit invocation of `ctx.any.txn.applicationCall` _value generator_ (refer to [APIs](../modules/index.html) for more details).
+Within the class implementation, methods decorated with `arc4.abimethod` and `arc4.baremethod` automatically assemble a `gtxn.ApplicationCallTxn` to emulate the AVM application call. This behaviour can be overridden by setting the transaction group manually as part of test setup; this is done via implicit invocation of the `ctx.any.txn.applicationCall` _value generator_ (see [APIs](../modules/index.html) for details).
 
 ```ts
 class SimpleVotingContract extends arc4.Contract {
@@ -81,7 +81,7 @@ const result = contract.vote()
 // Assert - you can access the corresponding auto generated application call transaction via test context
 expect(ctx.txn.lastGroup.transactions.length).toEqual(1)
 
-// Assert - Note how local and global state are accessed via regular python instance attributes
+// Assert - Note how local and global state are accessed via regular TypeScript instance attributes
 expect(result).toEqual(1)
 expect(contract.votes.value).toEqual(1)
 expect(contract.voted(ctx.defaultSender).value).toEqual(1)
@@ -106,7 +106,7 @@ For more examples of tests using `arc4.Contract`, see the [examples](./examples.
 
 ## `BaseContract``
 
-Subclasses of `BaseContract` are **required** to be instantiated with an active test context. As part of instantiation, the test context will automatically create a matching `Application` object instance. This behavior is identical to `arc4.Contract` class instances.
+Subclasses of `BaseContract` are **required** to be instantiated with an active test context. As part of instantiation, the test context will automatically create a matching `Application` object instance. This behaviour is identical to `arc4.Contract` class instances.
 
 Unlike `arc4.Contract`, `BaseContract` requires manual setup of the transaction context and explicit method calls.
 

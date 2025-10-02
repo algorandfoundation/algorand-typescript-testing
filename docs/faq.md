@@ -6,7 +6,7 @@ title: FAQ
 
 ## What is a Test Context?
 
-A Test Context is a context manager that provides a simulated Algorand environment for testing TypeScript smart contracts. It allows developers to create and manipulate a virtual Algorand ecosystem for testing purposes. For more details, see the [Test Context section](tg-concepts.md#test-context) in our documentation.
+A test context is a context manager that provides a simulated Algorand environment for testing TypeScript smart contracts. It allows developers to create and manipulate a virtual Algorand ecosystem for testing purposes. For more details, see the [Test Context section](tg-concepts.md#test-context) in our documentation.
 
 ## What is the Algorand Virtual Machine (AVM)?
 
@@ -18,7 +18,7 @@ Operational Codes, or opcodes, are AVM instructions that are executed directly b
 
 ## What are Value Generators?
 
-Value Generators are helper methods that generate randomized values for testing when the specific value of the tested type is not important. In the context of Algorand TypeScript testing, these are represented by property on the context manager, accessed via `any.*` (`any.txn.*`, or `any.arc4.*`. in the case of ARC 4 types). To understand how to use Value Generators effectively, check out our [Value Generators section](tg-concepts.md#value-generators) in the documentation.
+Value Generators are helper methods that generate randomized values for testing when the specific value of the tested type is not important. In the context of Algorand TypeScript testing, these are represented by properties on the context manager, accessed via `any.*` (`any.txn.*` or `any.arc4.*` in the case of ARC 4 types). To understand how to use Value Generators effectively, check out our [Value Generators section](tg-concepts.md#value-generators) in the documentation.
 
 ## What are the limitations of the Algorand TypeScript Testing framework?
 
@@ -30,7 +30,7 @@ The Algorand TypeScript Testing framework emulates the Algorand Virtual Machine 
 4. Certain cryptographic operations are mocked or simplified
 5. No state proof generation or verification
 
-For scenarios where these limitations are crucial, it's recommended to pair this framework with integration testing. If you have a solid reason to justify introducing new emulated behaviour, please open an issue or contribute to the project on [Github](https://github.com/algorandfoundation/algorand-typescript-testing).
+For scenarios where these limitations are crucial, it's recommended to pair this framework with integration testing. If you have a good reason to suggest new emulated behaviour, please open an issue or contribute to the project on [GitHub](https://github.com/algorandfoundation/algorand-typescript-testing).
 
 ## How does balance tracking work in the testing framework?
 
@@ -50,16 +50,16 @@ Some cryptographic operations are mocked or simplified in the framework. For a d
 
 ## Can I use this framework for security-critical validations?
 
-While this framework is useful for unit testing and local development, it should not be the only tool used for security-critical validations or performance benchmarking. It's designed to approximate AVM behavior for common scenarios. Always complement your testing with additional integration testing options available in `algokit`, where you can test against real localnet or testnet environments.
+While this framework is useful for unit testing and local development, it should not be the only tool used for security-critical validations or performance benchmarking. It's designed to approximate AVM behaviour for common scenarios. Always complement your testing with additional integration testing options available in `algokit`, where you can test against real localnet or testnet environments.
 
 ## Is there an example of how to use this framework alongside integration tests?
 
-Yes, the `algokit-typescript-template`, accessible via `algokit init`, provides a working example of how to structure `algorand-typecript-testing` along with regular integration tests against localnet.
+Yes, the `algokit-typescript-template`, accessible via `algokit init`, provides a working example of how to structure `algorand-typescript-testing` along with regular integration tests against localnet.
 
 ```
-An `algokit-typescript-template` accessible via `algokit init -t typescript`, provides a comprehensive and customizable working example of how to structure `algorand-typescript-testing` along with regular integration tests against localnet.
+The `algokit-typescript-template` accessible via `algokit init -t typescript` provides a comprehensive and customizable working example of how to structure `algorand-typescript-testing` along with regular integration tests against localnet.
 ```
 
 ## Is it compatible with `vitest`?
 
-Yes, it is compatible with `vitest` and _any_ other TypeScript testing framework as its agnostic of the testing framework as long as it's TypeScript. If you spot incompatibility with a certain tool, please open an issue or contribute to the project on [Github](https://github.com/algorandfoundation/algorand-typescript-testing).
+Yes, it is compatible with `vitest` and _any_ other TypeScript testing framework as its agnostic of the testing framework as long as it's TypeScript. If you spot incompatibility with a certain tool, please open an issue or contribute to the project on [GitHub](https://github.com/algorandfoundation/algorand-typescript-testing).

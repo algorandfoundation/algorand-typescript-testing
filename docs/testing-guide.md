@@ -17,7 +17,7 @@ children:
 The Algorand TypeScript Testing framework provides powerful tools for testing Algorand TypeScript smart contracts within a Node.js environment. This guide covers the main features and concepts of the framework, helping you write effective tests for your Algorand applications.
 
 ```
-For all code examples in the _Testing Guide_ section, assume `context` is an instance of `TestExecutionContext` obtained using the initialising an instance of `TestExecutionContext` class. All subsequent code is executed within this context.
+For all code examples in the _Testing Guide_ section, assume `context` is an instance of `TestExecutionContext` obtained by initialising the `TestExecutionContext` class. All subsequent code is executed within this context.
 ```
 
 The Algorand TypeScript Testing framework streamlines unit testing of your Algorand TypeScript smart contracts by offering functionality to:
@@ -28,7 +28,7 @@ The Algorand TypeScript Testing framework streamlines unit testing of your Algor
 4. Verify logic signatures and subroutines
 5. Manage global state, local state, scratch slots, and boxes in test contexts
 6. Simulate transactions and transaction groups, including inner transactions
-7. Verify opcode behavior
+7. Verify opcode behaviour
 
 By using this framework, you can ensure your Algorand TypeScript smart contracts function correctly before deploying them to a live network.
 
@@ -39,9 +39,9 @@ Key features of the framework include:
 - ARC4 Support: Tools for testing ARC4 contracts and methods, including struct definitions and ABI encoding/decoding
 - Transaction Simulation: Ability to create and execute various transaction types
 - State Management: Tools for managing and verifying global and local state changes
-- Opcode Simulation: Implementations of AVM opcodes for accurate smart contract behavior testing
+- Opcode Simulation: Implementations of AVM opcodes for accurate smart contract behaviour testing
 
-The framework is designed to work seamlessly with Algorand TypeScript smart contracts, allowing developers to write comprehensive unit tests that closely mimic the behavior of contracts on the Algorand blockchain.
+The framework is designed to work seamlessly with Algorand TypeScript smart contracts, allowing developers to write comprehensive unit tests that closely mimic the behaviour of contracts on the Algorand blockchain.
 
 ## Table of Contents
 

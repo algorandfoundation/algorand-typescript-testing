@@ -5,7 +5,7 @@
 [![github-stars](https://img.shields.io/github/stars/algorandfoundation/algorand-typescript-testing?color=74dfdc&logo=star&style=flat)](https://github.com/algorandfoundation/algorand-typescript-testing)
 [![visitor-badge](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Falgorandfoundation%2Falgorand-typescript-testing&countColor=%2374dfdc&style=flat)](https://github.com/algorandfoundation/algorand-typescript-testing/)
 
-`algorand-typescript-testing` is a companion package to [Algorand Typescript](https://github.com/algorandfoundation/puya-ts/tree/main/packages/algo-ts) that enables efficient unit testing of Algorand TypeScript smart contracts in an offline environment. This package emulates key AVM behaviors without requiring a network connection, offering fast and reliable testing capabilities with a familiar TypeScript interface.
+`algorand-typescript-testing` is a companion package to [Algorand Typescript](https://github.com/algorandfoundation/puya-ts/tree/main/packages/algo-ts) that enables efficient unit testing of Algorand TypeScript smart contracts in an offline environment. This package emulates key AVM behaviours without requiring a network connection, offering fast and reliable testing capabilities with a familiar TypeScript interface.
 
 The `algorand-typescript-testing` package provides:
 
@@ -46,7 +46,7 @@ Let's write a simple contract and test it using the `algorand-typescript-testing
 
 `algorand-typescript-testing` includes a TypeScript transformer (`puyaTsTransformer`) that ensures contracts (with `.algo.ts` extension) and tests (with `.algo.spec.ts` or `.algo.test.ts` extensions) behave consistently between Node.js and AVM environments.
 
-The transformer replicates AVM behavior, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
+The transformer replicates AVM behaviour, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
 
 The transformer also redirects `@algorandfoundation/algorand-typescript` imports to `@algorandfoundation/algorand-typescript-testing/internal` to provide executable implementations of Algorand TypeScript constructs like `Global`, `Box`, `Uint64`, and `clone`.
 
@@ -302,6 +302,6 @@ To dig deeper into the capabilities of `algorand-typescript-testing`, continue w
 - [Testing Guide](./docs/testing-guide.md)
 - [Examples](./docs/examples.md)
 - [Coverage](./docs/coverage.md)
-- [FQA](./docs/faq.md)
+- [FAQ](./docs/faq.md)
 - [API Reference](./docs/api.md)
 - [Algorand TypeScript](./docs/algots.md)

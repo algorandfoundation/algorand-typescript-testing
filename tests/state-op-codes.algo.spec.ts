@@ -424,7 +424,7 @@ describe('State op codes', async () => {
       expect(appItxn.onCompletion).toEqual(OnCompleteAction.DeleteApplication)
       expect(asNumber(appItxn.fee)).toEqual(MIN_TXN_FEE)
       expect(appItxn.sender).toEqual(ctx.ledger.getApplicationForContract(contract).address)
-      // NOTE: would implementing emulation for this behavior be useful
+      // NOTE: would implementing emulation for this behaviour be useful
       // in unit testing context (vs integration tests)?
       // considering we don't emulate balance (transfer, accounting for fees and etc)
       expect(asNumber(appItxn.appId.id)).toEqual(0)

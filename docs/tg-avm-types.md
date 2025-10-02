@@ -4,10 +4,10 @@ title: AVM Types
 
 # AVM Types
 
-These types are available directly under the `algorand-typescript` namespace. They represent the basic AVM primitive types and can be instantiated directly or via _value generators_:
+These types are available directly under the `algorand-typescript` namespace. They represent the basic AVM primitive types and can be instantiated directly or created via _value generators_:
 
 ```
-For 'primitive `algorand-typescript` types such as `Account`, `Application`, `Asset`, `uint64`, `biguint`, `bytes`, `string` with and without respective _value generator_, instantiation can be performed directly. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
+For primitive `algorand-typescript` types such as `Account`, `Application`, `Asset`, `uint64`, `biguint`, `bytes`, and `string`, instantiation can be performed directly, with or without a respective _value generator_. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
 ```
 
 ```ts
@@ -200,7 +200,7 @@ ctx.ledger.patchApplicationData(randomApp, {
   },
 })
 
-// Patch logs for an application. When accessing via transactions or inner transaction related opcodes, will return the patched logs unless new logs where added into the transaction during execution.
+// Patch logs for an application. When accessing via transactions or inner transaction related opcodes, will return the patched logs unless new logs were added into the transaction during execution.
 const testApp = ctx.any.application({ appLogs: [algots.Bytes('log entry 1'), algots.Bytes('log entry 2')] })
 
 // Get app associated with the active contract

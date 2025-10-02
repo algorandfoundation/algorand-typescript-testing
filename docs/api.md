@@ -6,9 +6,7 @@ title: API Reference
 
 An overview of the `algorand-typescript-testing` package - covering the main classes and functions.
 
-```
-Spotted a typo in documentation? This project is open source, please submit an issue or a PR on [GitHub](https://github.com/algorandfoundation/algorand-typescript-testing).
-```
+> Spotted a typo in the documentation? This project is open source; please submit an issue or a PR on [GitHub](https://github.com/algorandfoundation/algorand-typescript-testing).
 
 ## Contexts
 
