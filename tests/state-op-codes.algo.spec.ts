@@ -269,7 +269,7 @@ describe('State op codes', async () => {
       'should return the correct field value of the asset',
       async ([methodName, expectedValue], { appClientStateAssetParamsContract: appClient, testAccount, assetFactory }) => {
         const creator = Account(Bytes.fromBase32(testAccount.addr.toString()))
-        const metadataHash = Bytes(`test${' '.repeat(28)}`).toFixed({ length: 32, strategy: 'assert-length' })
+        const metadataHash = Bytes(`test${' '.repeat(28)}`, { length: 32, strategy: 'assert-length' })
         const mockAsset = ctx.any.asset({
           total: 100,
           decimals: 0,

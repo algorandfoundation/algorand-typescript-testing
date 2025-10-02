@@ -45,7 +45,8 @@ export const DEFAULT_GLOBAL_GENESIS_HASH = Bytes(
     133, 89, 181, 20, 120, 253, 137, 193, 118, 67, 208, 93, 21, 168, 174, 107, 16, 171, 71, 187, 109, 138, 49, 136, 17, 86, 230, 189, 59,
     174, 149, 209,
   ]),
-).toFixed({ length: 32 })
+  { length: 32 },
+)
 
 /** @internal
  * algorand encoded address of 32 zero bytes

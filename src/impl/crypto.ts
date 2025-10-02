@@ -16,7 +16,7 @@ import { Bytes, BytesCls, Uint64Cls } from './primitives'
 export const sha256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha256.sha256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = Bytes(new Uint8Array(hashArray)).toFixed({ length: 32 })
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
   return hashBytes
 }
 
@@ -24,7 +24,7 @@ export const sha256 = (a: StubBytesCompat): bytes<32> => {
 export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.sha3_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = Bytes(new Uint8Array(hashArray)).toFixed({ length: 32 })
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
   return hashBytes
 }
 
@@ -32,7 +32,7 @@ export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
 export const keccak256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.keccak256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = Bytes(new Uint8Array(hashArray)).toFixed({ length: 32 })
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
   return hashBytes
 }
 
@@ -40,7 +40,7 @@ export const keccak256 = (a: StubBytesCompat): bytes<32> => {
 export const sha512_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha512.sha512_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = Bytes(new Uint8Array(hashArray)).toFixed({ length: 32 })
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
   return hashBytes
 }
 
@@ -114,7 +114,7 @@ export const ecdsaPkRecover = (
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(x).toFixed({ length: 32 }), Bytes(y).toFixed({ length: 32 })]
+  return [Bytes(x, { length: 32 }), Bytes(y, { length: 32 })]
 }
 
 /** @internal */
@@ -127,7 +127,7 @@ export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(x).toFixed({ length: 32 }), Bytes(y).toFixed({ length: 32 })]
+  return [Bytes(x, { length: 32 }), Bytes(y, { length: 32 })]
 }
 
 /** @internal */

@@ -202,17 +202,17 @@ describe('Bytes', async () => {
     it('should be able to create fixed size bytes with no parameter', () => {
       const x = op.bzero(32)
       expect(x.length).toEqual(32)
-      expect(x).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000').toFixed({ length: 32 }))
-      expect(x).toEqual(Bytes.fromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=').toFixed({ length: 32 }))
-      expect(x).toEqual(Bytes.fromBase32('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==').toFixed({ length: 32 }))
+      expect(x).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000', { length: 32 }))
+      expect(x).toEqual(Bytes.fromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=', { length: 32 }))
+      expect(x).toEqual(Bytes.fromBase32('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==', { length: 32 }))
     })
 
     it('should be able to create fixed size bytes with parameter', () => {
-      const x1 = Bytes(new Uint8Array(32)).toFixed({ length: 32 })
+      const x1 = Bytes(new Uint8Array(32), { length: 32 })
       expect(x1.length).toEqual(32)
       expect(x1).toEqual(op.bzero(32))
 
-      const x2 = Bytes('abcdefghijklmnopqrstuvwxyz123456').toFixed({ length: 32 })
+      const x2 = Bytes('abcdefghijklmnopqrstuvwxyz123456', { length: 32 })
       expect(x2.length).toEqual(32)
       expect(x2).toEqual(Bytes('abcdefghijklmnopqrstuvwxyz123456'))
       expect(x2).toEqual(Bytes.fromHex('6162636465666768696a6b6c6d6e6f707172737475767778797a313233343536'))
@@ -238,8 +238,8 @@ describe('Bytes', async () => {
 
       const x3 = convertBytes<StaticArray<StaticArray<Byte, 32>, 2>>(op.bzero(64), { strategy: 'unsafe-cast' })
       expect(x3.length).toEqual(2)
-      expect(x3[0].bytes).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000').toFixed({ length: 32 }))
-      expect(x3[1].bytes).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000').toFixed({ length: 32 }))
+      expect(x3[0].bytes).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000', { length: 32 }))
+      expect(x3[1].bytes).toEqual(Bytes.fromHex('0000000000000000000000000000000000000000000000000000000000000000', { length: 32 }))
     })
   })
 })
