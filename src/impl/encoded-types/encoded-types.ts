@@ -354,7 +354,8 @@ export class Bool extends _Bool implements _ARC4Encodedint8Array {
 /** @internal */
 export class StaticArray<TItem extends _ARC4Encoded, TLength extends number>
   extends _StaticArray<TItem, TLength>
-  implements _ARC4Encodedint8Array {
+  implements _ARC4Encodedint8Array
+{
   private _value?: NTuple<TItem, TLength>
   private _uint8ArrayValue?: Uint8Array
   private size: number
@@ -792,7 +793,7 @@ export class Struct<T extends StructConstraint> extends (_Struct<StructConstrain
     if (this._uint8ArrayValue) {
       const values = decode(this._uint8ArrayValue, Object.values(this.genericArgs))
       Object.keys(this.genericArgs).forEach((key, index) => {
-        ; (this as unknown as StructConstraint)[key] = values[index]
+        ;(this as unknown as StructConstraint)[key] = values[index]
       })
       this._uint8ArrayValue = undefined
     }

@@ -1,3 +1,2 @@
 /** @internal */
-export function validateEncoding<T>(value: T) {
-}
+export function validateEncoding<T>(_value: T) {}

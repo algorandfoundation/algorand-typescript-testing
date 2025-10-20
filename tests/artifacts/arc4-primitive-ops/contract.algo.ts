@@ -425,4 +425,4 @@ class SwappedArc4 extends arc4.Struct<{
   r: arc4.StaticArray<arc4.Uint8, 3>
   s: arc4.DynamicArray<arc4.Uint16>
   t: arc4.Tuple<[arc4.Uint32, arc4.Uint64, arc4.Str]>
-}> { }
+}> {}
