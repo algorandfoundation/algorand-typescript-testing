@@ -73,5 +73,5 @@ For a full list of all public `algorand-typescript` types and their correspondin
 
 ## Data Validation
 
-Algorand TypeScript and the puya compiler have functionality to perform validation of transaction inputs via the `--validate-abi-args`, `--validate-abi-return` CLI arguments, `arc4.abimethod({validateEncoding: ...})` decorator and `validateEncoding(...)` method.
+Algorand TypeScript and the puya compiler have functionality to perform validation of transaction inputs via the `--validate-abi-args`, `--validate-abi-return` CLI arguments, `arc4.abimethod({validateEncoding: ...})` decorator, `convertBytes(..., { strategy: 'validate' }) method` and `validateEncoding(...)` method.
 The Algorand TypeScript Testing library does _NOT_ implement this validation behaviour, as you should test invalid inputs using an integrated test against a real Algorand network.
