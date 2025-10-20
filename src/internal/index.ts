@@ -5,6 +5,8 @@ export { BaseContract, contract } from '../impl/base-contract'
 /** @internal */
 export { clone } from '../impl/clone'
 /** @internal */
+export { validateEncoding } from '../impl/validate-encoding'
+/** @internal */
 export { compile } from '../impl/compiled'
 /** @internal */
 export { abimethod, baremethod, Contract, readonly } from '../impl/contract'

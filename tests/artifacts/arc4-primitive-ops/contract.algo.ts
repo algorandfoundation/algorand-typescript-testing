@@ -1,15 +1,16 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { arc4, BigUint, clone, emit } from '@algorandfoundation/algorand-typescript'
+import { arc4, BigUint, clone, emit, validateEncoding } from '@algorandfoundation/algorand-typescript'
 import type { Bool, UFixed } from '@algorandfoundation/algorand-typescript/arc4'
 import { Byte, Contract, convertBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class Arc4PrimitiveOpsContract extends Contract {
-  @arc4.abimethod()
+  @arc4.abimethod({ validateEncoding: 'unsafe-disabled' })
   public verify_uintn_uintn_eq(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
     const aUintN = new Uint<64>(aBiguint)
     const bUintN = new Uint<64>(bBiguint)
+    validateEncoding(aUintN)
     return aUintN === bUintN
   }
   @arc4.abimethod()

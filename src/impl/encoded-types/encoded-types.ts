@@ -1220,7 +1220,7 @@ export function decodeArc4<T>(
 export function convertBytes<T extends _ARC4Encoded>(
   typeInfoString: string,
   bytes: StubBytesCompat,
-  options: { prefix?: 'none' | 'log'; strategy: 'unsafe-cast' },
+  options: { prefix?: 'none' | 'log'; strategy: 'unsafe-cast' | 'validate' },
 ): T {
   const typeInfo = JSON.parse(typeInfoString)
   return getEncoder<T>(typeInfo)(bytes, typeInfo, options.prefix)
