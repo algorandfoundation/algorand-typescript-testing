@@ -71,7 +71,8 @@ describe('arc4.Address', () => {
 
   test.each(testData)('fromBytes method', (value) => {
     const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString, {})
-    const result = convertBytes<Address>(value, { strategy: 'unsafe-cast' })
+    // no actual validation in testing lib, just making sure 'validate' strategy value can be passed
+    const result = convertBytes<Address>(value, { strategy: 'validate' })
     expect(result.bytes).toEqual(sdkResult)
   })
 
