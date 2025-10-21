@@ -15,9 +15,9 @@ import { AccountMap } from '../collections/custom-key-map'
 import { MAX_BOX_SIZE } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { TypeInfo } from '../encoders'
-import { getEncoder, toBytes } from '../encoders'
-import { AssertError, InternalError } from '../errors'
-import { getGenericTypeInfo } from '../runtime-helpers'
+import { getEncoder, minLengthForType, toBytes } from '../encoders'
+import { AssertError, CodeError, InternalError } from '../errors'
+import { getGenericTypeInfo, tryArc4EncodedLengthImpl } from '../runtime-helpers'
 import { asBytes, asBytesCls, asNumber, asUint8Array, conactUint8Arrays } from '../util'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 import { Bytes, Uint64, Uint64Cls } from './primitives'
@@ -136,6 +136,17 @@ export class BoxCls<TValue> {
 
   private readonly _type: string = BoxCls.name
 
+  private get valueType(): TypeInfo {
+    if (this.#valueType === undefined) {
+      const typeInfo = getGenericTypeInfo(this)
+      if (typeInfo === undefined || typeInfo.genericArgs === undefined || typeInfo.genericArgs.length !== 1) {
+        throw new InternalError('Box value type is not set')
+      }
+      this.#valueType = (typeInfo.genericArgs as TypeInfo[])[0]
+    }
+    return this.#valueType
+  }
+
   static [Symbol.hasInstance](x: unknown): x is BoxCls<unknown> {
     return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === BoxCls.name
   }
@@ -151,6 +162,35 @@ export class BoxCls<TValue> {
     return (val: Uint8Array) => getEncoder<TValue>(valueType)(val, valueType)
   }
 
+  create(options?: { size?: StubUint64Compat }): boolean {
+    const optionSize = options?.size !== undefined ? asNumber(options.size) : undefined
+    const valueTypeSize = tryArc4EncodedLengthImpl(this.valueType)
+
+    if (valueTypeSize === undefined && optionSize === undefined) {
+      throw new InternalError(`${this.valueType.name} does not have a fixed byte size. Please specify a size argument`)
+    }
+
+    if (valueTypeSize !== undefined && optionSize !== undefined) {
+      if (optionSize < valueTypeSize) {
+        throw new InternalError(`Box size cannot be less than ${valueTypeSize}`)
+      }
+
+      if (optionSize > valueTypeSize) {
+        process.emitWarning(
+          `Box size is set to ${optionSize} but the value type ${this.valueType.name} has a fixed size of ${valueTypeSize}`,
+        )
+      }
+    }
+
+    lazyContext.ledger.setBox(
+      this.#app,
+      this.key,
+      new Uint8Array(Math.max(asNumber(options?.size ?? 0), this.valueType ? minLengthForType(this.valueType) : 0)),
+    )
+
+    return true
+  }
+
   get value(): TValue {
     if (!this.exists) {
       throw new InternalError('Box has not been created')
@@ -164,8 +204,17 @@ export class BoxCls<TValue> {
     lazyContext.ledger.setMatrialisedBox(this.#app, this.key, materialised)
     return materialised
   }
+
   set value(v: TValue) {
-    lazyContext.ledger.setBox(this.#app, this.key, asUint8Array(toBytes(v)))
+    const isStaticValueType = tryArc4EncodedLengthImpl(this.valueType) !== undefined
+    const newValueBytes = asUint8Array(toBytes(v))
+    if (isStaticValueType && this.exists) {
+      const originalValueBytes = lazyContext.ledger.getBox(this.#app, this.key)
+      if (originalValueBytes.length !== newValueBytes.length) {
+        throw new CodeError(`attempt to box_put wrong size ${originalValueBytes.length} != ${newValueBytes.length}`)
+      }
+    }
+    lazyContext.ledger.setBox(this.#app, this.key, newValueBytes)
     lazyContext.ledger.setMatrialisedBox(this.#app, this.key, v)
   }
 

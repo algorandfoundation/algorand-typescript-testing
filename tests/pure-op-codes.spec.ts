@@ -185,7 +185,7 @@ describe('Pure op codes', async () => {
       Bytes(encodingUtil.bigIntToUint8Array(MAX_UINT512 * MAX_UINT512, 128)),
       Bytes(Array(5).fill(0x00).concat(Array(4).fill(0x0f))),
     ])('should throw error when input overflows', async (a, { appClientMiscellaneousOpsContract: appClient }) => {
-      const errorRegex = new RegExp(`btoi arg too long, got \\[${a.length.valueOf()}\\]bytes`)
+      const errorRegex = new RegExp(`btoi arg too long, got ${a.length.valueOf()} bytes`)
       await expect(getAvmResultRaw({ appClient }, 'verify_btoi', asUint8Array(a))).rejects.toThrow(errorRegex)
       expect(() => op.btoi(a)).toThrow(errorRegex)
     })
