@@ -64,3 +64,8 @@ As explained in the [introduction](index.md), `algorand-typescript-testing` _inj
 3. **Mockable**: Not implemented, but can be mocked or patched. For example, `op.onlineStake` can be mocked to return specific values or behaviors; otherwise, it raises a `NotImplementedError`. This category covers cases where native or emulated implementation in a unit test context is impractical or overly complex.
 
 For a full list of all public `algorand-typescript` types and their corresponding implementation category, refer to the [Coverage](../coverage.md) section.
+
+## Data Validation
+
+Algorand TypeScript and the puya compiler have functionality to perform validation of transaction inputs via the `--validate-abi-args`, `--validate-abi-return` CLI arguments, `arc4.abimethod({validateEncoding: ...})` decorator, and `validateEncoding(...)` method.
+The Algorand TypeScript Testing library does _NOT_ implement this validation behaviour, as you should test invalid inputs using an integrated test against a real Algorand network.
