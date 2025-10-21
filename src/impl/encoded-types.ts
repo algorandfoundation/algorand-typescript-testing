@@ -2,6 +2,7 @@ import type {
   Account as AccountType,
   BigUintCompat,
   bytes,
+  NTuple,
   StringCompat,
   uint64,
   Uint64Compat,
@@ -417,8 +418,8 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     )
   }
 
-  get native(): TItem[] {
-    return this.items
+  get native(): NTuple<TItem, TLength> {
+    return this.items as NTuple<TItem, TLength>
   }
 
   static fromBytesImpl(
@@ -433,7 +434,7 @@ export class StaticArrayImpl<TItem extends ARC4Encoded, TLength extends number> 
     }
     const result = new StaticArrayImpl(typeInfo)
     result.uint8ArrayValue = asUint8Array(bytesValue)
-    return result
+    return result as StaticArrayImpl<ARC4Encoded, number>
   }
 
   static getMaxBytesLength(typeInfo: TypeInfo): number {
@@ -1086,6 +1087,8 @@ const getMaxLengthOfStaticContentType = (type: TypeInfo): number => {
     case 'biguint':
       return UINT512_SIZE / BITS_IN_BYTE
     case 'boolean':
+      return 8
+    case 'Bool':
       return 1
     case 'Address':
       return AddressImpl.getMaxBytesLength(type)
@@ -1103,8 +1106,9 @@ const getMaxLengthOfStaticContentType = (type: TypeInfo): number => {
       return TupleImpl.getMaxBytesLength(type)
     case 'Struct':
       return StructImpl.getMaxBytesLength(type)
+    default:
+      throw new CodeError(`unsupported type ${type.name}`)
   }
-  throw new CodeError(`unsupported type ${type.name}`)
 }
 
 const encode = (values: ARC4Encoded[]) => {
@@ -1358,4 +1362,18 @@ export const getArc4Encoded = (value: DeliberateAny): ARC4Encoded => {
 export const arc4EncodedLengthImpl = (typeInfoString: string): uint64 => {
   const typeInfo = JSON.parse(typeInfoString)
   return getMaxLengthOfStaticContentType(typeInfo)
+}
+
+export const tryArc4EncodedLengthImpl = (typeInfoString: string | TypeInfo): uint64 | undefined => {
+  const typeInfo = typeof typeInfoString === 'string' ? JSON.parse(typeInfoString) : typeInfoString
+
+  try {
+    return getMaxLengthOfStaticContentType(typeInfo)
+  } catch (e) {
+    if (e instanceof CodeError && e.message.startsWith('unsupported type')) {
+      return undefined
+    }
+
+    throw e
+  }
 }
