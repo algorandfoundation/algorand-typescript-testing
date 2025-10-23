@@ -5,10 +5,13 @@ import { createArc4TestFixture } from '../test-fixture'
 
 describe('resource encoding', () => {
   const ctx = new TestExecutionContext()
-  const test = createArc4TestFixture('tests/artifacts/resource-encoding/contract.algo.ts', {
-    ByIndex: {},
-    ByValue: {},
-    C2C: { funding: algo(1) },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/resource-encoding/contract.algo.ts',
+    contracts: {
+      ByIndex: {},
+      ByValue: {},
+      C2C: { funding: algo(1) },
+    },
   })
 
   afterEach(() => {

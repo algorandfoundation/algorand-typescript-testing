@@ -7,9 +7,12 @@ import { ItxnComposeAlgo, VerifierContract } from './artifacts/itxn-compose/cont
 import { createArc4TestFixture } from './test-fixture'
 
 describe('itxn compose', async () => {
-  const test = createArc4TestFixture('tests/artifacts/itxn-compose/contract.algo.ts', {
-    ItxnComposeAlgo: { funding: algos(5) },
-    VerifierContract: {},
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/itxn-compose/contract.algo.ts',
+    contracts: {
+      ItxnComposeAlgo: { funding: algos(5) },
+      VerifierContract: {},
+    },
   })
   const ctx = new TestExecutionContext()
 

@@ -41,8 +41,11 @@ class SwappedArc4 extends arc4.Struct<{
 }> {}
 
 describe('arc4.emit', async () => {
-  const test = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
-    Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
+    contracts: {
+      Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
   const ctx = new TestExecutionContext()
 

@@ -8,8 +8,11 @@ import { getAvmResult } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
 
 describe('arc4.Bool', async () => {
-  const test = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
-    Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
+    contracts: {
+      Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
   const ctx = new TestExecutionContext()
 

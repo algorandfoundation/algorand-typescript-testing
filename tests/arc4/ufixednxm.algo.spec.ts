@@ -11,8 +11,11 @@ import { createArc4TestFixture } from '../test-fixture'
 
 const invalidBytesLengthError = (length: number) => `byte string must correspond to a ufixed${length}`
 describe('arc4.UFixed', async () => {
-  const test = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
-    Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
+    contracts: {
+      Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
   const ctx = new TestExecutionContext()
 

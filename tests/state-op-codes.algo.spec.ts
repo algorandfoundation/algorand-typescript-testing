@@ -33,17 +33,20 @@ import { generateTestAsset, getAvmResult, INITIAL_BALANCE_MICRO_ALGOS } from './
 import { createArc4TestFixture } from './test-fixture'
 
 describe('State op codes', async () => {
-  const test = createArc4TestFixture('tests/artifacts/state-ops/contract.algo.ts', {
-    ItxnDemoContract: {},
-    ITxnOpsContract: {},
-    StateAcctParamsGetContract: {},
-    StateAppGlobalContract: {},
-    StateAppGlobalExContract: {},
-    StateAppLocalContract: {},
-    StateAppLocalExContract: {},
-    StateAppParamsContract: {},
-    StateAssetHoldingContract: {},
-    StateAssetParamsContract: {},
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/state-ops/contract.algo.ts',
+    contracts: {
+      ItxnDemoContract: {},
+      ITxnOpsContract: {},
+      StateAcctParamsGetContract: {},
+      StateAppGlobalContract: {},
+      StateAppGlobalExContract: {},
+      StateAppLocalContract: {},
+      StateAppLocalExContract: {},
+      StateAppParamsContract: {},
+      StateAssetHoldingContract: {},
+      StateAssetParamsContract: {},
+    },
   })
   const ctx = new TestExecutionContext()
 

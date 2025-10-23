@@ -15,10 +15,13 @@ const _FUNDED_ACCOUNT_SPENDING = Uint64(1234)
 
 describe('methodSelector', async () => {
   const ctx = new TestExecutionContext()
-  const test = createArc4TestFixture('tests/artifacts/arc4-abi-method/contract.algo.ts', {
-    SignaturesContract: {
-      deployParams: { createParams: { extraProgramPages: undefined, method: 'create' } },
-      funding: new AlgoAmount({ microAlgos: Global.minBalance + _FUNDED_ACCOUNT_SPENDING }),
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/arc4-abi-method/contract.algo.ts',
+    contracts: {
+      SignaturesContract: {
+        deployParams: { createParams: { extraProgramPages: undefined, method: 'create' } },
+        funding: new AlgoAmount({ microAlgos: Global.minBalance + _FUNDED_ACCOUNT_SPENDING }),
+      },
     },
   })
 

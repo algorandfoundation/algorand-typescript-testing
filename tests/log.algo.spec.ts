@@ -21,8 +21,11 @@ import { getAvmResultLog } from './avm-invoker'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('log', async () => {
-  const test = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
-    PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/primitive-ops/contract.algo.ts',
+    contracts: {
+      PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
   const ctx = new TestExecutionContext()
 

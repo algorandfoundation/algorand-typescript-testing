@@ -2,7 +2,7 @@ import { describe } from 'vitest'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('switch statements', () => {
-  const test = createArc4TestFixture('tests/artifacts/switch-statements/contract.algo.ts', { DemoContract: {} })
+  const test = createArc4TestFixture({ path: 'tests/artifacts/switch-statements/contract.algo.ts', contracts: { DemoContract: {} } })
 
   test('runs', async ({ appClientDemoContract }) => {
     await appClientDemoContract.send.call({ method: 'run', args: [] })

@@ -12,8 +12,11 @@ import { getAvmResult, getAvmResultRaw } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
 
 describe('BigUint', async () => {
-  const test = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
-    PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/primitive-ops/contract.algo.ts',
+    contracts: {
+      PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
 
   describe.each(['eq', 'ne', 'lt', 'le', 'gt', 'ge'])('logical operators', async (op) => {
