@@ -4,7 +4,7 @@ import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-te
 import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 
 import { Address, Bool, Byte, DynamicBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { OnApplicationComplete } from '../src/constants'
 
 import type { DeliberateAny } from '../src/typescript-helpers'
@@ -13,14 +13,10 @@ import { getAvmResult } from './avm-invoker'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('ARC4 AppLocal values', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/state-ops/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/state-ops/contract.algo.ts', {
     LocalStateContract: {},
   })
   const ctx = new TestExecutionContext()
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
 
   afterEach(() => {
     ctx.reset()

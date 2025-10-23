@@ -3,7 +3,7 @@
 import type { biguint } from '@algorandfoundation/algorand-typescript'
 import { BigUint, Bytes, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { beforeAll, describe, expect } from 'vitest'
+import { describe, expect } from 'vitest'
 import { BIGUINT_OVERFLOW_UNDERFLOW_MESSAGE, MAX_UINT512, MAX_UINT64 } from '../../src/constants'
 
 import { BigUintCls } from '../../src/impl/primitives'
@@ -12,11 +12,8 @@ import { getAvmResult, getAvmResultRaw } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
 
 describe('BigUint', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
     PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
-  })
-  beforeAll(async () => {
-    await localnetFixture.newScope()
   })
 
   describe.each(['eq', 'ne', 'lt', 'le', 'gt', 'ge'])('logical operators', async (op) => {

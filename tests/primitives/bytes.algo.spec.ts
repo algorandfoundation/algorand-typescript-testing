@@ -1,7 +1,7 @@
 import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { Bytes, FixedArray, op } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { MAX_BYTES_SIZE } from '../../src/constants'
 
 import type { Byte, StaticArray } from '@algorandfoundation/algorand-typescript/arc4'
@@ -14,12 +14,8 @@ import { createArc4TestFixture } from '../test-fixture'
 import { getSha256Hash, padUint8Array } from '../util'
 
 describe('Bytes', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
     PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
-  })
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
   })
 
   describe.each([

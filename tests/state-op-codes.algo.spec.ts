@@ -3,7 +3,7 @@ import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-clie
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { Account, arc4, Bytes, Global, OnCompleteAction, op, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { DynamicBytes } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MIN_TXN_FEE, OnApplicationComplete, ZERO_ADDRESS } from '../src/constants'
 import { lazyContext } from '../src/context-helpers/internal-context'
@@ -33,7 +33,7 @@ import { generateTestAsset, getAvmResult, INITIAL_BALANCE_MICRO_ALGOS } from './
 import { createArc4TestFixture } from './test-fixture'
 
 describe('State op codes', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/state-ops/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/state-ops/contract.algo.ts', {
     ItxnDemoContract: {},
     ITxnOpsContract: {},
     StateAcctParamsGetContract: {},
@@ -47,9 +47,6 @@ describe('State op codes', async () => {
   })
   const ctx = new TestExecutionContext()
 
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
   afterEach(() => {
     ctx.reset()
   })
@@ -68,8 +65,8 @@ describe('State op codes', async () => {
       ['verify_acct_total_assets', 0],
       ['verify_acct_total_boxes', 0],
       ['verify_acct_total_box_bytes', 0],
-    ])('%s should return %s', async ([methodName, expectedValue], { appClientStateAcctParamsGetContract: appClient }) => {
-      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+    ])('%s should return %s', async ([methodName, expectedValue], { appClientStateAcctParamsGetContract: appClient, localnet }) => {
+      const dummyAccountAddress = await localnet.context.generateAccount({
         initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS + 100_000),
       })
       const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())
@@ -102,8 +99,11 @@ describe('State op codes', async () => {
       expect(mockResult).toEqual(expectedValue)
     })
 
-    test('should return true when account is eligible for incentive', async ({ appClientStateAcctParamsGetContract: appClient }) => {
-      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+    test('should return true when account is eligible for incentive', async ({
+      appClientStateAcctParamsGetContract: appClient,
+      localnet,
+    }) => {
+      const dummyAccountAddress = await localnet.context.generateAccount({
         initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS),
       })
       const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())
@@ -135,8 +135,8 @@ describe('State op codes', async () => {
       expect(avmResult).toEqual(true)
     })
 
-    test('should return last round as last proposed and last hearbeat by default', async () => {
-      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+    test('should return last round as last proposed and last hearbeat by default', async ({ localnet }) => {
+      const dummyAccountAddress = await localnet.context.generateAccount({
         initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS),
       })
       const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())
@@ -152,8 +152,8 @@ describe('State op codes', async () => {
       expect(lastHeartbeat).toEqual([Global.round, true])
     })
 
-    test('should return configured round as last proposed and last hearbeat', async () => {
-      const dummyAccountAddress = await localnetFixture.context.generateAccount({
+    test('should return configured round as last proposed and last hearbeat', async ({ localnet }) => {
+      const dummyAccountAddress = await localnet.context.generateAccount({
         initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS),
       })
       const dummyAccount = Bytes.fromBase32(dummyAccountAddress.addr.toString())

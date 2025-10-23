@@ -1,18 +1,16 @@
 import { algos } from '@algorandfoundation/algokit-utils'
 import { ApplicationSpy, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { Avm12Contract, ContractV0, ContractV1 } from './artifacts/avm12/contract.algo'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('avm12', () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/avm12/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/avm12/contract.algo.ts', {
     Avm12Contract: { funding: algos(1) },
   })
 
   const ctx = new TestExecutionContext()
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
+
   afterEach(() => {
     ctx.reset()
   })

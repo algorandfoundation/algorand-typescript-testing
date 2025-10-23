@@ -2,20 +2,17 @@ import { algos } from '@algorandfoundation/algokit-utils'
 import { Bytes, TransactionType } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { Address } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { ItxnComposeAlgo, VerifierContract } from './artifacts/itxn-compose/contract.algo'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('itxn compose', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/itxn-compose/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/itxn-compose/contract.algo.ts', {
     ItxnComposeAlgo: { funding: algos(5) },
     VerifierContract: {},
   })
   const ctx = new TestExecutionContext()
 
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
   afterEach(() => {
     ctx.reset()
   })

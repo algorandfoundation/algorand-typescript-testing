@@ -4,7 +4,7 @@ import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-te
 import type { BitSize } from '@algorandfoundation/algorand-typescript/arc4'
 import { convertBytes, Uint, Uint16, Uint256, Uint32, Uint8 } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_UINT512, MAX_UINT64 } from '../../src/constants'
 import { asBigUintCls, asUint8Array } from '../../src/util'
 import { getAvmResult } from '../avm-invoker'
@@ -12,14 +12,11 @@ import { createArc4TestFixture } from '../test-fixture'
 
 const invalidBytesLengthError = (length: number) => `byte string must correspond to a uint${length}`
 describe('arc4.Uint', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
     Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
   })
   const ctx = new TestExecutionContext()
 
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
   afterEach(() => {
     ctx.reset()
   })

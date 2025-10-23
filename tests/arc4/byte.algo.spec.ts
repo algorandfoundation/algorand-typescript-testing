@@ -3,7 +3,7 @@ import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { Byte, convertBytes } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_UINT64 } from '../../src/constants'
 import { asBigUintCls, asUint8Array } from '../../src/util'
 import { getAvmResult } from '../avm-invoker'
@@ -11,15 +11,12 @@ import { createArc4TestFixture } from '../test-fixture'
 
 const invalidBytesLengthError = 'byte string must be 1 byte long'
 describe('arc4.Byte', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
+  const test = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
     Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
   })
 
   const ctx = new TestExecutionContext()
 
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
   afterEach(() => {
     ctx.reset()
   })
