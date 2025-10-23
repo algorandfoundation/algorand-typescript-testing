@@ -1,17 +1,14 @@
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach } from 'node:test'
-import { beforeAll, describe, expect } from 'vitest'
+import { describe, expect } from 'vitest'
 import { MultiBases } from './artifacts/multi-inheritance/contract.algo'
 import { getAvmResult } from './avm-invoker'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('multi-inheritance', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/multi-inheritance/contract.algo.ts', { MultiBases: {} })
+  const test = createArc4TestFixture({ path: 'tests/artifacts/multi-inheritance/contract.algo.ts', contracts: { MultiBases: {} } })
   const ctx = new TestExecutionContext()
 
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
   afterEach(() => ctx.reset())
 
   test('should be able to call methods from super classes', async ({ appClientMultiBases: appClient }) => {

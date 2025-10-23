@@ -1,18 +1,17 @@
 import { algo } from '@algorandfoundation/algokit-utils'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../../src/test-execution-context'
 import { createArc4TestFixture } from '../test-fixture'
 
 describe('resource encoding', () => {
   const ctx = new TestExecutionContext()
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/resource-encoding/contract.algo.ts', {
-    ByIndex: {},
-    ByValue: {},
-    C2C: { funding: algo(1) },
-  })
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/resource-encoding/contract.algo.ts',
+    contracts: {
+      ByIndex: {},
+      ByValue: {},
+      C2C: { funding: algo(1) },
+    },
   })
 
   afterEach(() => {

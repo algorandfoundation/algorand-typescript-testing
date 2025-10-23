@@ -1,6 +1,6 @@
 import { algo } from '@algorandfoundation/algokit-utils'
 import { methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { ApplicationSpy } from '../../src/application-spy'
 import { TestExecutionContext } from '../../src/test-execution-context'
 import { ContractTwo } from '../artifacts/circurlar-reference/circular-reference-2.algo'
@@ -9,13 +9,12 @@ import { createArc4TestFixture } from '../test-fixture'
 
 describe('circular reference', () => {
   const ctx = new TestExecutionContext()
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/circurlar-reference', {
-    ContractOne: { funding: algo(1) },
-    ContractTwo: { funding: algo(1) },
-  })
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/circurlar-reference',
+    contracts: {
+      ContractOne: { funding: algo(1) },
+      ContractTwo: { funding: algo(1) },
+    },
   })
 
   afterEach(() => {

@@ -1,7 +1,7 @@
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { Base64, BigUint, Bytes, err, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import {
   BIGUINT_OVERFLOW_UNDERFLOW_MESSAGE,
@@ -21,14 +21,13 @@ const extractOutOfBoundError = /extraction (start|end) \d+ is beyond length/
 const sqrtMaxUint64 = 4294967295n
 
 describe('Pure op codes', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/miscellaneous-ops/contract.algo.ts', {
-    MiscellaneousOpsContract: {},
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/miscellaneous-ops/contract.algo.ts',
+    contracts: {
+      MiscellaneousOpsContract: {},
+    },
   })
   const ctx = new TestExecutionContext()
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
 
   afterEach(() => {
     ctx.reset()

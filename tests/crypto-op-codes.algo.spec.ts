@@ -7,7 +7,7 @@ import js_sha3 from 'js-sha3'
 import js_sha512 from 'js-sha512'
 import nacl from 'tweetnacl'
 import type { Mock } from 'vitest'
-import { afterEach, beforeAll, describe, expect, vi } from 'vitest'
+import { afterEach, describe, expect, vi } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { LOGIC_DATA_PREFIX, MAX_BYTES_SIZE, PROGRAM_TAG } from '../src/constants'
 import { BytesCls, Uint64Cls } from '../src/impl/primitives'
@@ -35,12 +35,8 @@ vi.mock('../src/impl/crypto', async (importOriginal) => {
 })
 
 describe('crypto op codes', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/crypto-ops/contract.algo.ts', { CryptoOpsContract: {} })
+  const test = createArc4TestFixture({ path: 'tests/artifacts/crypto-ops/contract.algo.ts', contracts: { CryptoOpsContract: {} } })
   const ctx = new TestExecutionContext()
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
 
   afterEach(() => {
     ctx.reset()
@@ -125,7 +121,7 @@ describe('crypto op codes', async () => {
   })
 
   describe('ed25519verify', async () => {
-    test('should return true for valid signature', async ({ appFactoryCryptoOpsContract }) => {
+    test('should return true for valid signature', async ({ appFactoryCryptoOpsContract, localnet }) => {
       const app = await appFactoryCryptoOpsContract.deploy({})
       const approval = app.result.compiledApproval!
       const appCallTxn = ctx.any.txn.applicationCall({
@@ -133,7 +129,7 @@ describe('crypto op codes', async () => {
       })
 
       const message = Bytes('Test message for ed25519 verification')
-      const account = await localnetFixture.context.generateAccount({
+      const account = await localnet.context.generateAccount({
         initialFunds: AlgoAmount.MicroAlgos(INITIAL_BALANCE_MICRO_ALGOS + 100_000),
       })
 

@@ -12,7 +12,7 @@ import {
   Uint32,
   Uint8,
 } from '@algorandfoundation/algorand-typescript/arc4'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../src/constants'
 import type { ApplicationCallTransaction } from '../src/impl/transactions'
 import { asBigUint, asBigUintCls, asUint8Array } from '../src/util'
@@ -21,14 +21,14 @@ import { getAvmResultLog } from './avm-invoker'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('log', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
-    PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/primitive-ops/contract.algo.ts',
+    contracts: {
+      PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
   const ctx = new TestExecutionContext()
 
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
   afterEach(() => {
     ctx.reset()
   })

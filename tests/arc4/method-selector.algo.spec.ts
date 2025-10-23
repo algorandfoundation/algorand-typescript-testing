@@ -4,7 +4,7 @@ import { arc4, Bytes, Global, Uint64 } from '@algorandfoundation/algorand-typesc
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { DynamicArray, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { toBytes } from '../../src/impl/encoded-types/encoded-types'
 import { encodeAddress } from '../../src/impl/reference'
 import { AnotherStruct, MyStruct, SignaturesContract } from '../artifacts/arc4-abi-method/contract.algo'
@@ -15,15 +15,14 @@ const _FUNDED_ACCOUNT_SPENDING = Uint64(1234)
 
 describe('methodSelector', async () => {
   const ctx = new TestExecutionContext()
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/arc4-abi-method/contract.algo.ts', {
-    SignaturesContract: {
-      deployParams: { createParams: { extraProgramPages: undefined, method: 'create' } },
-      funding: new AlgoAmount({ microAlgos: Global.minBalance + _FUNDED_ACCOUNT_SPENDING }),
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/arc4-abi-method/contract.algo.ts',
+    contracts: {
+      SignaturesContract: {
+        deployParams: { createParams: { extraProgramPages: undefined, method: 'create' } },
+        funding: new AlgoAmount({ microAlgos: Global.minBalance + _FUNDED_ACCOUNT_SPENDING }),
+      },
     },
-  })
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
   })
 
   afterEach(() => {

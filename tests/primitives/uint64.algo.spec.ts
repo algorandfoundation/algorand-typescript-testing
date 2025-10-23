@@ -1,6 +1,6 @@
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
 import { Uint64 } from '@algorandfoundation/algorand-typescript'
-import { beforeAll, describe, expect } from 'vitest'
+import { describe, expect } from 'vitest'
 import { MAX_UINT64, UINT64_OVERFLOW_UNDERFLOW_MESSAGE } from '../../src/constants'
 import { Uint64Cls } from '../../src/impl/primitives'
 import { asUint64 } from '../../src/util'
@@ -8,13 +8,13 @@ import { getAvmResult } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
 
 describe('Unit64', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/primitive-ops/contract.algo.ts', {
-    PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/primitive-ops/contract.algo.ts',
+    contracts: {
+      PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
 
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
   describe.each(['eq', 'ne', 'lt', 'le', 'gt', 'ge'])('logical operators', async (op) => {
     const operator = (function () {
       switch (op) {

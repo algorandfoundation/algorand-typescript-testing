@@ -1,7 +1,7 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { arc4, BigUint, Bytes, emit, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
-import { afterEach, beforeAll, describe, expect } from 'vitest'
+import { afterEach, describe, expect } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../../src/constants'
 import { getAvmResultLog } from '../avm-invoker'
 
@@ -41,14 +41,13 @@ class SwappedArc4 extends arc4.Struct<{
 }> {}
 
 describe('arc4.emit', async () => {
-  const [test, localnetFixture] = createArc4TestFixture('tests/artifacts/arc4-primitive-ops/contract.algo.ts', {
-    Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+  const test = createArc4TestFixture({
+    path: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
+    contracts: {
+      Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
+    },
   })
   const ctx = new TestExecutionContext()
-
-  beforeAll(async () => {
-    await localnetFixture.newScope()
-  })
 
   afterEach(() => {
     ctx.reset()
