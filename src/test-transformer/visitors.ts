@@ -1,4 +1,4 @@
-import { LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
+import { AbsolutePath, LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
 import path from 'path'
 import ts from 'typescript'
 import { CodeError } from '../errors'
@@ -56,7 +56,8 @@ export class SourceFileVisitor {
     this.context = { ...context, currentDirectory: program.getCurrentDirectory() }
     const typeChecker = program.getTypeChecker()
     const loggingContext = LoggingContext.create()
-    const typeResolver = new TypeResolver(typeChecker, program.getCurrentDirectory())
+    const programDir = AbsolutePath.resolve({ path: program.getCurrentDirectory() })
+    const typeResolver = new TypeResolver(typeChecker, programDir)
     this.helper = {
       additionalStatements: [],
       resolveType(node: ts.Node): ptypes.PType {
@@ -83,7 +84,7 @@ export class SourceFileVisitor {
       },
       sourceLocation(node: ts.Node): SourceLocation {
         try {
-          return SourceLocation.fromNode(node, program.getCurrentDirectory())
+          return SourceLocation.fromNode(node, programDir)
         } catch {
           return SourceLocation.None
         }
