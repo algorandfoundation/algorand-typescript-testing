@@ -7,12 +7,6 @@ on:
       - main
       - release
   workflow_dispatch:
-    inputs:
-      publish-prod-release:
-        description: "Publishing a production release? If false (default), won't create a production release."
-        type: boolean
-        required: false
-        default: false
 
 concurrency: release
 
@@ -20,9 +14,6 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
-
-env:
-  PUBLISH_RELEASE: ${{ (github.ref_name != 'release' || inputs.publish-prod-release) && 'true' || 'false' }}
 
 jobs:
   build:
@@ -76,7 +67,6 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
 
       - name: Publish @algorandfoundation/algorand-typescript-testing
-        if: ${{ env.PUBLISH_RELEASE == 'true' }}
         uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_TOKEN }}
