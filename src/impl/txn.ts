@@ -1,29 +1,25 @@
-import { Account, Application, arc4, Asset, bytes, internal, TransactionType, uint64 } from '@algorandfoundation/algo-ts'
+import type { Account, Application, Asset, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
+import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
+import { InternalError } from '../errors'
 import { asNumber, asUint64, asUint64Cls } from '../util'
-// import {
-//   getApplicationTransaction,
-//   getAssetConfigTransaction,
-//   getAssetFreezeTransaction,
-//   getAssetTransferTransaction,
-//   getKeyRegistrationTransaction,
-//   getPaymentTransaction,
-//   getTransaction,
-// } from './gtxn'
+import type { StubUint64Compat } from './primitives'
 
-export const gaid = (a: internal.primitives.StubUint64Compat): uint64 => {
+/** @internal */
+export const gaid = (a: StubUint64Compat): uint64 => {
   const group = lazyContext.activeGroup
-  const transaction = group.transactions[asNumber(a)]
+  const transaction = group.getTransaction(asUint64(a))
   if (transaction.type === TransactionType.ApplicationCall) {
     return transaction.createdApp.id
   } else if (transaction.type === TransactionType.AssetConfig) {
     return transaction.createdAsset.id
   } else {
-    throw new internal.errors.InternalError(`transaction at index ${asNumber(a)} is not an Application Call or Asset Config`)
+    throw new InternalError(`transaction at index ${asNumber(a)} is not an Application Call or Asset Config`)
   }
 }
 
-export const Txn: internal.opTypes.TxnType = {
+/** @internal */
+export const Txn: typeof op.Txn = {
   get sender(): Account {
     return lazyContext.activeGroup.getTransaction().sender
   },
@@ -66,7 +62,7 @@ export const Txn: internal.opTypes.TxnType = {
   /**
    * 32 byte lease value
    */
-  get lease(): bytes {
+  get lease(): bytes<32> {
     return lazyContext.activeGroup.getTransaction().lease
   },
 
@@ -94,14 +90,14 @@ export const Txn: internal.opTypes.TxnType = {
   /**
    * 32 byte address
    */
-  get votePk(): bytes {
+  get votePk(): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().voteKey
   },
 
   /**
    * 32 byte address
    */
-  get selectionPk(): bytes {
+  get selectionPk(): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().selectionKey
   },
 
@@ -185,7 +181,7 @@ export const Txn: internal.opTypes.TxnType = {
   /**
    * The computed ID for this transaction. 32 bytes.
    */
-  get txId(): bytes {
+  get txId(): bytes<32> {
     return lazyContext.activeGroup.getTransaction().txnId
   },
 
@@ -193,57 +189,57 @@ export const Txn: internal.opTypes.TxnType = {
    * ApplicationID from ApplicationCall transaction
    */
   get applicationId(): Application {
-    return lazyContext.activeGroup.getApplicationTransaction().appId
+    return lazyContext.activeGroup.getApplicationCallTransaction().appId
   },
 
   /**
    * ApplicationCall transaction on completion action
    */
   get onCompletion(): uint64 {
-    const onCompletionStr = lazyContext.activeGroup.getApplicationTransaction().onCompletion
-    return asUint64(arc4.OnCompleteAction[onCompletionStr])
+    const onCompletion = lazyContext.activeGroup.getApplicationCallTransaction().onCompletion
+    return asUint64(onCompletion)
   },
 
   /**
    * Arguments passed to the application in the ApplicationCall transaction
    */
-  applicationArgs(a: internal.primitives.StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().appArgs(asUint64(a))
+  applicationArgs(a: StubUint64Compat): bytes {
+    return lazyContext.activeGroup.getApplicationCallTransaction().appArgs(asUint64(a))
   },
 
   /**
    * Number of ApplicationArgs
    */
   get numAppArgs(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numAppArgs
+    return lazyContext.activeGroup.getApplicationCallTransaction().numAppArgs
   },
 
   /**
    * Accounts listed in the ApplicationCall transaction
    */
-  accounts(a: internal.primitives.StubUint64Compat): Account {
-    return lazyContext.activeGroup.getApplicationTransaction().accounts(asUint64(a))
+  accounts(a: StubUint64Compat): Account {
+    return lazyContext.activeGroup.getApplicationCallTransaction().accounts(asUint64(a))
   },
 
   /**
    * Number of Accounts
    */
   get numAccounts(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numAccounts
+    return lazyContext.activeGroup.getApplicationCallTransaction().numAccounts
   },
 
   /**
    * Approval program
    */
   get approvalProgram(): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().approvalProgram
+    return lazyContext.activeGroup.getApplicationCallTransaction().approvalProgram
   },
 
   /**
    * Clear state program
    */
   get clearStateProgram(): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().clearStateProgram
+    return lazyContext.activeGroup.getApplicationCallTransaction().clearStateProgram
   },
 
   /**
@@ -305,7 +301,7 @@ export const Txn: internal.opTypes.TxnType = {
   /**
    * 32 byte commitment to unspecified asset metadata
    */
-  get configAssetMetadataHash(): bytes {
+  get configAssetMetadataHash(): bytes<32> {
     return lazyContext.activeGroup.getAssetConfigTransaction().metadataHash
   },
 
@@ -361,64 +357,64 @@ export const Txn: internal.opTypes.TxnType = {
   /**
    * Foreign Assets listed in the ApplicationCall transaction
    */
-  assets(a: internal.primitives.StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getApplicationTransaction().assets(asUint64(a))
+  assets(a: StubUint64Compat): Asset {
+    return lazyContext.activeGroup.getApplicationCallTransaction().assets(asUint64(a))
   },
 
   /**
    * Number of Assets
    */
   get numAssets(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numAssets
+    return lazyContext.activeGroup.getApplicationCallTransaction().numAssets
   },
 
   /**
    * Foreign Apps listed in the ApplicationCall transaction
    */
-  applications(a: internal.primitives.StubUint64Compat): Application {
-    return lazyContext.activeGroup.getApplicationTransaction().apps(asUint64(a))
+  applications(a: StubUint64Compat): Application {
+    return lazyContext.activeGroup.getApplicationCallTransaction().apps(asUint64(a))
   },
 
   /**
    * Number of Applications
    */
   get numApplications(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numApps
+    return lazyContext.activeGroup.getApplicationCallTransaction().numApps
   },
 
   /**
    * Number of global state integers in ApplicationCall
    */
   get globalNumUint(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().globalNumUint
+    return lazyContext.activeGroup.getApplicationCallTransaction().globalNumUint
   },
 
   /**
    * Number of global state byteslices in ApplicationCall
    */
   get globalNumByteSlice(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().globalNumBytes
+    return lazyContext.activeGroup.getApplicationCallTransaction().globalNumBytes
   },
 
   /**
    * Number of local state integers in ApplicationCall
    */
   get localNumUint(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().localNumUint
+    return lazyContext.activeGroup.getApplicationCallTransaction().localNumUint
   },
 
   /**
    * Number of local state byteslices in ApplicationCall
    */
   get localNumByteSlice(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().localNumBytes
+    return lazyContext.activeGroup.getApplicationCallTransaction().localNumBytes
   },
 
   /**
    * Number of additional pages for each of the application's approval and clear state programs. An ExtraProgramPages of 1 means 2048 more total bytes, or 1024 for each program.
    */
   get extraProgramPages(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().extraProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction().extraProgramPages
   },
 
   /**
@@ -431,15 +427,15 @@ export const Txn: internal.opTypes.TxnType = {
   /**
    * Log messages emitted by an application call (only with `itxn` in v5). Application mode only
    */
-  logs(a: internal.primitives.StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().logs(asUint64(a))
+  logs(a: StubUint64Compat): bytes {
+    return lazyContext.activeGroup.getApplicationCallTransaction().logs(asUint64(a))
   },
 
   /**
    * Number of Logs (only with `itxn` in v5). Application mode only
    */
   get numLogs(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numLogs
+    return lazyContext.activeGroup.getApplicationCallTransaction().numLogs
   },
 
   /**
@@ -453,48 +449,51 @@ export const Txn: internal.opTypes.TxnType = {
    * ApplicationID allocated by the creation of an application (only with `itxn` in v5). Application mode only
    */
   get createdApplicationId(): Application {
-    return lazyContext.activeGroup.getApplicationTransaction().createdApp
+    return lazyContext.activeGroup.getApplicationCallTransaction().createdApp
   },
 
   /**
    * The last message emitted. Empty bytes if none were emitted. Application mode only
    */
   get lastLog(): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().lastLog
+    return lazyContext.activeGroup.getApplicationCallTransaction().lastLog
   },
 
   /**
    * 64 byte state proof public key
    */
-  get stateProofPk(): bytes {
+  get stateProofPk(): bytes<64> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().stateProofKey
   },
 
   /**
    * Approval Program as an array of pages
    */
-  approvalProgramPages(a: internal.primitives.StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().approvalProgramPages(asUint64(a))
+  approvalProgramPages(a: StubUint64Compat): bytes {
+    return lazyContext.activeGroup.getApplicationCallTransaction().approvalProgramPages(asUint64(a))
   },
 
   /**
    * Number of Approval Program pages
    */
   get numApprovalProgramPages(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numApprovalProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction().numApprovalProgramPages
   },
 
   /**
    * ClearState Program as an array of pages
    */
-  clearStateProgramPages(a: internal.primitives.StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getApplicationTransaction().clearStateProgramPages(asUint64(a))
+  clearStateProgramPages(a: StubUint64Compat): bytes {
+    return lazyContext.activeGroup.getApplicationCallTransaction().clearStateProgramPages(asUint64(a))
   },
 
   /**
    * Number of ClearState Program pages
    */
   get numClearStateProgramPages(): uint64 {
-    return lazyContext.activeGroup.getApplicationTransaction().numClearStateProgramPages
+    return lazyContext.activeGroup.getApplicationCallTransaction().numClearStateProgramPages
+  },
+  get rejectVersion(): uint64 {
+    return lazyContext.activeGroup.getApplicationCallTransaction().rejectVersion
   },
 }

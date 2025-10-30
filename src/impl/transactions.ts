@@ -1,21 +1,24 @@
-import {
-  Account,
-  Application,
-  arc4,
-  Asset,
+import type {
+  Account as AccountType,
+  Application as ApplicationType,
+  Asset as AssetType,
   bytes,
-  Bytes,
+  BytesCompat,
   gtxn,
-  internal,
-  TransactionType,
   uint64,
-  Uint64,
-} from '@algorandfoundation/algo-ts'
-import { MAX_ITEMS_IN_LOG } from '../constants'
+  Uint64Compat,
+} from '@algorandfoundation/algorand-typescript'
+import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
+import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_ITEMS_IN_LOG } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { Mutable, ObjectKeys } from '../typescript-helpers'
+import { InternalError } from '../errors'
+import type { Mutable, ObjectKeys } from '../typescript-helpers'
 import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asNumber, asUint64Cls, combineIntoMaxBytePages, getRandomBytes } from '../util'
+import { toBytes } from './encoded-types'
+import { Bytes, Uint64, type StubBytesCompat } from './primitives'
+import { Account, Application, Asset } from './reference'
 
+/** @internal */
 const baseDefaultFields = () => ({
   sender: lazyContext.defaultSender,
   fee: Uint64(0),
@@ -23,15 +26,16 @@ const baseDefaultFields = () => ({
   firstValidTime: Uint64(0),
   lastValid: Uint64(0),
   note: Bytes(),
-  lease: Bytes(),
+  lease: Bytes() as bytes<32>,
   groupIndex: Uint64(0),
-  txnId: getRandomBytes(32).asAlgoTs(),
+  txnId: getRandomBytes(32).asAlgoTs().toFixed({ length: 32 }),
   rekeyTo: Account(),
 })
 
 export type TxnFields<TTxn> = Partial<Mutable<Pick<TTxn, ObjectKeys<TTxn>>>>
 
 abstract class TransactionBase {
+  /** @internal */
   protected constructor(fields: Partial<ReturnType<typeof baseDefaultFields>>) {
     const baseDefaults = baseDefaultFields()
     this.sender = fields.sender ?? baseDefaults.sender
@@ -47,46 +51,44 @@ abstract class TransactionBase {
     this.scratchSpace = Array(256).fill(Uint64(0))
   }
 
-  readonly sender: Account
+  readonly sender: AccountType
   readonly fee: uint64
   readonly firstValid: uint64
   readonly firstValidTime: uint64
   readonly lastValid: uint64
   readonly note: bytes
-  readonly lease: bytes
+  readonly lease: bytes<32>
   readonly groupIndex: uint64
-  readonly txnId: bytes
-  readonly rekeyTo: Account
+  readonly txnId: bytes<32>
+  readonly rekeyTo: AccountType
   readonly scratchSpace: Array<bytes | uint64>
 
-  setScratchSlot(
-    index: internal.primitives.StubUint64Compat,
-    value: internal.primitives.StubBytesCompat | internal.primitives.StubUint64Compat,
-  ): void {
+  setScratchSlot(index: Uint64Compat, value: BytesCompat | Uint64Compat): void {
     const i = asNumber(index)
     if (i >= this.scratchSpace.length) {
-      throw internal.errors.internalError('invalid scratch slot')
+      throw new InternalError('invalid scratch slot')
     }
     const bytesValue = asMaybeBytesCls(value)
     const uint64Value = asMaybeUint64Cls(value)
     this.scratchSpace[i] = bytesValue?.asAlgoTs() ?? uint64Value?.asAlgoTs() ?? Uint64(0)
   }
 
-  getScratchSlot(index: internal.primitives.StubUint64Compat): bytes | uint64 {
+  getScratchSlot(index: Uint64Compat): bytes | uint64 {
     const i = asNumber(index)
     if (i >= this.scratchSpace.length) {
-      throw internal.errors.internalError('invalid scratch slot')
+      throw new InternalError('invalid scratch slot')
     }
     return this.scratchSpace[i]
   }
 }
 
 export class PaymentTransaction extends TransactionBase implements gtxn.PaymentTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.PaymentTxn>) {
     return new PaymentTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.PaymentTxn>) {
     super(fields)
     this.receiver = fields.receiver ?? Account()
@@ -94,47 +96,55 @@ export class PaymentTransaction extends TransactionBase implements gtxn.PaymentT
     this.closeRemainderTo = fields.closeRemainderTo ?? Account()
   }
 
-  readonly receiver: Account
+  readonly receiver: AccountType
   readonly amount: uint64
-  readonly closeRemainderTo: Account
+  readonly closeRemainderTo: AccountType
   readonly type: TransactionType.Payment = TransactionType.Payment
   readonly typeBytes: bytes = asUint64Cls(TransactionType.Payment).toBytes().asAlgoTs()
 }
 
 export class KeyRegistrationTransaction extends TransactionBase implements gtxn.KeyRegistrationTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.KeyRegistrationTxn>) {
     return new KeyRegistrationTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.KeyRegistrationTxn>) {
     super(fields)
-    this.voteKey = fields.voteKey ?? Bytes()
-    this.selectionKey = fields.selectionKey ?? Bytes()
+    this.voteKey = fields.voteKey ?? (Bytes() as bytes<32>)
+    this.selectionKey = fields.selectionKey ?? (Bytes() as bytes<32>)
     this.voteFirst = fields.voteFirst ?? Uint64(0)
     this.voteLast = fields.voteLast ?? Uint64(0)
     this.voteKeyDilution = fields.voteKeyDilution ?? Uint64(0)
     this.nonparticipation = fields.nonparticipation ?? false
-    this.stateProofKey = fields.stateProofKey ?? Bytes()
+    this.stateProofKey = fields.stateProofKey ?? (Bytes() as bytes<64>)
+    const globalData = lazyContext.ledger.globalData
+    if (this.fee >= globalData.payoutsGoOnlineFee && globalData.payoutsEnabled) {
+      lazyContext.ledger.patchAccountData(this.sender, {
+        incentiveEligible: true,
+      })
+    }
   }
 
-  readonly voteKey: bytes
-  readonly selectionKey: bytes
+  readonly voteKey: bytes<32>
+  readonly selectionKey: bytes<32>
   readonly voteFirst: uint64
   readonly voteLast: uint64
   readonly voteKeyDilution: uint64
   readonly nonparticipation: boolean
-  readonly stateProofKey: bytes
+  readonly stateProofKey: bytes<64>
   readonly type: TransactionType.KeyRegistration = TransactionType.KeyRegistration
   readonly typeBytes: bytes = asUint64Cls(TransactionType.KeyRegistration).toBytes().asAlgoTs()
 }
 
 export class AssetConfigTransaction extends TransactionBase implements gtxn.AssetConfigTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.AssetConfigTxn>) {
     return new AssetConfigTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.AssetConfigTxn>) {
     super(fields)
     this.configAsset = fields.configAsset ?? Asset()
@@ -144,7 +154,7 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
     this.unitName = fields.unitName ?? Bytes()
     this.assetName = fields.assetName ?? Bytes()
     this.url = fields.url ?? Bytes()
-    this.metadataHash = fields.metadataHash ?? Bytes()
+    this.metadataHash = fields.metadataHash ?? (Bytes() as bytes<32>)
     this.manager = fields.manager ?? Account()
     this.reserve = fields.reserve ?? Account()
     this.freeze = fields.freeze ?? Account()
@@ -152,29 +162,30 @@ export class AssetConfigTransaction extends TransactionBase implements gtxn.Asse
     this.createdAsset = fields.createdAsset ?? Asset()
   }
 
-  readonly configAsset: Asset
+  readonly configAsset: AssetType
   readonly total: uint64
   readonly decimals: uint64
   readonly defaultFrozen: boolean
   readonly unitName: bytes
   readonly assetName: bytes
   readonly url: bytes
-  readonly metadataHash: bytes
-  readonly manager: Account
-  readonly reserve: Account
-  readonly freeze: Account
-  readonly clawback: Account
-  readonly createdAsset: Asset
+  readonly metadataHash: bytes<32>
+  readonly manager: AccountType
+  readonly reserve: AccountType
+  readonly freeze: AccountType
+  readonly clawback: AccountType
+  readonly createdAsset: AssetType
   readonly type: TransactionType.AssetConfig = TransactionType.AssetConfig
   readonly typeBytes: bytes = asUint64Cls(TransactionType.AssetConfig).toBytes().asAlgoTs()
 }
 
 export class AssetTransferTransaction extends TransactionBase implements gtxn.AssetTransferTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.AssetTransferTxn>) {
     return new AssetTransferTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.AssetTransferTxn>) {
     super(fields)
     this.xferAsset = fields.xferAsset ?? Asset()
@@ -184,22 +195,23 @@ export class AssetTransferTransaction extends TransactionBase implements gtxn.As
     this.assetCloseTo = fields.assetCloseTo ?? Account()
   }
 
-  readonly xferAsset: Asset
+  readonly xferAsset: AssetType
   readonly assetAmount: uint64
-  readonly assetSender: Account
-  readonly assetReceiver: Account
-  readonly assetCloseTo: Account
+  readonly assetSender: AccountType
+  readonly assetReceiver: AccountType
+  readonly assetCloseTo: AccountType
 
   readonly type: TransactionType.AssetTransfer = TransactionType.AssetTransfer
   readonly typeBytes: bytes = asUint64Cls(TransactionType.AssetTransfer).toBytes().asAlgoTs()
 }
 
 export class AssetFreezeTransaction extends TransactionBase implements gtxn.AssetFreezeTxn {
-  /* @internal */
+  /** @internal */
   static create(fields: TxnFields<gtxn.AssetFreezeTxn>) {
     return new AssetFreezeTransaction(fields)
   }
 
+  /** @internal */
   protected constructor(fields: TxnFields<gtxn.AssetFreezeTxn>) {
     super(fields)
     this.freezeAsset = fields.freezeAsset ?? Asset()
@@ -207,67 +219,85 @@ export class AssetFreezeTransaction extends TransactionBase implements gtxn.Asse
     this.frozen = fields.frozen ?? false
   }
 
-  readonly freezeAsset: Asset
-  readonly freezeAccount: Account
+  readonly freezeAsset: AssetType
+  readonly freezeAccount: AccountType
   readonly frozen: boolean
 
   readonly type: TransactionType.AssetFreeze = TransactionType.AssetFreeze
   readonly typeBytes: bytes = asUint64Cls(TransactionType.AssetFreeze).toBytes().asAlgoTs()
 }
 
-export type ApplicationTransactionFields = TxnFields<gtxn.ApplicationTxn> &
+export type ApplicationCallTransactionFields = TxnFields<gtxn.ApplicationCallTxn> &
   Partial<{
-    appArgs: Array<bytes>
-    accounts: Array<Account>
-    assets: Array<Asset>
-    apps: Array<Application>
+    appArgs: Array<unknown>
+    accounts: Array<AccountType>
+    assets: Array<AssetType>
+    apps: Array<ApplicationType>
     approvalProgramPages: Array<bytes>
     clearStateProgramPages: Array<bytes>
     appLogs: Array<bytes>
-    scratchSpace: Array<bytes | uint64>
+    scratchSpace: Record<number, bytes | uint64>
   }>
 
-export class ApplicationTransaction extends TransactionBase implements gtxn.ApplicationTxn {
-  /* @internal */
-  static create(fields: ApplicationTransactionFields) {
-    return new ApplicationTransaction(fields)
+export class ApplicationCallTransaction extends TransactionBase implements gtxn.ApplicationCallTxn {
+  /** @internal */
+  static create(fields: ApplicationCallTransactionFields) {
+    return new ApplicationCallTransaction(fields)
   }
-  #appArgs: Array<bytes>
-  #accounts: Array<Account>
-  #assets: Array<Asset>
-  #apps: Array<Application>
+  /** @internal */
+  private args: Array<unknown>
+  #accounts: Array<AccountType>
+  #assets: Array<AssetType>
+  #apps: Array<ApplicationType>
   #approvalProgramPages: Array<bytes>
   #clearStateProgramPages: Array<bytes>
   #appLogs: Array<bytes>
+  #appId: ApplicationType
+  #rejectVersion: uint64
 
-  protected constructor(fields: ApplicationTransactionFields) {
+  /** @internal */
+  protected constructor(fields: ApplicationCallTransactionFields) {
     super(fields)
-    this.appId = fields.appId ?? Application()
-    this.onCompletion = fields.onCompletion ?? 'NoOp'
+    this.#appId = fields.appId ?? Application()
+    this.onCompletion = fields.onCompletion ?? OnCompleteAction.NoOp
     this.globalNumUint = fields.globalNumUint ?? Uint64(0)
     this.globalNumBytes = fields.globalNumBytes ?? Uint64(0)
     this.localNumUint = fields.localNumUint ?? Uint64(0)
     this.localNumBytes = fields.localNumBytes ?? Uint64(0)
     this.extraProgramPages = fields.extraProgramPages ?? Uint64(0)
     this.createdApp = fields.createdApp ?? Application()
-    this.#appArgs = fields.appArgs ?? []
+    this.args = fields.appArgs ?? []
     this.#appLogs = fields.appLogs ?? []
     this.#accounts = fields.accounts ?? []
     this.#assets = fields.assets ?? []
     this.#apps = fields.apps ?? []
     this.#approvalProgramPages = fields.approvalProgramPages ?? (fields.approvalProgram ? [fields.approvalProgram] : [])
     this.#clearStateProgramPages = fields.clearStateProgramPages ?? (fields.clearStateProgram ? [fields.clearStateProgram] : [])
-    fields.scratchSpace?.forEach((v, i) => this.setScratchSlot(i, v))
+    this.#rejectVersion = fields.rejectVersion ?? Uint64(0)
+    Object.entries(fields.scratchSpace ?? {}).forEach(([k, v]) => this.setScratchSlot(Number(k), v))
   }
 
-  readonly appId: Application
-  readonly onCompletion: arc4.OnCompleteActionStr
+  get backingAppId(): ApplicationType {
+    return this.#appId
+  }
+
+  get appId(): ApplicationType {
+    if (asNumber(this.#appId.id) === 0) {
+      return this.#appId
+    }
+    const appData = lazyContext.getApplicationData(this.#appId.id)
+    if (appData && appData.isCreating) {
+      return Application(0)
+    }
+    return this.#appId
+  }
+  readonly onCompletion: OnCompleteAction
   readonly globalNumUint: uint64
   readonly globalNumBytes: uint64
   readonly localNumUint: uint64
   readonly localNumBytes: uint64
   readonly extraProgramPages: uint64
-  readonly createdApp: Application
+  createdApp: ApplicationType
   get approvalProgram() {
     return this.approvalProgramPages(0)
   }
@@ -275,7 +305,7 @@ export class ApplicationTransaction extends TransactionBase implements gtxn.Appl
     return this.clearStateProgramPages(0)
   }
   get numAppArgs() {
-    return Uint64(this.#appArgs.length)
+    return Uint64(this.args.length)
   }
   get numAccounts() {
     return Uint64(this.#accounts.length)
@@ -293,46 +323,62 @@ export class ApplicationTransaction extends TransactionBase implements gtxn.Appl
     return Uint64(this.clearStateProgramPages.length)
   }
   get numLogs() {
-    return Uint64(this.#appLogs.length || lazyContext.getApplicationData(this.appId.id).appLogs.length)
+    return Uint64(this.appLogs.length || lazyContext.getApplicationData(this.appId.id).application.appLogs!.length)
   }
   get lastLog() {
-    return this.#appLogs.at(-1) ?? lazyContext.getApplicationData(this.appId.id).appLogs.at(-1) ?? Bytes()
+    return this.appLogs.at(-1) ?? lazyContext.getApplicationData(this.appId.id).application.appLogs!.at(-1) ?? Bytes()
   }
-  appArgs(index: internal.primitives.StubUint64Compat): bytes {
-    return this.#appArgs[asNumber(index)]
+  get apat() {
+    return this.#accounts
   }
-  accounts(index: internal.primitives.StubUint64Compat): Account {
+  get apas() {
+    return this.#assets
+  }
+  get apfa() {
+    return this.#apps
+  }
+  get rejectVersion() {
+    return this.#rejectVersion
+  }
+  appArgs(index: Uint64Compat): bytes {
+    return toBytes(this.args[asNumber(index)])
+  }
+  accounts(index: Uint64Compat): AccountType {
     return this.#accounts[asNumber(index)]
   }
-  assets(index: internal.primitives.StubUint64Compat): Asset {
+  assets(index: Uint64Compat): AssetType {
     return this.#assets[asNumber(index)]
   }
-  apps(index: internal.primitives.StubUint64Compat): Application {
+  apps(index: Uint64Compat): ApplicationType {
     return this.#apps[asNumber(index)]
   }
-  approvalProgramPages(index: internal.primitives.StubUint64Compat): bytes {
+  approvalProgramPages(index: Uint64Compat): bytes {
     return combineIntoMaxBytePages(this.#approvalProgramPages)[asNumber(index)]
   }
-  clearStateProgramPages(index: internal.primitives.StubUint64Compat): bytes {
+  clearStateProgramPages(index: Uint64Compat): bytes {
     return combineIntoMaxBytePages(this.#clearStateProgramPages)[asNumber(index)]
   }
-  logs(index: internal.primitives.StubUint64Compat): bytes {
+  logs(index: Uint64Compat): bytes {
     const i = asNumber(index)
-    return this.#appLogs[i] ?? lazyContext.getApplicationData(this.appId.id).appLogs ?? Bytes()
+    return this.appLogs[i] ?? lazyContext.getApplicationData(this.appId.id).application.appLogs ?? Bytes()
   }
   readonly type: TransactionType.ApplicationCall = TransactionType.ApplicationCall
   readonly typeBytes: bytes = asUint64Cls(TransactionType.ApplicationCall).toBytes().asAlgoTs()
 
-  /* @internal */
+  /** @internal */
   get appLogs() {
     return this.#appLogs
   }
-  /* @internal */
-  appendLog(value: internal.primitives.StubBytesCompat): void {
+  /** @internal */
+  appendLog(value: StubBytesCompat): void {
     if (this.#appLogs.length + 1 > MAX_ITEMS_IN_LOG) {
-      throw internal.errors.internalError(`Too many log calls in program, up to ${MAX_ITEMS_IN_LOG} is allowed`)
+      throw new InternalError(`Too many log calls in program, up to ${MAX_ITEMS_IN_LOG} is allowed`)
     }
     this.#appLogs.push(asBytes(value))
+  }
+  /** @internal */
+  logArc4ReturnValue(value: unknown): void {
+    this.appendLog(ABI_RETURN_VALUE_LOG_PREFIX.concat(toBytes(value)))
   }
 }
 
@@ -342,11 +388,11 @@ export type Transaction =
   | AssetConfigTransaction
   | AssetTransferTransaction
   | AssetFreezeTransaction
-  | ApplicationTransaction
+  | ApplicationCallTransaction
 
 export type AllTransactionFields = TxnFields<gtxn.PaymentTxn> &
   TxnFields<gtxn.KeyRegistrationTxn> &
   TxnFields<gtxn.AssetConfigTxn> &
   TxnFields<gtxn.AssetTransferTxn> &
   TxnFields<gtxn.AssetFreezeTxn> &
-  ApplicationTransactionFields
+  ApplicationCallTransactionFields

@@ -1,0 +1,87 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - alpha
+      - main
+      - release
+  workflow_dispatch:
+
+concurrency: release
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: 'Build @algorandfoundation/algorand-typescript-testing'
+    uses: ./.github/workflows/node-ci.yml
+    with:
+      pre-test-script: |
+        pipx install algokit
+        algokit localnet reset --update
+        pipx install puyapy
+      node-version: 22.x
+      run-build: true
+      run-commit-lint: true
+      audit-script: npm run audit
+      upload-artifact-name: algo-ts-testing
+      upload-artifact-path: ./dist
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate bot token
+        uses: actions/create-github-app-token@v1
+        id: app_token
+        with:
+          app-id: ${{ secrets.BOT_ID }}
+          private-key: ${{ secrets.BOT_SK }}
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app_token.outputs.token }}
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - run: npm ci --ignore-scripts
+
+      - name: Download package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate semantic version for @algorandfoundation/algorand-typescript-testing
+        if: github.ref_name != 'main'
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+
+      # - name: Publish @algorandfoundation/algorand-typescript-testing
+      #   if: github.ref_name != 'main'
+      #   uses: JS-DevTools/npm-publish@v3
+      #   with:
+      #     token: ${{ secrets.NPM_TOKEN }}
+      #     package: artifacts/algo-ts-testing/package.json
+      #     access: 'public'
+      #     tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'beta' || github.ref_name == 'release' && 'latest' || 'pre-release' }}
+
+  # publish-docs:
+  #   name: Publish docs
+  #   needs: release
+  #   if: github.ref_name == 'release'
+  #   uses: ./.github/workflows/gh-pages.yml
+  #   permissions:
+  #     contents: read
+  #     pages: write
+  #     id-token: write

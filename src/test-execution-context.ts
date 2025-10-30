@@ -1,122 +1,242 @@
-import { Account, Application, Asset, Bytes, bytes, internal, uint64 } from '@algorandfoundation/algo-ts'
-import algosdk from 'algosdk'
-import { captureMethodConfig } from './abi-metadata'
-import { DecodedLogs, LogDecoding } from './decode-logs'
-import * as ops from './impl'
-import { AccountCls } from './impl/account'
-import { ApplicationCls } from './impl/application'
-import { AssetCls } from './impl/asset'
+import type { Account as AccountType, BaseContract, bytes, Contract, LogicSig, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { ApplicationSpy } from './application-spy'
+import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
+import { ContextManager } from './context-helpers/context-manager'
+import type { DecodedLogs, LogDecoding } from './decode-logs'
+import type { ApplicationCallInnerTxnContext } from './impl/inner-transactions'
+import { Account, AccountCls } from './impl/reference'
 import { ContractContext } from './subcontexts/contract-context'
 import { LedgerContext } from './subcontexts/ledger-context'
 import { TransactionContext } from './subcontexts/transaction-context'
+import type { ConstructorFor, DeliberateAny } from './typescript-helpers'
+import { getRandomBytes } from './util'
 import { ValueGenerator } from './value-generators'
-import {
-  submitGroup as itxnSubmitGroup,
-  payment as itxnPayment,
-  keyRegistration as itxnKeyRegistration,
-  assetConfig as itxnAssetConfig,
-  assetTransfer as itxnAssetTransfer,
-  assetFreeze as itxnAssetFreeze,
-  applicationCall as itxnApplicationCall,
-} from './impl/inner-transactions'
 
-export class TestExecutionContext implements internal.ExecutionContext {
-  #applicationLogs: Map<bigint, bytes[]>
+/**
+ * The `TestExecutionContext` class provides a context for executing tests in an Algorand environment.
+ * It manages various contexts such as contract, ledger, and transaction contexts, and provides utilities
+ * for generating values, managing accounts, and handling logic signatures.
+ *
+ * @class
+ */
+export class TestExecutionContext {
   #contractContext: ContractContext
   #ledgerContext: LedgerContext
   #txnContext: TransactionContext
   #valueGenerator: ValueGenerator
-  #defaultSender: Account
+  #defaultSender: AccountType
+  #activeLogicSigArgs: bytes[]
+  #templateVars: Record<string, DeliberateAny> = {}
+  #compiledApps: Array<{ key: ConstructorFor<BaseContract>; value: uint64 }> = []
+  #compiledLogicSigs: Array<{ key: ConstructorFor<LogicSig>; value: AccountType }> = []
+  #applicationSpies: Array<ApplicationSpy<Contract>> = []
 
-  constructor() {
-    internal.ctxMgr.instance = this
-    this.#applicationLogs = new Map()
+  /**
+   * Creates an instance of `TestExecutionContext`.
+   *
+   * @param {bytes} [defaultSenderAddress] - The default sender address.
+   */
+  constructor(defaultSenderAddress?: bytes) {
+    ContextManager.instance = this
     this.#contractContext = new ContractContext()
     this.#ledgerContext = new LedgerContext()
     this.#txnContext = new TransactionContext()
     this.#valueGenerator = new ValueGenerator()
-    this.#defaultSender = Account(Bytes(algosdk.generateAccount().addr))
+    this.#defaultSender = this.any.account({ address: defaultSenderAddress ?? getRandomBytes(32).asAlgoTs() })
+    this.#activeLogicSigArgs = []
   }
 
-  account(address?: bytes): Account {
-    return new AccountCls(address)
-  }
-
-  application(id?: uint64): Application {
-    return new ApplicationCls(id)
-  }
-
-  asset(id?: uint64): Asset {
-    return new AssetCls(id)
-  }
-
-  log(value: bytes): void {
-    this.txn.appendLog(value)
-  }
-
+  /**
+   * Exports logs for a given application ID and decoding.
+   *
+   * @template T
+   * @param {uint64} appId - The application ID.
+   * @param {...T} decoding - The log decoding.
+   * @returns {DecodedLogs<T>}
+   */
   exportLogs<const T extends [...LogDecoding[]]>(appId: uint64, ...decoding: T): DecodedLogs<T> {
     return this.txn.exportLogs(appId, ...decoding)
   }
 
-  get op() {
-    return ops
-  }
+  /**
+   * Returns the contract context.
+   *
+   * @type {ContractContext}
+   */
   get contract() {
     return this.#contractContext
   }
 
+  /**
+   * Returns the ledger context.
+   *
+   * @type {LedgerContext}
+   */
   get ledger() {
     return this.#ledgerContext
   }
 
+  /**
+   * Returns the transaction context.
+   *
+   * @type {TransactionContext}
+   */
   get txn() {
     return this.#txnContext
   }
 
+  /**
+   * Returns the value generator.
+   *
+   * @type {ValueGenerator}
+   */
   get any() {
     return this.#valueGenerator
   }
 
-  get defaultSender(): Account {
+  /**
+   * Returns the default sender account.
+   *
+   * @type {Account}
+   */
+  get defaultSender(): AccountType {
     return this.#defaultSender
   }
 
-  get abiMetadata() {
-    return {
-      captureMethodConfig,
+  /**
+   * Sets the default sender account.
+   *
+   * @param {bytes | AccountType} val - The default sender account.
+   */
+  set defaultSender(val: bytes | AccountType) {
+    this.#defaultSender = val instanceof AccountCls ? val : Account(val as bytes)
+  }
+
+  /**
+   * Returns the active logic signature arguments.
+   *
+   * @type {bytes[]}
+   */
+  get activeLogicSigArgs(): bytes[] {
+    return this.#activeLogicSigArgs
+  }
+
+  /**
+   * Returns the template variables.
+   *
+   * @type {Record<string, DeliberateAny>}
+   */
+  get templateVars(): Record<string, DeliberateAny> {
+    return this.#templateVars
+  }
+
+  /**
+   * Executes a logic signature with the given arguments.
+   *
+   * @param {LogicSig} logicSig - The logic signature to execute.
+   * @param {...bytes[]} args - The arguments for the logic signature.
+   * @returns {boolean | uint64}
+   */
+  executeLogicSig(logicSig: LogicSig, ...args: bytes[]): boolean | uint64 {
+    this.#activeLogicSigArgs = args
+    try {
+      return logicSig.program()
+    } finally {
+      this.#activeLogicSigArgs = []
     }
   }
 
-  get gtxn() {
-    return {
-      Transaction: (index: uint64) => this.txn.activeGroup.getTransaction(index),
-      PaymentTxn: (index: uint64) => this.txn.activeGroup.getPaymentTransaction(index),
-      KeyRegistrationTxn: (index: uint64) => this.txn.activeGroup.getKeyRegistrationTransaction(index),
-      AssetConfigTxn: (index: uint64) => this.txn.activeGroup.getAssetConfigTransaction(index),
-      AssetTransferTxn: (index: uint64) => this.txn.activeGroup.getAssetTransferTransaction(index),
-      AssetFreezeTxn: (index: uint64) => this.txn.activeGroup.getAssetFreezeTransaction(index),
-      ApplicationTxn: (index: uint64) => this.txn.activeGroup.getApplicationTransaction(index),
+  /**
+   * Sets a template variable.
+   *
+   * @param {string} name - The name of the template variable.
+   * @param {DeliberateAny} value - The value of the template variable.
+   * @param {string} [prefix] - The prefix for the template variable.
+   */
+  setTemplateVar(name: string, value: DeliberateAny, prefix?: string) {
+    this.#templateVars[(prefix ?? DEFAULT_TEMPLATE_VAR_PREFIX) + name] = value
+  }
+
+  /**
+   * Gets a compiled application by contract.
+   *
+   * @param {ConstructorFor<BaseContract>} contract - The contract class.
+   * @returns {[ConstructorFor<BaseContract>, uint64] | undefined}
+   */
+  getCompiledAppEntry(contract: ConstructorFor<BaseContract>) {
+    return this.#compiledApps.find(({ key: k }) => k === contract)
+  }
+
+  /**
+   * Sets a compiled application.
+   *
+   * @param {ConstructorFor<BaseContract>} c - The contract class.
+   * @param {uint64} appId - The application ID.
+   */
+  setCompiledApp(c: ConstructorFor<BaseContract>, appId: uint64) {
+    const existing = this.getCompiledAppEntry(c)
+    if (existing) {
+      existing.value = appId
+    } else {
+      this.#compiledApps.push({ key: c, value: appId })
     }
   }
 
-  get itxn() {
-    return {
-      submitGroup: itxnSubmitGroup,
-      payment: itxnPayment,
-      keyRegistration: itxnKeyRegistration,
-      assetConfig: itxnAssetConfig,
-      assetTransfer: itxnAssetTransfer,
-      assetFreeze: itxnAssetFreeze,
-      applicationCall: itxnApplicationCall,
+  /** @internal */
+  notifyApplicationSpies(itxn: ApplicationCallInnerTxnContext) {
+    for (const spy of this.#applicationSpies) {
+      spy.notify(itxn)
     }
   }
 
+  /**
+   * Adds an application spy to the context.
+   *
+   * @param {ApplicationSpy<TContract>} spy - The application spy to add.
+   */
+  addApplicationSpy<TContract extends Contract>(spy: ApplicationSpy<TContract>) {
+    this.#applicationSpies.push(spy)
+  }
+
+  /**
+   * Gets a compiled logic signature.
+   *
+   * @param {ConstructorFor<LogicSig>} logicsig - The logic signature class.
+   * @returns {[ConstructorFor<LogicSig>, Account] | undefined}
+   */
+  getCompiledLogicSigEntry(logicsig: ConstructorFor<LogicSig>) {
+    return this.#compiledLogicSigs.find(({ key: k }) => k === logicsig)
+  }
+
+  /**
+   * Sets a compiled logic signature.
+   *
+   * @param {ConstructorFor<LogicSig>} c - The logic signature class.
+   * @param {Account} account - The account associated with the logic signature.
+   */
+  setCompiledLogicSig(c: ConstructorFor<LogicSig>, account: AccountType) {
+    const existing = this.getCompiledLogicSigEntry(c)
+    if (existing) {
+      existing.value = account
+    } else {
+      this.#compiledLogicSigs.push({ key: c, value: account })
+    }
+  }
+
+  /**
+   * Reinitializes the execution context, clearing all state variables and resetting internal components.
+   * Invoked between test cases to ensure isolation.
+   */
   reset() {
-    this.#applicationLogs.clear()
     this.#contractContext = new ContractContext()
     this.#ledgerContext = new LedgerContext()
     this.#txnContext = new TransactionContext()
-    internal.ctxMgr.reset()
-    internal.ctxMgr.instance = this
+    this.#activeLogicSigArgs = []
+    this.#templateVars = {}
+    this.#compiledApps = []
+    this.#compiledLogicSigs = []
+    this.#applicationSpies = []
+    ContextManager.reset()
+    ContextManager.instance = this
   }
 }

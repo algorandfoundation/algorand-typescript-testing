@@ -1,111 +1,111 @@
-import { Bytes, bytes, internal, gtxn, arc4 } from '@algorandfoundation/algo-ts'
-import { ec } from 'elliptic'
-import { sha256 as js_sha256 } from 'js-sha256'
-import { keccak256 as js_keccak256, sha3_256 as js_sha3_256 } from 'js-sha3'
-import { sha512_256 as js_sha512_256 } from 'js-sha512'
+import type { bytes, gtxn, MimcConfigurations, op, VrfVerify } from '@algorandfoundation/algorand-typescript'
+import { Ecdsa, OnCompleteAction } from '@algorandfoundation/algorand-typescript'
+import elliptic from 'elliptic'
+import js_sha256 from 'js-sha256'
+import js_sha3 from 'js-sha3'
+import js_sha512 from 'js-sha512'
 import nacl from 'tweetnacl'
-import { notImplementedError } from '../errors'
+import { LOGIC_DATA_PREFIX, PROGRAM_TAG } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import algosdk from 'algosdk'
-import { asBytes, asBytesCls } from '../util'
-import { LOGIC_DATA_PREFIX } from '../constants'
+import { InternalError, NotImplementedError } from '../errors'
+import { asBytes, asBytesCls, asUint8Array, concatUint8Arrays } from '../util'
+import type { StubBytesCompat, StubUint64Compat } from './primitives'
+import { Bytes, BytesCls, Uint64Cls } from './primitives'
 
-export const sha256 = (a: internal.primitives.StubBytesCompat): bytes => {
-  const bytesA = internal.primitives.BytesCls.fromCompat(a)
-  const hashArray = js_sha256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = internal.primitives.BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+/** @internal */
+export const sha256 = (a: StubBytesCompat): bytes<32> => {
+  const bytesA = BytesCls.fromCompat(a)
+  const hashArray = js_sha256.sha256.create().update(bytesA.asUint8Array()).digest()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
-export const sha3_256 = (a: internal.primitives.StubBytesCompat): bytes => {
-  const bytesA = internal.primitives.BytesCls.fromCompat(a)
-  const hashArray = js_sha3_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = internal.primitives.BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+/** @internal */
+export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
+  const bytesA = BytesCls.fromCompat(a)
+  const hashArray = js_sha3.sha3_256.create().update(bytesA.asUint8Array()).digest()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
-export const keccak256 = (a: internal.primitives.StubBytesCompat): bytes => {
-  const bytesA = internal.primitives.BytesCls.fromCompat(a)
-  const hashArray = js_keccak256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = internal.primitives.BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+/** @internal */
+export const keccak256 = (a: StubBytesCompat): bytes<32> => {
+  const bytesA = BytesCls.fromCompat(a)
+  const hashArray = js_sha3.keccak256.create().update(bytesA.asUint8Array()).digest()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
-export const sha512_256 = (a: internal.primitives.StubBytesCompat): bytes => {
-  const bytesA = internal.primitives.BytesCls.fromCompat(a)
-  const hashArray = js_sha512_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = internal.primitives.BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+/** @internal */
+export const sha512_256 = (a: StubBytesCompat): bytes<32> => {
+  const bytesA = BytesCls.fromCompat(a)
+  const hashArray = js_sha512.sha512_256.create().update(bytesA.asUint8Array()).digest()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
-export const ed25519verifyBare = (
-  a: internal.primitives.StubBytesCompat,
-  b: internal.primitives.StubBytesCompat,
-  c: internal.primitives.StubBytesCompat,
-): boolean => {
-  const bytesA = internal.primitives.BytesCls.fromCompat(a)
-  const bytesB = internal.primitives.BytesCls.fromCompat(b)
-  const bytesC = internal.primitives.BytesCls.fromCompat(c)
+/** @internal */
+export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
+  const bytesA = BytesCls.fromCompat(a)
+  const bytesB = BytesCls.fromCompat(b)
+  const bytesC = BytesCls.fromCompat(c)
   return nacl.sign.detached.verify(bytesA.asUint8Array(), bytesB.asUint8Array(), bytesC.asUint8Array())
 }
 
-export const ed25519verify = (
-  a: internal.primitives.StubBytesCompat,
-  b: internal.primitives.StubBytesCompat,
-  c: internal.primitives.StubBytesCompat,
-): boolean => {
-  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationTxn
-  const programBytes = asBytesCls(
-    txn.onCompletion == arc4.OnCompleteAction[arc4.OnCompleteAction.ClearState] ? txn.clearStateProgram : txn.approvalProgram,
-  )
+/** @internal */
+export const ed25519verify = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
+  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationCallTxn
+  const programBytes = asBytesCls(txn.onCompletion == OnCompleteAction.ClearState ? txn.clearStateProgram : txn.approvalProgram)
 
-  const logicSig = new algosdk.LogicSig(programBytes.asUint8Array())
-  const decodedAddress = algosdk.decodeAddress(logicSig.address())
+  const logicSig = concatUint8Arrays(asUint8Array(PROGRAM_TAG), programBytes.asUint8Array())
+  const logicSigAddress = js_sha512.sha512_256.array(logicSig)
 
-  const addressBytes = asBytes(decodedAddress.publicKey)
+  const addressBytes = Bytes(logicSigAddress)
   const data = LOGIC_DATA_PREFIX.concat(addressBytes).concat(asBytes(a))
   return ed25519verifyBare(data, b, c)
 }
 
+/** @internal */
 export const ecdsaVerify = (
-  v: internal.opTypes.Ecdsa,
-  a: internal.primitives.StubBytesCompat,
-  b: internal.primitives.StubBytesCompat,
-  c: internal.primitives.StubBytesCompat,
-  d: internal.primitives.StubBytesCompat,
-  e: internal.primitives.StubBytesCompat,
+  v: Ecdsa,
+  a: StubBytesCompat,
+  b: StubBytesCompat,
+  c: StubBytesCompat,
+  d: StubBytesCompat,
+  e: StubBytesCompat,
 ): boolean => {
-  const dataBytes = internal.primitives.BytesCls.fromCompat(a)
-  const sigRBytes = internal.primitives.BytesCls.fromCompat(b)
-  const sigSBytes = internal.primitives.BytesCls.fromCompat(c)
-  const pubkeyXBytes = internal.primitives.BytesCls.fromCompat(d)
-  const pubkeyYBytes = internal.primitives.BytesCls.fromCompat(e)
+  const dataBytes = BytesCls.fromCompat(a)
+  const sigRBytes = BytesCls.fromCompat(b)
+  const sigSBytes = BytesCls.fromCompat(c)
+  const pubkeyXBytes = BytesCls.fromCompat(d)
+  const pubkeyYBytes = BytesCls.fromCompat(e)
 
-  const publicKey = internal.primitives.BytesCls.fromCompat(new Uint8Array([0x04]))
+  const publicKey = BytesCls.fromCompat(new Uint8Array([0x04]))
     .concat(pubkeyXBytes)
     .concat(pubkeyYBytes)
 
-  const ecdsa = new ec(curveMap[v])
+  const ecdsa = new elliptic.ec(curveMap[v])
   const keyPair = ecdsa.keyFromPublic(publicKey.asUint8Array())
   return keyPair.verify(dataBytes.asUint8Array(), { r: sigRBytes.asUint8Array(), s: sigSBytes.asUint8Array() })
 }
 
+/** @internal */
 export const ecdsaPkRecover = (
-  v: internal.opTypes.Ecdsa,
-  a: internal.primitives.StubBytesCompat,
-  b: internal.primitives.StubUint64Compat,
-  c: internal.primitives.StubBytesCompat,
-  d: internal.primitives.StubBytesCompat,
-): readonly [bytes, bytes] => {
-  if (v !== internal.opTypes.Ecdsa.Secp256k1) {
-    internal.errors.internalError(`Unsupported ECDSA curve: ${v}`)
+  v: Ecdsa,
+  a: StubBytesCompat,
+  b: StubUint64Compat,
+  c: StubBytesCompat,
+  d: StubBytesCompat,
+): readonly [bytes<32>, bytes<32>] => {
+  if (v !== Ecdsa.Secp256k1) {
+    throw new InternalError(`Unsupported ECDSA curve: ${v}`)
   }
-  const dataBytes = internal.primitives.BytesCls.fromCompat(a)
-  const rBytes = internal.primitives.BytesCls.fromCompat(c)
-  const sBytes = internal.primitives.BytesCls.fromCompat(d)
-  const recoveryId = internal.primitives.Uint64Cls.fromCompat(b)
+  const dataBytes = BytesCls.fromCompat(a)
+  const rBytes = BytesCls.fromCompat(c)
+  const sBytes = BytesCls.fromCompat(d)
+  const recoveryId = Uint64Cls.fromCompat(b)
 
-  const ecdsa = new ec(curveMap[v])
+  const ecdsa = new elliptic.ec(curveMap[v])
   const pubKey = ecdsa.recoverPubKey(
     dataBytes.asUint8Array(),
     { r: rBytes.asUint8Array(), s: sBytes.asUint8Array() },
@@ -114,37 +114,45 @@ export const ecdsaPkRecover = (
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(new Uint8Array(x)), Bytes(new Uint8Array(y))]
+  return [Bytes(x, { length: 32 }), Bytes(y, { length: 32 })]
 }
 
-export const ecdsaPkDecompress = (v: internal.opTypes.Ecdsa, a: internal.primitives.StubBytesCompat): readonly [bytes, bytes] => {
-  const bytesA = internal.primitives.BytesCls.fromCompat(a)
+/** @internal */
+export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes<32>, bytes<32>] => {
+  const bytesA = BytesCls.fromCompat(a)
 
-  const ecdsa = new ec(curveMap[v])
+  const ecdsa = new elliptic.ec(curveMap[v])
   const keyPair = ecdsa.keyFromPublic(bytesA.asUint8Array())
   const pubKey = keyPair.getPublic()
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(new Uint8Array(x)), Bytes(new Uint8Array(y))]
+  return [Bytes(x, { length: 32 }), Bytes(y, { length: 32 })]
 }
 
-export const vrfVerify = (
-  _s: internal.opTypes.VrfVerify,
-  _a: internal.primitives.StubBytesCompat,
-  _b: internal.primitives.StubBytesCompat,
-  _c: internal.primitives.StubBytesCompat,
-): readonly [bytes, boolean] => {
-  notImplementedError('vrfVerify')
+/** @internal */
+export const vrfVerify = (_s: VrfVerify, _a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): readonly [bytes<64>, boolean] => {
+  throw new NotImplementedError('vrfVerify')
 }
 
-export const EllipticCurve = new Proxy({} as internal.opTypes.EllipticCurveType, {
+/** @internal */
+export const EllipticCurve = new Proxy({} as typeof op.EllipticCurve, {
   get: (_target, prop) => {
-    notImplementedError(`EllipticCurve.${prop.toString()}`)
+    throw new NotImplementedError(`EllipticCurve.${prop.toString()}`)
   },
 })
 
+/** @internal */
+export const mimc = (_c: MimcConfigurations, _a: StubBytesCompat): bytes => {
+  throw new NotImplementedError('mimc')
+}
+
+/** @internal */
+export const falconVerify = (_a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): boolean => {
+  throw new NotImplementedError('falconVerify')
+}
+
 const curveMap = {
-  [internal.opTypes.Ecdsa.Secp256k1]: 'secp256k1',
-  [internal.opTypes.Ecdsa.Secp256r1]: 'p256',
+  [Ecdsa.Secp256k1]: 'secp256k1',
+  [Ecdsa.Secp256r1]: 'p256',
 }

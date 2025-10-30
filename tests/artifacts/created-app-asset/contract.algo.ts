@@ -1,8 +1,11 @@
-import { arc4, assert, Bytes, gtxn, op, uint64 } from '@algorandfoundation/algo-ts'
+import type { gtxn, uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, assert, Global, op } from '@algorandfoundation/algorand-typescript'
+import type { Uint64 } from '@algorandfoundation/algorand-typescript/arc4'
+import { convertBytes, methodSelector } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class AppExpectingEffects extends arc4.Contract {
   @arc4.abimethod()
-  public create_group(assetCreate: gtxn.AssetConfigTxn, appCreate: gtxn.ApplicationTxn): readonly [uint64, uint64] {
+  public create_group(assetCreate: gtxn.AssetConfigTxn, appCreate: gtxn.ApplicationCallTxn): readonly [uint64, uint64] {
     assert(assetCreate.createdAsset.id, 'expected asset created')
     assert(op.gaid(assetCreate.groupIndex) === assetCreate.createdAsset.id, 'expected correct asset id')
     assert(appCreate.createdApp.id, 'expected app created')
@@ -12,17 +15,12 @@ export class AppExpectingEffects extends arc4.Contract {
   }
 
   @arc4.abimethod()
-  public log_group(appCall: gtxn.ApplicationTxn): void {
-    assert(appCall.appArgs(0) === Bytes('some_value()uint64'), 'expected correct method called')
+  public log_group(appCall: gtxn.ApplicationCallTxn): void {
+    assert(appCall.appArgs(0) === methodSelector('some_value()uint64'), 'expected correct method called')
     assert(appCall.numLogs === 1, 'expected logs')
-    assert(appCall.lastLog === Bytes('this is a log statement'))
+    assert(
+      convertBytes<Uint64>(appCall.lastLog, { prefix: 'log', strategy: 'unsafe-cast' }).asUint64() ===
+        (appCall.groupIndex + 1) * Global.groupSize,
+    )
   }
-
-  // TODO: uncomment when arc4 stubs are implemented
-  // @arc4.abimethod()
-  // public log_group(appCall: gtxn.ApplicationTxn): void {
-  //   assert(appCall.appArgs(0) === arc4.arc4Signature("some_value()uint64"), "expected correct method called")
-  //   assert(appCall.numLogs === 1, "expected logs")
-  //   assert(arc4.UInt64.from_log(appCall.lastLog) === (appCall.groupIndex + 1) * Global.groupSize)
-  // }
 }

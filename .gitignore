@@ -55,6 +55,7 @@ test-results.xml
 # Website & Code docs generation
 code-docs/
 out/
+docs/_html
 
 # dotenv environment variable files
 .env
@@ -62,3 +63,7 @@ out/
 .env.test.local
 .env.production.local
 .env.local
+
+
+examples/debug-out/
+examples/**/data/

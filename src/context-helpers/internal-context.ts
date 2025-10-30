@@ -1,9 +1,13 @@
-import { internal } from '@algorandfoundation/algo-ts'
-import { AccountData } from '../impl/account'
-import { ApplicationData } from '../impl/application'
-import { AssetData } from '../impl/asset'
-import { TransactionGroup } from '../subcontexts/transaction-context'
-import { TestExecutionContext } from '../test-execution-context'
+import type { Account } from '@algorandfoundation/algorand-typescript'
+import { InternalError } from '../errors'
+import { BaseContract } from '../impl/base-contract'
+import type { StubUint64Compat } from '../impl/primitives'
+import { Uint64Cls } from '../impl/primitives'
+import type { AccountData, ApplicationData, AssetData } from '../impl/reference'
+import type { VoterData } from '../impl/voter-params'
+import type { TransactionGroup } from '../subcontexts/transaction-context'
+import type { TestExecutionContext } from '../test-execution-context'
+import { ContextManager } from './context-manager'
 
 /**
  * For accessing implementation specific functions, with a convenient single entry
@@ -12,7 +16,7 @@ import { TestExecutionContext } from '../test-execution-context'
  */
 class InternalContext {
   get value() {
-    return internal.ctxMgr.instance as TestExecutionContext
+    return ContextManager.instance as TestExecutionContext
   }
 
   get defaultSender() {
@@ -39,36 +43,48 @@ class InternalContext {
     return this.ledger.getApplication(this.activeGroup.activeApplicationId)
   }
 
+  get hasActiveGroup(): boolean {
+    return this.value.txn.hasActiveGroup
+  }
+
   get activeGroup(): TransactionGroup {
     return this.value.txn.activeGroup
   }
 
-  getAccountData(accountPublicKey: internal.primitives.StubBytesCompat): AccountData {
-    const key = internal.primitives.BytesCls.fromCompat(accountPublicKey)
-    const data = this.ledger.accountDataMap.get(key.toString())
+  getAccountData(account: Account): AccountData {
+    const data = this.ledger.accountDataMap.get(account)
     if (!data) {
-      throw internal.errors.internalError('Unknown account, check correct testing context is active')
+      throw new InternalError('Unknown account, check correct testing context is active')
     }
     return data
   }
 
-  getAssetData(id: internal.primitives.StubUint64Compat): AssetData {
-    const key = internal.primitives.Uint64Cls.fromCompat(id)
+  getAssetData(id: StubUint64Compat): AssetData {
+    const key = Uint64Cls.fromCompat(id)
     const data = this.ledger.assetDataMap.get(key.asBigInt())
     if (!data) {
-      throw internal.errors.internalError('Unknown asset, check correct testing context is active')
+      throw new InternalError('Unknown asset, check correct testing context is active')
     }
     return data
   }
 
-  getApplicationData(id: internal.primitives.StubUint64Compat): ApplicationData {
-    const key = internal.primitives.Uint64Cls.fromCompat(id)
-    const data = this.ledger.applicationDataMap.get(key.asBigInt())
+  getApplicationData(id: StubUint64Compat | BaseContract): ApplicationData {
+    const uint64Id = id instanceof BaseContract ? this.ledger.getApplicationForContract(id).id : Uint64Cls.fromCompat(id).asAlgoTs()
+    const data = this.ledger.applicationDataMap.get(uint64Id)
     if (!data) {
-      throw internal.errors.internalError('Unknown application, check correct testing context is active')
+      throw new InternalError('Unknown application, check correct testing context is active')
+    }
+    return data
+  }
+
+  getVoterData(account: Account): VoterData {
+    const data = this.ledger.voterDataMap.get(account)
+    if (!data) {
+      throw new InternalError('Unknown voter, check correct testing context is active')
     }
     return data
   }
 }
 
+/** @internal */
 export const lazyContext = new InternalContext()

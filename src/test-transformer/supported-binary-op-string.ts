@@ -1,6 +1,7 @@
 import type { BinaryOperator, PrefixUnaryOperator } from 'typescript'
 import ts from 'typescript'
 
+/** @internal */
 export function supportedBinaryOpString(x: BinaryOperator): string | undefined {
   switch (x) {
     case ts.SyntaxKind.MinusToken:
@@ -40,8 +41,6 @@ export function supportedBinaryOpString(x: BinaryOperator): string | undefined {
     case ts.SyntaxKind.AmpersandAmpersandEqualsToken:
     case ts.SyntaxKind.AmpersandAmpersandToken:
     case ts.SyntaxKind.AmpersandEqualsToken:
-    case ts.SyntaxKind.AsteriskAsteriskEqualsToken:
-    case ts.SyntaxKind.AsteriskEqualsToken:
     case ts.SyntaxKind.BarBarEqualsToken:
     case ts.SyntaxKind.BarBarToken:
     case ts.SyntaxKind.BarEqualsToken:
@@ -52,11 +51,7 @@ export function supportedBinaryOpString(x: BinaryOperator): string | undefined {
     case ts.SyntaxKind.ExclamationEqualsToken:
     case ts.SyntaxKind.InKeyword:
     case ts.SyntaxKind.InstanceOfKeyword:
-    case ts.SyntaxKind.PercentEqualsToken:
-    case ts.SyntaxKind.PlusEqualsToken:
     case ts.SyntaxKind.QuestionQuestionEqualsToken:
-    case ts.SyntaxKind.MinusEqualsToken:
-    case ts.SyntaxKind.SlashEqualsToken:
     case ts.SyntaxKind.QuestionQuestionToken:
     case ts.SyntaxKind.GreaterThanGreaterThanEqualsToken:
     case ts.SyntaxKind.LessThanLessThanEqualsToken:
@@ -66,6 +61,27 @@ export function supportedBinaryOpString(x: BinaryOperator): string | undefined {
   }
 }
 
+/** @internal */
+export function supportedAugmentedAssignmentBinaryOpString(x: BinaryOperator): string | undefined {
+  switch (x) {
+    case ts.SyntaxKind.PlusEqualsToken:
+      return '+='
+    case ts.SyntaxKind.MinusEqualsToken:
+      return '-='
+    case ts.SyntaxKind.SlashEqualsToken:
+      return '/='
+    case ts.SyntaxKind.AsteriskEqualsToken:
+      return '*='
+    case ts.SyntaxKind.AsteriskAsteriskEqualsToken:
+      return '**='
+    case ts.SyntaxKind.PercentEqualsToken:
+      return '%='
+    default:
+      return undefined
+  }
+}
+
+/** @internal */
 export function supportedPrefixUnaryOpString(x: PrefixUnaryOperator): string | undefined {
   switch (x) {
     case ts.SyntaxKind.TildeToken:

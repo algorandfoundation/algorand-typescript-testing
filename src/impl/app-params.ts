@@ -1,63 +1,78 @@
-import { Account, Application, Bytes, bytes, gtxn, internal, Uint64, uint64 } from '@algorandfoundation/algo-ts'
+import type {
+  Account as AccountType,
+  Application as ApplicationType,
+  bytes,
+  gtxn,
+  op,
+  uint64,
+} from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asMaybeUint64Cls, asUint64 } from '../util'
+import { Bytes, Uint64, type StubUint64Compat } from './primitives'
+import { Account } from './reference'
 
-const resolveAppIndex = (appIdOrIndex: internal.primitives.StubUint64Compat): uint64 => {
+const resolveAppIndex = (appIdOrIndex: StubUint64Compat): uint64 => {
   const input = asUint64(appIdOrIndex)
   if (input >= 1001) {
     return input
   }
-  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationTxn
+  const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationCallTxn
   return txn.apps(input).id
 }
 
-export const getApp = (app: Application | internal.primitives.StubUint64Compat): Application | undefined => {
+/** @internal */
+export const getApp = (app: ApplicationType | StubUint64Compat): ApplicationType | undefined => {
   try {
     const appId = asMaybeUint64Cls(app)
     if (appId !== undefined) {
       return lazyContext.ledger.getApplication(resolveAppIndex(appId))
     }
-    return app as Application
+    return app as ApplicationType
   } catch {
     return undefined
   }
 }
 
-export const AppParams: internal.opTypes.AppParamsType = {
-  appApprovalProgram: function (a: Application | internal.primitives.StubUint64Compat): readonly [bytes, boolean] {
+/** @internal */
+export const AppParams: typeof op.AppParams = {
+  appApprovalProgram(a: ApplicationType | StubUint64Compat): readonly [bytes, boolean] {
     const app = getApp(a)
     return app === undefined ? [Bytes(), false] : [app.approvalProgram, true]
   },
-  appClearStateProgram: function (a: Application | internal.primitives.StubUint64Compat): readonly [bytes, boolean] {
+  appClearStateProgram(a: ApplicationType | StubUint64Compat): readonly [bytes, boolean] {
     const app = getApp(a)
     return app === undefined ? [Bytes(), false] : [app.clearStateProgram, true]
   },
-  appGlobalNumUint: function (a: Application | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appGlobalNumUint(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.globalNumUint, true]
   },
-  appGlobalNumByteSlice: function (a: Application | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appGlobalNumByteSlice(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.globalNumBytes, true]
   },
-  appLocalNumUint: function (a: Application | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appLocalNumUint(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.localNumUint, true]
   },
-  appLocalNumByteSlice: function (a: Application | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appLocalNumByteSlice(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.localNumBytes, true]
   },
-  appExtraProgramPages: function (a: Application | internal.primitives.StubUint64Compat): readonly [uint64, boolean] {
+  appExtraProgramPages(a: ApplicationType | StubUint64Compat): readonly [uint64, boolean] {
     const app = getApp(a)
     return app === undefined ? [Uint64(0), false] : [app.extraProgramPages, true]
   },
-  appCreator: function (a: Application | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
+  appCreator(a: ApplicationType | StubUint64Compat): readonly [AccountType, boolean] {
     const app = getApp(a)
     return app === undefined ? [Account(), false] : [app.creator, true]
   },
-  appAddress: function (a: Application | internal.primitives.StubUint64Compat): readonly [Account, boolean] {
+  appAddress(a: ApplicationType | StubUint64Compat): readonly [AccountType, boolean] {
     const app = getApp(a)
     return app === undefined ? [Account(), false] : [app.address, true]
+  },
+  appVersion: function (a: ApplicationType | uint64): readonly [uint64, boolean] {
+    const app = getApp(a)
+    return app === undefined ? [Uint64(0), false] : [app.version, true]
   },
 }

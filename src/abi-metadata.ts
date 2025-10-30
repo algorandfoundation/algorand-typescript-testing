@@ -1,60 +1,137 @@
-import { Contract } from '@algorandfoundation/algo-ts'
-import { AbiMethodConfig, BareMethodConfig, CreateOptions, OnCompleteActionStr } from '@algorandfoundation/algo-ts/arc4'
-import { DeliberateAny } from './typescript-helpers'
+import type { arc4, OnCompleteActionStr } from '@algorandfoundation/algorand-typescript'
+import js_sha512 from 'js-sha512'
+import { ConventionalRouting } from './constants'
+import { Arc4MethodConfigSymbol, Contract } from './impl/contract'
+import type { TypeInfo } from './impl/encoded-types'
+import { getArc4TypeName } from './impl/encoded-types'
+import type { DeliberateAny } from './typescript-helpers'
 
+/** @internal */
 export interface AbiMetadata {
   methodName: string
-  methodSelector: string
+  name?: string
+  methodSignature: string | undefined
   argTypes: string[]
   returnType: string
-  onCreate?: CreateOptions
+  onCreate?: arc4.CreateOptions
   allowActions?: OnCompleteActionStr[]
+  resourceEncoding?: arc4.ResourceEncodingOptions
 }
-const AbiMetaSymbol = Symbol('AbiMetadata')
-export const attachAbiMetadata = (contract: { new (): Contract }, methodName: string, metadata: AbiMetadata): void => {
-  const metadatas: Record<string, AbiMetadata> = (AbiMetaSymbol in contract ? contract[AbiMetaSymbol] : {}) as Record<string, AbiMetadata>
-  metadatas[methodName] = metadata
-  if (!(AbiMetaSymbol in contract)) {
-    Object.defineProperty(contract, AbiMetaSymbol, {
-      value: metadatas,
-      writable: true,
-      enumerable: false,
-    })
+
+const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> = new WeakMap()
+const contractSymbolMap: Map<string, symbol> = new Map()
+const contractMap: WeakMap<symbol, { new (): Contract }> = new WeakMap()
+/** @internal */
+export const attachAbiMetadata = (contract: { new (): Contract }, methodName: string, metadata: AbiMetadata, fileName: string): void => {
+  const contractFullName = `${fileName}::${contract.prototype.constructor.name}`
+  if (!contractSymbolMap.has(contractFullName)) {
+    contractSymbolMap.set(contractFullName, Symbol(contractFullName))
+  }
+  const contractSymbol = contractSymbolMap.get(contractFullName)!
+  if (!contractMap.has(contractSymbol)) {
+    contractMap.set(contractSymbol, contract)
+  }
+  if (!metadataStore.has(contract)) {
+    metadataStore.set(contract, {})
+  }
+  const metadatas: Record<string, AbiMetadata> = metadataStore.get(contract) as Record<string, AbiMetadata>
+  const conventionalRoutingConfig = getConventionalRoutingConfig(methodName)
+  metadatas[methodName] = {
+    ...metadata,
+    allowActions: metadata.allowActions ?? conventionalRoutingConfig?.allowActions,
+    onCreate: metadata.onCreate ?? conventionalRoutingConfig?.onCreate,
   }
 }
 
-export const captureMethodConfig = <T extends Contract>(
-  contract: T,
-  methodName: string,
-  config?: AbiMethodConfig<T> | BareMethodConfig,
-): void => {
-  const metadata = ensureMetadata(contract, methodName)
-  metadata.onCreate = config?.onCreate ?? 'disallow'
-  metadata.allowActions = ([] as OnCompleteActionStr[]).concat(config?.allowActions ?? 'NoOp')
+export const getContractByName = (contractFullname: string): { new (): Contract } | undefined => {
+  const contractSymbol = contractSymbolMap.get(contractFullname)
+  return !contractSymbol ? undefined : contractMap.get(contractSymbol)
 }
 
-const ensureMetadata = <T extends Contract>(contract: T, methodName: string): AbiMetadata => {
-  if (!hasAbiMetadata(contract)) {
-    const contractClass = contract.constructor as { new (): T }
-    Object.getOwnPropertyNames(Object.getPrototypeOf(contract)).forEach((name) => {
-      attachAbiMetadata(contractClass, name, { methodName: name, methodSelector: name, argTypes: [], returnType: '' })
-    })
+/** @internal */
+export const getContractAbiMetadata = <T extends Contract>(contract: T | { new (): T }): Record<string, AbiMetadata> => {
+  // Initialize result object to store merged metadata
+  const result: Record<string, AbiMetadata> = {}
+
+  // Get the contract's class
+  let currentClass = contract instanceof Contract ? (contract.constructor as { new (): T }) : contract
+
+  // Walk up the prototype chain
+  while (currentClass && currentClass.prototype) {
+    // Find metadata for current class
+    const currentMetadata = metadataStore.get(currentClass)
+
+    if (currentMetadata) {
+      // Merge metadata with existing result (don't override existing entries)
+      const classMetadata = currentMetadata
+      for (const [methodName, metadata] of Object.entries(classMetadata)) {
+        if (!(methodName in result)) {
+          result[methodName] = {
+            ...metadata,
+            ...(currentClass.prototype as DeliberateAny)?.[methodName]?.[Arc4MethodConfigSymbol],
+          }
+        }
+      }
+    }
+
+    // Move up the prototype chain
+    currentClass = Object.getPrototypeOf(currentClass)
   }
-  return getAbiMetadata(contract, methodName)
+
+  return result
 }
 
-export const hasAbiMetadata = <T extends Contract>(contract: T): boolean => {
-  const contractClass = contract.constructor as { new (): T }
-  return (
-    Object.getOwnPropertySymbols(contractClass).some((s) => s.toString() === AbiMetaSymbol.toString()) || AbiMetaSymbol in contractClass
-  )
-}
-
-export const getAbiMetadata = <T extends Contract>(contract: T, methodName: string): AbiMetadata => {
-  const contractClass = contract.constructor as { new (): T }
-  const s = Object.getOwnPropertySymbols(contractClass).find((s) => s.toString() === AbiMetaSymbol.toString())
-  const metadatas: Record<string, AbiMetadata> = (
-    s ? (contractClass as DeliberateAny)[s] : AbiMetaSymbol in contractClass ? contractClass[AbiMetaSymbol] : {}
-  ) as Record<string, AbiMetadata>
+/** @internal */
+export const getContractMethodAbiMetadata = <T extends Contract>(contract: T | { new (): T }, methodName: string): AbiMetadata => {
+  const metadatas = getContractAbiMetadata(contract)
   return metadatas[methodName]
+}
+
+/** @internal */
+export const getArc4Signature = (metadata: AbiMetadata): string => {
+  if (metadata.methodSignature === undefined) {
+    const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map((t) => getArc4TypeName(t, metadata.resourceEncoding, 'in'))
+    const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo, metadata.resourceEncoding, 'out')
+    metadata.methodSignature = `${metadata.name ?? metadata.methodName}(${argTypes.join(',')})${returnType}`
+  }
+  return metadata.methodSignature
+}
+
+/** @internal */
+export const getArc4Selector = (metadata: AbiMetadata): Uint8Array => {
+  const hash = js_sha512.sha512_256.array(getArc4Signature(metadata))
+  return new Uint8Array(hash.slice(0, 4))
+}
+
+/**
+ * Get routing properties inferred by conventional naming
+ * @param methodName The name of the method
+ */
+const getConventionalRoutingConfig = (methodName: string): Pick<AbiMetadata, 'allowActions' | 'onCreate'> | undefined => {
+  switch (methodName) {
+    case ConventionalRouting.methodNames.closeOutOfApplication:
+      return {
+        allowActions: ['CloseOut'],
+        onCreate: 'disallow',
+      }
+    case ConventionalRouting.methodNames.createApplication:
+      return {
+        onCreate: 'require',
+      }
+    case ConventionalRouting.methodNames.deleteApplication:
+      return {
+        allowActions: ['DeleteApplication'],
+      }
+    case ConventionalRouting.methodNames.optInToApplication:
+      return {
+        allowActions: ['OptIn'],
+      }
+    case ConventionalRouting.methodNames.updateApplication:
+      return {
+        allowActions: ['UpdateApplication'],
+        onCreate: 'disallow',
+      }
+    default:
+      return undefined
+  }
 }

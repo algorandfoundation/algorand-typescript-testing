@@ -1,26 +1,19 @@
 import typescript from '@rollup/plugin-typescript'
 import { defineConfig } from 'vitest/config'
-import { puyaTsTransformer } from './src/test-transformer'
+import { puyaTsTransformer } from './src/test-transformer/vitest-transformer'
 
 export default defineConfig({
-  resolve: {
-    conditions: ['dev'],
-  },
   esbuild: {},
+  test: {
+    setupFiles: 'vitest.setup.ts',
+    testTimeout: 20_000,
+  },
   plugins: [
     typescript({
-      target: 'ES2022',
-      tsconfig: false,
-      exclude: ['node_modules'],
-      compilerOptions: {
-        lib: ['es2023'],
-      },
+      tsconfig: './tsconfig.json',
       transformers: {
         before: [puyaTsTransformer],
       },
     }),
   ],
-  test: {
-    globals: true,
-  },
 })
