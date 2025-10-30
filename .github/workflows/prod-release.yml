@@ -40,5 +40,6 @@ jobs:
           type: now
           from_branch: release
           target_branch: main
-          message: Merge release back to main to get version increment [no ci]
           github_token: ${{ steps.app_token.outputs.token }}
+        env:
+          INPUT_MESSAGE: 'Merge release back to main to get version increment [no ci]'
