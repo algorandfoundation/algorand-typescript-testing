@@ -1,18 +1,31 @@
-import type { ptypes } from '@algorandfoundation/puya-ts'
+import { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
-import type { TypeInfo } from '../encoders'
+import type { TypeInfo } from '../impl/encoded-types'
 import type { DeliberateAny } from '../typescript-helpers'
 import { getPropertyNameAsString, trimGenericTypeName } from './helpers'
 
 const factory = ts.factory
+/** @internal */
 export const nodeFactory = {
   importHelpers(testingPackageName: string) {
-    return factory.createImportDeclaration(
-      undefined,
-      factory.createImportClause(false, undefined, factory.createNamespaceImport(factory.createIdentifier('runtimeHelpers'))),
-      factory.createStringLiteral(`${testingPackageName}/runtime-helpers`),
-      undefined,
-    )
+    return [
+      factory.createImportDeclaration(
+        undefined,
+        factory.createImportClause(false, undefined, factory.createNamespaceImport(factory.createIdentifier('runtimeHelpers'))),
+        factory.createStringLiteral(`${testingPackageName}/runtime-helpers`),
+        undefined,
+      ),
+      factory.createImportDeclaration(
+        undefined,
+        factory.createImportClause(
+          false,
+          undefined,
+          factory.createNamedImports([factory.createImportSpecifier(false, undefined, factory.createIdentifier('arc4'))]),
+        ),
+        factory.createStringLiteral(`${testingPackageName}/internal`),
+        undefined,
+      ),
+    ]
   },
 
   switchableValue(x: ts.Expression) {
@@ -49,9 +62,9 @@ export const nodeFactory = {
   },
 
   attachMetaData(
+    sourceFileName: string,
     classIdentifier: ts.Identifier,
     method: ts.MethodDeclaration,
-    functionType: ptypes.FunctionPType,
     argTypes: string[],
     returnType: string,
   ) {
@@ -68,7 +81,7 @@ export const nodeFactory = {
       factory.createCallExpression(
         factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('attachAbiMetadata')),
         undefined,
-        [classIdentifier, methodName, metadata],
+        [classIdentifier, methodName, metadata, factory.createStringLiteral(sourceFileName)],
       ),
     )
   },
@@ -84,28 +97,22 @@ export const nodeFactory = {
     )
   },
 
-  instantiateARC4EncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
+  instantiateEncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
     const infoString = JSON.stringify(typeInfo)
     const classIdentifier = node.expression.getText().replace('arc4.', '')
     return factory.createNewExpression(
-      factory.createIdentifier(`runtimeHelpers.${trimGenericTypeName(typeInfo?.name ?? classIdentifier)}Impl`),
+      factory.createIdentifier(`arc4.${trimGenericTypeName(typeInfo?.name ?? classIdentifier)}`),
       node.typeArguments,
       [infoString ? factory.createStringLiteral(infoString) : undefined, ...(node.arguments ?? [])].filter((arg) => !!arg),
     )
   },
 
-  callStubbedFunction(functionName: string, node: ts.CallExpression, typeInfo?: TypeInfo) {
-    const typeInfoArg = typeInfo ? factory.createStringLiteral(JSON.stringify(typeInfo)) : undefined
-    const updatedPropertyAccessExpression = factory.createPropertyAccessExpression(
-      factory.createIdentifier('runtimeHelpers'),
-      `${functionName}Impl`,
-    )
+  callStubbedFunction(node: ts.CallExpression, typeInfo?: TypeInfo | TypeInfo[]) {
+    const typeInfoArgs = typeInfo
+      ? (Array.isArray(typeInfo) ? typeInfo : [typeInfo]).map((t) => factory.createStringLiteral(JSON.stringify(t)))
+      : []
 
-    return factory.createCallExpression(
-      updatedPropertyAccessExpression,
-      node.typeArguments,
-      [typeInfoArg, ...(node.arguments ?? [])].filter((arg) => !!arg),
-    )
+    return factory.updateCallExpression(node, node.expression, node.typeArguments, [...typeInfoArgs, ...(node.arguments ?? [])])
   },
 
   callMethodSelectorFunction(node: ts.CallExpression) {
@@ -120,7 +127,18 @@ export const nodeFactory = {
     return node
   },
 
-  callAbiCallFunction(node: ts.CallExpression) {
+  callAbiCallFunction(node: ts.CallExpression, typeParams: ptypes.PType[]) {
+    if (typeParams.length === 1 && typeParams[0] instanceof ptypes.FunctionPType && typeParams[0].declaredIn) {
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [
+        factory.createStringLiteral(typeParams[0].declaredIn.fullName),
+        factory.createStringLiteral(typeParams[0].name),
+        ...node.arguments,
+      ])
+    }
+    return node
+  },
+
+  callItxnComposeFunction(node: ts.CallExpression) {
     if (
       node.arguments.length === 2 &&
       ts.isPropertyAccessExpression(node.arguments[0]) &&
@@ -131,4 +149,4 @@ export const nodeFactory = {
     }
     return node
   },
-} satisfies Record<string, (...args: DeliberateAny[]) => ts.Node>
+} satisfies Record<string, (...args: DeliberateAny[]) => ts.Node | ts.Node[]>

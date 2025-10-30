@@ -13,6 +13,7 @@ const resolveAssetIndex = (assetIdOrIndex: StubUint64Compat): uint64 => {
   return txn.assets(input).id
 }
 
+/** @internal */
 export const getAsset = (asset: AssetType | StubUint64Compat): AssetType | undefined => {
   try {
     const assetId = asMaybeUint64Cls(asset)
@@ -25,6 +26,7 @@ export const getAsset = (asset: AssetType | StubUint64Compat): AssetType | undef
   }
 }
 
+/** @internal */
 export const AssetParams: typeof op.AssetParams = {
   assetTotal(a: AssetType | StubUint64Compat): readonly [uint64, boolean] {
     const asset = getAsset(a)
@@ -50,9 +52,9 @@ export const AssetParams: typeof op.AssetParams = {
     const asset = getAsset(a)
     return asset === undefined ? [Bytes(), false] : [asset.url, true]
   },
-  assetMetadataHash(a: AssetType | StubUint64Compat): readonly [bytes, boolean] {
+  assetMetadataHash(a: AssetType | StubUint64Compat): readonly [bytes<32>, boolean] {
     const asset = getAsset(a)
-    return asset === undefined ? [Bytes(), false] : [asset.metadataHash, true]
+    return asset === undefined ? [Bytes() as bytes<32>, false] : [asset.metadataHash, true]
   },
   assetManager(a: AssetType | StubUint64Compat): readonly [AccountType, boolean] {
     const asset = getAsset(a)

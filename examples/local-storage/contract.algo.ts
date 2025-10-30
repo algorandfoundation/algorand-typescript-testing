@@ -1,5 +1,5 @@
 import type { Account, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
-import { Bytes, Global, LocalState, Txn, arc4, assert, contract } from '@algorandfoundation/algorand-typescript'
+import { Bytes, Global, LocalState, Txn, arc4, assert, contract, readonly } from '@algorandfoundation/algorand-typescript'
 
 /**
  * A contract demonstrating local storage functionality.
@@ -55,7 +55,7 @@ export default class LocalStorage extends arc4.Contract {
    * - [4] boolean: The value of localBool
    * - [5] Address: The value of localAccount converted to Address type
    */
-  @arc4.abimethod({ readonly: true })
+  @readonly
   public readLocalState(): [uint64, uint64, bytes, string, boolean, arc4.Address] {
     const sender = Txn.sender
     // Convert Account reference type to native Address type for return value

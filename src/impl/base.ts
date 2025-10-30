@@ -1,19 +1,18 @@
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import type { TypeInfo } from '../encoders'
+import type { TypeInfo } from '../impl/encoded-types'
 import type { StubBytesCompat } from './primitives'
 import { BytesCls, Uint64 } from './primitives'
 
+/** @internal */
 export abstract class BytesBackedCls {
   #value: bytes
-  // #typeInfo: GenericTypeInfo | undefined
 
   get bytes() {
     return this.#value
   }
   constructor(value: bytes, _typeInfo?: TypeInfo) {
     this.#value = value
-    // this.#typeInfo = typeInfo
   }
 
   static fromBytes<T extends BytesBackedCls>(
@@ -25,6 +24,7 @@ export abstract class BytesBackedCls {
   }
 }
 
+/** @internal */
 export abstract class Uint64BackedCls {
   #value: uint64
 

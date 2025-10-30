@@ -23,13 +23,14 @@
     "test:ci": "vitest run --coverage --reporter junit --outputFile test-results.xml",
     "script:documentation": "typedoc",
     "script:build-examples": "rollup --config examples/rollup.config.ts --configPlugin typescript",
-    "script:compile-examples": "puya-ts --out-dir data ./examples/*/",
-    "script:refresh-test-artifacts": "puya-ts --out-dir data ./tests/artifacts/*/"
+    "script:compile-examples": "puya-ts --out-dir data ./examples/*/ --puya-path=/home/parallels/.local/bin/puya",
+    "script:refresh-test-artifacts": "puya-ts --out-dir data --output-awst --output-awst-json ./tests/artifacts/*/ --puya-path=/home/parallels/.local/bin/puya"
   },
   "devDependencies": {
     "@algorandfoundation/algokit-utils": "^9.0.0",
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
+    "@dotenvx/dotenvx": "^1.45.1",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.23.0",
     "@makerx/eslint-config": "4.2.0",
@@ -59,20 +60,22 @@
     "rollup": "^4.38.0",
     "semantic-release": "^24.2.3",
     "tsx": "4.19.3",
-    "typedoc": "^0.28.1",
-    "typedoc-plugin-markdown": "^4.6.0",
-    "typescript": "^5.8.2",
+    "typedoc": "^0.28.7",
+    "typedoc-plugin-markdown": "^4.7.1",
+    "typedoc-plugin-missing-exports": "^4.0.0",
+    "typescript": "^5.8.3",
     "upath": "^2.0.1",
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "@algorandfoundation/algorand-typescript": "1.0.0-beta.73",
-    "@algorandfoundation/puya-ts": "1.0.0-beta.73",
+    "@algorandfoundation/algorand-typescript": "1.0.1",
+    "@algorandfoundation/puya-ts": "1.0.1",
     "elliptic": "^6.6.1",
     "js-sha256": "^0.11.0",
     "js-sha3": "^0.9.3",
     "js-sha512": "^0.9.0",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "upath": "^2.0.1"
   },
   "overrides": {
     "cross-spawn": "7.0.6",

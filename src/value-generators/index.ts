@@ -6,6 +6,7 @@ export class ValueGenerator extends AvmValueGenerator {
   txn: TxnValueGenerator
   arc4: Arc4ValueGenerator
 
+  /** @internal */
   constructor() {
     super()
     this.txn = new TxnValueGenerator()

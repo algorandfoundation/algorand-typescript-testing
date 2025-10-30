@@ -1,15 +1,15 @@
-import type { bytes } from '@algorandfoundation/algorand-typescript'
-import { arc4, BigUint, emit, validateEncoding } from '@algorandfoundation/algorand-typescript'
-import type { Bool, UFixedNxM } from '@algorandfoundation/algorand-typescript/arc4'
-import { Byte, Contract, interpretAsArc4, Str, UintN } from '@algorandfoundation/algorand-typescript/arc4'
+import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import { arc4, BigUint, clone, emit, validateEncoding } from '@algorandfoundation/algorand-typescript'
+import type { Bool, UFixed } from '@algorandfoundation/algorand-typescript/arc4'
+import { Byte, Contract, convertBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 
 export class Arc4PrimitiveOpsContract extends Contract {
   @arc4.abimethod({ validateEncoding: 'unsafe-disabled' })
   public verify_uintn_uintn_eq(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
     validateEncoding(aUintN)
     return aUintN === bUintN
   }
@@ -17,24 +17,24 @@ export class Arc4PrimitiveOpsContract extends Contract {
   public verify_biguintn_uintn_eq(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
     return aUintN.bytes.equals(bUintN.bytes)
   }
   @arc4.abimethod()
   public verify_uintn_biguintn_eq(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
     return aUintN.bytes.equals(bUintN.bytes)
   }
   @arc4.abimethod()
   public verify_biguintn_biguintn_eq(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
     return aUintN === bUintN
   }
   @arc4.abimethod()
@@ -49,32 +49,32 @@ export class Arc4PrimitiveOpsContract extends Contract {
   public verify_uintn_uintn_ne(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
     return aUintN !== bUintN
   }
   @arc4.abimethod()
   public verify_biguintn_uintn_ne(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
     return !aUintN.bytes.equals(bUintN.bytes)
   }
   @arc4.abimethod()
   public verify_uintn_biguintn_ne(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
     return !aUintN.bytes.equals(bUintN.bytes)
   }
   @arc4.abimethod()
   public verify_biguintn_biguintn_ne(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
     return aUintN !== bUintN
   }
   @arc4.abimethod()
@@ -89,33 +89,33 @@ export class Arc4PrimitiveOpsContract extends Contract {
   public verify_uintn_uintn_lt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native < bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asUint64() < bUintN.asUint64()
   }
   @arc4.abimethod()
   public verify_biguintn_uintn_lt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native < BigUint(bUintN.native)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asBigUint() < BigUint(bUintN.asUint64())
   }
   @arc4.abimethod()
   public verify_uintn_biguintn_lt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return BigUint(aUintN.native) < bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return BigUint(aUintN.asUint64()) < bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_biguintn_biguintn_lt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return aUintN.native < bUintN.native
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return aUintN.asBigUint() < bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_byte_byte_lt(a: bytes, b: bytes): boolean {
@@ -123,39 +123,39 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aByte = new Byte(aBiguint)
     const bByte = new Byte(bBiguint)
-    return aByte.native < bByte.native
+    return aByte.asUint64() < bByte.asUint64()
   }
   @arc4.abimethod()
   public verify_uintn_uintn_le(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native <= bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asUint64() <= bUintN.asUint64()
   }
   @arc4.abimethod()
   public verify_biguintn_uintn_le(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native <= BigUint(bUintN.native)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asBigUint() <= BigUint(bUintN.asUint64())
   }
   @arc4.abimethod()
   public verify_uintn_biguintn_le(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return BigUint(aUintN.native) <= bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return BigUint(aUintN.asUint64()) <= bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_biguintn_biguintn_le(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return aUintN.native <= bUintN.native
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return aUintN.asBigUint() <= bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_byte_byte_le(a: bytes, b: bytes): boolean {
@@ -163,39 +163,39 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aByte = new Byte(aBiguint)
     const bByte = new Byte(bBiguint)
-    return aByte.native <= bByte.native
+    return aByte.asUint64() <= bByte.asUint64()
   }
   @arc4.abimethod()
   public verify_uintn_uintn_gt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native > bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asUint64() > bUintN.asUint64()
   }
   @arc4.abimethod()
   public verify_biguintn_uintn_gt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native > BigUint(bUintN.native)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asBigUint() > BigUint(bUintN.asUint64())
   }
   @arc4.abimethod()
   public verify_uintn_biguintn_gt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return BigUint(aUintN.native) > bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return BigUint(aUintN.asUint64()) > bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_biguintn_biguintn_gt(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return aUintN.native > bUintN.native
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return aUintN.asBigUint() > bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_byte_byte_gt(a: bytes, b: bytes): boolean {
@@ -203,39 +203,39 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aByte = new Byte(aBiguint)
     const bByte = new Byte(bBiguint)
-    return aByte.native > bByte.native
+    return aByte.asUint64() > bByte.asUint64()
   }
   @arc4.abimethod()
   public verify_uintn_uintn_ge(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native >= bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asUint64() >= bUintN.asUint64()
   }
   @arc4.abimethod()
   public verify_biguintn_uintn_ge(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<64>(bBiguint)
-    return aUintN.native >= BigUint(bUintN.native)
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<64>(bBiguint)
+    return aUintN.asBigUint() >= BigUint(bUintN.asUint64())
   }
   @arc4.abimethod()
   public verify_uintn_biguintn_ge(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<64>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return BigUint(aUintN.native) >= bUintN.native
+    const aUintN = new Uint<64>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return BigUint(aUintN.asUint64()) >= bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_biguintn_biguintn_ge(a: bytes, b: bytes): boolean {
     const aBiguint = BigUint(a)
     const bBiguint = BigUint(b)
-    const aUintN = new UintN<512>(aBiguint)
-    const bUintN = new UintN<512>(bBiguint)
-    return aUintN.native >= bUintN.native
+    const aUintN = new Uint<512>(aBiguint)
+    const bUintN = new Uint<512>(bBiguint)
+    return aUintN.asBigUint() >= bUintN.asBigUint()
   }
   @arc4.abimethod()
   public verify_byte_byte_ge(a: bytes, b: bytes): boolean {
@@ -243,17 +243,17 @@ export class Arc4PrimitiveOpsContract extends Contract {
     const bBiguint = BigUint(b)
     const aByte = new Byte(aBiguint)
     const bByte = new Byte(bBiguint)
-    return aByte.native >= bByte.native
+    return aByte.asUint64() >= bByte.asUint64()
   }
   @arc4.abimethod()
-  public verify_uintn_init(a: bytes): UintN<32> {
+  public verify_uintn_init(a: bytes): Uint<32> {
     const aBiguint = BigUint(a)
-    return new UintN<32>(aBiguint)
+    return new Uint<32>(aBiguint)
   }
   @arc4.abimethod()
-  public verify_biguintn_init(a: bytes): UintN<256> {
+  public verify_biguintn_init(a: bytes): Uint<256> {
     const aBiguint = BigUint(a)
-    return new UintN<256>(aBiguint)
+    return new Uint<256>(aBiguint)
   }
   @arc4.abimethod()
   public verify_byte_init(a: bytes): Byte {
@@ -261,52 +261,72 @@ export class Arc4PrimitiveOpsContract extends Contract {
     return new Byte(aBiguint)
   }
   @arc4.abimethod()
-  public verify_uintn_from_bytes(a: bytes): UintN<32> {
-    return interpretAsArc4<UintN<32>>(a)
+  public verify_uintn_from_bytes(a: bytes): Uint<32> {
+    return convertBytes<Uint<32>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
-  public verify_biguintn_from_bytes(a: bytes): UintN<256> {
-    return interpretAsArc4<UintN<256>>(a)
+  public verify_biguintn_from_bytes(a: bytes): Uint<256> {
+    return convertBytes<Uint<256>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_byte_from_bytes(a: bytes): Byte {
-    return interpretAsArc4<Byte>(a)
+    return convertBytes<Byte>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
-  public verify_uintn_from_log(a: bytes): UintN<32> {
-    return interpretAsArc4<UintN<32>>(a, 'log')
+  public verify_uintn_from_log(a: bytes): Uint<32> {
+    return convertBytes<Uint<32>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
-  public verify_biguintn_from_log(a: bytes): UintN<256> {
-    return interpretAsArc4<UintN<256>>(a, 'log')
+  public verify_biguintn_from_log(a: bytes): Uint<256> {
+    return convertBytes<Uint<256>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
+  @arc4.abimethod()
+  public verify_biguintn_as_uint64(a: bytes): uint64 {
+    return convertBytes<Uint<256>>(a, { strategy: 'unsafe-cast' }).asUint64()
+  }
+
+  @arc4.abimethod()
+  public verify_biguintn_as_biguint(a: bytes): biguint {
+    return convertBytes<Uint<256>>(a, { strategy: 'unsafe-cast' }).asBigUint()
+  }
+
+  @arc4.abimethod()
+  public verify_uintn64_as_uint64(a: bytes): uint64 {
+    return convertBytes<arc4.Uint64>(a, { strategy: 'unsafe-cast' }).asUint64()
+  }
+
+  @arc4.abimethod()
+  public verify_uintn64_as_biguint(a: bytes): biguint {
+    return convertBytes<arc4.Uint64>(a, { strategy: 'unsafe-cast' }).asBigUint()
+  }
+
   @arc4.abimethod()
   public verify_byte_from_log(a: bytes): Byte {
-    return interpretAsArc4<Byte>(a, 'log')
+    return convertBytes<Byte>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
-  public verify_ufixednxm_bytes(a: UFixedNxM<32, 8>): bytes {
+  public verify_ufixed_bytes(a: UFixed<32, 8>): bytes {
     return a.bytes
   }
   @arc4.abimethod()
-  public verify_bigufixednxm_bytes(a: UFixedNxM<256, 16>): bytes {
+  public verify_bigufixed_bytes(a: UFixed<256, 16>): bytes {
     return a.bytes
   }
   @arc4.abimethod()
-  public verify_ufixednxm_from_bytes(a: bytes): UFixedNxM<32, 8> {
-    return interpretAsArc4<UFixedNxM<32, 8>>(a)
+  public verify_ufixed_from_bytes(a: bytes): UFixed<32, 8> {
+    return convertBytes<UFixed<32, 8>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
-  public verify_bigufixednxm_from_bytes(a: bytes): UFixedNxM<256, 16> {
-    return interpretAsArc4<UFixedNxM<256, 16>>(a)
+  public verify_bigufixed_from_bytes(a: bytes): UFixed<256, 16> {
+    return convertBytes<UFixed<256, 16>>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
-  public verify_ufixednxm_from_log(a: bytes): UFixedNxM<32, 8> {
-    return interpretAsArc4<UFixedNxM<32, 8>>(a, 'log')
+  public verify_ufixed_from_log(a: bytes): UFixed<32, 8> {
+    return convertBytes<UFixed<32, 8>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
-  public verify_bigufixednxm_from_log(a: bytes): UFixedNxM<256, 16> {
-    return interpretAsArc4<UFixedNxM<256, 16>>(a, 'log')
+  public verify_bigufixed_from_log(a: bytes): UFixed<256, 16> {
+    return convertBytes<UFixed<256, 16>>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_string_init(a: string): Str {
@@ -329,11 +349,11 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_string_from_bytes(a: bytes): Str {
-    return interpretAsArc4<Str>(a)
+    return convertBytes<Str>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_string_from_log(a: bytes): Str {
-    return interpretAsArc4<Str>(a, 'log')
+    return convertBytes<Str>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_bool_bytes(a: Bool): bytes {
@@ -341,39 +361,39 @@ export class Arc4PrimitiveOpsContract extends Contract {
   }
   @arc4.abimethod()
   public verify_bool_from_bytes(a: bytes): Bool {
-    return interpretAsArc4<Bool>(a)
+    return convertBytes<Bool>(a, { strategy: 'unsafe-cast' })
   }
   @arc4.abimethod()
   public verify_bool_from_log(a: bytes): Bool {
-    return interpretAsArc4<Bool>(a, 'log')
+    return convertBytes<Bool>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
 
   // TODO: recompile when puya-ts is updated
   @arc4.abimethod()
   public verify_emit(
     a: arc4.Str,
-    b: arc4.UintN<512>,
-    c: arc4.UintN64,
+    b: arc4.Uint<512>,
+    c: arc4.Uint64,
     d: arc4.DynamicBytes,
-    e: arc4.UintN64,
+    e: arc4.Uint64,
     f: arc4.Bool,
     g: arc4.DynamicBytes,
     h: arc4.Str,
-    m: arc4.UintN<64>,
-    n: arc4.UintN<256>,
-    o: arc4.UFixedNxM<32, 8>,
-    p: arc4.UFixedNxM<256, 16>,
+    m: arc4.Uint<64>,
+    n: arc4.Uint<256>,
+    o: arc4.UFixed<32, 8>,
+    p: arc4.UFixed<256, 16>,
     q: arc4.Bool,
     r: bytes,
     s: bytes,
     t: bytes,
   ): void {
-    const arc4_r = interpretAsArc4<arc4.StaticArray<arc4.UintN8, 3>>(r)
-    const arc4_s = interpretAsArc4<arc4.DynamicArray<arc4.UintN16>>(s)
-    const arc4_t = interpretAsArc4<arc4.Tuple<[arc4.UintN32, arc4.UintN64, arc4.Str]>>(t)
+    const arc4_r = convertBytes<arc4.StaticArray<arc4.Uint8, 3>>(r, { strategy: 'unsafe-cast' })
+    const arc4_s = convertBytes<arc4.DynamicArray<arc4.Uint16>>(s, { strategy: 'unsafe-cast' })
+    const arc4_t = convertBytes<arc4.Tuple<[arc4.Uint32, arc4.Uint64, arc4.Str]>>(t, { strategy: 'unsafe-cast' })
 
-    emit(new SwappedArc4({ m, n, o, p, q, r: arc4_r, s: arc4_s, t: arc4_t }))
-    emit('Swapped', a, b, c, d, e, f, g, h, m, n, o, p, q, arc4_r.copy(), arc4_s.copy(), arc4_t)
+    emit(new SwappedArc4({ m, n, o, p, q, r: clone(arc4_r), s: clone(arc4_s), t: clone(arc4_t) }))
+    emit('Swapped', a, b, c, d, e, f, g, h, m, n, o, p, q, arc4_r, arc4_s, arc4_t)
     emit(
       'Swapped(string,uint512,uint64,byte[],uint64,bool,byte[],string,uint64,uint256,ufixed32x8,ufixed256x16,bool,uint8[3],uint16[],(uint32,uint64,string))',
       a,
@@ -389,20 +409,20 @@ export class Arc4PrimitiveOpsContract extends Contract {
       o,
       p,
       q,
-      arc4_r.copy(),
-      arc4_s.copy(),
+      arc4_r,
+      arc4_s,
       arc4_t,
     )
   }
 }
 
 class SwappedArc4 extends arc4.Struct<{
-  m: arc4.UintN<64>
-  n: arc4.UintN<256>
-  o: arc4.UFixedNxM<32, 8>
-  p: arc4.UFixedNxM<256, 16>
+  m: arc4.Uint<64>
+  n: arc4.Uint<256>
+  o: arc4.UFixed<32, 8>
+  p: arc4.UFixed<256, 16>
   q: arc4.Bool
-  r: arc4.StaticArray<arc4.UintN8, 3>
-  s: arc4.DynamicArray<arc4.UintN16>
-  t: arc4.Tuple<[arc4.UintN32, arc4.UintN64, arc4.Str]>
+  r: arc4.StaticArray<arc4.Uint8, 3>
+  s: arc4.DynamicArray<arc4.Uint16>
+  t: arc4.Tuple<[arc4.Uint32, arc4.Uint64, arc4.Str]>
 }> {}

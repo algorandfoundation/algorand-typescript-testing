@@ -4,14 +4,16 @@ import type {
   ContractProxy,
   TypedApplicationCallFields,
 } from '@algorandfoundation/algorand-typescript/arc4'
-import { getContractMethodAbiMetadata } from '../abi-metadata'
+import { getContractByName, getContractMethodAbiMetadata } from '../abi-metadata'
 import { lazyContext } from '../context-helpers/internal-context'
+import { InternalError } from '../errors'
 import type { ConstructorFor, DeliberateAny, InstanceMethod } from '../typescript-helpers'
 import type { ApplicationCallInnerTxn } from './inner-transactions'
 import { ApplicationCallInnerTxnContext } from './inner-transactions'
 import { methodSelector } from './method-selector'
 import type { ApplicationData } from './reference'
 
+/** @internal */
 export function compileArc4<TContract extends Contract>(
   contract: ConstructorFor<TContract>,
   options?: CompileContractOptions,
@@ -42,8 +44,9 @@ export function compileArc4<TContract extends Contract>(
               ...methodArgs,
             },
             selector,
+            abiMetadata?.resourceEncoding,
           )
-          invokeCallback(itxnContext)
+          invokeAbiCall(itxnContext)
           return {
             itxn: itxnContext,
             returnValue: itxnContext.loggedReturnValue,
@@ -57,7 +60,7 @@ export function compileArc4<TContract extends Contract>(
         ...getCommonApplicationCallFields(app, options),
         ...methodArgs,
       })
-      invokeCallback(itxnContext)
+      invokeAbiCall(itxnContext)
       return itxnContext
     },
     approvalProgram: app?.application.approvalProgram ?? [lazyContext.any.bytes(10), lazyContext.any.bytes(10)],
@@ -70,7 +73,8 @@ export function compileArc4<TContract extends Contract>(
   } as unknown as ContractProxy<TContract>
 }
 
-const invokeCallback = (itxnContext: ApplicationCallInnerTxnContext) => {
+/** @internal */
+export const invokeAbiCall = (itxnContext: ApplicationCallInnerTxnContext) => {
   lazyContext.value.notifyApplicationSpies(itxnContext)
   lazyContext.txn.activeGroup.addInnerTransactionGroup(...(itxnContext.itxns ?? []), itxnContext)
 }
@@ -84,14 +88,36 @@ const getCommonApplicationCallFields = (app: ApplicationData | undefined, option
   localNumBytes: options?.localBytes ?? app?.application.localNumBytes ?? lazyContext.any.uint64(),
 })
 
-export function abiCall<TArgs extends DeliberateAny[], TReturn>(
+/** @internal */
+export function getApplicationCallInnerTxnContext<TArgs extends DeliberateAny[], TReturn = void>(
   method: InstanceMethod<Contract, TArgs, TReturn>,
   methodArgs: TypedApplicationCallFields<TArgs>,
   contract?: Contract | { new (): Contract },
-): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
+) {
+  const abiMetadata = contract ? getContractMethodAbiMetadata(contract, method.name) : undefined
   const selector = methodSelector(method, contract)
-  const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields<TReturn>(methodArgs, selector)
-  invokeCallback(itxnContext)
+  return ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields<TReturn>(
+    {
+      ...methodArgs,
+      onCompletion: methodArgs.onCompletion ?? abiMetadata?.allowActions?.map((action) => OnCompleteAction[action])[0],
+    },
+    selector,
+    abiMetadata?.resourceEncoding,
+  )
+}
+/** @internal */
+export function abiCall<TArgs extends DeliberateAny[], TReturn>(
+  contractFullName: string,
+  method: string,
+  methodArgs: TypedApplicationCallFields<TArgs>,
+): { itxn: ApplicationCallInnerTxn; returnValue: TReturn | undefined } {
+  const contract = getContractByName(contractFullName)
+  if (contract === undefined || typeof contract !== 'function') throw new InternalError(`Unknown contract: ${contractFullName}`)
+  if (!Object.hasOwn(contract.prototype, method)) throw new InternalError(`Unknown method: ${method} in contract: ${contractFullName}`)
+
+  const itxnContext = getApplicationCallInnerTxnContext<TArgs, TReturn>(contract.prototype[method], methodArgs, contract)
+
+  invokeAbiCall(itxnContext)
 
   return {
     itxn: itxnContext,

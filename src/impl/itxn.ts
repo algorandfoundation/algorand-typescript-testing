@@ -13,6 +13,7 @@ export type InnerTxn =
   | itxn.AssetFreezeInnerTxn
   | itxn.ApplicationCallInnerTxn
 
+/** @internal */
 export type InnerTxnFields = (
   | itxn.PaymentFields
   | itxn.KeyRegistrationFields
@@ -22,213 +23,246 @@ export type InnerTxnFields = (
   | itxn.ApplicationCallFields
 ) & { type?: TransactionType }
 
+const getInnerTxn = (index: StubUint64Compat): InnerTxn => {
+  return lazyContext.activeGroup.getItxnGroup().getInnerTxn(asUint64(index))
+}
+
+const getPaymentInnerTxn = (index: StubUint64Compat): itxn.PaymentInnerTxn => {
+  return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(asUint64(index))
+}
+
+const getKeyRegistrationInnerTxn = (index: StubUint64Compat): itxn.KeyRegistrationInnerTxn => {
+  return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(asUint64(index))
+}
+
+const getAssetTransferInnerTxn = (index: StubUint64Compat): itxn.AssetTransferInnerTxn => {
+  return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(asUint64(index))
+}
+
+const getAssetConfigInnerTxn = (index: StubUint64Compat): itxn.AssetConfigInnerTxn => {
+  return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(asUint64(index))
+}
+
+const getAssetFreezeInnerTxn = (index: StubUint64Compat): itxn.AssetFreezeInnerTxn => {
+  return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(asUint64(index))
+}
+
+const getApplicationCallInnerTxn = (index: StubUint64Compat): itxn.ApplicationCallInnerTxn => {
+  return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(asUint64(index))
+}
+
+/** @internal */
 export const GITxn: typeof op.GITxn = {
   sender: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).sender
+    return getInnerTxn(t).sender
   },
   fee: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).fee
+    return getInnerTxn(t).fee
   },
   firstValid: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).firstValid
+    return getInnerTxn(t).firstValid
   },
   firstValidTime: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).firstValidTime
+    return getInnerTxn(t).firstValidTime
   },
   lastValid: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).lastValid
+    return getInnerTxn(t).lastValid
   },
   note: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).note
+    return getInnerTxn(t).note
   },
-  lease: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).lease
+  lease: function (t: StubUint64Compat): bytes<32> {
+    return getInnerTxn(t).lease
   },
   receiver: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(t).receiver
+    return getPaymentInnerTxn(t).receiver
   },
   amount: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(t).amount
+    return getPaymentInnerTxn(t).amount
   },
   closeRemainderTo: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getPaymentInnerTxn(t).closeRemainderTo
+    return getPaymentInnerTxn(t).closeRemainderTo
   },
-  votePk: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteKey
+  votePk: function (t: StubUint64Compat): bytes<32> {
+    return getKeyRegistrationInnerTxn(t).voteKey
   },
-  selectionPk: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).selectionKey
+  selectionPk: function (t: StubUint64Compat): bytes<32> {
+    return getKeyRegistrationInnerTxn(t).selectionKey
   },
   voteFirst: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteFirst
+    return getKeyRegistrationInnerTxn(t).voteFirst
   },
   voteLast: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteLast
+    return getKeyRegistrationInnerTxn(t).voteLast
   },
   voteKeyDilution: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).voteKeyDilution
+    return getKeyRegistrationInnerTxn(t).voteKeyDilution
   },
   type: function (t: StubUint64Compat): bytes {
-    return asUint64Cls(lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).type).toBytes().asAlgoTs()
+    return asUint64Cls(getInnerTxn(t).type).toBytes().asAlgoTs()
   },
   typeEnum: function (t: StubUint64Compat): uint64 {
-    return asUint64(lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).type)
+    return asUint64(getInnerTxn(t).type)
   },
   xferAsset: function (t: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).xferAsset
+    return getAssetTransferInnerTxn(t).xferAsset
   },
   assetAmount: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetAmount
+    return getAssetTransferInnerTxn(t).assetAmount
   },
   assetSender: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetSender
+    return getAssetTransferInnerTxn(t).assetSender
   },
   assetReceiver: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetReceiver
+    return getAssetTransferInnerTxn(t).assetReceiver
   },
   assetCloseTo: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetTransferInnerTxn(t).assetCloseTo
+    return getAssetTransferInnerTxn(t).assetCloseTo
   },
   groupIndex: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).groupIndex
+    return getInnerTxn(t).groupIndex
   },
-  txId: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).txnId
+  txId: function (t: StubUint64Compat): bytes<32> {
+    return getInnerTxn(t).txnId
   },
   applicationId: function (t: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).appId
+    return getApplicationCallInnerTxn(t).appId
   },
   onCompletion: function (t: StubUint64Compat): uint64 {
-    const onCompletion = lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).onCompletion
+    const onCompletion = getApplicationCallInnerTxn(t).onCompletion
     return asUint64(onCompletion)
   },
   applicationArgs: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).appArgs(asUint64(a))
+    return getApplicationCallInnerTxn(t).appArgs(asUint64(a))
   },
   numAppArgs: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numAppArgs
+    return getApplicationCallInnerTxn(t).numAppArgs
   },
   accounts: function (t: StubUint64Compat, a: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).accounts(asUint64(a))
+    return getApplicationCallInnerTxn(t).accounts(asUint64(a))
   },
   numAccounts: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numAccounts
+    return getApplicationCallInnerTxn(t).numAccounts
   },
   approvalProgram: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).approvalProgram
+    return getApplicationCallInnerTxn(t).approvalProgram
   },
   clearStateProgram: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).clearStateProgram
+    return getApplicationCallInnerTxn(t).clearStateProgram
   },
   rekeyTo: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getInnerTxn(t).rekeyTo
+    return getInnerTxn(t).rekeyTo
   },
   configAsset: function (t: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).configAsset
+    return getAssetConfigInnerTxn(t).configAsset
   },
   configAssetTotal: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).total
+    return getAssetConfigInnerTxn(t).total
   },
   configAssetDecimals: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).decimals
+    return getAssetConfigInnerTxn(t).decimals
   },
   configAssetDefaultFrozen: function (t: StubUint64Compat): boolean {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).defaultFrozen
+    return getAssetConfigInnerTxn(t).defaultFrozen
   },
   configAssetUnitName: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).unitName
+    return getAssetConfigInnerTxn(t).unitName
   },
   configAssetName: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).assetName
+    return getAssetConfigInnerTxn(t).assetName
   },
   configAssetUrl: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).url
+    return getAssetConfigInnerTxn(t).url
   },
-  configAssetMetadataHash: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).metadataHash
+  configAssetMetadataHash: function (t: StubUint64Compat): bytes<32> {
+    return getAssetConfigInnerTxn(t).metadataHash
   },
   configAssetManager: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).manager
+    return getAssetConfigInnerTxn(t).manager
   },
   configAssetReserve: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).reserve
+    return getAssetConfigInnerTxn(t).reserve
   },
   configAssetFreeze: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).freeze
+    return getAssetConfigInnerTxn(t).freeze
   },
   configAssetClawback: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).clawback
+    return getAssetConfigInnerTxn(t).clawback
   },
   freezeAsset: function (t: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(t).freezeAsset
+    return getAssetFreezeInnerTxn(t).freezeAsset
   },
   freezeAssetAccount: function (t: StubUint64Compat): Account {
-    return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(t).freezeAccount
+    return getAssetFreezeInnerTxn(t).freezeAccount
   },
   freezeAssetFrozen: function (t: StubUint64Compat): boolean {
-    return lazyContext.activeGroup.getItxnGroup().getAssetFreezeInnerTxn(t).frozen
+    return getAssetFreezeInnerTxn(t).frozen
   },
   assets: function (t: StubUint64Compat, a: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).assets(asUint64(a))
+    return getApplicationCallInnerTxn(t).assets(asUint64(a))
   },
   numAssets: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numAssets
+    return getApplicationCallInnerTxn(t).numAssets
   },
   applications: function (t: StubUint64Compat, a: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).apps(asUint64(a))
+    return getApplicationCallInnerTxn(t).apps(asUint64(a))
   },
   numApplications: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numApps
+    return getApplicationCallInnerTxn(t).numApps
   },
   globalNumUint: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).globalNumUint
+    return getApplicationCallInnerTxn(t).globalNumUint
   },
   globalNumByteSlice: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).globalNumBytes
+    return getApplicationCallInnerTxn(t).globalNumBytes
   },
   localNumUint: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).localNumUint
+    return getApplicationCallInnerTxn(t).localNumUint
   },
   localNumByteSlice: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).localNumBytes
+    return getApplicationCallInnerTxn(t).localNumBytes
   },
   extraProgramPages: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).extraProgramPages
+    return getApplicationCallInnerTxn(t).extraProgramPages
   },
   nonparticipation: function (t: StubUint64Compat): boolean {
-    return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).nonparticipation
+    return getKeyRegistrationInnerTxn(t).nonparticipation
   },
   logs: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).logs(asUint64(a))
+    return getApplicationCallInnerTxn(t).logs(asUint64(a))
   },
   numLogs: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numLogs
+    return getApplicationCallInnerTxn(t).numLogs
   },
   createdAssetId: function (t: StubUint64Compat): Asset {
-    return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn(t).createdAsset
+    return getAssetConfigInnerTxn(t).createdAsset
   },
   createdApplicationId: function (t: StubUint64Compat): Application {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).createdApp
+    return getApplicationCallInnerTxn(t).createdApp
   },
   lastLog: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).lastLog
+    return getApplicationCallInnerTxn(t).lastLog
   },
-  stateProofPk: function (t: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn(t).stateProofKey
+  stateProofPk: function (t: StubUint64Compat): bytes<64> {
+    return getKeyRegistrationInnerTxn(t).stateProofKey
   },
   approvalProgramPages: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).approvalProgramPages(asUint64(a))
+    return getApplicationCallInnerTxn(t).approvalProgramPages(asUint64(a))
   },
   numApprovalProgramPages: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numApprovalProgramPages
+    return getApplicationCallInnerTxn(t).numApprovalProgramPages
   },
   clearStateProgramPages: function (t: StubUint64Compat, a: StubUint64Compat): bytes {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).clearStateProgramPages(asUint64(a))
+    return getApplicationCallInnerTxn(t).clearStateProgramPages(asUint64(a))
   },
   numClearStateProgramPages: function (t: StubUint64Compat): uint64 {
-    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn(t).numClearStateProgramPages
+    return getApplicationCallInnerTxn(t).numClearStateProgramPages
+  },
+  rejectVersion: function (t: StubUint64Compat): uint64 {
+    return getApplicationCallInnerTxn(t).rejectVersion
   },
 }
+/** @internal */
 export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte address
@@ -269,7 +303,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte lease value
    */
-  get lease(): bytes {
+  get lease(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn().lease
   },
   /**
@@ -293,13 +327,13 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte address
    */
-  get votePk(): bytes {
+  get votePk(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn().voteKey
   },
   /**
    * 32 byte address
    */
-  get selectionPk(): bytes {
+  get selectionPk(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn().selectionKey
   },
   /**
@@ -371,7 +405,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * The computed ID for this transaction. 32 bytes.
    */
-  get txId(): bytes {
+  get txId(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getInnerTxn().txnId
   },
   /**
@@ -474,7 +508,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 32 byte commitment to unspecified asset metadata
    */
-  get configAssetMetadataHash(): bytes {
+  get configAssetMetadataHash(): bytes<32> {
     return lazyContext.activeGroup.getItxnGroup().getAssetConfigInnerTxn().metadataHash
   },
   /**
@@ -612,7 +646,7 @@ export const ITxn: typeof op.ITxn = {
   /**
    * 64 byte state proof public key
    */
-  get stateProofPk(): bytes {
+  get stateProofPk(): bytes<64> {
     return lazyContext.activeGroup.getItxnGroup().getKeyRegistrationInnerTxn().stateProofKey
   },
   /**
@@ -639,6 +673,9 @@ export const ITxn: typeof op.ITxn = {
   get numClearStateProgramPages(): uint64 {
     return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().numClearStateProgramPages
   },
+  get rejectVersion(): uint64 {
+    return lazyContext.activeGroup.getItxnGroup().getApplicationCallInnerTxn().rejectVersion
+  },
 }
 
 const setConstructingItxnField = (fields: Partial<InnerTxnFields>): void => {
@@ -649,6 +686,7 @@ const getConstructingItxn = <T extends InnerTxnFields>(): T => {
   return lazyContext.activeGroup.constructingItxn as T
 }
 
+/** @internal */
 export const ITxnCreate: typeof op.ITxnCreate = {
   begin: function (): void {
     lazyContext.activeGroup.beginInnerTransactionGroup()
@@ -672,10 +710,10 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     setConstructingItxnField({ closeRemainderTo: a })
   },
   setVotePk: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ voteKey: asBytes(a) })
+    setConstructingItxnField({ voteKey: asBytes(a).toFixed({ length: 32 }) })
   },
   setSelectionPk: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ selectionKey: asBytes(a) })
+    setConstructingItxnField({ selectionKey: asBytes(a).toFixed({ length: 32 }) })
   },
   setVoteFirst: function (a: StubUint64Compat): void {
     setConstructingItxnField({ voteFirst: asUint64(a) })
@@ -754,7 +792,7 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     setConstructingItxnField({ url: asBytes(a) })
   },
   setConfigAssetMetadataHash: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ metadataHash: asBytes(a) })
+    setConstructingItxnField({ metadataHash: asBytes(a).toFixed({ length: 32 }) })
   },
   setConfigAssetManager: function (a: Account): void {
     setConstructingItxnField({ manager: a })
@@ -812,7 +850,7 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     setConstructingItxnField({ nonparticipation: a })
   },
   setStateProofPk: function (a: StubBytesCompat): void {
-    setConstructingItxnField({ stateProofKey: asBytes(a) })
+    setConstructingItxnField({ stateProofKey: asBytes(a).toFixed({ length: 64 }) })
   },
   setApprovalProgramPages: function (a: StubBytesCompat): void {
     let pages = (getConstructingItxn<itxn.ApplicationCallFields>().approvalProgram ?? []) as bytes[]
@@ -829,6 +867,9 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     }
     pages.push(asBytes(a))
     setConstructingItxnField({ clearStateProgram: pages })
+  },
+  setRejectVersion: function (a: StubUint64Compat): void {
+    setConstructingItxnField({ rejectVersion: asUint64(a) })
   },
   next: function (): void {
     lazyContext.activeGroup.appendInnerTransactionGroup()

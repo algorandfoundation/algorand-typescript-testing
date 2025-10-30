@@ -5,7 +5,7 @@
 [![github-stars](https://img.shields.io/github/stars/algorandfoundation/algorand-typescript-testing?color=74dfdc&logo=star&style=flat)](https://github.com/algorandfoundation/algorand-typescript-testing)
 [![visitor-badge](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Falgorandfoundation%2Falgorand-typescript-testing&countColor=%2374dfdc&style=flat)](https://github.com/algorandfoundation/algorand-typescript-testing/)
 
-`algorand-typescript-testing` is a companion package to [Algorand Typescript](https://github.com/algorandfoundation/puya-ts/tree/main/packages/algo-ts) that enables efficient unit testing of Algorand TypeScript smart contracts in an offline environment. This package emulates key AVM behaviors without requiring a network connection, offering fast and reliable testing capabilities with a familiar TypeScript interface.
+`algorand-typescript-testing` is a companion package to [Algorand Typescript](https://github.com/algorandfoundation/puya-ts/tree/main/packages/algo-ts) that enables efficient unit testing of Algorand TypeScript smart contracts in an offline environment. This package emulates key AVM behaviours without requiring a network connection, offering fast and reliable testing capabilities with a familiar TypeScript interface.
 
 The `algorand-typescript-testing` package provides:
 
@@ -41,6 +41,16 @@ npm i @algorandfoundation/algorand-typescript-testing
 ### Testing your first contract
 
 Let's write a simple contract and test it using the `algorand-typescript-testing` framework.
+
+#### Simulating AVM
+
+`algorand-typescript-testing` includes a TypeScript transformer (`puyaTsTransformer`) that ensures contracts (with `.algo.ts` extension) and tests (with `.algo.spec.ts` or `.algo.test.ts` extensions) behave consistently between Node.js and AVM environments.
+
+The transformer replicates AVM behaviour, such as integer-only arithmetic where `3 / 2` produces `1`. For code requiring standard Node.js behaviour (e.g., `3 / 2` produces `1.5`), place it in separate `.ts` files and reference them from test files.
+
+The transformer also redirects `@algorandfoundation/algorand-typescript` imports to `@algorandfoundation/algorand-typescript-testing/internal` to provide executable implementations of Algorand TypeScript constructs like `Global`, `Box`, `Uint64`, and `clone`.
+
+If there are tests which do not need to be executed in the AVM context such as end to end tests, simply use `.test.ts` or `.spec.ts` file extensions without `.algo` part and the transformer would skip them.
 
 #### Configuring vitest
 
@@ -87,7 +97,7 @@ import { createDefaultEsmPreset, type JestConfigWithTsJest } from 'ts-jest'
 const presetConfig = createDefaultEsmPreset({})
 const jestConfig: JestConfigWithTsJest = {
   ...presetConfig,
-  testMatch: ['**/*.test.ts'],
+  testMatch: ['**/*.algo.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
     '^.+\\.tsx?$': [
@@ -159,7 +169,19 @@ After the setup, the examples provided using `vitest` can be converted to work w
 #### Contract Definition
 
 ```typescript
-import { arc4, assert, Bytes, GlobalState, gtxn, LocalState, op, Txn, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
+import {
+  arc4,
+  assert,
+  Bytes,
+  GlobalState,
+  gtxn,
+  LocalState,
+  op,
+  readonly,
+  Txn,
+  uint64,
+  Uint64,
+} from '@algorandfoundation/algorand-typescript'
 
 export default class VotingContract extends arc4.Contract {
   topic = GlobalState({ initialValue: 'default_topic', key: Bytes('topic') })
@@ -185,7 +207,7 @@ export default class VotingContract extends arc4.Contract {
     return true
   }
 
-  @arc4.abimethod({ readonly: true })
+  @readonly
   public getVotes(): uint64 {
     return this.votes.value
   }
@@ -252,7 +274,7 @@ This example demonstrates key aspects of testing with `algorand-typescript-testi
 
    - Use of `arc4.Contract` as the base class for the contract.
    - ABI methods defined using the `@arc4.abimethod` decorator.
-   - Readonly method annotation with `@arc4.abimethod({readonly: true})`.
+   - Readonly method annotation with `@arc4.abimethod({readonly: true})` or `@readonly`.
 
 2. Testing ARC4 Contracts:
 
@@ -277,9 +299,9 @@ To dig deeper into the capabilities of `algorand-typescript-testing`, continue w
 
 #### Contents
 
-- [Testing Guide](./docs/testing-guide/index.md)
+- [Testing Guide](./docs/testing-guide.md)
 - [Examples](./docs/examples.md)
 - [Coverage](./docs/coverage.md)
-- [FQA](./docs/faq.md)
+- [FAQ](./docs/faq.md)
 - [API Reference](./docs/api.md)
 - [Algorand TypeScript](./docs/algots.md)

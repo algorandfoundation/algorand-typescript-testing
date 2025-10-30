@@ -1,8 +1,10 @@
-import { LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
+import { AbsolutePath, LoggingContext, ptypes, SourceLocation, TypeResolver } from '@algorandfoundation/puya-ts'
 import path from 'path'
 import ts from 'typescript'
-import type { TypeInfo } from '../encoders'
+import { CodeError } from '../errors'
+import type { TypeInfo } from '../impl/encoded-types'
 import { instanceOfAny } from '../typescript-helpers'
+import { normalisePath } from './helpers'
 import { nodeFactory } from './node-factory'
 import type { TransformerConfig } from './program-factory'
 import {
@@ -21,6 +23,13 @@ const algotsModulePaths = [
   '/puya-ts/packages/algo-ts/',
   `${path.sep}puya-ts${path.sep}packages${path.sep}algo-ts${path.sep}`,
 ]
+const algotsTestingModulePaths = (testingPackageName: string) => [
+  testingPackageName,
+  `${path.sep}algorand-typescript-testing${path.sep}src${path.sep}`,
+  `${path.sep}algorand-typescript-testing${path.sep}dist${path.sep}`,
+]
+
+const testingExamplePath = `${path.sep}algorand-typescript-testing${path.sep}examples${path.sep}`
 
 type VisitorHelper = {
   additionalStatements: ts.Statement[]
@@ -28,26 +37,41 @@ type VisitorHelper = {
   resolveTypeParameters(node: ts.CallExpression): ptypes.PType[]
   sourceLocation(node: ts.Node): SourceLocation
   tryGetSymbol(node: ts.Node): ts.Symbol | undefined
+  getConfig(): TransformerConfig
 }
 
+type Context = ts.TransformationContext & { currentDirectory: string }
+
+/** @internal */
 export class SourceFileVisitor {
   private helper: VisitorHelper
+  private context: Context
 
   constructor(
-    private context: ts.TransformationContext,
+    context: ts.TransformationContext,
     private sourceFile: ts.SourceFile,
     program: ts.Program,
-    private config: TransformerConfig,
+    config: TransformerConfig,
   ) {
+    this.context = { ...context, currentDirectory: program.getCurrentDirectory() }
     const typeChecker = program.getTypeChecker()
     const loggingContext = LoggingContext.create()
-    const typeResolver = new TypeResolver(typeChecker, program.getCurrentDirectory())
+    const programDir = AbsolutePath.resolve({ path: program.getCurrentDirectory() })
+    const typeResolver = new TypeResolver(typeChecker, programDir)
     this.helper = {
       additionalStatements: [],
       resolveType(node: ts.Node): ptypes.PType {
+        const sourceLocation = this.sourceLocation(node)
         try {
-          return loggingContext.run(() => typeResolver.resolve(node, this.sourceLocation(node)))
-        } catch {
+          return loggingContext.run(() => typeResolver.resolve(node, sourceLocation!))
+        } catch (e) {
+          const err = e as Error
+          if (
+            err.constructor.name === 'CodeError' &&
+            !['Classes must extend', 'is not supported', 'Unable to reflect'].some((s) => err.message.includes(s))
+          ) {
+            throw new Error(`${sourceLocation?.toString()}: ${err.message}`, { cause: err })
+          }
           return ptypes.anyPType
         }
       },
@@ -59,7 +83,14 @@ export class SourceFileVisitor {
         return s && s.flags & ts.SymbolFlags.Alias ? typeChecker.getAliasedSymbol(s) : s
       },
       sourceLocation(node: ts.Node): SourceLocation {
-        return SourceLocation.fromNode(node, program.getCurrentDirectory())
+        try {
+          return SourceLocation.fromNode(node, programDir)
+        } catch {
+          return SourceLocation.None
+        }
+      },
+      getConfig(): TransformerConfig {
+        return config
       },
     }
   }
@@ -67,7 +98,7 @@ export class SourceFileVisitor {
   public result(): ts.SourceFile {
     const updatedSourceFile = ts.visitNode(this.sourceFile, this.visit) as ts.SourceFile
     return factory.updateSourceFile(updatedSourceFile, [
-      nodeFactory.importHelpers(this.config.testingPackageName),
+      ...nodeFactory.importHelpers(this.helper.getConfig().testingPackageName),
       ...updatedSourceFile.statements,
       ...this.helper.additionalStatements,
     ])
@@ -75,7 +106,7 @@ export class SourceFileVisitor {
 
   private visit = (node: ts.Node): ts.Node => {
     if (ts.isImportDeclaration(node)) {
-      return new ImportDeclarationVisitor(this.context, this.helper, this.config, node).result()
+      return new ImportDeclarationVisitor(node, this.helper).result()
     }
     if (ts.isFunctionLike(node)) {
       return new FunctionLikeDecVisitor(this.context, this.helper, node).result()
@@ -85,7 +116,7 @@ export class SourceFileVisitor {
     }
 
     // capture generic type info for variable initialising outside class and function declarations
-    // e.g. `const x = new UintN<32>(42)
+    // e.g. `const x = new Uint<32>(42)
     if (ts.isVariableDeclaration(node) && node.initializer) {
       return new VariableInitializerVisitor(this.context, this.helper, node).result()
     }
@@ -96,10 +127,8 @@ export class SourceFileVisitor {
 
 class ImportDeclarationVisitor {
   constructor(
-    private context: ts.TransformationContext,
-    private helper: VisitorHelper,
-    private config: TransformerConfig,
     private declarationNode: ts.ImportDeclaration,
+    private helper: VisitorHelper,
   ) {}
 
   public result(): ts.ImportDeclaration {
@@ -107,8 +136,11 @@ class ImportDeclarationVisitor {
     if (this.declarationNode.importClause?.isTypeOnly || !algotsModuleRegExp.test(moduleSpecifier)) return this.declarationNode
 
     const namedBindings = this.declarationNode.importClause?.namedBindings
+    // remove `arc4` from named bindings, as it is explicitly imported in the `importHelpers` method
     const nonTypeNamedBindings =
-      namedBindings && ts.isNamedImports(namedBindings) ? (namedBindings as ts.NamedImports).elements.filter((e) => !e.isTypeOnly) : []
+      namedBindings && ts.isNamedImports(namedBindings)
+        ? (namedBindings as ts.NamedImports).elements.filter((e) => !e.isTypeOnly && e.name.getText() !== 'arc4')
+        : []
     return factory.createImportDeclaration(
       this.declarationNode.modifiers,
       nonTypeNamedBindings.length
@@ -116,7 +148,7 @@ class ImportDeclarationVisitor {
         : this.declarationNode.importClause,
       factory.createStringLiteral(
         moduleSpecifier
-          .replace(algotsModuleSpecifier, testingInternalModuleSpecifier(this.config.testingPackageName))
+          .replace(algotsModuleSpecifier, testingInternalModuleSpecifier(this.helper.getConfig().testingPackageName))
           .replace(/^("|')/, '')
           .replace(/("|')$/, ''),
       ),
@@ -127,7 +159,7 @@ class ImportDeclarationVisitor {
 
 class ExpressionVisitor {
   constructor(
-    private context: ts.TransformationContext,
+    private context: Context,
     private helper: VisitorHelper,
     private expressionNode: ts.Expression,
     private stubbedFunctionName?: string,
@@ -138,45 +170,59 @@ class ExpressionVisitor {
   }
 
   private visit = (node: ts.Node): ts.Node => {
-    if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-      let type = this.helper.resolveType(node)
+    handleTypeInfoCapture: if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+      if (!tryGetAlgoTsSymbolName(node.expression, this.helper)) break handleTypeInfoCapture
 
-      // `voted = LocalState<uint64>()` is resolved to FunctionPType with returnType LocalState<uint64>
-      if (type instanceof ptypes.FunctionPType) type = type.returnType
+      const type = this.helper.resolveType(node)
 
       const isGeneric = isGenericType(type)
       const needsToCaptureTypeInfo = isGeneric && isStateOrBoxType(type)
-      const isArc4Encoded = isArc4EncodedType(type)
+      const isArc4Encoded = isEncodedType(type)
       const info = isGeneric || isArc4Encoded ? getGenericTypeInfo(type) : undefined
       let updatedNode = node
 
       if (ts.isNewExpression(updatedNode)) {
-        if (isArc4EncodedType(type)) {
-          updatedNode = nodeFactory.instantiateARC4EncodedType(updatedNode, info)
+        if (isEncodedType(type)) {
+          updatedNode = nodeFactory.instantiateEncodedType(updatedNode, info)
         }
       }
 
       if (ts.isCallExpression(updatedNode)) {
         const stubbedFunctionName = this.stubbedFunctionName ?? tryGetStubbedFunctionName(updatedNode, this.helper)
         this.stubbedFunctionName = undefined
-        let infoArg = info
-        if (isCallingEmit(stubbedFunctionName)) {
-          infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
+        let infoArg: TypeInfo | TypeInfo[] | undefined = info
+
+        // the nodes which have been created or updated by the node factory will not have source location,
+        // and we do not need to process them further
+        const sourceLocation = this.helper.sourceLocation(updatedNode)
+        if (sourceLocation === SourceLocation.None) break handleTypeInfoCapture
+
+        if (
+          isCallingEmit(stubbedFunctionName) ||
+          isCallingEncodeArc4(stubbedFunctionName) ||
+          isCallingSizeOf(stubbedFunctionName) ||
+          isCallingClone(stubbedFunctionName)
+        ) {
+          infoArg = this.helper.resolveTypeParameters(updatedNode).map((t) => getGenericTypeInfo(t, sourceLocation))[0]
         } else if (isCallingDecodeArc4(stubbedFunctionName)) {
-          const targetType = ptypes.ptypeToArc4EncodedType(type, this.helper.sourceLocation(node))
-          const targetTypeInfo = getGenericTypeInfo(targetType)
-          infoArg = targetTypeInfo
-        } else if (isCallingArc4EncodedLength(stubbedFunctionName)) {
-          infoArg = this.helper.resolveTypeParameters(updatedNode).map(getGenericTypeInfo)[0]
+          const sourceType = ptypes.ptypeToArc4EncodedType(type, sourceLocation)
+          const sourceTypeInfo = getGenericTypeInfo(sourceType, sourceLocation)
+          const targetTypeInfo = getGenericTypeInfo(type, sourceLocation)
+          infoArg = [sourceTypeInfo, targetTypeInfo]
         }
 
-        updatedNode = stubbedFunctionName
-          ? isCallingMethodSelector(stubbedFunctionName)
-            ? nodeFactory.callMethodSelectorFunction(updatedNode)
-            : isCallingAbiCall(stubbedFunctionName)
-              ? nodeFactory.callAbiCallFunction(updatedNode)
-              : nodeFactory.callStubbedFunction(stubbedFunctionName, updatedNode, infoArg)
-          : updatedNode
+        if (stubbedFunctionName) {
+          if (isCallingMethodSelector(stubbedFunctionName)) {
+            updatedNode = nodeFactory.callMethodSelectorFunction(updatedNode)
+          } else if (isCallingAbiCall(stubbedFunctionName)) {
+            const typeParams = this.helper.resolveTypeParameters(updatedNode)
+            updatedNode = nodeFactory.callAbiCallFunction(updatedNode, typeParams)
+          } else if (isCallingItxnCompose(stubbedFunctionName)) {
+            updatedNode = nodeFactory.callItxnComposeFunction(updatedNode)
+          } else {
+            updatedNode = nodeFactory.callStubbedFunction(updatedNode, infoArg)
+          }
+        }
       }
       return needsToCaptureTypeInfo
         ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
@@ -187,7 +233,7 @@ class ExpressionVisitor {
 }
 class VariableInitializerVisitor {
   constructor(
-    private context: ts.TransformationContext,
+    private context: Context,
     private helper: VisitorHelper,
     private declarationNode: ts.VariableDeclaration,
   ) {}
@@ -210,7 +256,7 @@ class VariableInitializerVisitor {
 
 class FunctionOrMethodVisitor {
   constructor(
-    protected context: ts.TransformationContext,
+    protected context: Context,
     protected helper: VisitorHelper,
   ) {}
   protected visit = (node: ts.Node): ts.Node => {
@@ -261,8 +307,8 @@ class FunctionOrMethodVisitor {
      * capture generic type info in test functions and swap arc4 types with implementation; e.g.
      * ```
      *  it('should work', () => {
-     *   expect(() => new UintN<32>(2 ** 32)).toThrowError(`expected value <= ${2 ** 32 - 1}`)
-     *   expect(UintN.fromBytes<UintN<32>>('').bytes).toEqual(Bytes())
+     *   expect(() => new Uint<32>(2 ** 32)).toThrowError(`expected value <= ${2 ** 32 - 1}`)
+     *   expect(Uint.fromBytes<Uint<32>>('').bytes).toEqual(Bytes())
      * })
      * ```
      */
@@ -282,7 +328,7 @@ class FunctionOrMethodVisitor {
 
 class FunctionLikeDecVisitor extends FunctionOrMethodVisitor {
   constructor(
-    context: ts.TransformationContext,
+    context: Context,
     helper: VisitorHelper,
     private funcNode: ts.SignatureDeclaration,
   ) {
@@ -295,7 +341,7 @@ class FunctionLikeDecVisitor extends FunctionOrMethodVisitor {
 }
 class MethodDecVisitor extends FunctionOrMethodVisitor {
   constructor(
-    context: ts.TransformationContext,
+    context: Context,
     helper: VisitorHelper,
     private methodNode: ts.MethodDeclaration,
   ) {
@@ -310,7 +356,7 @@ class MethodDecVisitor extends FunctionOrMethodVisitor {
 class ClassVisitor {
   private isArc4: boolean
   constructor(
-    private context: ts.TransformationContext,
+    private context: Context,
     private helper: VisitorHelper,
     private classDec: ts.ClassDeclaration,
   ) {
@@ -329,7 +375,8 @@ class ClassVisitor {
         if (methodType instanceof ptypes.FunctionPType) {
           const argTypes = methodType.parameters.map((p) => JSON.stringify(getGenericTypeInfo(p[1])))
           const returnType = JSON.stringify(getGenericTypeInfo(methodType.returnType))
-          this.helper.additionalStatements.push(nodeFactory.attachMetaData(this.classDec.name, node, methodType, argTypes, returnType))
+          const sourceFileName = normalisePath(this.classDec.parent.getSourceFile().fileName, this.context.currentDirectory)
+          this.helper.additionalStatements.push(nodeFactory.attachMetaData(sourceFileName, this.classDec.name, node, argTypes, returnType))
         }
       }
 
@@ -356,13 +403,16 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
-    ptypes.TuplePType,
+    ptypes.MutableTuplePType,
+    ptypes.ReadonlyTuplePType,
+    ptypes.MutableObjectPType,
+    ptypes.ImmutableObjectPType,
   )
 
 const isStateOrBoxType = (type: ptypes.PType): boolean =>
   instanceOfAny(type, ptypes.BoxMapPType, ptypes.BoxPType, ptypes.GlobalStateType, ptypes.LocalStateType)
 
-const isArc4EncodedType = (type: ptypes.PType): boolean =>
+const isEncodedType = (type: ptypes.PType): boolean =>
   instanceOfAny(
     type,
     ptypes.ARC4StructType,
@@ -371,23 +421,40 @@ const isArc4EncodedType = (type: ptypes.PType): boolean =>
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
     ptypes.UintNType,
+    ptypes.ReferenceArrayType,
+    ptypes.FixedArrayPType,
   ) ||
   type === ptypes.arc4StringType ||
   type === ptypes.arc4BooleanType
 
-const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
+const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation): TypeInfo => {
+  if (type instanceof ptypes.UnionPType) {
+    throw new CodeError(
+      `${sourceLocation}: Union types are not valid as a variable, parameter, return, or property type. Expression type is ${type.name}`,
+    )
+  }
   let typeName = type?.name ?? type?.toString() ?? 'unknown'
   let genericArgs: TypeInfo[] | Record<string, TypeInfo> = []
 
   if (instanceOfAny(type, ptypes.LocalStateType, ptypes.GlobalStateType, ptypes.BoxPType)) {
-    genericArgs.push(getGenericTypeInfo(type.contentType))
+    genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
   } else if (type instanceof ptypes.BoxMapPType) {
-    genericArgs.push(getGenericTypeInfo(type.keyType))
-    genericArgs.push(getGenericTypeInfo(type.contentType))
-  } else if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.DynamicArrayType)) {
+    genericArgs.push(getGenericTypeInfo(type.keyType, sourceLocation))
+    genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
+  } else if (
+    instanceOfAny(
+      type,
+      ptypes.StaticArrayType,
+      ptypes.DynamicArrayType,
+      ptypes.ArrayPType,
+      ptypes.ReadonlyArrayPType,
+      ptypes.ReferenceArrayType,
+      ptypes.FixedArrayPType,
+    )
+  ) {
     const entries = []
-    entries.push(['elementType', getGenericTypeInfo(type.elementType)])
-    if (instanceOfAny(type, ptypes.StaticArrayType)) {
+    entries.push(['elementType', getGenericTypeInfo(type.elementType, sourceLocation)])
+    if (instanceOfAny(type, ptypes.StaticArrayType, ptypes.FixedArrayPType)) {
       entries.push(['size', { name: type.arraySize.toString() }])
     }
     genericArgs = Object.fromEntries(entries)
@@ -399,11 +466,28 @@ const getGenericTypeInfo = (type: ptypes.PType): TypeInfo => {
     typeName = `Struct<${type.name}>`
     genericArgs = Object.fromEntries(
       Object.entries(type.fields)
-        .map(([key, value]) => [key, getGenericTypeInfo(value)])
+        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
         .filter((x) => !!x),
     )
-  } else if (type instanceof ptypes.ARC4TupleType || type instanceof ptypes.TuplePType) {
-    genericArgs.push(...type.items.map(getGenericTypeInfo))
+  } else if (type instanceof ptypes.MutableObjectPType || type instanceof ptypes.ImmutableObjectPType) {
+    typeName = type instanceof ptypes.MutableObjectPType ? `Object<${type.name}>` : `ReadonlyObject<${type.name}>`
+    genericArgs = Object.fromEntries(
+      Object.entries(type.properties)
+        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
+        .filter((x) => !!x),
+    )
+  } else if (
+    type instanceof ptypes.ARC4TupleType ||
+    type instanceof ptypes.MutableTuplePType ||
+    type instanceof ptypes.ReadonlyTuplePType
+  ) {
+    typeName =
+      type instanceof ptypes.MutableTuplePType
+        ? `MutableTuple<${type.name}>`
+        : type instanceof ptypes.ReadonlyTuplePType
+          ? `ReadonlyTuple<${type.name}>`
+          : type.name
+    genericArgs.push(...type.items.map((t) => getGenericTypeInfo(t, sourceLocation)))
   }
 
   const result: TypeInfo = { name: typeName }
@@ -418,18 +502,49 @@ const tryGetStubbedFunctionName = (node: ts.CallExpression, helper: VisitorHelpe
   const identityExpression = ts.isPropertyAccessExpression(node.expression)
     ? (node.expression as ts.PropertyAccessExpression).name
     : (node.expression as ts.Identifier)
-  const functionSymbol = helper.tryGetSymbol(identityExpression)
-  if (functionSymbol) {
-    const sourceFileName = functionSymbol.valueDeclaration?.getSourceFile().fileName
-    if (sourceFileName && !algotsModulePaths.some((s) => sourceFileName.includes(s))) return undefined
+  const functionName = tryGetAlgoTsSymbolName(identityExpression, helper)
+  if (functionName === undefined) return undefined
+  const stubbedFunctionNames = ['convertBytes', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'sizeOf', 'abiCall', 'clone']
+
+  if (stubbedFunctionNames.includes(functionName)) {
+    if (ts.isPropertyAccessExpression(node.expression)) {
+      const objectName = tryGetAlgoTsSymbolName(node.expression.expression, helper)
+      return objectName !== undefined ? functionName : undefined
+    }
+    return functionName
   }
-  const functionName = functionSymbol?.getName() ?? identityExpression.text
-  const stubbedFunctionNames = ['interpretAsArc4', 'decodeArc4', 'encodeArc4', 'emit', 'methodSelector', 'arc4EncodedLength', 'abiCall']
-  return stubbedFunctionNames.includes(functionName) ? functionName : undefined
+
+  if (['begin', 'next'].includes(functionName) && ts.isPropertyAccessExpression(node.expression)) {
+    const objectExpression = node.expression.expression
+    const objectName = tryGetAlgoTsSymbolName(objectExpression, helper)
+    if (['itxnCompose'].includes(objectName || '')) return functionName
+  }
+
+  return undefined
 }
 
-const isCallingDecodeArc4 = (functionName: string | undefined): boolean => ['decodeArc4', 'encodeArc4'].includes(functionName ?? '')
-const isCallingArc4EncodedLength = (functionName: string | undefined): boolean => 'arc4EncodedLength' === (functionName ?? '')
+const tryGetAlgoTsSymbolName = (node: ts.Node, helper: VisitorHelper): string | undefined => {
+  const symbol = helper.tryGetSymbol(node)
+  if (!symbol) return undefined
+
+  const sourceFileName = symbol.valueDeclaration?.getSourceFile().fileName
+  if (!sourceFileName) return undefined
+
+  // If the symbol is from algorand-typescript package or testing example path, return its name
+  if (algotsModulePaths.some((path) => sourceFileName.includes(path)) || sourceFileName.includes(testingExamplePath))
+    return symbol.getName()
+
+  // If the symbol is from algorand-typescript-testing package, return undefined as they do not need to be processed
+  if (algotsTestingModulePaths(helper.getConfig().testingPackageName).some((path) => sourceFileName.includes(path))) return undefined
+
+  return symbol.getName()
+}
+
+const isCallingDecodeArc4 = (functionName: string | undefined): boolean => 'decodeArc4' === (functionName ?? '')
+const isCallingEncodeArc4 = (functionName: string | undefined): boolean => 'encodeArc4' === (functionName ?? '')
+const isCallingSizeOf = (functionName: string | undefined): boolean => 'sizeOf' === (functionName ?? '')
 const isCallingEmit = (functionName: string | undefined): boolean => 'emit' === (functionName ?? '')
 const isCallingMethodSelector = (functionName: string | undefined): boolean => 'methodSelector' === (functionName ?? '')
-const isCallingAbiCall = (functionName: string | undefined): boolean => 'abiCall' === (functionName ?? '')
+const isCallingAbiCall = (functionName: string | undefined): boolean => ['abiCall'].includes(functionName ?? '')
+const isCallingItxnCompose = (functionName: string | undefined): boolean => ['begin', 'next'].includes(functionName ?? '')
+const isCallingClone = (functionName: string | undefined): boolean => 'clone' === (functionName ?? '')

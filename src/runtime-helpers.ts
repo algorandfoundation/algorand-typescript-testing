@@ -1,19 +1,18 @@
 import { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { MAX_UINT64 } from './constants'
-import type { TypeInfo } from './encoders'
 import { AvmError, CodeError, InternalError } from './errors'
 import { Uint64BackedCls } from './impl/base'
+import type { TypeInfo } from './impl/encoded-types'
 import { AlgoTsPrimitiveCls, BigUintCls, BytesCls, checkBigUint, checkBytes, Uint64Cls } from './impl/primitives'
 import { AccountCls } from './impl/reference'
-import type { DeliberateAny } from './typescript-helpers'
-import { flattenAsBytes, nameOfType } from './util'
+import { nameOfType, type DeliberateAny } from './typescript-helpers'
+import { flattenAsBytes } from './util'
 
+/** @internal */
 export { attachAbiMetadata } from './abi-metadata'
-export { emitImpl } from './impl/emit'
-export * from './impl/encoded-types'
-export { arc4EncodedLengthImpl, decodeArc4Impl, encodeArc4Impl } from './impl/encoded-types'
 
+/** @internal */
 export function switchableValue(x: unknown): bigint | string | boolean {
   if (typeof x === 'boolean') return x
   if (typeof x === 'bigint') return x
@@ -21,12 +20,6 @@ export function switchableValue(x: unknown): bigint | string | boolean {
   if (x instanceof AlgoTsPrimitiveCls) return x.valueOf()
   throw new InternalError(`Cannot convert ${nameOfType(x)} to switchable value`)
 }
-// export function wrapLiteral(x: unknown) {
-//   if (typeof x === 'boolean') return x
-//   if (isBytes(x)) return makeBytes(x)
-//   if (isUint64(x)) return makeUint64(x)
-//   internalError(`Cannot wrap ${nameOfType(x)}`)
-// }
 
 type BinaryOps = '+' | '-' | '*' | '**' | '/' | '%' | '>' | '>=' | '<' | '<=' | '===' | '!==' | '<<' | '>>' | '&' | '|' | '^'
 type UnaryOps = '~'
@@ -39,6 +32,7 @@ function tryGetBigInt(value: unknown): bigint | undefined {
   return undefined
 }
 
+/** @internal */
 export function binaryOp(left: unknown, right: unknown, op: BinaryOps) {
   if (left instanceof ARC4Encoded && right instanceof ARC4Encoded) {
     return arc4EncodedOp(left, right, op)
@@ -76,6 +70,7 @@ export function binaryOp(left: unknown, right: unknown, op: BinaryOps) {
   return defaultBinaryOp(left, right, op)
 }
 
+/** @internal */
 export function unaryOp(operand: unknown, op: UnaryOps) {
   if (operand instanceof Uint64Cls) {
     return uint64UnaryOp(operand, op)
@@ -324,11 +319,13 @@ function defaultUnaryOp(_operand: DeliberateAny, op: UnaryOps): DeliberateAny {
 }
 
 const genericTypeMap = new WeakMap<DeliberateAny, TypeInfo>()
+/** @internal */
 export function captureGenericTypeInfo(target: DeliberateAny, t: string) {
   genericTypeMap.set(target, JSON.parse(t))
   return target
 }
 
+/** @internal */
 export function getGenericTypeInfo(target: DeliberateAny): TypeInfo | undefined {
   return genericTypeMap.get(target)
 }

@@ -4,9 +4,10 @@ import {
   arc4,
   assert,
   assertMatch,
+  Box,
   BoxMap,
-  BoxRef,
   Bytes,
+  clone,
   ensureBudget,
   Global,
   GlobalState,
@@ -14,12 +15,13 @@ import {
   log,
   op,
   OpUpFeeSource,
+  readonly,
   Txn,
   Uint64,
   urange,
 } from '@algorandfoundation/algorand-typescript'
 
-type VoteIndexArray = arc4.DynamicArray<arc4.UintN<8>>
+type VoteIndexArray = arc4.DynamicArray<arc4.Uint<8>>
 
 const VOTE_INDEX_BYTES: uint64 = 1
 const VOTE_COUNT_BYTES: uint64 = 8
@@ -44,10 +46,10 @@ export class VotingRoundApp extends arc4.Contract {
   isBootstrapped = GlobalState<boolean>({ initialValue: false })
   voterCount = GlobalState({ initialValue: Uint64(0) })
   closeTime = GlobalState<uint64>()
-  tallyBox = BoxRef({ key: Bytes`V` })
+  tallyBox = Box<bytes>({ key: Bytes`V` })
   votesByAccount = BoxMap<Account, VoteIndexArray>({ keyPrefix: Bytes() })
   voteId = GlobalState<string>()
-  snapshotPublicKey = GlobalState<bytes>()
+  snapshotPublicKey = GlobalState<bytes<32>>()
   metadataIpfsCid = GlobalState<string>()
   startTime = GlobalState<uint64>()
   nftImageUrl = GlobalState<string>()
@@ -60,7 +62,7 @@ export class VotingRoundApp extends arc4.Contract {
   @abimethod({ onCreate: 'require' })
   public create(
     voteId: string,
-    snapshotPublicKey: bytes,
+    snapshotPublicKey: bytes<32>,
     metadataIpfsCid: string,
     startTime: uint64,
     endTime: uint64,
@@ -129,9 +131,9 @@ export class VotingRoundApp extends arc4.Contract {
       if (questionIndex > 0) {
         note += ','
       }
-      if (questionOptions.native > 0) {
+      if (questionOptions.asUint64() > 0) {
         note += '['
-        for (let optionIndex = Uint64(0); optionIndex <= questionOptions.native; optionIndex++) {
+        for (let optionIndex = Uint64(0); optionIndex <= questionOptions.asUint64(); optionIndex++) {
           if (optionIndex > 0) {
             note += ','
           }
@@ -157,8 +159,8 @@ export class VotingRoundApp extends arc4.Contract {
       .submit().createdAsset
   }
 
-  @abimethod({ readonly: true })
-  public getPreconditions(signature: bytes): VotingPreconditions {
+  @readonly
+  public getPreconditions(signature: bytes<64>): VotingPreconditions {
     return {
       is_allowed_to_vote: Uint64(this.allowedToVote(signature)),
       is_voting_open: Uint64(this.votingOpen()),
@@ -167,7 +169,7 @@ export class VotingRoundApp extends arc4.Contract {
     }
   }
 
-  private allowedToVote(signature: bytes): boolean {
+  private allowedToVote(signature: bytes<64>): boolean {
     ensureBudget(2000)
     return op.ed25519verifyBare(Txn.sender.bytes, signature, this.snapshotPublicKey.value)
   }
@@ -176,7 +178,7 @@ export class VotingRoundApp extends arc4.Contract {
     return this.votesByAccount(Txn.sender).exists
   }
 
-  public vote(fundMinBalReq: gtxn.PaymentTxn, signature: bytes, answerIds: VoteIndexArray): void {
+  public vote(fundMinBalReq: gtxn.PaymentTxn, signature: bytes<64>, answerIds: VoteIndexArray): void {
     ensureBudget(7700, OpUpFeeSource.GroupCredit)
     assert(this.allowedToVote(signature), 'Not allowed to vote')
     assert(this.votingOpen(), 'Voting not open')
@@ -202,12 +204,12 @@ export class VotingRoundApp extends arc4.Contract {
     )
     let cumulativeOffset = Uint64(0)
     for (const questionIndex of urange(questionsCount)) {
-      const answerOptionIndex = answerIds.at(questionIndex).native
-      const optionsCount = this.optionCounts.value.at(questionIndex).native
+      const answerOptionIndex = answerIds.at(questionIndex).asUint64()
+      const optionsCount = this.optionCounts.value.at(questionIndex).asUint64()
       assert(answerOptionIndex < optionsCount, 'Answer option index invalid')
       this.incrementVoteInBox(cumulativeOffset + answerOptionIndex)
       cumulativeOffset += optionsCount
-      this.votesByAccount(Txn.sender).value = answerIds.copy()
+      this.votesByAccount(Txn.sender).value = clone(answerIds)
       this.voterCount.value += 1
     }
   }
@@ -226,9 +228,9 @@ export class VotingRoundApp extends arc4.Contract {
 
     let totalOptions = Uint64(0)
     for (const item of optionCounts) {
-      totalOptions += item.native
+      totalOptions += item.asUint64()
     }
-    this.optionCounts.value = optionCounts.copy()
+    this.optionCounts.value = clone(optionCounts)
     this.totalOptions.value = totalOptions
   }
 

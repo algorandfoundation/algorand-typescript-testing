@@ -182,7 +182,7 @@ export class TestExecutionContext {
     }
   }
 
-  /* @internal */
+  /** @internal */
   notifyApplicationSpies(itxn: ApplicationCallInnerTxnContext) {
     for (const spy of this.#applicationSpies) {
       spy.notify(itxn)

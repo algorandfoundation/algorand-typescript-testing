@@ -1,6 +1,5 @@
-import type { Account } from '@algorandfoundation/algorand-typescript'
+import type { Account, BytesCompat, Uint64Compat } from '@algorandfoundation/algorand-typescript'
 import { InternalError } from '../errors'
-import type { StubBytesCompat, StubUint64Compat } from '../impl/primitives'
 import type { DeliberateAny } from '../typescript-helpers'
 import { asBytesCls, asUint64Cls } from '../util'
 
@@ -9,6 +8,7 @@ export abstract class CustomKeyMap<TKey, TValue> implements Map<TKey, TValue> {
   #keySerializer: (key: TKey) => Primitive
   #map = new Map<Primitive, [TKey, TValue]>()
 
+  /** @internal */
   constructor(keySerializer: (key: TKey) => number | bigint | string) {
     this.#keySerializer = keySerializer
   }
@@ -66,22 +66,26 @@ export abstract class CustomKeyMap<TKey, TValue> implements Map<TKey, TValue> {
 }
 
 export class AccountMap<TValue> extends CustomKeyMap<Account, TValue> {
+  /** @internal */
   constructor() {
     super(AccountMap.getAddressStrFromAccount)
   }
 
+  /** @internal */
   private static getAddressStrFromAccount = (acc: Account) => {
     return asBytesCls(acc.bytes).valueOf()
   }
 }
 
-export class BytesMap<TValue> extends CustomKeyMap<StubBytesCompat, TValue> {
+export class BytesMap<TValue> extends CustomKeyMap<BytesCompat, TValue> {
+  /** @internal */
   constructor() {
     super((bytes) => asBytesCls(bytes).valueOf())
   }
 }
 
-export class Uint64Map<TValue> extends CustomKeyMap<StubUint64Compat, TValue> {
+export class Uint64Map<TValue> extends CustomKeyMap<Uint64Compat, TValue> {
+  /** @internal */
   constructor() {
     super((uint64) => asUint64Cls(uint64).valueOf())
   }

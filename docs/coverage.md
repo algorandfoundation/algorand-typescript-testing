@@ -1,6 +1,10 @@
+---
+title: Coverage
+---
+
 # Coverage
 
-See which `algorand-typescript` stubs are implemented by the `algorand-typescript-testing` library. See the [Concepts](testing-guide/concepts.md#types-of-algorand-typescript-stub-implementations) section for more details on the implementation categories. Refer to the [`algorand-typescript` stubs API](api.md) for the full list of the stubs for which the `algorand-typescript-testing` library provides implementations referenced in the table below.
+See which `algorand-typescript` stubs are implemented in the `algorand-typescript-testing` library. See the [Concepts](tg-concepts.md#types-of-algorand-typescript-stub-implementations) section for more details on the implementation categories. Refer to the [`algorand-typescript-testing` API](api.md) for a full list of stubs implemented by the `algorand-typescript-testing` library, as referenced in the table below.
 
 | Name                         | Implementation type |
 | ---------------------------- | ------------------- |
@@ -11,16 +15,17 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | BigUint                      | Native              |
 | Box                          | Emulated            |
 | BoxMap                       | Emulated            |
-| BoxRef                       | Emulated            |
 | Bytes                        | Native              |
 | CompiledContract             | Mockable            |
 | CompiledLogicSig             | Mockable            |
 | ContractProxy                | Mockable            |
+| FixedArray                   | Native              |
 | Global                       | Emulated            |
 | GlobalState                  | Emulated            |
 | LocalState                   | Emulated            |
 | OnCompleteAction             | Native              |
 | OpUpFeeSource                | Native              |
+| ReferenceArray               | Native              |
 | StateTotals                  | Emulated            |
 | TemplateVar                  | Emulated            |
 | TransactionType              | Native              |
@@ -28,15 +33,17 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | Txn                          | Emulated            |
 | Uint64                       | Native              |
 | abiCall                      | Mockable            |
-| arc4EncodedLength            | Native              |
+| sizeOf                       | Native              |
 | compile                      | Mockable            |
 | compileArc4                  | Mockable            |
 | decodeArc4                   | Native              |
+| clone                        | Native              |
 | emit                         | Emulated            |
 | encodeArc4                   | Native              |
 | ensureBudget                 | Emulated            |
 | err                          | Native              |
-| interpretAsArc4              | Native              |
+| convertBytes                 | Native              |
+| itxnCompose                  | Emulated            |
 | log                          | Emulated            |
 | logicSig                     | Emulated            |
 | logicsig                     | Emulated            |
@@ -53,18 +60,18 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | arc4.Str                     | Native              |
 | arc4.Struct                  | Native              |
 | arc4.Tuple                   | Native              |
-| arc4.UFixedNxM               | Native              |
-| arc4.UintN                   | Native              |
-| arc4.UintN128                | Native              |
-| arc4.UintN16                 | Native              |
-| arc4.UintN256                | Native              |
-| arc4.UintN32                 | Native              |
-| arc4.UintN64                 | Native              |
-| arc4.UintN8                  | Native              |
-| arc4.UIntN                   | Native              |
+| arc4.UFixed                  | Native              |
+| arc4.Uint                    | Native              |
+| arc4.Uint128                 | Native              |
+| arc4.Uint16                  | Native              |
+| arc4.Uint256                 | Native              |
+| arc4.Uint32                  | Native              |
+| arc4.Uint64                  | Native              |
+| arc4.Uint8                   | Native              |
 | arc4.abimethod               | Emulated            |
 | arc4.methodSelector          | Native              |
 | arc4.baremethod              | Emulated            |
+| arc4.readonly                | Emulated            |
 | gtxn.ApplicationCallTxn      | Emulated            |
 | gtxn.AssetConfigTxn          | Emulated            |
 | gtxn.AssetFreezeTxn          | Emulated            |
@@ -144,3 +151,4 @@ See which `algorand-typescript` stubs are implemented by the `algorand-typescrip
 | op.sqrt                      | Native              |
 | op.substring                 | Native              |
 | op.vrfVerify                 | Mockable            |
+| op.falconVerify              | Mockable            |

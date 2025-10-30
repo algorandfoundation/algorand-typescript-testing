@@ -1,4 +1,4 @@
-import type { Application as ApplicationType, gtxn } from '@algorandfoundation/algorand-typescript'
+import type { Application as ApplicationType, BaseContract as BaseContractType, gtxn } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError } from '../errors'
 import { BaseContract } from '../impl/base-contract'
@@ -20,7 +20,7 @@ export class TxnValueGenerator {
    * @returns {ApplicationCallTransaction} - A random application call transaction.
    */
   applicationCall(
-    fields?: Partial<Omit<ApplicationCallTransactionFields, 'appId'> & { appId: ApplicationType | BaseContract }>,
+    fields?: Partial<Omit<ApplicationCallTransactionFields, 'appId'> & { appId: ApplicationType | BaseContractType }>,
   ): ApplicationCallTransaction {
     const params = fields ?? {}
     let appId =

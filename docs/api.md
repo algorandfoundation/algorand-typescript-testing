@@ -1,29 +1,31 @@
+---
+title: API Reference
+---
+
 # API Reference
 
 An overview of the `algorand-typescript-testing` package - covering the main classes and functions.
 
-```{hint}
-Spotted a typo in documentation? This project is open source, please submit an issue or a PR on [GitHub](https://github.com/algorandfoundation/algorand-typescript-testing).
-```
+> Spotted a typo in the documentation? This project is open source; please submit an issue or a PR on [GitHub](https://github.com/algorandfoundation/algorand-typescript-testing).
 
 ## Contexts
 
-- [TestExecutionContext](./code/index/classes/TestExecutionContext.md)
-- [ContractContext](./code/subcontexts/contract-context/classes/ContractContext.md)
-- [LedgerContext](./code/subcontexts/ledger-context/classes/LedgerContext.md)
-- [TransactionContext](./code/subcontexts/transaction-context/classes/TransactionContext.md)
+- [TestExecutionContext](../classes/index.TestExecutionContext.html)
+- [ContractContext](../classes/index._internal_.ContractContext.html)
+- [LedgerContext](../classes/index._internal_.LedgerContext.html)
+- [TransactionContext](../classes/index._internal_.TransactionContext.html)
 
 ## Value Generators
 
-- [AvmValueGenerator](./code/value-generators/avm/classes/AvmValueGenerator.md)
-- [Arc4ValueGenerator](./code/value-generators/arc4/classes/Arc4ValueGenerator.md)
-- [TxnValueGenerator](./code/value-generators/txn/classes/TxnValueGenerator.md)
+- [AvmValueGenerator](../classes/value-generators._internal_.AvmValueGenerator.html)
+- [Arc4ValueGenerator](../classes/value-generators._internal_.Arc4ValueGenerator.html)
+- [TxnValueGenerator](../classes/value-generators._internal_.TxnValueGenerator.html)
 
 ## Utils
 
-- [addEqualityTesters](./code/index/functions/addEqualityTesters.md)
-- [encodingUtils](./code/index/variables/encodingUtil.md)
+- [addEqualityTesters](../functions/index.addEqualityTesters.html)
+- [toExternalValue](../functions/index.toExternalValue.html)
 
 ## Reference documentation
 
-We also have [auto-generated reference documentation for the code](./code/README.md).
+We also have [auto-generated reference documentation for the code](../modules/index.html).

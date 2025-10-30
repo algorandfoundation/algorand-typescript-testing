@@ -1,11 +1,12 @@
 import type { bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { MAX_BOX_SIZE } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
-import { toBytes } from '../encoders'
 import { AvmError, InternalError } from '../errors'
-import { asBytes, asBytesCls, asNumber, asUint8Array, conactUint8Arrays } from '../util'
+import { asBytes, asBytesCls, asNumber, asUint8Array, concatUint8Arrays } from '../util'
+import { toBytes } from './encoded-types'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 
+/** @internal */
 export const Box: typeof op.Box = {
   create(a: StubBytesCompat, b: StubUint64Compat): boolean {
     const name = asBytes(a)
@@ -78,7 +79,7 @@ export const Box: typeof op.Box = {
     if (start + newContent.length > boxContent.length) {
       throw new InternalError('Replacement content exceeds box size')
     }
-    const updatedContent = conactUint8Arrays(boxContent.slice(0, start), newContent, boxContent.slice(start + newContent.length))
+    const updatedContent = concatUint8Arrays(boxContent.slice(0, start), newContent, boxContent.slice(start + newContent.length))
     lazyContext.ledger.setBox(app, name, updatedContent)
   },
   resize(a: StubBytesCompat, b: StubUint64Compat): void {
@@ -92,7 +93,7 @@ export const Box: typeof op.Box = {
     const size = boxContent.length
     let updatedContent
     if (newSize > size) {
-      updatedContent = conactUint8Arrays(boxContent, new Uint8Array(newSize - size))
+      updatedContent = concatUint8Arrays(boxContent, new Uint8Array(newSize - size))
     } else {
       updatedContent = boxContent.slice(0, newSize)
     }
@@ -113,12 +114,12 @@ export const Box: typeof op.Box = {
       throw new InternalError('Start index exceeds box size')
     }
     const end = Math.min(start + length, size)
-    let updatedContent = conactUint8Arrays(boxContent.slice(0, start), newContent, boxContent.slice(end))
+    let updatedContent = concatUint8Arrays(boxContent.slice(0, start), newContent, boxContent.slice(end))
     //  Adjust the size if necessary
     if (updatedContent.length > size) {
       updatedContent = updatedContent.slice(0, size)
     } else if (updatedContent.length < size) {
-      updatedContent = conactUint8Arrays(updatedContent, new Uint8Array(size - asNumber(updatedContent.length)))
+      updatedContent = concatUint8Arrays(updatedContent, new Uint8Array(size - asNumber(updatedContent.length)))
     }
     lazyContext.ledger.setBox(app, name, updatedContent)
   },

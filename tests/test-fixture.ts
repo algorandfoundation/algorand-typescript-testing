@@ -13,8 +13,8 @@ import { compile, CompileOptions, LoggingContext, processInputPaths } from '@alg
 import type { Use } from '@vitest/runner/types'
 import { OnApplicationComplete } from 'algosdk'
 import fs from 'fs'
-import type { ExpectStatic } from 'vitest'
-import { test } from 'vitest'
+import type { beforeEach, ExpectStatic } from 'vitest'
+import { beforeAll, test } from 'vitest'
 import { invariant } from '../src/errors'
 import type { DeliberateAny } from '../src/typescript-helpers'
 import { generateTempDir } from './util'
@@ -26,7 +26,7 @@ const algorandTestFixture = (localnetFixture: AlgorandFixture) =>
     testAccount: AlgorandFixture['context']['testAccount']
     assetFactory: (assetCreateParams: AssetCreateParams) => Promise<bigint>
   }>({
-    localnet: async ({ expect: _expect }, use) => {
+    localnet: async ({ expect: _ }, use) => {
       await use(localnetFixture)
     },
     testAccount: async ({ localnet }, use) => {
@@ -77,7 +77,22 @@ type ProgramInvoker = {
 type BaseFixtureContextFor<T extends string> = {
   [key in T as `${key}Invoker`]: ProgramInvoker
 }
-export function createBaseTestFixture<TContracts extends string = ''>(path: string, contracts: TContracts[]) {
+/**
+ * Creates a base test fixture for testing compiled Algorand smart contracts.
+ *
+ * @param options - Configuration options for the test fixture
+ * @param options.path - Path to the TypeScript file containing the contracts
+ * @param options.contracts - Array of contract names to create fixtures for
+ * @param options.newScopeAt - When to create a new test scope. Defaults to `beforeAll` for shared state across tests.
+ *                              Use `beforeEach` to create a fresh state for each test.
+ */
+export function createBaseTestFixture<TContracts extends string = ''>(options: {
+  path: string
+  contracts: TContracts[]
+  /** When to create a new test scope. Defaults to `beforeAll`. Use `beforeEach` for fresh state per test. */
+  newScopeAt?: typeof beforeAll | typeof beforeEach
+}) {
+  const { path, contracts, newScopeAt = beforeAll } = options
   const lazyCompile = createLazyCompiler(path, { outputArc56: false, outputBytecode: true })
   const localnet = algorandFixture({
     testAccountFunding: microAlgos(100_000_000_000),
@@ -128,7 +143,8 @@ export function createBaseTestFixture<TContracts extends string = ''>(path: stri
     }
   }
   const extendedTest = algorandTestFixture(localnet).extend<BaseFixtureContextFor<TContracts>>(ctx)
-  return [extendedTest, localnet] as readonly [typeof extendedTest, AlgorandFixture]
+  newScopeAt(localnet.newScope)
+  return extendedTest
 }
 
 type Arc4FixtureContextFor<T extends string> = {
@@ -144,10 +160,22 @@ type ContractConfig = {
   funding?: AlgoAmount
 }
 
-export function createArc4TestFixture<TContracts extends string = ''>(
-  path: string,
-  contracts: Record<TContracts, ContractConfig> | TContracts[],
-) {
+/**
+ * Creates an ARC-4 test fixture for testing Algorand ARC-4 smart contracts.
+ *
+ * @param options - Configuration options for the test fixture
+ * @param options.path - Path to the TypeScript file containing the ARC-4 contracts
+ * @param options.contracts - Contract configuration as either an array of names or pairs of name with deployment config
+ * @param options.newScopeAt - When to create a new` test scope. Defaults to `beforeAll` for shared state across tests.
+ *                              Use `beforeEach` to create a fresh state for each test.
+ */
+export function createArc4TestFixture<TContracts extends string = ''>(options: {
+  path: string
+  contracts: Record<TContracts, ContractConfig> | TContracts[]
+  /** When to create a new test scope. Defaults to `beforeAll`. Use `beforeEach` for fresh state per test. */
+  newScopeAt?: typeof beforeAll | typeof beforeEach
+}) {
+  const { path, contracts, newScopeAt = beforeAll } = options
   const lazyCompile = createLazyCompiler(path, { outputArc56: true, outputBytecode: false })
   const localnet = algorandFixture({
     testAccountFunding: microAlgos(100_000_000_000),
@@ -178,7 +206,7 @@ export function createArc4TestFixture<TContracts extends string = ''>(
     }
   }
 
-  const ctx: DeliberateAny = { localnet }
+  const ctx: DeliberateAny = {}
   for (const [contractName, config] of getContracts()) {
     ctx[`appSpec${contractName}`] = async ({ expect }: { expect: ExpectStatic }, use: Use<Arc56Contract>) => {
       await use(await getAppSpec(expect, contractName))
@@ -212,7 +240,8 @@ export function createArc4TestFixture<TContracts extends string = ''>(
   }
 
   const extendedTest = algorandTestFixture(localnet).extend<Arc4FixtureContextFor<TContracts>>(ctx)
-  return [extendedTest, localnet] as readonly [typeof extendedTest, AlgorandFixture]
+  newScopeAt(localnet.newScope)
+  return extendedTest
 }
 
 type CompilationArtifacts = {
@@ -246,6 +275,7 @@ async function compilePath(
         dryRun: false,
         logLevel: 'error' as Parameters<typeof compile>[0]['logLevel'],
         skipVersionCheck: true,
+        customPuyaPath: process.env.PUYA_PATH || undefined,
 
         outputSsaIr: false,
         outputOptimizationIr: false,
@@ -262,6 +292,8 @@ async function compilePath(
         outputTeal: false,
         outputSourceMap: true,
         optimizationLevel: 0,
+
+        resourceEncoding: 'foreign_index',
         ...options,
       }),
     )

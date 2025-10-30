@@ -6,6 +6,7 @@ import { asBigUint, asBytes, asBytesCls, asMaybeBytesCls, asMaybeUint64Cls, asUi
 import type { StubBigUintCompat, StubBytesCompat, StubUint64Compat } from './primitives'
 import { BigUintCls, Bytes, BytesCls, checkBigUint, isUint64, Uint64, Uint64Cls } from './primitives'
 
+/** @internal */
 export const addw = (a: StubUint64Compat, b: StubUint64Compat): readonly [uint64, uint64] => {
   const uint64A = Uint64Cls.fromCompat(a)
   const uint64B = Uint64Cls.fromCompat(b)
@@ -13,6 +14,7 @@ export const addw = (a: StubUint64Compat, b: StubUint64Compat): readonly [uint64
   return toUint128(sum)
 }
 
+/** @internal */
 export const base64Decode = (e: Base64, a: StubBytesCompat): bytes => {
   const encoding = e === Base64.StdEncoding ? 'base64' : 'base64url'
   const bytesValue = BytesCls.fromCompat(a)
@@ -27,6 +29,7 @@ export const base64Decode = (e: Base64, a: StubBytesCompat): bytes => {
   return Bytes(uint8ArrayResult)
 }
 
+/** @internal */
 export const bitLength = (a: StubUint64Compat | StubBytesCompat): uint64 => {
   const uint64Cls = asMaybeUint64Cls(a)
   const bigUintCls = asMaybeBytesCls(a)?.toBigUint()
@@ -35,6 +38,7 @@ export const bitLength = (a: StubUint64Compat | StubBytesCompat): uint64 => {
   return Uint64(binaryValue.length)
 }
 
+/** @internal */
 export const bsqrt = (a: StubBigUintCompat): biguint => {
   const bigUintClsValue = BigUintCls.fromCompat(a)
   const bigintValue = checkBigUint(bigUintClsValue.asBigInt())
@@ -42,6 +46,7 @@ export const bsqrt = (a: StubBigUintCompat): biguint => {
   return asBigUint(sqrtValue)
 }
 
+/** @internal */
 export const btoi = (a: StubBytesCompat): uint64 => {
   const bytesValue = BytesCls.fromCompat(a)
   if (bytesValue.length.asAlgoTs() > BITS_IN_BYTE) {
@@ -50,6 +55,7 @@ export const btoi = (a: StubBytesCompat): uint64 => {
   return bytesValue.toUint64().asAlgoTs()
 }
 
+/** @internal */
 export const bzero = (a: StubUint64Compat): bytes => {
   const size = Uint64Cls.fromCompat(a).asBigInt()
   if (size > MAX_BYTES_SIZE) {
@@ -58,12 +64,14 @@ export const bzero = (a: StubUint64Compat): bytes => {
   return Bytes(new Uint8Array(Number(size)))
 }
 
+/** @internal */
 export const concat = (a: StubBytesCompat, b: StubBytesCompat): bytes => {
   const bytesA = BytesCls.fromCompat(a)
   const bytesB = BytesCls.fromCompat(b)
   return bytesA.concat(bytesB).asAlgoTs()
 }
 
+/** @internal */
 export const divmodw = (
   a: StubUint64Compat,
   b: StubUint64Compat,
@@ -78,12 +86,14 @@ export const divmodw = (
   return [...toUint128(div), ...toUint128(mod)]
 }
 
+/** @internal */
 export const divw = (a: StubUint64Compat, b: StubUint64Compat, c: StubUint64Compat): uint64 => {
   const i = uint128ToBigInt(a, b)
   const j = Uint64Cls.fromCompat(c).asBigInt()
   return Uint64(i / j)
 }
 
+/** @internal */
 export const exp = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   const base = Uint64Cls.fromCompat(a).asBigInt()
   const exponent = Uint64Cls.fromCompat(b).asBigInt()
@@ -93,6 +103,7 @@ export const exp = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   return Uint64(base ** exponent)
 }
 
+/** @internal */
 export const expw = (a: StubUint64Compat, b: StubUint64Compat): readonly [uint64, uint64] => {
   const base = Uint64Cls.fromCompat(a).asBigInt()
   const exponent = Uint64Cls.fromCompat(b).asBigInt()
@@ -104,6 +115,7 @@ export const expw = (a: StubUint64Compat, b: StubUint64Compat): readonly [uint64
 
 type ExtractType = ((a: StubBytesCompat, b: StubUint64Compat) => bytes) &
   ((a: StubBytesCompat, b: StubUint64Compat, c: StubUint64Compat) => bytes)
+/** @internal */
 export const extract = ((a: StubBytesCompat, b: StubUint64Compat, c?: StubUint64Compat): bytes => {
   const bytesValue = BytesCls.fromCompat(a)
   const bytesLength = bytesValue.length.asBigInt()
@@ -122,34 +134,39 @@ export const extract = ((a: StubBytesCompat, b: StubUint64Compat, c?: StubUint64
   return bytesValue.slice(start, end).asAlgoTs()
 }) as ExtractType
 
+/** @internal */
 export const extractUint16 = (a: StubBytesCompat, b: StubUint64Compat): uint64 => {
   const result = extract(a, b, 2)
   const bytesResult = BytesCls.fromCompat(result)
   return bytesResult.toUint64().asAlgoTs()
 }
 
+/** @internal */
 export const extractUint32 = (a: StubBytesCompat, b: StubUint64Compat): uint64 => {
   const result = extract(a, b, 4)
   const bytesResult = BytesCls.fromCompat(result)
   return bytesResult.toUint64().asAlgoTs()
 }
 
+/** @internal */
 export const extractUint64 = (a: StubBytesCompat, b: StubUint64Compat): uint64 => {
   const result = extract(a, b, 8)
   const bytesResult = BytesCls.fromCompat(result)
   return bytesResult.toUint64().asAlgoTs()
 }
 
-export const getBit = (a: StubUint64Compat | StubBytesCompat, b: StubUint64Compat): uint64 => {
+/** @internal */
+export const getBit = (a: StubUint64Compat | StubBytesCompat, b: StubUint64Compat): boolean => {
   const binaryString = toBinaryString(isUint64(a) ? asUint64Cls(a).toBytes().asAlgoTs() : asBytes(a))
   const index = Uint64Cls.fromCompat(b).asNumber()
   const adjustedIndex = asMaybeUint64Cls(a) ? binaryString.length - index - 1 : index
   if (adjustedIndex < 0 || adjustedIndex >= binaryString.length) {
     throw new CodeError(`getBit index ${index} is beyond length`)
   }
-  return binaryString[adjustedIndex] === '1' ? 1 : 0
+  return binaryString[adjustedIndex] === '1'
 }
 
+/** @internal */
 export const getByte = (a: StubBytesCompat, b: StubUint64Compat): uint64 => {
   const bytesValue = BytesCls.fromCompat(a)
   const index = Uint64Cls.fromCompat(b).asNumber()
@@ -159,14 +176,17 @@ export const getByte = (a: StubBytesCompat, b: StubUint64Compat): uint64 => {
   return bytesValue.at(index).toUint64().asAlgoTs()
 }
 
+/** @internal */
 export const itob = (a: StubUint64Compat): bytes => {
   return asUint64Cls(a).toBytes().asAlgoTs()
 }
 
+/** @internal */
 export const len = (a: StubBytesCompat): uint64 => {
   return asBytesCls(a).length.asAlgoTs()
 }
 
+/** @internal */
 export const mulw = (a: StubUint64Compat, b: StubUint64Compat): readonly [uint64, uint64] => {
   const uint64A = Uint64Cls.fromCompat(a)
   const uint64B = Uint64Cls.fromCompat(b)
@@ -174,6 +194,7 @@ export const mulw = (a: StubUint64Compat, b: StubUint64Compat): readonly [uint64
   return toUint128(product)
 }
 
+/** @internal */
 export const replace = (a: StubBytesCompat, b: StubUint64Compat, c: StubBytesCompat): bytes => {
   const bytesValue = BytesCls.fromCompat(a)
   const index = Uint64Cls.fromCompat(b).asNumber()
@@ -194,6 +215,7 @@ export const replace = (a: StubBytesCompat, b: StubUint64Compat, c: StubBytesCom
 
 type selectType = ((a: StubBytesCompat, b: StubBytesCompat, c: StubUint64Compat) => bytes) &
   ((a: StubUint64Compat, b: StubUint64Compat, c: StubUint64Compat) => uint64)
+/** @internal */
 export const select = ((
   a: StubUint64Compat | StubBytesCompat,
   b: StubUint64Compat | StubBytesCompat,
@@ -211,6 +233,7 @@ export const select = ((
 type SetBitType = ((target: StubBytesCompat, n: StubUint64Compat, c: StubUint64Compat) => bytes) &
   ((target: StubUint64Compat, n: StubUint64Compat, c: StubUint64Compat) => uint64)
 
+/** @internal */
 export const setBit = ((a: StubUint64Compat | StubBytesCompat, b: StubUint64Compat, c: StubUint64Compat) => {
   const uint64Cls = asMaybeUint64Cls(a)
   const indexParam = Uint64Cls.fromCompat(b).asNumber()
@@ -229,6 +252,7 @@ export const setBit = ((a: StubUint64Compat | StubBytesCompat, b: StubUint64Comp
   }
 }) as SetBitType
 
+/** @internal */
 export const setByte = (a: StubBytesCompat, b: StubUint64Compat, c: StubUint64Compat): bytes => {
   const binaryString = toBinaryString(BytesCls.fromCompat(a).asAlgoTs())
 
@@ -249,6 +273,7 @@ export const setByte = (a: StubBytesCompat, b: StubUint64Compat, c: StubUint64Co
   return updatedBytes.asAlgoTs()
 }
 
+/** @internal */
 export const shl = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   const uint64A = Uint64Cls.fromCompat(a)
   const uint64B = Uint64Cls.fromCompat(b)
@@ -261,6 +286,7 @@ export const shl = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   return Uint64(shifted)
 }
 
+/** @internal */
 export const shr = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   const uint64A = Uint64Cls.fromCompat(a)
   const uint64B = Uint64Cls.fromCompat(b)
@@ -273,12 +299,14 @@ export const shr = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   return Uint64(shifted)
 }
 
+/** @internal */
 export const sqrt = (a: StubUint64Compat): uint64 => {
   const bigIntValue = Uint64Cls.fromCompat(a).asBigInt()
   const sqrtValue = squareroot(bigIntValue)
   return Uint64(sqrtValue)
 }
 
+/** @internal */
 export const substring = (a: StubBytesCompat, b: StubUint64Compat, c: StubUint64Compat): bytes => {
   const bytesValue = BytesCls.fromCompat(a)
   const start = Uint64Cls.fromCompat(b).asBigInt()
@@ -292,6 +320,7 @@ export const substring = (a: StubBytesCompat, b: StubUint64Compat, c: StubUint64
   return bytesValue.slice(start, end).asAlgoTs()
 }
 
+/** @internal */
 export const JsonRef = new Proxy({} as typeof op.JsonRef, {
   get: (_target, prop) => {
     throw new NotImplementedError(`JsonRef.${prop.toString()}`)

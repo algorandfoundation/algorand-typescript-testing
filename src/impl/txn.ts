@@ -5,9 +5,10 @@ import { InternalError } from '../errors'
 import { asNumber, asUint64, asUint64Cls } from '../util'
 import type { StubUint64Compat } from './primitives'
 
+/** @internal */
 export const gaid = (a: StubUint64Compat): uint64 => {
   const group = lazyContext.activeGroup
-  const transaction = group.getTransaction(a)
+  const transaction = group.getTransaction(asUint64(a))
   if (transaction.type === TransactionType.ApplicationCall) {
     return transaction.createdApp.id
   } else if (transaction.type === TransactionType.AssetConfig) {
@@ -17,6 +18,7 @@ export const gaid = (a: StubUint64Compat): uint64 => {
   }
 }
 
+/** @internal */
 export const Txn: typeof op.Txn = {
   get sender(): Account {
     return lazyContext.activeGroup.getTransaction().sender
@@ -60,7 +62,7 @@ export const Txn: typeof op.Txn = {
   /**
    * 32 byte lease value
    */
-  get lease(): bytes {
+  get lease(): bytes<32> {
     return lazyContext.activeGroup.getTransaction().lease
   },
 
@@ -88,14 +90,14 @@ export const Txn: typeof op.Txn = {
   /**
    * 32 byte address
    */
-  get votePk(): bytes {
+  get votePk(): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().voteKey
   },
 
   /**
    * 32 byte address
    */
-  get selectionPk(): bytes {
+  get selectionPk(): bytes<32> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().selectionKey
   },
 
@@ -179,7 +181,7 @@ export const Txn: typeof op.Txn = {
   /**
    * The computed ID for this transaction. 32 bytes.
    */
-  get txId(): bytes {
+  get txId(): bytes<32> {
     return lazyContext.activeGroup.getTransaction().txnId
   },
 
@@ -299,7 +301,7 @@ export const Txn: typeof op.Txn = {
   /**
    * 32 byte commitment to unspecified asset metadata
    */
-  get configAssetMetadataHash(): bytes {
+  get configAssetMetadataHash(): bytes<32> {
     return lazyContext.activeGroup.getAssetConfigTransaction().metadataHash
   },
 
@@ -460,7 +462,7 @@ export const Txn: typeof op.Txn = {
   /**
    * 64 byte state proof public key
    */
-  get stateProofPk(): bytes {
+  get stateProofPk(): bytes<64> {
     return lazyContext.activeGroup.getKeyRegistrationTransaction().stateProofKey
   },
 
@@ -490,5 +492,8 @@ export const Txn: typeof op.Txn = {
    */
   get numClearStateProgramPages(): uint64 {
     return lazyContext.activeGroup.getApplicationCallTransaction().numClearStateProgramPages
+  },
+  get rejectVersion(): uint64 {
+    return lazyContext.activeGroup.getApplicationCallTransaction().rejectVersion
   },
 }

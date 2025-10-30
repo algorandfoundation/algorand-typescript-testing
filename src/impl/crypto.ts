@@ -8,38 +8,43 @@ import nacl from 'tweetnacl'
 import { LOGIC_DATA_PREFIX, PROGRAM_TAG } from '../constants'
 import { lazyContext } from '../context-helpers/internal-context'
 import { InternalError, NotImplementedError } from '../errors'
-import { asBytes, asBytesCls, asUint8Array, conactUint8Arrays } from '../util'
+import { asBytes, asBytesCls, asUint8Array, concatUint8Arrays } from '../util'
 import type { StubBytesCompat, StubUint64Compat } from './primitives'
 import { Bytes, BytesCls, Uint64Cls } from './primitives'
 
-export const sha256 = (a: StubBytesCompat): bytes => {
+/** @internal */
+export const sha256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha256.sha256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
-export const sha3_256 = (a: StubBytesCompat): bytes => {
+/** @internal */
+export const sha3_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.sha3_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
-export const keccak256 = (a: StubBytesCompat): bytes => {
+/** @internal */
+export const keccak256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha3.keccak256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
-export const sha512_256 = (a: StubBytesCompat): bytes => {
+/** @internal */
+export const sha512_256 = (a: StubBytesCompat): bytes<32> => {
   const bytesA = BytesCls.fromCompat(a)
   const hashArray = js_sha512.sha512_256.create().update(bytesA.asUint8Array()).digest()
-  const hashBytes = BytesCls.fromCompat(new Uint8Array(hashArray))
-  return hashBytes.asAlgoTs()
+  const hashBytes = Bytes(new Uint8Array(hashArray), { length: 32 })
+  return hashBytes
 }
 
+/** @internal */
 export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
   const bytesA = BytesCls.fromCompat(a)
   const bytesB = BytesCls.fromCompat(b)
@@ -47,11 +52,12 @@ export const ed25519verifyBare = (a: StubBytesCompat, b: StubBytesCompat, c: Stu
   return nacl.sign.detached.verify(bytesA.asUint8Array(), bytesB.asUint8Array(), bytesC.asUint8Array())
 }
 
+/** @internal */
 export const ed25519verify = (a: StubBytesCompat, b: StubBytesCompat, c: StubBytesCompat): boolean => {
   const txn = lazyContext.activeGroup.activeTransaction as gtxn.ApplicationCallTxn
   const programBytes = asBytesCls(txn.onCompletion == OnCompleteAction.ClearState ? txn.clearStateProgram : txn.approvalProgram)
 
-  const logicSig = conactUint8Arrays(asUint8Array(PROGRAM_TAG), programBytes.asUint8Array())
+  const logicSig = concatUint8Arrays(asUint8Array(PROGRAM_TAG), programBytes.asUint8Array())
   const logicSigAddress = js_sha512.sha512_256.array(logicSig)
 
   const addressBytes = Bytes(logicSigAddress)
@@ -59,6 +65,7 @@ export const ed25519verify = (a: StubBytesCompat, b: StubBytesCompat, c: StubByt
   return ed25519verifyBare(data, b, c)
 }
 
+/** @internal */
 export const ecdsaVerify = (
   v: Ecdsa,
   a: StubBytesCompat,
@@ -82,13 +89,14 @@ export const ecdsaVerify = (
   return keyPair.verify(dataBytes.asUint8Array(), { r: sigRBytes.asUint8Array(), s: sigSBytes.asUint8Array() })
 }
 
+/** @internal */
 export const ecdsaPkRecover = (
   v: Ecdsa,
   a: StubBytesCompat,
   b: StubUint64Compat,
   c: StubBytesCompat,
   d: StubBytesCompat,
-): readonly [bytes, bytes] => {
+): readonly [bytes<32>, bytes<32>] => {
   if (v !== Ecdsa.Secp256k1) {
     throw new InternalError(`Unsupported ECDSA curve: ${v}`)
   }
@@ -106,10 +114,11 @@ export const ecdsaPkRecover = (
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(x), Bytes(y)]
+  return [Bytes(x, { length: 32 }), Bytes(y, { length: 32 })]
 }
 
-export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes, bytes] => {
+/** @internal */
+export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes<32>, bytes<32>] => {
   const bytesA = BytesCls.fromCompat(a)
 
   const ecdsa = new elliptic.ec(curveMap[v])
@@ -118,21 +127,29 @@ export const ecdsaPkDecompress = (v: Ecdsa, a: StubBytesCompat): readonly [bytes
 
   const x = pubKey.getX().toArray('be')
   const y = pubKey.getY().toArray('be')
-  return [Bytes(new Uint8Array(x)), Bytes(new Uint8Array(y))]
+  return [Bytes(x, { length: 32 }), Bytes(y, { length: 32 })]
 }
 
-export const vrfVerify = (_s: VrfVerify, _a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): readonly [bytes, boolean] => {
+/** @internal */
+export const vrfVerify = (_s: VrfVerify, _a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): readonly [bytes<64>, boolean] => {
   throw new NotImplementedError('vrfVerify')
 }
 
+/** @internal */
 export const EllipticCurve = new Proxy({} as typeof op.EllipticCurve, {
   get: (_target, prop) => {
     throw new NotImplementedError(`EllipticCurve.${prop.toString()}`)
   },
 })
 
+/** @internal */
 export const mimc = (_c: MimcConfigurations, _a: StubBytesCompat): bytes => {
   throw new NotImplementedError('mimc')
+}
+
+/** @internal */
+export const falconVerify = (_a: StubBytesCompat, _b: StubBytesCompat, _c: StubBytesCompat): boolean => {
+  throw new NotImplementedError('falconVerify')
 }
 
 const curveMap = {

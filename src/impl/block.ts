@@ -1,28 +1,29 @@
 import type { Account as AccountType, bytes, op, uint64 } from '@algorandfoundation/algorand-typescript'
 import { lazyContext } from '../context-helpers/internal-context'
 import { asUint64, getRandomBytes } from '../util'
-import { Uint64, type StubUint64Compat } from './primitives'
+import { Uint64 } from './primitives'
 import { Account } from './reference'
 
 export class BlockData {
-  seed: bytes
+  seed: bytes<32>
   timestamp: uint64
   proposer: AccountType
   feesCollected: uint64
   bonus: uint64
-  branch: bytes
+  branch: bytes<32>
   feeSink: AccountType
   protocol: bytes
   txnCounter: uint64
   proposerPayout: uint64
 
+  /** @internal */
   constructor() {
-    this.seed = getRandomBytes(32).asAlgoTs()
+    this.seed = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
     this.timestamp = asUint64(Date.now())
     this.proposer = Account()
     this.feesCollected = Uint64(0)
     this.bonus = Uint64(0)
-    this.branch = getRandomBytes(32).asAlgoTs()
+    this.branch = getRandomBytes(32).asAlgoTs().toFixed({ length: 32 })
     this.feeSink = Account()
     this.protocol = getRandomBytes(32).asAlgoTs()
     this.txnCounter = Uint64(0)
@@ -30,11 +31,12 @@ export class BlockData {
   }
 }
 
+/** @internal */
 export const Block: typeof op.Block = {
-  blkSeed: function (a: StubUint64Compat): bytes {
+  blkSeed: function (a: uint64): bytes<32> {
     return lazyContext.ledger.getBlockData(a).seed
   },
-  blkTimestamp: function (a: StubUint64Compat): uint64 {
+  blkTimestamp: function (a: uint64): uint64 {
     return lazyContext.ledger.getBlockData(a).timestamp
   },
   blkProposer: function (a: uint64): AccountType {
@@ -46,7 +48,7 @@ export const Block: typeof op.Block = {
   blkBonus: function (a: uint64): uint64 {
     return lazyContext.ledger.getBlockData(a).bonus
   },
-  blkBranch: function (a: uint64): bytes {
+  blkBranch: function (a: uint64): bytes<32> {
     return lazyContext.ledger.getBlockData(a).branch
   },
   blkFeeSink: function (a: uint64): AccountType {

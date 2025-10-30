@@ -25,6 +25,10 @@
           {
             "type": "chore",
             "release": "patch"
+          },
+          {
+            "type": "refactor",
+            "release": "patch"
           }
         ]
       }
@@ -59,6 +63,11 @@
         "pkgRoot": "artifacts/algo-ts-testing"
       }
     ],
-    "@semantic-release/github"
+    [
+      "@semantic-release/github",
+      {
+        "successComment": false
+      }
+    ]
   ]
 }

@@ -6,6 +6,7 @@ import type { Contract } from './contract'
 import { sha512_256 } from './crypto'
 import { Bytes } from './primitives'
 
+/** @internal */
 export const methodSelector = <TContract extends Contract>(
   methodSignature: Parameters<Overloads<typeof arc4.methodSelector>>[0],
   contract?: TContract | { new (): TContract },

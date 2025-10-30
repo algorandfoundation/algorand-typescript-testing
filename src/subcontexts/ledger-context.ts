@@ -4,16 +4,18 @@ import type {
   Asset as AssetType,
   BaseContract,
   bytes,
+  BytesCompat,
   LocalStateForAccount,
   uint64,
+  Uint64Compat,
 } from '@algorandfoundation/algorand-typescript'
 import { AccountMap, Uint64Map } from '../collections/custom-key-map'
 import { MAX_UINT64 } from '../constants'
-import { toBytes } from '../encoders'
 import { InternalError } from '../errors'
 import { BlockData } from '../impl/block'
+import { toUint8Array } from '../impl/encoded-types/encoded-types'
 import { GlobalData } from '../impl/global'
-import { Uint64Cls, type StubBytesCompat, type StubUint64Compat } from '../impl/primitives'
+import { Uint64Cls } from '../impl/primitives'
 import type { AssetData } from '../impl/reference'
 import {
   AccountCls,
@@ -31,14 +33,23 @@ import type { PickPartial } from '../typescript-helpers'
 import { asBigInt, asBytes, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64Cls, asUint8Array, iterBigInt } from '../util'
 
 export class LedgerContext {
+  /** @internal */
   appIdIter = iterBigInt(1001n, MAX_UINT64)
+  /** @internal */
   assetIdIter = iterBigInt(1001n, MAX_UINT64)
+  /** @internal */
   applicationDataMap = new Uint64Map<ApplicationData>()
+  /** @internal */
   appIdContractMap = new Uint64Map<BaseContract>()
+  /** @internal */
   accountDataMap = new AccountMap<AccountData>()
+  /** @internal */
   assetDataMap = new Uint64Map<AssetData>()
+  /** @internal */
   voterDataMap = new AccountMap<VoterData>()
+  /** @internal */
   blocks = new Uint64Map<BlockData>()
+  /** @internal */
   globalData = new GlobalData()
   onlineStake = 0
 
@@ -48,7 +59,7 @@ export class LedgerContext {
    * @param appId - The application ID.
    * @param contract - The contract to add.
    */
-  addAppIdContractMap(appId: StubUint64Compat, contract: BaseContract): void {
+  addAppIdContractMap(appId: Uint64Compat, contract: BaseContract): void {
     this.appIdContractMap.set(appId, contract)
   }
 
@@ -57,8 +68,8 @@ export class LedgerContext {
    * @param address - The account address.
    * @returns The account.
    */
-  getAccount(address: AccountType | StubBytesCompat): AccountType {
-    return new AccountCls(address instanceof AccountCls ? address.bytes : asBytes(address as StubBytesCompat))
+  getAccount(address: AccountType | BytesCompat): AccountType {
+    return new AccountCls(address instanceof AccountCls ? address.bytes : asBytes(address as BytesCompat))
   }
 
   /**
@@ -67,7 +78,7 @@ export class LedgerContext {
    * @returns The asset.
    * @throws If the asset is unknown.
    */
-  getAsset(assetId: StubUint64Compat): AssetType {
+  getAsset(assetId: Uint64Compat): AssetType {
     if (this.assetDataMap.has(assetId)) {
       return Asset(asUint64(assetId))
     }
@@ -80,7 +91,7 @@ export class LedgerContext {
    * @returns The application.
    * @throws If the application is unknown.
    */
-  getApplication(applicationId: StubUint64Compat): ApplicationType {
+  getApplication(applicationId: Uint64Compat): ApplicationType {
     if (this.applicationDataMap.has(applicationId)) {
       return Application(asUint64(applicationId))
     }
@@ -139,8 +150,8 @@ export class LedgerContext {
    * @param balance
    * @param frozen
    */
-  updateAssetHolding(account: AccountType, assetId: StubUint64Compat | AssetType, balance?: StubUint64Compat, frozen?: boolean): void {
-    const id = asMaybeUint64Cls(assetId) ?? asUint64Cls((assetId as AssetType).id)
+  updateAssetHolding(account: AccountType, assetId: Uint64Compat | AssetType, balance?: Uint64Compat, frozen?: boolean): void {
+    const id = (asMaybeUint64Cls(assetId) ?? asUint64Cls((assetId as AssetType).id)).asAlgoTs()
     const accountData = this.accountDataMap.get(account)!
     const asset = this.assetDataMap.get(id)!
     const holding = accountData.optedAssets.get(id) ?? new AssetHolding(0n, asset.defaultFrozen)
@@ -199,7 +210,7 @@ export class LedgerContext {
 
   /**
    * Patches asset data with the provided partial data.
-   * @param account - The asset.
+   * @param asset - The asset.
    * @param data - The partial asset data.
    */
   patchAssetData(asset: AssetType, data: Partial<AssetData>) {
@@ -228,7 +239,7 @@ export class LedgerContext {
    * @param index - The block index.
    * @param data - The partial block data.
    */
-  patchBlockData(index: StubUint64Compat, data: Partial<BlockData>): void {
+  patchBlockData(index: Uint64Compat, data: Partial<BlockData>): void {
     const i = asUint64(index)
     const blockData = this.blocks.get(i) ?? new BlockData()
     this.blocks.set(i, {
@@ -243,7 +254,7 @@ export class LedgerContext {
    * @returns The block data.
    * @throws If the block is not set.
    */
-  getBlockData(index: StubUint64Compat): BlockData {
+  getBlockData(index: Uint64Compat): BlockData {
     const i = asBigInt(index)
     if (this.blocks.has(i)) {
       return this.blocks.get(i)!
@@ -257,7 +268,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns The global state and a boolean indicating if it was found.
    */
-  getGlobalState(app: ApplicationType | BaseContract, key: StubBytesCompat): [GlobalStateCls<unknown>, true] | [undefined, false] {
+  getGlobalState(app: ApplicationType | BaseContract, key: BytesCompat): [GlobalStateCls<unknown>, true] | [undefined, false] {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.get(appId)
     if (!appData?.application.globalStates.has(key)) {
@@ -272,7 +283,7 @@ export class LedgerContext {
    * @param key - The key.
    * @param value - The value (optional).
    */
-  setGlobalState(app: ApplicationType | BaseContract, key: StubBytesCompat, value: StubUint64Compat | StubBytesCompat | undefined): void {
+  setGlobalState(app: ApplicationType | BaseContract, key: BytesCompat, value: Uint64Compat | BytesCompat | undefined): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     const globalState = appData.application.globalStates.get(key)
@@ -295,9 +306,9 @@ export class LedgerContext {
   getLocalState(
     app: ApplicationType | BaseContract | uint64,
     account: AccountType,
-    key: StubBytesCompat,
+    key: BytesCompat,
   ): [LocalStateForAccount<unknown>, true] | [undefined, false] {
-    const appId = app instanceof Uint64Cls ? app : this.getAppId(app as ApplicationType | BaseContract)
+    const appId = app instanceof Uint64Cls ? app.asAlgoTs() : this.getAppId(app as ApplicationType | BaseContract)
     const appData = this.applicationDataMap.get(appId)
     if (!appData?.application.localStates.has(key)) {
       return [undefined, false]
@@ -314,8 +325,8 @@ export class LedgerContext {
    * @param key - The key.
    * @param value - The value (optional).
    */
-  setLocalState<T>(app: ApplicationType | BaseContract | uint64, account: AccountType, key: StubBytesCompat, value: T | undefined): void {
-    const appId = app instanceof Uint64Cls ? app : this.getAppId(app as ApplicationType | BaseContract)
+  setLocalState<T>(app: ApplicationType | BaseContract | uint64, account: AccountType, key: BytesCompat, value: T | undefined): void {
+    const appId = app instanceof Uint64Cls ? app.asAlgoTs() : this.getAppId(app as ApplicationType | BaseContract)
     const appData = this.applicationDataMap.getOrFail(appId)
     if (!appData.application.localStateMaps.has(key)) {
       appData.application.localStateMaps.set(key, new AccountMap())
@@ -338,12 +349,14 @@ export class LedgerContext {
    * @param key - The key.
    * @returns The box data.
    */
-  getBox(app: ApplicationType | BaseContract, key: StubBytesCompat): Uint8Array {
+  getBox(app: ApplicationType | BaseContract, key: BytesCompat): Uint8Array {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     const materialised = appData.application.materialisedBoxes.get(key)
     if (materialised !== undefined) {
-      return asUint8Array(toBytes(materialised))
+      const uint8ArrayValue = toUint8Array(materialised)
+      appData.application.boxes.set(key, uint8ArrayValue)
+      appData.application.materialisedBoxes.set(key, undefined)
     }
     return appData.application.boxes.get(key) ?? new Uint8Array()
   }
@@ -355,7 +368,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns The materialised box data if exists or undefined.
    */
-  getMaterialisedBox<T>(app: ApplicationType | BaseContract, key: StubBytesCompat): T | undefined {
+  getMaterialisedBox<T>(app: ApplicationType | BaseContract, key: BytesCompat): T | undefined {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     return appData.application.materialisedBoxes.get(key) as T | undefined
@@ -367,7 +380,7 @@ export class LedgerContext {
    * @param key - The key.
    * @param value - The box data.
    */
-  setBox(app: ApplicationType | BaseContract, key: StubBytesCompat, value: StubBytesCompat | Uint8Array): void {
+  setBox(app: ApplicationType | BaseContract, key: BytesCompat, value: BytesCompat | Uint8Array): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     const uint8ArrayValue = value instanceof Uint8Array ? value : asUint8Array(value)
@@ -383,7 +396,7 @@ export class LedgerContext {
  * @param key - The key.
  * @param value - The box data.
  */
-  setMatrialisedBox<TValue>(app: ApplicationType | BaseContract, key: StubBytesCompat, value: TValue | undefined): void {
+  setMaterialisedBox<TValue>(app: ApplicationType | BaseContract, key: BytesCompat, value: TValue | undefined): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     appData.application.materialisedBoxes.set(key, value)
@@ -395,7 +408,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns True if the box was deleted, false otherwise.
    */
-  deleteBox(app: ApplicationType | BaseContract, key: StubBytesCompat): boolean {
+  deleteBox(app: ApplicationType | BaseContract, key: BytesCompat): boolean {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     appData.application.materialisedBoxes.delete(key)
@@ -408,12 +421,13 @@ export class LedgerContext {
    * @param key - The key.
    * @returns True if the box exists, false otherwise.
    */
-  boxExists(app: ApplicationType | BaseContract, key: StubBytesCompat): boolean {
+  boxExists(app: ApplicationType | BaseContract, key: BytesCompat): boolean {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     return appData.application.boxes.has(key)
   }
 
+  /** @internal */
   private getAppId(app: ApplicationType | BaseContract): uint64 {
     return app instanceof ApplicationCls ? app.id : this.getApplicationForContract(app as BaseContract).id
   }

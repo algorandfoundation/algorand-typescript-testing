@@ -24,7 +24,7 @@ jobs:
         pipx install algokit
         algokit localnet reset --update
         pipx install puyapy
-      node-version: 20.x
+      node-version: 22.x
       run-build: true
       run-commit-lint: true
       audit-script: npm run audit
@@ -49,10 +49,10 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.app_token.outputs.token }}
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
 
       - run: npm ci --ignore-scripts
 
@@ -62,15 +62,26 @@ jobs:
           path: artifacts
 
       - name: Generate semantic version for @algorandfoundation/algorand-typescript-testing
+        if: github.ref_name != 'main'
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
 
-      - name: Publish @algorandfoundation/algorand-typescript-testing
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: artifacts/algo-ts-testing/package.json
-          access: 'public'
-          # Tagging 'main' branch with latest for now, even though it's beta because we don't have a non-beta
-          tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'latest' || github.ref_name == 'release' && 'latest' || 'pre-release' }}
+      # - name: Publish @algorandfoundation/algorand-typescript-testing
+      #   if: github.ref_name != 'main'
+      #   uses: JS-DevTools/npm-publish@v3
+      #   with:
+      #     token: ${{ secrets.NPM_TOKEN }}
+      #     package: artifacts/algo-ts-testing/package.json
+      #     access: 'public'
+      #     tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'beta' || github.ref_name == 'release' && 'latest' || 'pre-release' }}
+
+  # publish-docs:
+  #   name: Publish docs
+  #   needs: release
+  #   if: github.ref_name == 'release'
+  #   uses: ./.github/workflows/gh-pages.yml
+  #   permissions:
+  #     contents: read
+  #     pages: write
+  #     id-token: write

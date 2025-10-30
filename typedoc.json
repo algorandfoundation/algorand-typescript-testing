@@ -2,18 +2,26 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": [
     "./src/index.ts",
-    "./src/value-generators/*.ts",
-    "./src/subcontexts/*.ts",
     "./src/test-transformer/jest-transformer.ts",
-    "./src/test-transformer/vitest-transformer.ts"
+    "./src/test-transformer/vitest-transformer.ts",
+    "./src/value-generators/index.ts"
   ],
-  "exclude": ["types/*.spec.ts"],
-  "entryPointStrategy": "expand",
-  "out": "docs/code",
-  "plugin": ["typedoc-plugin-markdown"],
-  "theme": "default",
+  "excludeInternal": true,
+  "excludeReferences": true,
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "includeHierarchySummary": false,
+  "outputs": [
+    {
+      "name": "html",
+      "path": "docs/_html"
+    }
+  ],
+  "name": "Algorand TypeScript Testing",
+  "projectDocuments": ["docs/testing-guide.md", "docs/algots.md", "docs/api.md", "docs/coverage.md", "docs/examples.md", "docs/faq.md"],
+  "plugin": ["typedoc-plugin-missing-exports", "typedoc-plugin-markdown"],
   "cleanOutputDir": true,
-  "githubPages": false,
-  "readme": "none",
+  "readme": "docs/readme.md",
   "gitRevision": "main"
 }

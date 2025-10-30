@@ -24,17 +24,18 @@ export class GlobalData {
   logicSigVersion?: uint64
   round?: uint64
   latestTimestamp?: uint64
-  groupId?: bytes
+  groupId?: bytes<32>
   callerApplicationId: uint64
   assetCreateMinBalance: uint64
   assetOptInMinBalance: uint64
-  genesisHash: bytes
+  genesisHash: bytes<32>
   opcodeBudget?: uint64
   payoutsEnabled: boolean
   payoutsGoOnlineFee: uint64
   payoutsPercent: uint64
   payoutsMinBalance: uint64
 
+  /** @internal */
   constructor() {
     this.minTxnFee = Uint64(MIN_TXN_FEE)
     this.minBalance = Uint64(DEFAULT_ACCOUNT_MIN_BALANCE)
@@ -57,6 +58,7 @@ const getGlobalData = (): GlobalData => {
 const getMissingValueErrorMessage = (name: keyof GlobalData) =>
   `'Global' object has no value set for attribute named '${name}'. Use \`context.ledger.patchGlobalData({${name}: your_value})\` to set the value in your test setup."`
 
+/** @internal */
 export const Global: typeof op.Global = {
   /**
    * microalgos
@@ -146,7 +148,7 @@ export const Global: typeof op.Global = {
   /**
    * ID of the transaction group. 32 zero bytes if the transaction is not part of a group.
    */
-  get groupId(): bytes {
+  get groupId(): bytes<32> {
     const data = getGlobalData()
     if (data.groupId !== undefined) return data.groupId
     const reference = getObjectReference(lazyContext.activeGroup)
@@ -194,7 +196,7 @@ export const Global: typeof op.Global = {
   /**
    * The Genesis Hash for the network.
    */
-  get genesisHash(): bytes {
+  get genesisHash(): bytes<32> {
     return getGlobalData().genesisHash
   },
 
