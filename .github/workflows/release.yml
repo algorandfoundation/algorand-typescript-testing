@@ -68,6 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
 
       # - name: Publish @algorandfoundation/algorand-typescript-testing
+      #   if: github.ref_name != 'main'
       #   uses: JS-DevTools/npm-publish@v3
       #   with:
       #     token: ${{ secrets.NPM_TOKEN }}
