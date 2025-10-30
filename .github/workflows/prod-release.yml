@@ -27,7 +27,7 @@ jobs:
         run: git config --global user.email "179917785+engineering-ci[bot]@users.noreply.github.com" && git config --global user.name "engineering-ci[bot]"
 
       - name: Merge main -> release
-        uses: devmasx/merge-branch@854d3ac71ed1e9deb668e0074781b81fdd6e771f
+        uses: devmasx/merge-branch@6ec8363d74aad4f1615d1234ae1908b4185c4313
         with:
           type: now
           from_branch: main
@@ -35,11 +35,10 @@ jobs:
           github_token: ${{ steps.app_token.outputs.token }}
 
       - name: Merge release -> main
-        uses: devmasx/merge-branch@854d3ac71ed1e9deb668e0074781b81fdd6e771f
+        uses: devmasx/merge-branch@6ec8363d74aad4f1615d1234ae1908b4185c4313
         with:
           type: now
           from_branch: release
           target_branch: main
+          message: 'Merge release back to main to get version increment [no ci]'
           github_token: ${{ steps.app_token.outputs.token }}
-        env:
-          INPUT_MESSAGE: 'Merge release back to main to get version increment [no ci]'
