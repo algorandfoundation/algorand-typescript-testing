@@ -22,8 +22,14 @@ const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> 
 const contractSymbolMap: Map<string, symbol> = new Map()
 const contractMap: WeakMap<symbol, { new (): Contract }> = new WeakMap()
 /** @internal */
-export const attachAbiMetadata = (contract: { new (): Contract }, methodName: string, metadata: AbiMetadata, fileName: string): void => {
-  const contractFullName = `${fileName}::${contract.prototype.constructor.name}`
+export const attachAbiMetadata = (
+  contract: { new (): Contract },
+  methodName: string,
+  metadata: AbiMetadata,
+  fileName: string,
+  contractName: string,
+): void => {
+  const contractFullName = `${fileName}::${contractName}`
   if (!contractSymbolMap.has(contractFullName)) {
     contractSymbolMap.set(contractFullName, Symbol(contractFullName))
   }
