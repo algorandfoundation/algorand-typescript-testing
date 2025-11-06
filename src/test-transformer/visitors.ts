@@ -213,7 +213,8 @@ class ExpressionVisitor {
 
         if (stubbedFunctionName) {
           if (isCallingMethodSelector(stubbedFunctionName)) {
-            updatedNode = nodeFactory.callMethodSelectorFunction(updatedNode)
+            const typeParams = this.helper.resolveTypeParameters(updatedNode)
+            updatedNode = nodeFactory.callMethodSelectorFunction(updatedNode, typeParams)
           } else if (isCallingAbiCall(stubbedFunctionName)) {
             const typeParams = this.helper.resolveTypeParameters(updatedNode)
             updatedNode = nodeFactory.callAbiCallFunction(updatedNode, typeParams)

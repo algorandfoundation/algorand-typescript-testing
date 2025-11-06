@@ -34,7 +34,7 @@ export function compileArc4<TContract extends Contract>(
     call: new Proxy({} as unknown as TContract, {
       get: (_target, prop) => {
         return (methodArgs: TypedApplicationCallFields<DeliberateAny[]>) => {
-          const selector = methodSelector(prop as string, contract)
+          const selector = methodSelector({ method: prop as string, contract })
           const abiMetadata = getContractMethodAbiMetadata(contract, prop as string)
           const onCompleteActions = abiMetadata?.allowActions?.map((action) => OnCompleteAction[action])
           const itxnContext = ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields(
@@ -95,7 +95,7 @@ export function getApplicationCallInnerTxnContext<TArgs extends DeliberateAny[],
   contract?: Contract | { new (): Contract },
 ) {
   const abiMetadata = contract ? getContractMethodAbiMetadata(contract, method.name) : undefined
-  const selector = methodSelector(method, contract)
+  const selector = methodSelector({ method, contract })
   return ApplicationCallInnerTxnContext.createFromTypedApplicationCallFields<TReturn>(
     {
       ...methodArgs,

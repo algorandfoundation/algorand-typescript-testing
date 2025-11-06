@@ -49,6 +49,8 @@ describe('methodSelector', async () => {
       .map((_, i) => txn.appArgs(i))
     expect(appArgs).toEqual([appClient.getABIMethod('sink(string,uint8[])void').getSelector(), arg1.bytes, arg2.bytes])
     expect(appArgs[0]).toEqual(arc4.methodSelector(SignaturesContract.prototype.sink))
+    expect(appArgs[0]).toEqual(arc4.methodSelector<typeof SignaturesContract.prototype.sink>())
+    expect(appArgs[0]).toEqual(arc4.methodSelector('sink(string,uint8[])void'))
   })
 
   test('app args is correct with alias', async ({ appClientSignaturesContract: appClient }) => {
@@ -71,6 +73,8 @@ describe('methodSelector', async () => {
       .map((_, i) => txn.appArgs(i))
     expect(appArgs).toEqual([appClient.getABIMethod('alias(string,uint8[])void').getSelector(), arg1.bytes, arg2.bytes])
     expect(appArgs[0]).toEqual(arc4.methodSelector(SignaturesContract.prototype.sink2))
+    expect(appArgs[0]).toEqual(arc4.methodSelector<typeof SignaturesContract.prototype.sink2>())
+    expect(appArgs[0]).toEqual(arc4.methodSelector('alias(string,uint8[])void'))
   })
 
   test('app args is correct with txn', async ({ appClientSignaturesContract: appClient, algorand }) => {
@@ -99,6 +103,8 @@ describe('methodSelector', async () => {
       .map((_, i) => txn.appArgs(i))
     expect(appArgs).toEqual([appClient.getABIMethod('withTxn(string,pay,uint8[])void').getSelector(), arg1.bytes, arg3.bytes])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.withTxn))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.withTxn>())
+    expect(appArgs[0]).toEqual(methodSelector('withTxn(string,pay,uint8[])void'))
   })
 
   test('app args is correct with asset', async ({ appClientSignaturesContract: appClient, algorand }) => {
@@ -133,6 +139,8 @@ describe('methodSelector', async () => {
       arg3.bytes,
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.withAsset))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.withAsset>())
+    expect(appArgs[0]).toEqual(methodSelector('withAsset(string,asset,uint8[])void'))
   })
 
   test('app args is correct with account', async ({ appClientSignaturesContract: appClient, algorand }) => {
@@ -166,6 +174,8 @@ describe('methodSelector', async () => {
       arg3.bytes,
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.withAcc))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.withAcc>())
+    expect(appArgs[0]).toEqual(methodSelector('withAcc(string,account,uint8[])void'))
   })
 
   test('app args is correct with application', async ({ appClientSignaturesContract: appClient, appFactorySignaturesContract }) => {
@@ -201,6 +211,8 @@ describe('methodSelector', async () => {
       arg4.bytes,
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.withApp))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.withApp>())
+    expect(appArgs[0]).toEqual(methodSelector('withApp(string,application,uint64,uint8[])void'))
     expect(appForeignApps.map((a) => a.id)).toEqual([selfApp.id, otherAppId])
   })
 
@@ -246,6 +258,12 @@ describe('methodSelector', async () => {
       five.bytes,
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.complexSig))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.complexSig>())
+    expect(appArgs[0]).toEqual(
+      methodSelector(
+        'complexSig(((uint64,string),(uint64,string),uint128,uint128),pay,account,uint8[])((uint64,string),((uint64,string),(uint64,string),uint128,uint128))',
+      ),
+    )
     expect(result[0].bytes).toEqual(struct.anotherStruct.bytes)
     expect(result[1].bytes).toEqual(struct.bytes)
   })
@@ -296,6 +314,12 @@ describe('methodSelector', async () => {
       Bytes.fromHex('01'),
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.echoResourceByIndex))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.echoResourceByIndex>())
+    expect(appArgs[0]).toEqual(
+      methodSelector(
+        'echoResourceByIndex(asset,application,account)(uint64,uint64,address)',
+      ),
+    )
 
     expect(result).toEqual([asaId, otherAppId, encodeAddress(acc.publicKey)])
   })
@@ -346,6 +370,12 @@ describe('methodSelector', async () => {
       toBytes(account),
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.echoResourceByValue))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.echoResourceByValue>())
+    expect(appArgs[0]).toEqual(
+      methodSelector(
+        'echoResourceByValue(uint64,uint64,address)(uint64,uint64,address)',
+      ),
+    )
 
     expect(result).toEqual([asaId, otherAppId, encodeAddress(acc.publicKey)])
   })
@@ -404,5 +434,11 @@ describe('methodSelector', async () => {
       five.bytes,
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.complexSig))
+    expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.complexSig>())
+    expect(appArgs[0]).toEqual(
+      methodSelector(
+        'complexSig(((uint64,string),(uint64,string),uint128,uint128),pay,account,uint8[])((uint64,string),((uint64,string),(uint64,string),uint128,uint128))',
+      ),
+    )
   })
 })
