@@ -59,7 +59,7 @@ export class ItxnComposeAlgo extends Contract {
       })
     }
 
-    itxnCompose.next(VerifierContract.prototype.verify, {
+    itxnCompose.next<typeof VerifierContract.prototype.verify>({
       appId: verifier,
     })
 
@@ -79,7 +79,7 @@ export class ItxnComposeAlgo extends Contract {
       if (i === 0) {
         itxnCompose.begin(Hello.prototype.greet, { appId, args: ['ho'] })
       } else {
-        itxnCompose.next(Hello.prototype.greet, { appId, args: ['ho'] })
+        itxnCompose.next({ method: Hello.prototype.greet, appId, args: ['ho'] })
       }
     }
     itxnCompose.submit()

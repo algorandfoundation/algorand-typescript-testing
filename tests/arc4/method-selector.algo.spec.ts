@@ -315,11 +315,7 @@ describe('methodSelector', async () => {
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.echoResourceByIndex))
     expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.echoResourceByIndex>())
-    expect(appArgs[0]).toEqual(
-      methodSelector(
-        'echoResourceByIndex(asset,application,account)(uint64,uint64,address)',
-      ),
-    )
+    expect(appArgs[0]).toEqual(methodSelector('echoResourceByIndex(asset,application,account)(uint64,uint64,address)'))
 
     expect(result).toEqual([asaId, otherAppId, encodeAddress(acc.publicKey)])
   })
@@ -371,11 +367,7 @@ describe('methodSelector', async () => {
     ])
     expect(appArgs[0]).toEqual(methodSelector(SignaturesContract.prototype.echoResourceByValue))
     expect(appArgs[0]).toEqual(methodSelector<typeof SignaturesContract.prototype.echoResourceByValue>())
-    expect(appArgs[0]).toEqual(
-      methodSelector(
-        'echoResourceByValue(uint64,uint64,address)(uint64,uint64,address)',
-      ),
-    )
+    expect(appArgs[0]).toEqual(methodSelector('echoResourceByValue(uint64,uint64,address)(uint64,uint64,address)'))
 
     expect(result).toEqual([asaId, otherAppId, encodeAddress(acc.publicKey)])
   })

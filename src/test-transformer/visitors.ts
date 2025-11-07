@@ -219,7 +219,8 @@ class ExpressionVisitor {
             const typeParams = this.helper.resolveTypeParameters(updatedNode)
             updatedNode = nodeFactory.callAbiCallFunction(updatedNode, typeParams)
           } else if (isCallingItxnCompose(stubbedFunctionName)) {
-            updatedNode = nodeFactory.callItxnComposeFunction(updatedNode)
+            const typeParams = this.helper.resolveTypeParameters(updatedNode)
+            updatedNode = nodeFactory.callItxnComposeFunction(updatedNode, typeParams)
           } else {
             updatedNode = nodeFactory.callStubbedFunction(updatedNode, infoArg)
           }

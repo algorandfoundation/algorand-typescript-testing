@@ -1,7 +1,7 @@
 import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { getArc4Selector, getContractByName, getContractMethodAbiMetadata } from '../abi-metadata'
-import { CodeError, InternalError } from '../errors'
+import { getArc4Selector, getContractMethod, getContractMethodAbiMetadata } from '../abi-metadata'
+import { CodeError } from '../errors'
 import type { InstanceMethod } from '../typescript-helpers'
 import type { Contract } from './contract'
 import { sha512_256 } from './crypto'
@@ -39,15 +39,7 @@ export const methodSelector = <TContract extends Contract>({
 
   // Pattern 2: Contract name as string with method name
   if (isContractNameLookup) {
-    const registeredContract = getContractByName(contract)
-
-    if (registeredContract === undefined || typeof registeredContract !== 'function') {
-      throw new InternalError(`Unknown contract: ${contract}`)
-    }
-
-    if (!Object.hasOwn(registeredContract.prototype, method)) {
-      throw new InternalError(`Unknown method: ${method} in contract: ${contract}`)
-    }
+    const { contract: registeredContract } = getContractMethod(contract, method)
 
     const abiMetadata = getContractMethodAbiMetadata(registeredContract, method)
     return Bytes(getArc4Selector(abiMetadata))
