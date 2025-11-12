@@ -89,7 +89,7 @@ const testData = [
         new Tuple<[Uint<512>, DynamicBytes, Swapped1]>(
           abiUint512,
           abiBytes,
-          new Swapped1({ b: abiUint64, c: abiBool, d: abiString, a: new Tuple<[Uint<64>, Bool, Bool]>(abiUint64, abiBool, abiBool) }),
+          new Swapped1({ a: new Tuple<[Uint<64>, Bool, Bool]>(abiUint64, abiBool, abiBool), b: abiUint64, c: abiBool, d: abiString }),
         ),
       ] as readonly [Tuple<[Bool, Tuple<[Str, Bool]>]>, Tuple<[Uint<64>, Uint<64>]>, Tuple<[Uint<512>, DynamicBytes, Swapped1]>]
     },
@@ -122,7 +122,7 @@ const testData = [
   },
   {
     nativeValues() {
-      return { b: nativeNumber, c: nativeBool, d: nativeString, a: [nativeNumber, nativeBool, nativeBool] } as {
+      return { a: [nativeNumber, nativeBool, nativeBool], b: nativeNumber, c: nativeBool, d: nativeString } as {
         b: uint64
         c: boolean
         d: string
@@ -130,7 +130,7 @@ const testData = [
       }
     },
     abiValues() {
-      return { b: abiUint64, c: abiBool, d: abiString, a: new Tuple<[Uint<64>, Bool, Bool]>(abiUint64, abiBool, abiBool) }
+      return { a: new Tuple<[Uint<64>, Bool, Bool]>(abiUint64, abiBool, abiBool), b: abiUint64, c: abiBool, d: abiString }
     },
     arc4Value() {
       return new Swapped1(this.abiValues())
@@ -167,7 +167,7 @@ describe('decodeArc4', () => {
         ...encodingUtil.utf8ToUint8Array('hello world'),
       ]),
     )
-    const e = { a: new arc4.Uint64(50n), b: new DynamicBytes(asBytes(new Uint8Array([1, 2, 3, 4, 5]))) }
+    const e = { b: new DynamicBytes(asBytes(new Uint8Array([1, 2, 3, 4, 5]))), a: new arc4.Uint64(50n) }
     const eBytes = asBytes(new Uint8Array([...encodingUtil.bigIntToUint8Array(50n, 8), 0, 10, 0, 5, 1, 2, 3, 4, 5]))
     const f = new Address(Bytes.fromHex(`${'00'.repeat(31)}ff`))
     const fBytes = Bytes.fromHex(`${'00'.repeat(31)}ff`)
