@@ -112,7 +112,7 @@ export class ApplicationSpy<TContract extends Contract = Contract> {
             ocas = metadata.allowActions?.map((action) => OnCompleteAction[action]) ?? [OnCompleteAction.NoOp]
           }
 
-          const selector = methodSelector(fn, spy.contract)
+          const selector = methodSelector({ method: fn, contract: spy.contract })
           spy.onAbiCall(selector, ocas, callback)
         }
       },

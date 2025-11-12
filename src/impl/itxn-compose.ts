@@ -10,7 +10,8 @@ import type {
   KeyRegistrationComposeFields,
   PaymentComposeFields,
 } from '@algorandfoundation/algorand-typescript'
-import type { TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
+import type { AbiCallOptions, TypedApplicationCallFields } from '@algorandfoundation/algorand-typescript/arc4'
+import { getContractMethod } from '../abi-metadata'
 import { lazyContext } from '../context-helpers/internal-context'
 import type { DeliberateAny, InstanceMethod } from '../typescript-helpers'
 import { getApplicationCallInnerTxnContext } from './c2c'
@@ -29,16 +30,9 @@ class ItxnCompose {
     fields: TypedApplicationCallFields<TArgs>,
     contract?: Contract | { new (): Contract },
   ): void
-  begin<TArgs extends DeliberateAny[]>(...args: unknown[]): void {
-    lazyContext.txn.activeGroup.constructingItxnGroup.push(
-      args.length === 1
-        ? (args[0] as AnyTransactionComposeFields)
-        : getApplicationCallInnerTxnContext(
-            args[0] as InstanceMethod<Contract, TArgs>,
-            args[1] as TypedApplicationCallFields<TArgs>,
-            args[2] as Contract | { new (): Contract },
-          ),
-    )
+  begin<TMethod>(options: AbiCallOptions<TMethod>, contract: string, method: string): void
+  begin(...args: unknown[]): void {
+    this.addInnerTransaction(...args)
   }
 
   next(fields: PaymentComposeFields): void
@@ -49,21 +43,48 @@ class ItxnCompose {
   next(fields: ApplicationCallComposeFields): void
   next(fields: AnyTransactionComposeFields): void
   next(fields: ComposeItxnParams): void
-  next<TArgs extends DeliberateAny[]>(_method: InstanceMethod<Contract, TArgs>, _fields: TypedApplicationCallFields<TArgs>): void
-  next<TArgs extends DeliberateAny[]>(...args: unknown[]): void {
-    lazyContext.txn.activeGroup.constructingItxnGroup.push(
-      args.length === 1
-        ? (args[0] as AnyTransactionComposeFields)
-        : getApplicationCallInnerTxnContext(
-            args[0] as InstanceMethod<Contract, TArgs>,
-            args[1] as TypedApplicationCallFields<TArgs>,
-            args[2] as Contract | { new (): Contract },
-          ),
-    )
+  next<TArgs extends DeliberateAny[]>(
+    _method: InstanceMethod<Contract, TArgs>,
+    _fields: TypedApplicationCallFields<TArgs>,
+    contract?: Contract | { new (): Contract },
+  ): void
+  next<TMethod>(options: AbiCallOptions<TMethod>, contract: string, method: string): void
+  next(...args: unknown[]): void {
+    this.addInnerTransaction(...args)
   }
 
   submit(): void {
     lazyContext.txn.activeGroup.submitInnerTransactionGroup()
+  }
+
+  private addInnerTransaction<TArgs extends DeliberateAny[]>(...args: unknown[]): void {
+    let innerTxnFields
+
+    // Single argument: direct transaction fields
+    if (args.length === 1) {
+      innerTxnFields = args[0] as AnyTransactionComposeFields
+    }
+    // Three arguments with object fields (deprecated signature):
+    // e.g. `itxnCompose.begin(Hello.prototype.greet, { appId, args: ['ho'] })`
+    else if (args.length === 3 && typeof args[1] === 'object') {
+      innerTxnFields = getApplicationCallInnerTxnContext(
+        args[0] as InstanceMethod<Contract, TArgs>,
+        args[1] as TypedApplicationCallFields<TArgs>,
+        args[2] as Contract | { new (): Contract },
+      )
+    }
+    // Three arguments with string contract name:
+    // e.g. `itxnCompose.next({ method: Hello.prototype.greet, appId, args: ['ho'] })`
+    // or `itxnCompose.next<typeof Hello.prototype.greet>({ appId, args: ['ho'] })`
+    else {
+      const contractFullName = args[1] as string
+      const methodName = args[2] as string
+      const { method, contract } = getContractMethod(contractFullName, methodName)
+
+      innerTxnFields = getApplicationCallInnerTxnContext(method, args[0] as TypedApplicationCallFields<TArgs>, contract)
+    }
+
+    lazyContext.txn.activeGroup.constructingItxnGroup.push(innerTxnFields)
   }
 }
 
