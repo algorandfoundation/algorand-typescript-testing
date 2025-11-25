@@ -121,16 +121,31 @@ export const nodeFactory = {
     return factory.updateCallExpression(node, node.expression, node.typeArguments, [...typeInfoArgs, ...(node.arguments ?? [])])
   },
 
-  callMethodSelectorFunction(node: ts.CallExpression) {
-    if (
+  callMethodSelectorFunction(node: ts.CallExpression, typeParams: ptypes.PType[]) {
+    if (typeParams.length === 1 && typeParams[0] instanceof ptypes.FunctionPType && typeParams[0].declaredIn) {
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [
+        factory.createObjectLiteralExpression([
+          factory.createPropertyAssignment('method', factory.createStringLiteral(typeParams[0].name)),
+          factory.createPropertyAssignment('contract', factory.createStringLiteral(typeParams[0].declaredIn.fullName)),
+        ]),
+      ])
+    } else if (
       node.arguments.length === 1 &&
       ts.isPropertyAccessExpression(node.arguments[0]) &&
       ts.isPropertyAccessExpression(node.arguments[0].expression)
     ) {
       const contractIdenifier = node.arguments[0].expression.expression
-      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdenifier])
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [
+        factory.createObjectLiteralExpression([
+          factory.createPropertyAssignment('method', node.arguments[0]),
+          factory.createPropertyAssignment('contract', contractIdenifier),
+        ]),
+      ])
+    } else {
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [
+        factory.createObjectLiteralExpression([factory.createPropertyAssignment('method', node.arguments[0])]),
+      ])
     }
-    return node
   },
 
   callAbiCallFunction(node: ts.CallExpression, typeParams: ptypes.PType[]) {
@@ -144,7 +159,7 @@ export const nodeFactory = {
     return node
   },
 
-  callItxnComposeFunction(node: ts.CallExpression) {
+  callItxnComposeFunction(node: ts.CallExpression, typeParams: ptypes.PType[]) {
     if (
       node.arguments.length === 2 &&
       ts.isPropertyAccessExpression(node.arguments[0]) &&
@@ -152,6 +167,15 @@ export const nodeFactory = {
     ) {
       const contractIdenifier = node.arguments[0].expression.expression
       return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdenifier])
+    } else if (
+      node.arguments.length === 1 &&
+      typeParams.length === 1 &&
+      typeParams[0] instanceof ptypes.FunctionPType &&
+      typeParams[0].declaredIn
+    ) {
+      const contractIdentifier = factory.createStringLiteral(typeParams[0].declaredIn.fullName)
+      const methodName = factory.createStringLiteral(typeParams[0].name)
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdentifier, methodName])
     }
     return node
   },

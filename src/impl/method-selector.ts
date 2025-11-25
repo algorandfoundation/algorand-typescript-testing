@@ -1,23 +1,57 @@
-import type { arc4, bytes } from '@algorandfoundation/algorand-typescript'
+import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { getArc4Selector, getContractMethodAbiMetadata } from '../abi-metadata'
-import type { Overloads } from '../typescript-helpers'
+import { getArc4Selector, getContractMethod, getContractMethodAbiMetadata } from '../abi-metadata'
+import { CodeError } from '../errors'
+import type { InstanceMethod } from '../typescript-helpers'
 import type { Contract } from './contract'
 import { sha512_256 } from './crypto'
 import { Bytes } from './primitives'
 
-/** @internal */
-export const methodSelector = <TContract extends Contract>(
-  methodSignature: Parameters<Overloads<typeof arc4.methodSelector>>[0],
-  contract?: TContract | { new (): TContract },
-): bytes => {
-  if (typeof methodSignature === 'string' && contract === undefined) {
-    return sha512_256(Bytes(encodingUtil.utf8ToUint8Array(methodSignature))).slice(0, 4)
-  } else {
-    const abiMetadata = getContractMethodAbiMetadata(
-      contract!,
-      typeof methodSignature === 'string' ? methodSignature : methodSignature.name,
-    )
+/**
+ * Computes the method selector for an ARC-4 contract method.
+ *
+ * Supports three invocation patterns:
+ * 1. `methodSelector('sink(string,uint8[])void')`:
+ *       Direct method signature string (no contract): Returns SHA-512/256 hash of signature
+ * 2. `methodSelector<typeof SignaturesContract.prototype.sink>()`:
+ *       Contract name as string + method name as string: Looks up registered contract and returns ARC-4 selector
+ * 3. `methodSelector(SignaturesContract.prototype.sink)`:
+ *       Contract class/instance + method instance/name: Returns ARC-4 selector from ABI metadata
+ *
+ * @internal
+ */
+export const methodSelector = <TContract extends Contract>({
+  method,
+  contract,
+}: {
+  method?: string | InstanceMethod<Contract>
+  contract?: string | TContract | { new (): TContract }
+}): bytes => {
+  const isDirectSignature = typeof method === 'string' && contract === undefined
+  const isContractNameLookup = typeof contract === 'string' && typeof method === 'string' && contract && method
+  const isContractMethodLookup = typeof contract !== 'string' && contract && method
+
+  // Pattern 1: Direct method signature string (e.g., "add(uint64,uint64)uint64")
+  if (isDirectSignature) {
+    const signatureBytes = Bytes(encodingUtil.utf8ToUint8Array(method as string))
+    return sha512_256(signatureBytes).slice(0, 4)
+  }
+
+  // Pattern 2: Contract name as string with method name
+  if (isContractNameLookup) {
+    const { contract: registeredContract } = getContractMethod(contract, method)
+
+    const abiMetadata = getContractMethodAbiMetadata(registeredContract, method)
     return Bytes(getArc4Selector(abiMetadata))
   }
+
+  // Pattern 3: Contract class/instance with method signature or name
+  if (isContractMethodLookup) {
+    const methodName = typeof method === 'string' ? method : method.name
+
+    const abiMetadata = getContractMethodAbiMetadata(contract, methodName)
+    return Bytes(getArc4Selector(abiMetadata))
+  }
+
+  throw new CodeError('Invalid arguments to methodSelector')
 }
