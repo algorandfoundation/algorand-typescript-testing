@@ -652,7 +652,6 @@ export class BytesCls extends AlgoTsPrimitiveCls {
 export const arrayUtil = new (class ArrayUtil {
   arrayAt(arrayLike: Uint8Array, index: StubUint64Compat): Uint8Array
   arrayAt<T>(arrayLike: readonly T[], index: StubUint64Compat): T
-  arrayAt<T>(arrayLike: readonly T[] | Uint8Array, index: StubUint64Compat): T | Uint8Array
   arrayAt<T>(arrayLike: readonly T[] | Uint8Array, index: StubUint64Compat): T | Uint8Array {
     const indexNum = getNumber(index)
     if (arrayLike instanceof Uint8Array) {
@@ -668,8 +667,7 @@ export const arrayUtil = new (class ArrayUtil {
     arrayLike: readonly T[] | Uint8Array,
     start: undefined | StubUint64Compat,
     end: undefined | StubUint64Compat,
-  ): Uint8Array | T[]
-  arraySlice<T>(arrayLike: readonly T[] | Uint8Array, start: undefined | StubUint64Compat, end: undefined | StubUint64Compat) {
+  ): Uint8Array | T[] {
     const startNum = start === undefined ? undefined : getNumber(start)
     const endNum = end === undefined ? undefined : getNumber(end)
     if (arrayLike instanceof Uint8Array) {

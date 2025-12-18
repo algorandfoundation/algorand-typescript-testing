@@ -8,7 +8,7 @@ import { createArc4TestFixture } from './test-fixture'
 
 describe('itxn compose', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/itxn-compose/contract.algo.ts',
+    paths: 'tests/artifacts/itxn-compose/contract.algo.ts',
     contracts: {
       ItxnComposeAlgo: { funding: algos(5) },
       VerifierContract: {},

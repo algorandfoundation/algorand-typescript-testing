@@ -2,7 +2,6 @@ import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-clie
 import { Account, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'
-
 import { Address, Bool, Byte, DynamicBytes, Str, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect } from 'vitest'
 import { OnApplicationComplete } from '../src/constants'
@@ -14,7 +13,7 @@ import { createArc4TestFixture } from './test-fixture'
 
 describe('ARC4 AppLocal values', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/state-ops/contract.algo.ts',
+    paths: 'tests/artifacts/state-ops/contract.algo.ts',
     contracts: {
       LocalStateContract: {},
     },
@@ -116,7 +115,7 @@ describe('ARC4 AppLocal values', async () => {
 
 const tryOptIn = async (client: AppClient) => {
   try {
-    await client.send.call({ method: 'opt_in', args: [], onComplete: OnApplicationComplete.OptInOC })
+    await client.send.call({ method: 'opt_in', args: [], onComplete: OnApplicationComplete.OptIn })
   } catch (e) {
     if (!(e as DeliberateAny).message.includes('has already opted in to app')) {
       throw e

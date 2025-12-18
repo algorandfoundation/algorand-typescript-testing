@@ -1,4 +1,3 @@
-import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { Address, Bool, convertBytes, DynamicArray, StaticArray, Str, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
@@ -8,6 +7,7 @@ import type { StubBytesCompat } from '../../src/impl/primitives'
 import { AccountCls } from '../../src/impl/reference'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes, asUint8Array } from '../../src/util'
+import { getABIEncodedValue } from './util'
 
 const nativeString = 'hello'
 const nativeNumber = 42
@@ -329,7 +329,7 @@ describe('arc4.Tuple', () => {
   })
 
   test.each(testData)('should be able to get bytes representation', (data) => {
-    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString)
     const result = data.tuple().bytes
     expect(result).toEqual(Bytes(sdkResult))
   })
@@ -345,7 +345,7 @@ describe('arc4.Tuple', () => {
 
   test.each(testData)('create tuple from bytes', (data) => {
     const nativeValues = data.nativeValues()
-    const sdkEncodedBytes = getABIEncodedValue(nativeValues, data.abiTypeString, {})
+    const sdkEncodedBytes = getABIEncodedValue(nativeValues, data.abiTypeString)
 
     const result = data.create(Bytes(sdkEncodedBytes))
     const tupleValues = result.native
@@ -356,7 +356,7 @@ describe('arc4.Tuple', () => {
   })
 
   test.each(testDataWithArray)('update array values in tuple', (data) => {
-    const sdkResult = getABIEncodedValue(data.updatedNativeValues(), data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(data.updatedNativeValues(), data.abiTypeString)
     const tuple = data.tuple()
     data.update(tuple as DeliberateAny)
     const result = tuple.bytes

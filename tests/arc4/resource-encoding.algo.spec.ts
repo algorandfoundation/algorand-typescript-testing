@@ -6,7 +6,7 @@ import { createArc4TestFixture } from '../test-fixture'
 describe('resource encoding', () => {
   const ctx = new TestExecutionContext()
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/resource-encoding/contract.algo.ts',
+    paths: 'tests/artifacts/resource-encoding/contract.algo.ts',
     contracts: {
       ByIndex: {},
       ByValue: {},
