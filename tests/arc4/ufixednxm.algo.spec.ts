@@ -9,10 +9,10 @@ import { asBigUint, asUint8Array } from '../../src/util'
 import { getAvmResult } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
 
-const invalidBytesLengthError = (length: number) => `byte string must correspond to a ufixed${length}`
+const invalidBytesLengthError = (length: number) => `Byte string must correspond to a ufixed${length}`
 describe('arc4.UFixed', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
+    paths: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
     contracts: {
       Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
     },

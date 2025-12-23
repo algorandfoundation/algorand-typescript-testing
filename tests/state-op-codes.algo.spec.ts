@@ -34,7 +34,7 @@ import { createArc4TestFixture } from './test-fixture'
 
 describe('State op codes', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/state-ops/contract.algo.ts',
+    paths: 'tests/artifacts/state-ops/contract.algo.ts',
     contracts: {
       ItxnDemoContract: {},
       ITxnOpsContract: {},
@@ -786,7 +786,7 @@ describe('State op codes', async () => {
 })
 const tryOptIn = async (client: AppClient) => {
   try {
-    await client.send.call({ method: 'opt_in', args: [], onComplete: OnApplicationComplete.OptInOC })
+    await client.send.call({ method: 'opt_in', args: [], onComplete: OnApplicationComplete.OptIn })
   } catch (e) {
     if (!(e as DeliberateAny).message.includes('has already opted in to app')) {
       throw e

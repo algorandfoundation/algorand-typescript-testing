@@ -35,7 +35,7 @@ vi.mock('../src/impl/crypto', async (importOriginal) => {
 })
 
 describe('crypto op codes', async () => {
-  const test = createArc4TestFixture({ path: 'tests/artifacts/crypto-ops/contract.algo.ts', contracts: { CryptoOpsContract: {} } })
+  const test = createArc4TestFixture({ paths: 'tests/artifacts/crypto-ops/contract.algo.ts', contracts: { CryptoOpsContract: {} } })
   const ctx = new TestExecutionContext()
 
   afterEach(() => {
@@ -138,7 +138,7 @@ describe('crypto op codes', async () => {
       const logicSigAddress = js_sha512.sha512_256.array(logicSig)
       const parts = concatUint8Arrays(new Uint8Array(logicSigAddress), asUint8Array(message))
       const toBeSigned = concatUint8Arrays(asUint8Array(LOGIC_DATA_PREFIX), parts)
-      const signature = nacl.sign.detached(toBeSigned, account.sk)
+      const signature = await account.mxBytesSigner(toBeSigned)
 
       const avmResult = await getAvmResult(
         {

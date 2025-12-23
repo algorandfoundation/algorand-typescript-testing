@@ -3,9 +3,9 @@ import { arc4, BigUint, Bytes, emit, Uint64 } from '@algorandfoundation/algorand
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect } from 'vitest'
 import { MAX_UINT512, MAX_UINT64 } from '../../src/constants'
-import { getAvmResultLog } from '../avm-invoker'
 
 import { asBigUintCls, asNumber, asUint8Array } from '../../src/util'
+import { getAvmResultLog } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
 
 class Swapped {
@@ -42,7 +42,7 @@ class SwappedArc4 extends arc4.Struct<{
 
 describe('arc4.emit', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
+    paths: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
     contracts: {
       Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
     },
