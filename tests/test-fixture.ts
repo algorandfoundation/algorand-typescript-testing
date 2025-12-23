@@ -34,7 +34,7 @@ const algorandTestFixture = (localnetFixture: AlgorandFixture) =>
     testAccount: AlgorandFixture['context']['testAccount']
     assetFactory: (assetCreateParams: AssetCreateParams) => Promise<bigint>
   }>({
-    localnet: async ({ expect }, use) => {
+    localnet: async ({ expect: _expect }, use) => {
       await use(localnetFixture)
     },
     testAccount: async ({ localnet }, use) => {
