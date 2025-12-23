@@ -24,12 +24,10 @@
     "script:documentation": "typedoc",
     "script:build-examples": "rollup --config examples/rollup.config.ts --configPlugin typescript",
     "script:compile-examples": "puya-ts --out-dir data ./examples/*/ --puya-path=/home/parallels/.local/bin/puya",
-    "script:refresh-test-artifacts": "puya-ts --out-dir data --output-awst --output-awst-json ./tests/artifacts/*/ --puya-path=/home/parallels/.local/bin/puya",
-    "utils-ts": "run-s utils-ts:*",
-    "utils-ts:build": "cd ../algokit-utils-ts && npm run build",
-    "utils-ts:install": "npm i @algorandfoundation/algokit-utils@../algokit-utils-ts/dist"
+    "script:refresh-test-artifacts": "puya-ts --out-dir data --output-awst --output-awst-json ./tests/artifacts/*/ --puya-path=/home/parallels/.local/bin/puya"
   },
   "devDependencies": {
+    "@algorandfoundation/algokit-utils": "^10.0.0-alpha.18",
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
     "@dotenvx/dotenvx": "^1.51.2",
@@ -70,7 +68,6 @@
     "vitest": "4.0.16"
   },
   "dependencies": {
-    "@algorandfoundation/algokit-utils": "file:../algokit-utils-ts/dist",
     "@algorandfoundation/algorand-typescript": "1.1.0-beta.1",
     "@algorandfoundation/puya-ts": "1.1.0-beta.1",
     "elliptic": "^6.6.1",
