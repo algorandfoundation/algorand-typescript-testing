@@ -131,7 +131,7 @@ describe('Box', () => {
       },
     },
     {
-      value: { a: 'hello', b: Bytes('world'), c: true },
+      value: { a: 'hello', c: true, b: Bytes('world') },
       newValue: { a: 'world', b: Bytes('hello'), c: false },
       emptyValue: {},
       withBoxContext: (test: (boxMap: Box<MyObject>) => void) => {
@@ -143,7 +143,7 @@ describe('Box', () => {
     },
     {
       value: { a: 'hello', b: Bytes('world'), c: true },
-      newValue: { a: 'world', b: Bytes('hello'), c: false },
+      newValue: { a: 'world', c: false, b: Bytes('hello') },
       emptyValue: {},
       withBoxContext: (test: (boxMap: Box<Readonly<MyObject>>) => void) => {
         ctx.txn.createScope([ctx.any.txn.applicationCall()]).execute(() => {

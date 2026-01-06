@@ -213,12 +213,14 @@ class ExpressionVisitor {
 
         if (stubbedFunctionName) {
           if (isCallingMethodSelector(stubbedFunctionName)) {
-            updatedNode = nodeFactory.callMethodSelectorFunction(updatedNode)
+            const typeParams = this.helper.resolveTypeParameters(updatedNode)
+            updatedNode = nodeFactory.callMethodSelectorFunction(updatedNode, typeParams)
           } else if (isCallingAbiCall(stubbedFunctionName)) {
             const typeParams = this.helper.resolveTypeParameters(updatedNode)
             updatedNode = nodeFactory.callAbiCallFunction(updatedNode, typeParams)
           } else if (isCallingItxnCompose(stubbedFunctionName)) {
-            updatedNode = nodeFactory.callItxnComposeFunction(updatedNode)
+            const typeParams = this.helper.resolveTypeParameters(updatedNode)
+            updatedNode = nodeFactory.callItxnComposeFunction(updatedNode, typeParams)
           } else {
             updatedNode = nodeFactory.callStubbedFunction(updatedNode, infoArg)
           }
@@ -355,6 +357,7 @@ class MethodDecVisitor extends FunctionOrMethodVisitor {
 
 class ClassVisitor {
   private isArc4: boolean
+  private _sourceFileName: string | undefined
   constructor(
     private context: Context,
     private helper: VisitorHelper,
@@ -368,6 +371,13 @@ class ClassVisitor {
     return this.visit(this.classDec) as ts.ClassDeclaration
   }
 
+  private get sourceFileName(): string {
+    if (!this._sourceFileName) {
+      this._sourceFileName = normalisePath(this.classDec.parent.getSourceFile().fileName, this.context.currentDirectory)
+    }
+    return this._sourceFileName
+  }
+
   private visit = (node: ts.Node): ts.Node => {
     if (ts.isMethodDeclaration(node)) {
       if (this.classDec.name && this.isArc4) {
@@ -375,8 +385,9 @@ class ClassVisitor {
         if (methodType instanceof ptypes.FunctionPType) {
           const argTypes = methodType.parameters.map((p) => JSON.stringify(getGenericTypeInfo(p[1])))
           const returnType = JSON.stringify(getGenericTypeInfo(methodType.returnType))
-          const sourceFileName = normalisePath(this.classDec.parent.getSourceFile().fileName, this.context.currentDirectory)
-          this.helper.additionalStatements.push(nodeFactory.attachMetaData(sourceFileName, this.classDec.name, node, argTypes, returnType))
+          this.helper.additionalStatements.push(
+            nodeFactory.attachMetaData(this.sourceFileName, this.classDec.name, node, argTypes, returnType),
+          )
         }
       }
 

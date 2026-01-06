@@ -589,7 +589,7 @@ describe('native mutable object', () => {
         c: arc4.Str
         d: arc4.DynamicBytes
       }> {}
-      const obj: SimpleObj = { a: 1, b: true, c: 'hello', d: Bytes('world') }
+      const obj: SimpleObj = { a: 1, c: 'hello', b: true, d: Bytes('world') }
       const encoded = encodeArc4(obj)
       const interpreted = convertBytes<SimpleObjStruct>(encoded, { strategy: 'unsafe-cast' })
       const decoded = decodeArc4<SimpleObj>(encoded)
@@ -787,6 +787,16 @@ describe('native mutable object', () => {
       assertMatch(interpreted.b.z.native[1].native, obj.b.z[1])
       assertMatch(interpreted.c.native, obj.c)
       assertMatch(decoded, obj)
+    })
+  })
+
+  describe('clone', () => {
+    it('should work when property order is different', () => {
+      const obj1: NestedObj = { a: 1, b: true, c: 'hello', d: { x: 10, y: 'world', z: true } }
+      const obj2: NestedObj = { d: { x: 10, z: true, y: 'world' }, a: 1, c: 'hello', b: true }
+
+      expect(clone(obj2)).toEqual(obj2)
+      expect(clone(obj1)).toEqual(obj1)
     })
   })
 })

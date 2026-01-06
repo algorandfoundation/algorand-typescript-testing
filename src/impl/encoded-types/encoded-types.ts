@@ -1314,7 +1314,21 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
       name: `Struct<${value.constructor.name}>`,
       genericArgs: Object.fromEntries(Object.keys(value).map((x, i) => [x, genericArgs[i]])),
     }
-    return new Struct(typeInfo, Object.fromEntries(Object.keys(value).map((x, i) => [x, result[i]])))
+    let s = Object.fromEntries(Object.keys(typeInfo.genericArgs).map((x, i) => [x, result[i]]))
+    if (propTypeInfos) {
+      // if source type info is provided, reorder the struct properties to match the expected type schema
+      s = Object.fromEntries(Object.keys(propTypeInfos).map((x) => [x, s[x]]))
+      typeInfo.genericArgs = propTypeInfos
+    } else {
+      // if not, reorder the struct properties alphabetically
+      typeInfo.genericArgs = Object.fromEntries(
+        Object.keys(typeInfo.genericArgs)
+          .sort()
+          .map((key) => [key, typeInfo.genericArgs[key]]),
+      )
+      s = Object.fromEntries(Object.keys(typeInfo.genericArgs).map((key) => [key, s[key]]))
+    }
+    return new Struct(typeInfo, s)
   }
 
   throw new CodeError(`Unsupported type for encoding: ${typeof value}`)

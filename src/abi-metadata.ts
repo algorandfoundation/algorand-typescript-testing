@@ -1,10 +1,11 @@
 import type { arc4, OnCompleteActionStr } from '@algorandfoundation/algorand-typescript'
 import js_sha512 from 'js-sha512'
 import { ConventionalRouting } from './constants'
+import { InternalError } from './errors'
 import { Arc4MethodConfigSymbol, Contract } from './impl/contract'
 import type { TypeInfo } from './impl/encoded-types'
 import { getArc4TypeName } from './impl/encoded-types'
-import type { DeliberateAny } from './typescript-helpers'
+import type { DeliberateAny, InstanceMethod } from './typescript-helpers'
 
 /** @internal */
 export interface AbiMetadata {
@@ -22,8 +23,14 @@ const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> 
 const contractSymbolMap: Map<string, symbol> = new Map()
 const contractMap: WeakMap<symbol, { new (): Contract }> = new WeakMap()
 /** @internal */
-export const attachAbiMetadata = (contract: { new (): Contract }, methodName: string, metadata: AbiMetadata, fileName: string): void => {
-  const contractFullName = `${fileName}::${contract.prototype.constructor.name}`
+export const attachAbiMetadata = (
+  contract: { new (): Contract },
+  methodName: string,
+  metadata: AbiMetadata,
+  fileName: string,
+  contractName: string,
+): void => {
+  const contractFullName = `${fileName}::${contractName}`
   if (!contractSymbolMap.has(contractFullName)) {
     contractSymbolMap.set(contractFullName, Symbol(contractFullName))
   }
@@ -101,6 +108,24 @@ export const getArc4Signature = (metadata: AbiMetadata): string => {
 export const getArc4Selector = (metadata: AbiMetadata): Uint8Array => {
   const hash = js_sha512.sha512_256.array(getArc4Signature(metadata))
   return new Uint8Array(hash.slice(0, 4))
+}
+
+/** @internal */
+export const getContractMethod = (contractFullName: string, methodName: string) => {
+  const contract = getContractByName(contractFullName)
+
+  if (contract === undefined || typeof contract !== 'function') {
+    throw new InternalError(`Unknown contract: ${contractFullName}`)
+  }
+
+  if (!Object.hasOwn(contract.prototype, methodName)) {
+    throw new InternalError(`Unknown method: ${methodName} in contract: ${contractFullName}`)
+  }
+
+  return {
+    method: contract.prototype[methodName] as InstanceMethod<Contract, DeliberateAny[]>,
+    contract,
+  }
 }
 
 /**

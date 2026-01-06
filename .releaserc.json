@@ -63,11 +63,6 @@
         "pkgRoot": "artifacts/algo-ts-testing"
       }
     ],
-    [
-      "@semantic-release/github",
-      {
-        "successComment": false
-      }
-    ]
+    "@semantic-release/github"
   ]
 }
