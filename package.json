@@ -57,7 +57,7 @@
     "prettier": "3.5.3",
     "rimraf": "6.0.1",
     "rollup": "^4.38.0",
-    "semantic-release": "^24.2.9",
+    "semantic-release": "^25.0.2",
     "shx": "^0.4.0",
     "tsx": "4.19.3",
     "typedoc": "^0.28.7",
@@ -79,6 +79,6 @@
   },
   "overrides": {
     "cross-spawn": "7.0.6",
-    "esbuild": "0.25.0"
+    "undici": "^6.23.0"
   }
 }
