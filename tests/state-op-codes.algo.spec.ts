@@ -1,5 +1,5 @@
-import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
-import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
+import { AlgoAmount } from '@algorandfoundation/algokit-utils/amount'
+import type { AppClient } from '@algorandfoundation/algokit-utils/app-client'
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { Account, arc4, Bytes, Global, OnCompleteAction, op, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { DynamicBytes } from '@algorandfoundation/algorand-typescript/arc4'
