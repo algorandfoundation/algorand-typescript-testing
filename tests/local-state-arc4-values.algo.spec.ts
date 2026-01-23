@@ -1,4 +1,4 @@
-import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
+import type { AppClient } from '@algorandfoundation/algokit-utils/app-client'
 import { Account, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import type { ARC4Encoded } from '@algorandfoundation/algorand-typescript/arc4'

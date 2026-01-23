@@ -1,4 +1,4 @@
-import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
+import { AlgoAmount } from '@algorandfoundation/algokit-utils/amount'
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
 import { Bytes, Ec, Ecdsa, MimcConfigurations, op, VrfVerify } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'

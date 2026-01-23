@@ -1,5 +1,5 @@
-import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
-import type { AssetCreateParams } from '@algorandfoundation/algokit-utils/types/composer'
+import type { AppClient } from '@algorandfoundation/algokit-utils/app-client'
+import type { AssetCreateParams } from '@algorandfoundation/algokit-utils/composer'
 import { randomUUID } from 'crypto'
 import type { Mutable } from '../src/typescript-helpers'
 import { getRandomBigInt, getRandomNumber } from '../src/util'

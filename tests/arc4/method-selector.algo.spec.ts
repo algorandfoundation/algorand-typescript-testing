@@ -1,4 +1,4 @@
-import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
+import { AlgoAmount } from '@algorandfoundation/algokit-utils/amount'
 import type { gtxn } from '@algorandfoundation/algorand-typescript'
 import { arc4, Bytes, Global, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
