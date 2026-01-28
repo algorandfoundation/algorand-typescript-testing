@@ -1,6 +1,17 @@
 {
-  "1109842": {
+  "1112496": {
     "active": true,
-    "notes": "Ignored since we don't use glob-cli"
+    "notes": "@semantic-release/npm with patched undici version not available yet",
+    "expiry": "2026-02-15"
+  },
+  "1112497": {
+    "active": true,
+    "notes": "@semantic-release/npm with patched undici version not available yet",
+    "expiry": "2026-02-15"
+  },
+  "1112030": {
+    "active": true,
+    "notes": "A new version of elliptic is not available yet",
+    "expiry": "2026-02-15"
   }
 }

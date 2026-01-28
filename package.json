@@ -27,7 +27,7 @@
     "script:refresh-test-artifacts": "puya-ts --out-dir data --output-awst --output-awst-json ./tests/artifacts/*/ --puya-path=/home/parallels/.local/bin/puya"
   },
   "devDependencies": {
-    "@algorandfoundation/algokit-utils": "file:../algokit-utils-ts/algorandfoundation-algokit-utils-0.1.0.tgz",
+    "@algorandfoundation/algokit-utils": "^10.0.0-alpha.32",
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
     "@dotenvx/dotenvx": "^1.51.2",
@@ -79,6 +79,9 @@
   },
   "overrides": {
     "cross-spawn": "7.0.6",
-    "esbuild": "0.25.0"
+    "esbuild": "0.25.0",
+    "npm": "^11.8.0",
+    "lodash-es": "^4.17.23",
+    "tar": "7.5.4"
   }
 }
