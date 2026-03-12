@@ -13,7 +13,7 @@ import { createArc4TestFixture } from '../test-fixture'
 
 describe('BigUint', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/primitive-ops/contract.algo.ts',
+    paths: 'tests/artifacts/primitive-ops/contract.algo.ts',
     contracts: {
       PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
     },

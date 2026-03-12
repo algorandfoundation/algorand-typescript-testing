@@ -98,12 +98,12 @@ export const TRANSACTION_GROUP_MAX_SIZE = 16
 
 /** @internal */
 export enum OnApplicationComplete {
-  NoOpOC = 0,
-  OptInOC = 1,
-  CloseOutOC = 2,
-  ClearStateOC = 3,
-  UpdateApplicationOC = 4,
-  DeleteApplicationOC = 5,
+  NoOp = 0,
+  OptIn = 1,
+  CloseOut = 2,
+  ClearState = 3,
+  UpdateApplication = 4,
+  DeleteApplication = 5,
 }
 
 /** @internal */
