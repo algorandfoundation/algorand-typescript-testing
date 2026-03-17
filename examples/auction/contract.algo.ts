@@ -1,3 +1,17 @@
+/**
+ * Example: Auction
+ *
+ * This example demonstrates a basic auction contract.
+ * - Create and initialize auction state
+ * - Opt the application account into an ASA
+ * - Start bidding and track highest bidder/bid
+ * - Let bidders claim refundable amounts
+ * - Transfer auctioned asset and close application
+ *
+ * Prerequisites:
+ * - AlgoKit TypeScript testing setup
+ * - Familiarity with ARC4 contract patterns and grouped transactions
+ */
 import type { gtxn, uint64 } from '@algorandfoundation/algorand-typescript'
 import {
   abimethod,
