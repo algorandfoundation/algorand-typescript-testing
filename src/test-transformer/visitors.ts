@@ -4,7 +4,7 @@ import ts from 'typescript'
 import { CodeError } from '../errors'
 import type { TypeInfo } from '../impl/encoded-types'
 import { instanceOfAny } from '../typescript-helpers'
-import { normalisePath } from './helpers'
+import { normalisePath, ptypeToArc4EncodedType } from './helpers'
 import { nodeFactory } from './node-factory'
 import type { TransformerConfig } from './program-factory'
 import {
@@ -205,7 +205,7 @@ class ExpressionVisitor {
         ) {
           infoArg = this.helper.resolveTypeParameters(updatedNode).map((t) => getGenericTypeInfo(t, sourceLocation))[0]
         } else if (isCallingDecodeArc4(stubbedFunctionName)) {
-          const sourceType = ptypes.ptypeToArc4EncodedType(type, sourceLocation)
+          const sourceType = ptypeToArc4EncodedType(type, sourceLocation)
           const sourceTypeInfo = getGenericTypeInfo(sourceType, sourceLocation)
           const targetTypeInfo = getGenericTypeInfo(type, sourceLocation)
           infoArg = [sourceTypeInfo, targetTypeInfo]
