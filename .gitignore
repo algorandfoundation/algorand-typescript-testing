@@ -67,3 +67,6 @@ docs/_html
 
 examples/debug-out/
 examples/**/data/
+
+# AI Agents
+.codex
