@@ -1,8 +1,7 @@
 ---
 title: Concepts
+description: Learn the core abstractions and implementation model of the test runtime.
 ---
-
-# Concepts
 
 The following sections provide an overview of key concepts and features in the Algorand TypeScript Testing framework.
 
@@ -61,7 +60,7 @@ When used with the 'Arrange, Act, Assert' pattern, value generators can be espec
 
 ## Types of `algorand-typescript` stub implementations
 
-As explained in the [introduction](testing-guide.md), `algorand-typescript-testing` _injects_ test implementations for stubs available in the `algorand-typescript` package. However, not all of the stubs are implemented in the same manner:
+As explained in the [introduction](testing-guide), `algorand-typescript-testing` _injects_ test implementations for stubs available in the `algorand-typescript` package. However, not all of the stubs are implemented in the same manner:
 
 1. **Native**: Fully matches AVM computation in Python. For example, `op.sha256` and other cryptographic operations behave identically in AVM and unit tests. This implies that the majority of opcodes that are 'pure' functions in AVM also have a native TypeScript implementation provided by this package. These abstractions and opcodes can be used within and outside of the testing context.
 
@@ -69,7 +68,7 @@ As explained in the [introduction](testing-guide.md), `algorand-typescript-testi
 
 3. **Mockable**: Not implemented, but can be mocked or patched. For example, `op.onlineStake` can be mocked to return specific values or behaviours; otherwise, it raises a `NotImplementedError`. This category covers cases where native or emulated implementation in a unit test context is impractical or overly complex.
 
-For a full list of all public `algorand-typescript` types and their corresponding implementation category, refer to the [Coverage](./coverage.md) section.
+For a full list of all public `algorand-typescript` types and their corresponding implementation category, refer to the [Coverage](../advanced/coverage/) section.
 
 ## Data Validation
 
