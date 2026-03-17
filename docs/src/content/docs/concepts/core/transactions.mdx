@@ -1,8 +1,7 @@
 ---
 title: Transactions
+description: Model transaction groups, scopes, and inner transaction behavior.
 ---
-
-# Transactions
 
 The testing framework follows the Transaction definitions described in [`algorand-typescript` docs](https://algorandfoundation.github.io/puya-ts/documents/Algorand_TypeScript_Language_Guide.Types.html#group-transactions). This section focuses on _value generators_ and interactions with inner transactions, it also explains how the framework identifies _active_ transaction group during contract method/subroutine/logicsig invocation.
 
@@ -412,9 +411,9 @@ describe('pre compiled typed app calls', () => {
 
 ## References
 
-- [API](../modules/index.html) for more details on the test context manager and inner transactions related methods that perform implicit inner transaction type validation.
-- [Examples](./examples.md) for more examples of smart contracts and associated tests that interact with inner transactions.
-- [ApplicationSpy](./tg-application-spy.md) for detailed explanation on the usage of it
+- [API](../../api/) for more details on the test context manager and inner transactions related methods that perform implicit inner transaction type validation.
+- [Examples](../../examples/) for more examples of smart contracts and associated tests that interact with inner transactions.
+- [ApplicationSpy](../building/application-spy/) for detailed explanation on the usage of it
 
 ```ts
 // Test cleanup

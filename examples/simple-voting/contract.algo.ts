@@ -1,3 +1,16 @@
+/**
+ * Example: Simple Voting
+ *
+ * This example demonstrates a minimal voting contract with paid votes.
+ * - Store topic and total votes in global state
+ * - Prevent double-voting via local state
+ * - Validate grouped payment + app call flow
+ * - Expose methods to set topic, cast vote, and read vote count
+ *
+ * Prerequisites:
+ * - AlgoKit TypeScript testing setup
+ * - Familiarity with BaseContract approval/clear state programs
+ */
 import type { Account, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import {
   assert,

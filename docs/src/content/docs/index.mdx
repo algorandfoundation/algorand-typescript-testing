@@ -1,0 +1,88 @@
+---
+title: Algorand TypeScript Testing
+description: An offline unit testing framework for Algorand TypeScript smart contracts
+template: splash
+hero:
+  title: Algorand TypeScript Testing
+  tagline: Test Algorand TypeScript smart contracts quickly with an AVM-like offline runtime
+  actions:
+    - text: Get Started
+      link: tutorials/quick-start/
+      icon: right-arrow
+    - text: API Reference
+      link: api/
+      variant: minimal
+---
+
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components'
+
+## Installation
+
+<Tabs>
+  <TabItem label="npm">
+    ```bash
+    npm install @algorandfoundation/algorand-typescript-testing
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```bash
+    pnpm add @algorandfoundation/algorand-typescript-testing
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```bash
+    yarn add @algorandfoundation/algorand-typescript-testing
+    ```
+  </TabItem>
+</Tabs>
+
+## Quick Example
+
+```typescript
+import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { afterEach, describe, expect, it } from 'vitest'
+import { Auction } from './contract.algo'
+
+describe('Auction', () => {
+  const ctx = new TestExecutionContext()
+
+  afterEach(() => {
+    ctx.reset()
+  })
+
+  it('updates highest bid', () => {
+    const contract = ctx.contract.create(Auction)
+    contract.createApplication()
+
+    contract.auctionEnd.value = 1000
+    contract.previousBid.value = 10
+
+    const pay = ctx.any.txn.payment({
+      sender: ctx.defaultSender,
+      amount: 20,
+    })
+
+    contract.bid(pay)
+
+    expect(contract.previousBid.value).toEqual(20)
+    expect(contract.previousBidder.value).toEqual(ctx.defaultSender)
+  })
+})
+```
+
+## Features
+
+<CardGrid>
+  <Card title="Offline AVM Simulation" icon="rocket">
+    Execute contract logic locally with AVM-like behavior for rapid, deterministic unit tests.
+  </Card>
+  <Card title="TypeScript-First Testing" icon="document">
+    Use familiar test frameworks like Vitest and Jest without leaving the TypeScript workflow.
+  </Card>
+  <Card title="Transaction & State Helpers" icon="magnifier">
+    Generate transactions, accounts, assets, and mock state using `TestExecutionContext` helpers.
+  </Card>
+  <Card title="Fast Feedback Loops" icon="approve-check">
+    Validate contract behavior quickly before integration and network-level testing.
+  </Card>
+</CardGrid>

@@ -1,3 +1,18 @@
+/**
+ * Example: ZK Whitelist
+ *
+ * This example demonstrates whitelist admission backed by zk proof verification.
+ * - Store application metadata in global state
+ * - Verify proofs through a verifier application call
+ * - Normalize public inputs to the curve field modulus
+ * - Whitelist accounts in local state after successful proof checks
+ * - Query whitelist membership for opted-in accounts
+ *
+ * Prerequisites:
+ * - AlgoKit TypeScript testing setup
+ * - ARC4 contract support and verifier app deployment context
+ * - Familiarity with zk-proof verifier integration patterns
+ */
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
 import {
   abimethod,
