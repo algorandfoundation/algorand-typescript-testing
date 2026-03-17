@@ -21,7 +21,7 @@ function lineSeparator(text: string, isBullet: boolean, lastWasBullet: boolean):
   return ' '
 }
 
-function parseJSDoc(content: string): { title: string; description: string; prerequisites: string } {
+export function parseJSDoc(content: string): { title: string; description: string; prerequisites: string } {
   const jsdocMatch = content.match(/\/\*\*\n([\s\S]*?)\*\//)
 
   if (!jsdocMatch) {
@@ -79,12 +79,12 @@ function parseJSDoc(content: string): { title: string; description: string; prer
   }
 }
 
-function extractOrder(filename: string): number {
+export function extractOrder(filename: string): number {
   const match = filename.match(/^(\d+)-/)
   return match ? Number.parseInt(match[1], 10) : 999
 }
 
-function createSlug(filename: string): string {
+export function createSlug(filename: string): string {
   return filename.replace(/\.algo\.ts$|\.ts$/, '').replace(/_/g, '-')
 }
 

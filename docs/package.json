@@ -5,8 +5,9 @@
   "version": "0.0.1",
   "packageManager": "pnpm@10.30.3",
   "scripts": {
+    "generate:examples": "tsx scripts/generate-examples-mdx.ts",
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npm run generate:examples && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -17,6 +18,9 @@
     "sharp": "^0.34.2",
     "starlight-typedoc": "^0.21.5",
     "typedoc": "^0.28.16"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   },
   "engines": {
     "node": ">=20"
