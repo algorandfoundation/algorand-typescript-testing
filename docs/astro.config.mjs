@@ -16,6 +16,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Algorand TypeScript Testing',
+      favicon: '/algokit_logo.png',
       expressiveCode: false,
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/algorandfoundation/algorand-typescript-testing' },
