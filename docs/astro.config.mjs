@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc'
 import remarkGithubAlerts from 'remark-github-alerts'
+import sidebarConfig from './sidebar.config.json'
 
 // https://astro.build/config
 export default defineConfig({
@@ -37,54 +38,11 @@ export default defineConfig({
           typeDoc: {
             excludeReferences: true,
             gitRevision: 'main',
+            entryFileName: 'index',
           },
         }),
       ],
-      sidebar: [
-        { label: 'Home', link: '/' },
-        {
-          label: 'Getting Started',
-          items: [{ label: 'Quick Start', slug: 'tutorials/quick-start' }],
-        },
-        {
-          label: 'Concepts (Core)',
-          items: [
-            { slug: 'concepts/core/testing-guide' },
-            { slug: 'concepts/core/concepts' },
-            { slug: 'concepts/core/avm-types' },
-            { slug: 'concepts/core/arc4-types' },
-            { slug: 'concepts/core/transactions' },
-          ],
-        },
-        {
-          label: 'Concepts (Building)',
-          items: [
-            { slug: 'concepts/building/application-spy' },
-            { slug: 'concepts/building/contract-testing' },
-            { slug: 'concepts/building/signature-testing' },
-            { slug: 'concepts/building/state-management' },
-          ],
-        },
-        {
-          label: 'Concepts (Advanced)',
-          items: [
-            { slug: 'concepts/advanced/opcodes' },
-            { slug: 'concepts/advanced/coverage' },
-            { slug: 'concepts/advanced/faq' },
-            { slug: 'concepts/advanced/algorand-typescript' },
-          ],
-        },
-        {
-          label: 'Examples',
-          items: [{ label: 'Overview', link: '/examples/' }],
-        },
-        {
-          label: 'Migration Guides',
-          collapsed: true,
-          autogenerate: { directory: 'migration' },
-        },
-        typeDocSidebarGroup,
-      ],
+      sidebar: [...sidebarConfig, typeDocSidebarGroup],
     }),
   ],
 })
