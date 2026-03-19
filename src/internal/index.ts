@@ -17,7 +17,7 @@ export { ensureBudget } from '../impl/ensure-budget'
 /** @internal */
 export { Global } from '../impl/global'
 /** @internal */
-export { log } from '../impl/log'
+export { log, loggedAssert, loggedErr } from '../impl/log'
 /** @internal */
 export { assertMatch, match } from '../impl/match'
 /** @internal */
