@@ -70,18 +70,18 @@ export function ptypeToArc4EncodedType(ptype: ptypes.PType, sourceLocation: Sour
   if (ptype instanceof ptypes.ArrayPType)
     return new ptypes.DynamicArrayType({
       elementType: ptypeToArc4EncodedType(ptype.elementType, sourceLocation),
-      immutable: false,
+      immutable: ptype.immutable,
     })
   if (ptype instanceof ptypes.ReadonlyArrayPType)
     return new ptypes.DynamicArrayType({
       elementType: ptypeToArc4EncodedType(ptype.elementType, sourceLocation),
-      immutable: true,
+      immutable: ptype.immutable,
     })
   if (ptype instanceof ptypes.FixedArrayPType)
     return new ptypes.StaticArrayType({
       elementType: ptypeToArc4EncodedType(ptype.elementType, sourceLocation),
       arraySize: ptype.arraySize,
-      immutable: false,
+      immutable: ptype.immutable,
     })
 
   if (ptype instanceof ptypes.ReadonlyTuplePType)
