@@ -1424,7 +1424,7 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     )
   }
   const encoders: Record<string, fromBytes<DeliberateAny>> = {
-    account: (value, typeInfo) => AccountCls.fromBytes(value, typeInfo),
+    account: (value) => AccountCls.fromBytes(value),
     application: (value) => ApplicationCls.fromBytes(value),
     asset: (value) => AssetCls.fromBytes(value),
     boolean: booleanFromBytes,
