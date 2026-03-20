@@ -1,7 +1,7 @@
 import { Address } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { AlgoTsPrimitiveCls, BigUintCls, BytesCls, Uint64Cls } from './impl/primitives'
-import { AccountCls } from './impl/reference'
+import { AccountCls, ApplicationCls, AssetCls } from './impl/reference'
 
 type Tester = (this: TesterContext, a: unknown, b: unknown, customTesters: Array<Tester>) => boolean | undefined
 interface TesterContext {
@@ -137,6 +137,33 @@ function doAddEqualityTesters(expectObj: ExpectObj) {
       if (typeof subject === 'number') {
         const testValue = typeof test === 'bigint' ? test : undefined
         if (testValue !== undefined) return this.equals(BigInt(subject), testValue, customTesters)
+        return undefined
+      }
+      // Defer to other testers
+      return undefined
+    },
+    function AccountIsAccount(this: TesterContext, subject, test, customTesters): boolean | undefined {
+      if (subject instanceof AccountCls) {
+        const testValue = test instanceof AccountCls ? test : undefined
+        if (testValue !== undefined) return this.equals(subject['data'], testValue['data'], customTesters)
+        return undefined
+      }
+      // Defer to other testers
+      return undefined
+    },
+    function ApplicationIsApplication(this: TesterContext, subject, test, customTesters): boolean | undefined {
+      if (subject instanceof ApplicationCls) {
+        const testValue = test instanceof ApplicationCls ? test : undefined
+        if (testValue !== undefined) return this.equals(subject['data'], testValue['data'], customTesters)
+        return undefined
+      }
+      // Defer to other testers
+      return undefined
+    },
+    function AssetIsAsset(this: TesterContext, subject, test, customTesters): boolean | undefined {
+      if (subject instanceof AssetCls) {
+        const testValue = test instanceof AssetCls ? test : undefined
+        if (testValue !== undefined) return this.equals(subject['data'], testValue['data'], customTesters)
         return undefined
       }
       // Defer to other testers
