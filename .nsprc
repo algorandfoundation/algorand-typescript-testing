@@ -1,6 +1,6 @@
 {
-  "1109842": {
+  "GHSA-848j-6mx2-7j84": {
     "active": true,
-    "notes": "Ignored since we don't use glob-cli"
+    "notes": "Required for Algorand cryptographic operations. Mitigated by using latest version (6.6.1) and monitoring for updates."
   }
 }
