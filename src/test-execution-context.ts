@@ -4,7 +4,7 @@ import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
 import { ContextManager } from './context-helpers/context-manager'
 import type { DecodedLogs, LogDecoding } from './decode-logs'
 import type { ApplicationCallInnerTxnContext } from './impl/inner-transactions'
-import { Account, AccountCls } from './impl/reference'
+import { AccountCls } from './impl/reference'
 import { ContractContext } from './subcontexts/contract-context'
 import { LedgerContext } from './subcontexts/ledger-context'
 import { TransactionContext } from './subcontexts/transaction-context'
@@ -109,7 +109,11 @@ export class TestExecutionContext {
    * @param {bytes | AccountType} val - The default sender account.
    */
   set defaultSender(val: bytes | AccountType) {
-    this.#defaultSender = val instanceof AccountCls ? val : Account(val as bytes)
+    if (val instanceof AccountCls) {
+      this.#defaultSender = val
+    } else if (this.#defaultSender.bytes !== val) {
+      this.#defaultSender = new AccountCls(val as bytes)
+    }
   }
 
   /**
@@ -236,6 +240,7 @@ export class TestExecutionContext {
     this.#compiledApps = []
     this.#compiledLogicSigs = []
     this.#applicationSpies = []
+    this.#defaultSender = this.any.account({ address: this.#defaultSender.bytes }) // reset default sender account data in ledger context
     ContextManager.reset()
     ContextManager.instance = this
   }

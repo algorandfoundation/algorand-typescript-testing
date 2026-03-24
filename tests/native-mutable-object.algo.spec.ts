@@ -1,4 +1,4 @@
-import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account, Application, Asset, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import {
   arc4,
   assertMatch,
@@ -116,6 +116,20 @@ type Arc4TupleObj = {
   a: uint64
   b: arc4.Tuple<readonly [arc4.Uint64, arc4.Str, arc4.Bool]>
   c: string
+}
+
+type AccountWithVotes = {
+  account: Account
+  votes: arc4.Uint32
+}
+
+type ApplicationWithVotes = {
+  application: Application
+  votes: arc4.Uint32
+}
+type AssetWithVotes = {
+  asset: Asset
+  votes: arc4.Uint32
 }
 
 class TestContract extends Contract {
@@ -797,6 +811,50 @@ describe('native mutable object', () => {
 
       expect(clone(obj2)).toEqual(obj2)
       expect(clone(obj1)).toEqual(obj1)
+    })
+    it('should work for objects with account property', () => {
+      const account1: Account = ctx.any.account()
+      const account2: Account = ctx.any.account()
+      const obj1: AccountWithVotes = {
+        account: account1,
+        votes: new arc4.Uint32(100),
+      }
+      const obj2: AccountWithVotes = {
+        account: account2,
+        votes: new arc4.Uint32(200),
+      }
+      expect(clone(obj1)).toEqual(obj1)
+      expect(clone(obj2)).toEqual(obj2)
+    })
+    it('should work for objects with application property', () => {
+      const application1: Application = ctx.any.application()
+      const application2: Application = ctx.any.application()
+      const obj1: ApplicationWithVotes = {
+        application: application1,
+        votes: new arc4.Uint32(100),
+      }
+      const obj2: ApplicationWithVotes = {
+        application: application2,
+        votes: new arc4.Uint32(200),
+      }
+
+      expect(clone(obj1)).toEqual(obj1)
+      expect(clone(obj2)).toEqual(obj2)
+    })
+    it('should work for objects with asset property', () => {
+      const asset1: Asset = ctx.any.asset()
+      const asset2: Asset = ctx.any.asset()
+      const obj1: AssetWithVotes = {
+        asset: asset1,
+        votes: new arc4.Uint32(100),
+      }
+      const obj2: AssetWithVotes = {
+        asset: asset2,
+        votes: new arc4.Uint32(200),
+      }
+
+      expect(clone(obj1)).toEqual(obj1)
+      expect(clone(obj2)).toEqual(obj2)
     })
   })
 })
