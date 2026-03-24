@@ -245,7 +245,9 @@ export class ContractContext {
     return {
       construct(target, args) {
         let t: T | undefined = undefined
-        const application = lazyContext.any.application()
+        const application = lazyContext.any.application({
+          creator: lazyContext.hasActiveGroup ? lazyContext.activeGroup.activeTransaction.sender : lazyContext.defaultSender,
+        })
         const txn = lazyContext.any.txn.applicationCall({ appId: application })
         const appData = lazyContext.ledger.applicationDataMap.getOrFail(application.id)
         appData.isCreating = true
