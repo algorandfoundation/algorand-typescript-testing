@@ -2,5 +2,13 @@
   "GHSA-848j-6mx2-7j84": {
     "active": true,
     "notes": "Required for Algorand cryptographic operations. Mitigated by using latest version (6.6.1) and monitoring for updates."
+  },
+  "GHSA-c2c7-rcm5-vvqj": {
+    "active": true,
+    "notes": "ReDoS vulnerability in picomatch extglob quantifiers. Transitive dependency via npm internals (npm > picomatch)."
+  },
+  "GHSA-3v7f-55p6-f55p": {
+    "active": true,
+    "notes": "Method injection in picomatch POSIX character classes causing incorrect glob matching. Transitive dependency via npm internals (npm > picomatch)."
   }
 }
