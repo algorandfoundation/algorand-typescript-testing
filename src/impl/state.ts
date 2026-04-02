@@ -4,6 +4,7 @@ import type {
   BoxMap as BoxMapType,
   Box as BoxType,
   bytes,
+  GlobalMap as GlobalMapType,
   GlobalStateOptions,
   GlobalState as GlobalStateType,
   LocalStateForAccount,
@@ -69,6 +70,45 @@ export class GlobalStateCls<ValueType> {
   }
 }
 
+export class GlobalMapCls<TKey, TValue> {
+  private _keyPrefix: bytes | undefined
+
+  private readonly _type: string = GlobalMapCls.name
+
+  static [Symbol.hasInstance](x: unknown): x is GlobalMapCls<unknown, unknown> {
+    return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === GlobalMapCls.name
+  }
+
+  get hasKeyPrefix(): boolean {
+    return this._keyPrefix !== undefined && this._keyPrefix.length > 0
+  }
+
+  get keyPrefix(): bytes {
+    if (this._keyPrefix === undefined || this._keyPrefix.length === 0) {
+      throw new InternalError('GlobalMap key prefix is empty')
+    }
+    return this._keyPrefix
+  }
+
+  set keyPrefix(keyPrefix: StubBytesCompat) {
+    this._keyPrefix = asBytes(keyPrefix)
+  }
+
+  call(key: TKey, proxy: GlobalMapCls<TKey, TValue>): GlobalStateType<TValue> {
+    const fullKey = proxy.getFullKey(key)
+    const appData = lazyContext.getApplicationData(lazyContext.activeApplication.id)
+    const application = appData.application
+    if (!application.globalStates.has(fullKey)) {
+      application.globalStates.set(fullKey, new GlobalStateCls<TValue>(fullKey))
+    }
+    return application.globalStates.getOrFail(fullKey) as GlobalStateCls<TValue>
+  }
+
+  private getFullKey(key: TKey): bytes {
+    return this.keyPrefix.concat(toBytes(key))
+  }
+}
+
 export class LocalStateCls<ValueType> {
   /** @internal */
   #value: ValueType | undefined
@@ -127,6 +167,17 @@ export class LocalStateMapCls<ValueType> {
 /** @internal */
 export function GlobalState<ValueType>(options?: GlobalStateOptions<ValueType>): GlobalStateType<ValueType> {
   return new GlobalStateCls(options?.key, options?.initialValue)
+}
+
+/** @internal */
+export function GlobalMap<TKey, TValue>(options?: { keyPrefix?: bytes | string }): GlobalMapType<TKey, TValue> {
+  const globalMap = new GlobalMapCls<TKey, TValue>()
+  if (options?.keyPrefix !== undefined) {
+    globalMap.keyPrefix = options.keyPrefix
+  }
+
+  const x = (key: TKey): GlobalStateType<TValue> => globalMap.call(key, x as unknown as GlobalMapCls<TKey, TValue>)
+  return Object.setPrototypeOf(x, globalMap)
 }
 
 /** @internal */
