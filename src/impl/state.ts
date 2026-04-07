@@ -7,6 +7,7 @@ import type {
   GlobalMap as GlobalMapType,
   GlobalStateOptions,
   GlobalState as GlobalStateType,
+  LocalMap as LocalMapType,
   LocalStateForAccount,
   LocalState as LocalStateType,
   uint64,
@@ -147,7 +148,7 @@ export class LocalStateMapCls<ValueType> {
 
   getValue(key: string | bytes | undefined, account: Account): LocalStateCls<ValueType> {
     const bytesKey = key === undefined ? Bytes() : asBytes(key)
-    const localStateMap = this.ensureApplicationLocalStateMap(bytesKey)
+    const localStateMap = this.getApplicationLocalStateMap(bytesKey)
     if (!localStateMap.has(account)) {
       localStateMap.set(account, new LocalStateCls())
     }
@@ -155,7 +156,7 @@ export class LocalStateMapCls<ValueType> {
   }
 
   /** @internal */
-  private ensureApplicationLocalStateMap(key: bytes | string) {
+  getApplicationLocalStateMap(key: bytes | string) {
     const applicationData = lazyContext.ledger.applicationDataMap.getOrFail(this.applicationId)!.application
     if (!applicationData.localStateMaps.has(key)) {
       applicationData.localStateMaps.set(key, new AccountMap<LocalStateCls<ValueType>>())
@@ -189,6 +190,24 @@ export function LocalState<ValueType>(options?: { key?: bytes | string }): Local
   localStateInternal.hasKey = options?.key !== undefined && options.key.length > 0
   localStateInternal.map = new LocalStateMapCls<ValueType>()
   return localStateInternal
+}
+
+/** @internal */
+export function LocalMap<TKey, TValue>(options?: { keyPrefix?: bytes | string }): LocalMapType<TKey, TValue> {
+  function localMapInternal(key: TKey, account?: Account): LocalStateForAccount<TValue> | LocalStateType<TValue> {
+    if (localMapInternal.keyPrefix === undefined || localMapInternal.keyPrefix.length === 0) {
+      throw new InternalError('LocalMap key prefix is empty')
+    }
+    const fullKey = localMapInternal.keyPrefix.concat(toBytes(key))
+    return account
+      ? localMapInternal.map.getValue(fullKey, account)
+      : (localMapInternal.map.getApplicationLocalStateMap(fullKey) as unknown as LocalStateType<TValue>)
+  }
+
+  localMapInternal.keyPrefix = options?.keyPrefix ? asBytes(options.keyPrefix) : undefined
+  localMapInternal.hasKeyPrefix = options?.keyPrefix !== undefined && options.keyPrefix.length > 0
+  localMapInternal.map = new LocalStateMapCls<TValue>()
+  return localMapInternal as LocalMapType<TKey, TValue>
 }
 
 /** @internal */

@@ -310,7 +310,7 @@ export class LedgerContext {
   ): [LocalStateForAccount<unknown>, true] | [undefined, false] {
     const appId = app instanceof Uint64Cls ? app.asAlgoTs() : this.getAppId(app as ApplicationType | BaseContract)
     const appData = this.applicationDataMap.get(appId)
-    if (!appData?.application.localStates.has(key)) {
+    if (!appData?.application.localStateMaps.has(key)) {
       return [undefined, false]
     }
     const localState = appData.application.localStateMaps.getOrFail(key)

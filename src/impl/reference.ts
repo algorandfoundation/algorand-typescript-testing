@@ -3,7 +3,6 @@ import type {
   Application as ApplicationType,
   Asset as AssetType,
   bytes,
-  LocalState,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
@@ -142,7 +141,6 @@ export class ApplicationData {
   application: Mutable<Omit<ApplicationType, 'id' | 'address'>> & {
     appLogs: bytes[]
     globalStates: BytesMap<GlobalStateCls<unknown>>
-    localStates: BytesMap<LocalState<unknown>>
     localStateMaps: BytesMap<AccountMap<LocalStateCls<unknown>>>
     boxes: BytesMap<Uint8Array>
     materialisedBoxes: BytesMap<DeliberateAny>
@@ -164,7 +162,6 @@ export class ApplicationData {
       creator: lazyContext.defaultSender,
       appLogs: [],
       globalStates: new BytesMap(),
-      localStates: new BytesMap(),
       localStateMaps: new BytesMap(),
       boxes: new BytesMap(),
       materialisedBoxes: new BytesMap(),

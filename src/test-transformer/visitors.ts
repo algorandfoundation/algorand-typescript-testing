@@ -410,6 +410,7 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.DynamicArrayType,
     ptypes.GlobalMapType,
     ptypes.GlobalStateType,
+    ptypes.LocalMapType,
     ptypes.LocalStateType,
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
@@ -446,7 +447,7 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
 
   if (instanceOfAny(type, ptypes.LocalStateType, ptypes.GlobalStateType, ptypes.BoxPType)) {
     genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
-  } else if (instanceOfAny(type, ptypes.BoxMapPType, ptypes.GlobalMapType)) {
+  } else if (instanceOfAny(type, ptypes.BoxMapPType, ptypes.GlobalMapType, ptypes.LocalMapType)) {
     genericArgs.push(getGenericTypeInfo(type.keyType, sourceLocation))
     genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
   } else if (
