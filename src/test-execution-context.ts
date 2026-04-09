@@ -3,6 +3,7 @@ import type { ApplicationSpy } from './application-spy'
 import { DEFAULT_TEMPLATE_VAR_PREFIX } from './constants'
 import { ContextManager } from './context-helpers/context-manager'
 import type { DecodedLogs, LogDecoding } from './decode-logs'
+import { toBytes } from './impl/encoded-types'
 import type { ApplicationCallInnerTxnContext } from './impl/inner-transactions'
 import { AccountCls } from './impl/reference'
 import { ContractContext } from './subcontexts/contract-context'
@@ -138,13 +139,17 @@ export class TestExecutionContext {
    * Executes a logic signature with the given arguments.
    *
    * @param {LogicSig} logicSig - The logic signature to execute.
-   * @param {...bytes[]} args - The arguments for the logic signature.
+   * @param {...unknown[]} args - The arguments for the logic signature.
    * @returns {boolean | uint64}
    */
-  executeLogicSig(logicSig: LogicSig, ...args: bytes[]): boolean | uint64 {
-    this.#activeLogicSigArgs = args
+  executeLogicSig(logicSig: LogicSig, ...args: unknown[]): boolean | uint64 {
+    this.#activeLogicSigArgs = args.map((a) => toBytes(a))
     try {
-      return logicSig.program()
+      if (logicSig.program.length === 0) {
+        return logicSig.program()
+      } else {
+        return logicSig.program(...args)
+      }
     } finally {
       this.#activeLogicSigArgs = []
     }
