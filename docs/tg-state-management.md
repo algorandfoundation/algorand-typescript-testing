@@ -34,6 +34,8 @@ contract.stateB.value = algots.Uint64(20)
 
 `GlobalMap` provides a key-value mapping stored in global state. Keys are prefixed with either an explicit `keyPrefix` or the attribute name by default.
 
+**Note**: _Contracts using `GlobalMap` must specify adequate [`stateTotals`](https://algorandfoundation.github.io/puya-ts/language-guide/program-structure/#contract-options) to allocate enough global storage slots for the application on creation._
+
 ```ts
 @algots.contract({ stateTotals: { globalUints: 5, globalBytes: 5 } })
 class MyContract extends algots.arc4.Contract {
@@ -89,6 +91,8 @@ contract.localStateA(account).value = algots.Uint64(10)
 ## LocalMap
 
 `LocalMap` provides a key-value mapping stored in local state, scoped per account. Like `GlobalMap`, keys are prefixed with either an explicit `keyPrefix` or the attribute name.
+
+**Note**: _Contracts using `LocalMap` must specify adequate [`stateTotals`](https://algorandfoundation.github.io/puya-ts/language-guide/program-structure/#contract-options) to allocate enough local storage slots for the application on creation._
 
 ```ts
 @algots.contract({ stateTotals: { localUints: 5, localBytes: 5 } })
