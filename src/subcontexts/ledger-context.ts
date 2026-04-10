@@ -27,7 +27,7 @@ import {
   AssetHolding,
   getDefaultAssetData,
 } from '../impl/reference'
-import { GlobalStateCls, LocalStateCls } from '../impl/state'
+import { GlobalStateCls, LocalStateForAccountCls } from '../impl/state'
 import { VoterData } from '../impl/voter-params'
 import type { PickPartial } from '../typescript-helpers'
 import { asBigInt, asBytes, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64Cls, asUint8Array, iterBigInt } from '../util'
@@ -333,7 +333,7 @@ export class LedgerContext {
     }
     const localState = appData.application.localStateMaps.getOrFail(key)
     if (!localState.has(account)) {
-      localState.set(account, new LocalStateCls())
+      localState.set(account, new LocalStateForAccountCls())
     }
     const accountLocalState = localState.getOrFail(account)
     if (value === undefined) {

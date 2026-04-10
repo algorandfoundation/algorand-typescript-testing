@@ -13,7 +13,7 @@ import type { Contract } from '../impl/contract'
 import { getArc4Encoded, Uint, type TypeInfo } from '../impl/encoded-types'
 import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
-import { BoxCls, BoxMapCls, GlobalMapCls, GlobalStateCls } from '../impl/state'
+import { BoxCls, BoxMapCls, GlobalMapCls, GlobalStateCls, LocalMapCls, LocalStateCls } from '../impl/state'
 import type { Transaction } from '../impl/transactions'
 import {
   ApplicationCallTransaction,
@@ -46,12 +46,12 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
     totals: stateTotals,
   }
   Object.entries(contract).forEach(([key, value]) => {
-    const isLocalState = value instanceof Function && value.name === 'localStateInternal'
+    const isLocalState = value instanceof LocalStateCls
     const isGlobalState = value instanceof GlobalStateCls
     const isBox = value instanceof BoxCls
     const isBoxMap = value instanceof BoxMapCls
     const isGlobalMap = value instanceof GlobalMapCls
-    const isLocalMap = value instanceof Function && value.name === 'localMapInternal'
+    const isLocalMap = value instanceof LocalMapCls
     if (isLocalState || isGlobalState || isBox) {
       // set key using property name if not already set
       if (!value.hasKey) value.key = Bytes(key)
