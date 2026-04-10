@@ -8,8 +8,10 @@ import {
   clone,
   contract,
   Global,
+  GlobalMap,
   GlobalState,
   itxn,
+  LocalMap,
   LocalState,
   OnCompleteAction,
   op,
@@ -784,6 +786,165 @@ export class GlobalStateContract extends arc4.Contract {
   }
 }
 
+@contract({ stateTotals: { globalUints: 11, globalBytes: 11 } })
+export class GlobalMapContract extends arc4.Contract {
+  // Implicit key_prefix (derived from attribute name)
+  implicitKeyArc4Uint = GlobalMap<uint64, arc4.Uint64>()
+  implicitKeyArc4String = GlobalMap<uint64, Str>()
+  implicitKeyArc4Byte = GlobalMap<uint64, Byte>()
+  implicitKeyArc4Bool = GlobalMap<uint64, Bool>()
+  implicitKeyArc4Address = GlobalMap<uint64, Address>()
+  implicitKeyArc4Uint128 = GlobalMap<uint64, Uint128>()
+  implicitKeyArc4DynamicBytes = GlobalMap<uint64, DynamicBytes>()
+  implicitKeyTuple = GlobalMap<[uint64, bytes, boolean], uint64>()
+
+  // Explicit key_prefix
+  arc4Uint = GlobalMap<uint64, arc4.Uint64>({ keyPrefix: 'explicit_arc4_uint' })
+  arc4String = GlobalMap<uint64, Str>({ keyPrefix: 'explicit_arc4_string' })
+  arc4Bool = GlobalMap<uint64, Bool>({ keyPrefix: Bytes('explicit_arc4_bool') })
+
+  // --- Implicit key_prefix: getters ---
+  @arc4.abimethod()
+  get_implicit_key_arc4_uint(key: uint64): arc4.Uint64 {
+    return this.implicitKeyArc4Uint(key).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_string(key: uint64): Str {
+    return this.implicitKeyArc4String(key).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_byte(key: uint64): Byte {
+    return this.implicitKeyArc4Byte(key).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_bool(key: uint64): Bool {
+    return this.implicitKeyArc4Bool(key).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_address(key: uint64): Address {
+    return this.implicitKeyArc4Address(key).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_uint128(key: uint64): Uint128 {
+    return this.implicitKeyArc4Uint128(key).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_dynamic_bytes(key: uint64): DynamicBytes {
+    return this.implicitKeyArc4DynamicBytes(key).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_tuple(key: [uint64, bytes, boolean]): uint64 {
+    return this.implicitKeyTuple(key).value
+  }
+
+  // --- Implicit key_prefix: setters ---
+  @arc4.abimethod()
+  set_implicit_key_arc4_uint(key: uint64, value: arc4.Uint64): void {
+    this.implicitKeyArc4Uint(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_string(key: uint64, value: Str): void {
+    this.implicitKeyArc4String(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_byte(key: uint64, value: Byte): void {
+    this.implicitKeyArc4Byte(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_bool(key: uint64, value: Bool): void {
+    this.implicitKeyArc4Bool(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_address(key: uint64, value: Address): void {
+    this.implicitKeyArc4Address(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_uint128(key: uint64, value: Uint128): void {
+    this.implicitKeyArc4Uint128(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_dynamic_bytes(key: uint64, value: DynamicBytes): void {
+    this.implicitKeyArc4DynamicBytes(key).value = clone(value)
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_tuple(key: [uint64, bytes, boolean], value: uint64): void {
+    this.implicitKeyTuple(key).value = value
+  }
+
+  // --- Implicit key_prefix: delete ---
+  @arc4.abimethod()
+  delete_implicit_key_arc4_uint(key: uint64): void {
+    this.implicitKeyArc4Uint(key).delete()
+  }
+
+  // --- Implicit key_prefix: contains ---
+  @arc4.abimethod()
+  contains_implicit_key_arc4_uint(key: uint64): boolean {
+    return this.implicitKeyArc4Uint(key).hasValue
+  }
+
+  // --- Implicit key_prefix: maybe ---
+  @arc4.abimethod()
+  maybe_implicit_key_arc4_uint(key: uint64): [arc4.Uint64, boolean] {
+    const state = this.implicitKeyArc4Uint(key)
+    if (state.hasValue) return [state.value, true]
+    return [new arc4.Uint64(0), false]
+  }
+
+  // --- Implicit key_prefix: get with default ---
+  @arc4.abimethod()
+  get_default_implicit_key_arc4_uint(key: uint64, defaultValue: arc4.Uint64): arc4.Uint64 {
+    const state = this.implicitKeyArc4Uint(key)
+    return state.hasValue ? state.value : defaultValue
+  }
+
+  // --- Explicit key_prefix: getters ---
+  @arc4.abimethod()
+  get_arc4_uint(key: uint64): arc4.Uint64 {
+    return this.arc4Uint(key).value
+  }
+
+  @arc4.abimethod()
+  get_arc4_string(key: uint64): Str {
+    return this.arc4String(key).value
+  }
+
+  @arc4.abimethod()
+  get_arc4_bool(key: uint64): Bool {
+    return this.arc4Bool(key).value
+  }
+
+  // --- Explicit key_prefix: setters ---
+  @arc4.abimethod()
+  set_arc4_uint(key: uint64, value: arc4.Uint64): void {
+    this.arc4Uint(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_arc4_string(key: uint64, value: Str): void {
+    this.arc4String(key).value = value
+  }
+
+  @arc4.abimethod()
+  set_arc4_bool(key: uint64, value: Bool): void {
+    this.arc4Bool(key).value = value
+  }
+}
+
 export class LocalStateContract extends arc4.Contract {
   // Implicit key state variables
   implicitKeyArc4UintN64 = LocalState<arc4.Uint64>()
@@ -918,5 +1079,165 @@ export class BoxMapContract extends arc4.Contract {
     assert(Txn.accounts(0) === Txn.sender)
     assert(Txn.applications(0) === Global.currentApplicationId)
     this.allowedCreators([Txn.sender, creator]).value = true
+  }
+}
+
+@contract({ stateTotals: { localUints: 11, localBytes: 11 } })
+export class LocalMapContract extends arc4.Contract {
+  // Implicit key_prefix (derived from attribute name)
+  implicitKeyArc4Uint = LocalMap<uint64, arc4.Uint64>()
+  implicitKeyArc4String = LocalMap<uint64, Str>()
+  implicitKeyArc4Byte = LocalMap<uint64, Byte>()
+  implicitKeyArc4Bool = LocalMap<uint64, Bool>()
+  implicitKeyArc4Address = LocalMap<uint64, Address>()
+  implicitKeyArc4Uint128 = LocalMap<uint64, Uint128>()
+  implicitKeyArc4DynamicBytes = LocalMap<uint64, DynamicBytes>()
+  implicitKeyTuple = LocalMap<[uint64, bytes, boolean], uint64>()
+
+  // Explicit key_prefix
+  arc4Uint = LocalMap<uint64, arc4.Uint64>({ keyPrefix: 'explicit_arc4_uint' })
+  arc4String = LocalMap<uint64, Str>({ keyPrefix: 'explicit_arc4_string' })
+  arc4Bool = LocalMap<uint64, Bool>({ keyPrefix: Bytes('explicit_arc4_bool') })
+
+  @arc4.abimethod({ allowActions: ['OptIn'] })
+  opt_in(): void {}
+
+  // --- Implicit key_prefix: getters ---
+  @arc4.abimethod()
+  get_implicit_key_arc4_uint(account: Account, key: uint64): arc4.Uint64 {
+    return this.implicitKeyArc4Uint(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_string(account: Account, key: uint64): Str {
+    return this.implicitKeyArc4String(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_byte(account: Account, key: uint64): Byte {
+    return this.implicitKeyArc4Byte(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_bool(account: Account, key: uint64): Bool {
+    return this.implicitKeyArc4Bool(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_address(account: Account, key: uint64): Address {
+    return this.implicitKeyArc4Address(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_uint128(account: Account, key: uint64): Uint128 {
+    return this.implicitKeyArc4Uint128(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_arc4_dynamic_bytes(account: Account, key: uint64): DynamicBytes {
+    return this.implicitKeyArc4DynamicBytes(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_implicit_key_tuple(account: Account, key: [uint64, bytes, boolean]): uint64 {
+    return this.implicitKeyTuple(key, account).value
+  }
+
+  // --- Implicit key_prefix: setters ---
+  @arc4.abimethod()
+  set_implicit_key_arc4_uint(account: Account, key: uint64, value: arc4.Uint64): void {
+    this.implicitKeyArc4Uint(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_string(account: Account, key: uint64, value: Str): void {
+    this.implicitKeyArc4String(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_byte(account: Account, key: uint64, value: Byte): void {
+    this.implicitKeyArc4Byte(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_bool(account: Account, key: uint64, value: Bool): void {
+    this.implicitKeyArc4Bool(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_address(account: Account, key: uint64, value: Address): void {
+    this.implicitKeyArc4Address(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_uint128(account: Account, key: uint64, value: Uint128): void {
+    this.implicitKeyArc4Uint128(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_arc4_dynamic_bytes(account: Account, key: uint64, value: DynamicBytes): void {
+    this.implicitKeyArc4DynamicBytes(key, account).value = clone(value)
+  }
+
+  @arc4.abimethod()
+  set_implicit_key_tuple(account: Account, key: [uint64, bytes, boolean], value: uint64): void {
+    this.implicitKeyTuple(key, account).value = value
+  }
+
+  // --- Implicit key_prefix: delete ---
+  @arc4.abimethod()
+  delete_implicit_key_arc4_uint(account: Account, key: uint64): void {
+    this.implicitKeyArc4Uint(key, account).delete()
+  }
+
+  // --- Implicit key_prefix: contains ---
+  @arc4.abimethod()
+  contains_implicit_key_arc4_uint(account: Account, key: uint64): boolean {
+    return this.implicitKeyArc4Uint(key, account).hasValue
+  }
+
+  // --- Implicit key_prefix: maybe ---
+  @arc4.abimethod()
+  maybe_implicit_key_arc4_uint(account: Account, key: uint64): [arc4.Uint64, boolean] {
+    if (this.implicitKeyArc4Uint(key, account).hasValue) return [this.implicitKeyArc4Uint(key, account).value, true]
+    return [new arc4.Uint64(0), false]
+  }
+
+  // --- Implicit key_prefix: get with default ---
+  @arc4.abimethod()
+  get_default_implicit_key_arc4_uint(account: Account, key: uint64, defaultValue: arc4.Uint64): arc4.Uint64 {
+    return this.implicitKeyArc4Uint(key, account).hasValue ? this.implicitKeyArc4Uint(key, account).value : defaultValue
+  }
+
+  // --- Explicit key_prefix: getters ---
+  @arc4.abimethod()
+  get_arc4_uint(account: Account, key: uint64): arc4.Uint64 {
+    return this.arc4Uint(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_arc4_string(account: Account, key: uint64): Str {
+    return this.arc4String(key, account).value
+  }
+
+  @arc4.abimethod()
+  get_arc4_bool(account: Account, key: uint64): Bool {
+    return this.arc4Bool(key, account).value
+  }
+
+  // --- Explicit key_prefix: setters ---
+  @arc4.abimethod()
+  set_arc4_uint(account: Account, key: uint64, value: arc4.Uint64): void {
+    this.arc4Uint(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_arc4_string(account: Account, key: uint64, value: Str): void {
+    this.arc4String(key, account).value = value
+  }
+
+  @arc4.abimethod()
+  set_arc4_bool(account: Account, key: uint64, value: Bool): void {
+    this.arc4Bool(key, account).value = value
   }
 }

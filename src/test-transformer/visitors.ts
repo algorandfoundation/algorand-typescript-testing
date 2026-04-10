@@ -176,7 +176,6 @@ class ExpressionVisitor {
       const type = this.helper.resolveType(node)
 
       const isGeneric = isGenericType(type)
-      const needsToCaptureTypeInfo = isGeneric && isStateOrBoxType(type)
       const isArc4Encoded = isEncodedType(type)
       const info = isGeneric || isArc4Encoded ? getGenericTypeInfo(type) : undefined
       let updatedNode = node
@@ -226,7 +225,7 @@ class ExpressionVisitor {
           }
         }
       }
-      return needsToCaptureTypeInfo
+      return isGeneric
         ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
         : ts.visitEachChild(updatedNode, this.visit, this.context)
     }
@@ -409,7 +408,9 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.BoxMapPType,
     ptypes.BoxPType,
     ptypes.DynamicArrayType,
+    ptypes.GlobalMapType,
     ptypes.GlobalStateType,
+    ptypes.LocalMapType,
     ptypes.LocalStateType,
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
@@ -419,9 +420,6 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.MutableObjectPType,
     ptypes.ImmutableObjectPType,
   )
-
-const isStateOrBoxType = (type: ptypes.PType): boolean =>
-  instanceOfAny(type, ptypes.BoxMapPType, ptypes.BoxPType, ptypes.GlobalStateType, ptypes.LocalStateType)
 
 const isEncodedType = (type: ptypes.PType): boolean =>
   instanceOfAny(
@@ -449,7 +447,7 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
 
   if (instanceOfAny(type, ptypes.LocalStateType, ptypes.GlobalStateType, ptypes.BoxPType)) {
     genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
-  } else if (type instanceof ptypes.BoxMapPType) {
+  } else if (instanceOfAny(type, ptypes.BoxMapPType, ptypes.GlobalMapType, ptypes.LocalMapType)) {
     genericArgs.push(getGenericTypeInfo(type.keyType, sourceLocation))
     genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
   } else if (

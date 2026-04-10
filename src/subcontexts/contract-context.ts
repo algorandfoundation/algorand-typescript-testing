@@ -1,12 +1,5 @@
 import type { BaseContract as BaseContractType } from '@algorandfoundation/algorand-typescript'
-import {
-  OnCompleteAction,
-  type Account,
-  type Application,
-  type Asset,
-  type contract,
-  type LocalState,
-} from '@algorandfoundation/algorand-typescript'
+import { OnCompleteAction, type Account, type Application, type Asset, type contract } from '@algorandfoundation/algorand-typescript'
 import type { ARC4Encoded, ResourceEncodingOptions } from '@algorandfoundation/algorand-typescript/arc4'
 import type { AbiMetadata } from '../abi-metadata'
 import { getArc4Selector, getContractAbiMetadata, getContractMethodAbiMetadata } from '../abi-metadata'
@@ -20,7 +13,7 @@ import type { Contract } from '../impl/contract'
 import { getArc4Encoded, Uint, type TypeInfo } from '../impl/encoded-types'
 import { Bytes } from '../impl/primitives'
 import { AccountCls, ApplicationCls, AssetCls } from '../impl/reference'
-import { BoxCls, BoxMapCls, GlobalStateCls } from '../impl/state'
+import { BoxCls, BoxMapCls, GlobalMapCls, GlobalStateCls, LocalMapCls, LocalStateCls } from '../impl/state'
 import type { Transaction } from '../impl/transactions'
 import {
   ApplicationCallTransaction,
@@ -38,7 +31,6 @@ type StateTotals = Pick<Application, 'globalNumBytes' | 'globalNumUint' | 'local
 
 interface States {
   globalStates: BytesMap<GlobalStateCls<unknown>>
-  localStates: BytesMap<LocalState<unknown>>
   totals: StateTotals
 }
 
@@ -51,26 +43,26 @@ const extractStates = (contract: BaseContract, contractOptions: ContractOptionsP
   const stateTotals = { globalNumBytes: 0, globalNumUint: 0, localNumBytes: 0, localNumUint: 0 }
   const states = {
     globalStates: new BytesMap<GlobalStateCls<unknown>>(),
-    localStates: new BytesMap<LocalState<unknown>>(),
     totals: stateTotals,
   }
   Object.entries(contract).forEach(([key, value]) => {
-    const isLocalState = value instanceof Function && value.name === 'localStateInternal'
+    const isLocalState = value instanceof LocalStateCls
     const isGlobalState = value instanceof GlobalStateCls
     const isBox = value instanceof BoxCls
     const isBoxMap = value instanceof BoxMapCls
+    const isGlobalMap = value instanceof GlobalMapCls
+    const isLocalMap = value instanceof LocalMapCls
     if (isLocalState || isGlobalState || isBox) {
       // set key using property name if not already set
       if (!value.hasKey) value.key = Bytes(key)
-    } else if (isBoxMap) {
+    } else if (isBoxMap || isGlobalMap || isLocalMap) {
       if (!value.hasKeyPrefix) value.keyPrefix = Bytes(key)
     }
 
-    if (isLocalState || isGlobalState) {
-      // capture state into the context
-      if (isLocalState) states.localStates.set(value.key, value)
-      else states.globalStates.set(value.key, value)
+    // capture state into the context
+    if (isGlobalState && value.key) states.globalStates.set(value.key, value)
 
+    if (isLocalState || isGlobalState) {
       // populate state totals
       const isUint64State = isUint64GenericType(getGenericTypeInfo(value)!)
       stateTotals.globalNumUint += isGlobalState && isUint64State ? 1 : 0
@@ -237,7 +229,6 @@ export class ContractContext {
       applicationData.application = {
         ...applicationData.application,
         globalStates: states.globalStates,
-        localStates: states.localStates,
         ...states.totals,
       }
       lazyContext.ledger.addAppIdContractMap(application.id, instance)
