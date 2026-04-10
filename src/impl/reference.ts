@@ -26,7 +26,7 @@ import { asBigInt, asBytes, asUint64, asUint64Cls, asUint8Array, concatUint8Arra
 import { BytesBackedCls, Uint64BackedCls } from './base'
 import type { StubUint64Compat } from './primitives'
 import { Bytes, BytesCls, Uint64Cls } from './primitives'
-import type { GlobalStateCls, LocalStateCls } from './state'
+import type { GlobalStateCls, LocalStateForAccountCls } from './state'
 
 export class AssetHolding {
   balance: uint64
@@ -141,7 +141,7 @@ export class ApplicationData {
   application: Mutable<Omit<ApplicationType, 'id' | 'address'>> & {
     appLogs: bytes[]
     globalStates: BytesMap<GlobalStateCls<unknown>>
-    localStateMaps: BytesMap<AccountMap<LocalStateCls<unknown>>>
+    localStateMaps: BytesMap<AccountMap<LocalStateForAccountCls<unknown>>>
     boxes: BytesMap<Uint8Array>
     materialisedBoxes: BytesMap<DeliberateAny>
   }
