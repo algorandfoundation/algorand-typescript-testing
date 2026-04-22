@@ -16,8 +16,26 @@ permissions:
   pull-requests: write
 
 jobs:
+  check-puya-ts:
+    name: 'Check puya-ts dependency'
+    if: github.ref_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 1 }
+      - name: Ensure puya-ts dependency is a production release
+        run: |
+          version=$(npm pkg get dependencies.@algorandfoundation/puya-ts)
+          echo "puya-ts version: $version"
+          if ! [[ "$version" =~ ^['\"]*[0-9]+\.[0-9]+\.[0-9]+['\"]*$ ]]; then
+            echo "::error::puya-ts '$version' is a pre-release; production releases require a stable puya-ts version."
+            exit 1
+          fi
+
   build:
     name: 'Build @algorandfoundation/algorand-typescript-testing'
+    needs: check-puya-ts
+    if: ${{ !failure() && !cancelled() }}
     uses: ./.github/workflows/node-ci.yml
     with:
       pre-test-script: |
