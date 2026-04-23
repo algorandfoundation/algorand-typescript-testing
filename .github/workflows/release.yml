@@ -60,7 +60,8 @@ jobs:
       - name: Download package artifacts
         uses: actions/download-artifact@v8
         with:
-          path: artifacts
+          name: algo-ts-testing
+          path: artifacts/algo-ts-testing
 
       - name: Generate semantic version for @algorandfoundation/algorand-typescript-testing
         run: npx semantic-release
