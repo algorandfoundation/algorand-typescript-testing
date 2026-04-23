@@ -36,8 +36,6 @@ jobs:
     name: Release
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
     steps:
       - name: Generate bot token
         uses: actions/create-github-app-token@v3
@@ -56,7 +54,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24.x
-          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci --ignore-scripts
 
