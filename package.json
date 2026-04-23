@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A library which allows you to execute Algorand TypeScript code locally under a test context either emulating or mocking AVM behaviour.",
   "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/algorandfoundation/algorand-typescript-testing.git"
+  },
   "main": "index.js",
   "types": "src/index.ts",
   "scripts": {
@@ -57,7 +61,7 @@
     "prettier": "3.5.3",
     "rimraf": "6.0.1",
     "rollup": "^4.38.0",
-    "semantic-release": "^24.2.9",
+    "semantic-release": "^25.0.3",
     "shx": "^0.4.0",
     "tsx": "4.19.3",
     "typedoc": "^0.28.7",

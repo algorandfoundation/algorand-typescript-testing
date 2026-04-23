@@ -14,6 +14,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   build:
@@ -24,7 +25,7 @@ jobs:
         pipx install algokit
         algokit localnet reset --update
         pipx install puyapy
-      node-version: 22.x
+      node-version: 24.x
       run-build: true
       run-commit-lint: true
       audit-script: npm run audit
@@ -35,29 +36,32 @@ jobs:
     name: Release
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Generate bot token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         id: app_token
         with:
           app-id: ${{ secrets.BOT_ID }}
           private-key: ${{ secrets.BOT_SK }}
 
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ steps.app_token.outputs.token }}
 
-      - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v6
         with:
-          node-version: 22.x
+          node-version: 24.x
+          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci --ignore-scripts
 
       - name: Download package artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -67,11 +71,11 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
 
       - name: Publish @algorandfoundation/algorand-typescript-testing
-        uses: JS-DevTools/npm-publish@v3
+        uses: JS-DevTools/npm-publish@v4
         with:
-          token: ${{ secrets.NPM_TOKEN }}
           package: artifacts/algo-ts-testing/package.json
           access: 'public'
+          provenance: true
           tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'beta' || github.ref_name == 'release' && 'latest' || 'pre-release' }}
 
   publish-docs:
