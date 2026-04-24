@@ -473,18 +473,10 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
     genericArgs.push({ name: type.n.toString() })
   } else if (type instanceof ptypes.ARC4StructType) {
     typeName = `Struct<${type.name}>`
-    genericArgs = Object.fromEntries(
-      Object.entries(type.fields)
-        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
-        .filter((x) => !!x),
-    )
+    genericArgs = Object.fromEntries(type.fields.map((f) => [f.name, getGenericTypeInfo(f.ptype, sourceLocation)]).filter((x) => !!x))
   } else if (type instanceof ptypes.MutableObjectPType || type instanceof ptypes.ImmutableObjectPType) {
     typeName = type instanceof ptypes.MutableObjectPType ? `Object<${type.name}>` : `ReadonlyObject<${type.name}>`
-    genericArgs = Object.fromEntries(
-      Object.entries(type.properties)
-        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
-        .filter((x) => !!x),
-    )
+    genericArgs = Object.fromEntries(type.properties.map((p) => [p.name, getGenericTypeInfo(p.ptype, sourceLocation)]).filter((x) => !!x))
   } else if (
     type instanceof ptypes.ARC4TupleType ||
     type instanceof ptypes.MutableTuplePType ||
