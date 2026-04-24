@@ -94,7 +94,7 @@ export function ptypeToArc4EncodedType(ptype: ptypes.PType, sourceLocation: Sour
       name: ptype.alias?.name ?? ptype.name,
       module: ptype.module,
       description: ptype.description,
-      fields: Object.fromEntries(ptype.orderedProperties().map(([p, pt]) => [p, ptypeToArc4EncodedType(pt, sourceLocation)])),
+      fields: ptype.properties.map((p) => ({ ...p, ptype: ptypeToArc4EncodedType(p.ptype, sourceLocation) })),
       frozen: true,
     })
   if (ptype instanceof ptypes.MutableObjectPType)
@@ -102,7 +102,7 @@ export function ptypeToArc4EncodedType(ptype: ptypes.PType, sourceLocation: Sour
       name: ptype.alias?.name ?? ptype.name,
       module: ptype.module,
       description: ptype.description,
-      fields: Object.fromEntries(ptype.orderedProperties().map(([p, pt]) => [p, ptypeToArc4EncodedType(pt, sourceLocation)])),
+      fields: ptype.properties.map((p) => ({ ...p, ptype: ptypeToArc4EncodedType(p.ptype, sourceLocation) })),
       frozen: false,
     })
 
