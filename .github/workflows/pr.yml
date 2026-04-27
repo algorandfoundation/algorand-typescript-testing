@@ -13,7 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  pull_request:
+  build:
+    name: 'Build @algorandfoundation/algorand-typescript-testing'
     uses: algorandfoundation/algokit-shared-config/.github/workflows/node-ci.yml@chore/node-npm
     with:
       run-commit-lint: true
