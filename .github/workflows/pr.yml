@@ -13,15 +13,11 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: 'Build @algorandfoundation/algorand-typescript-testing'
-    uses: ./.github/workflows/node-ci.yml
+  pull_request:
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-ci.yml@chore/node-npm
     with:
-      pre-test-script: |
-        pipx install algokit --python 3.12.6
-        algokit localnet reset --update
-        pipx install puyapy --python 3.12.6
-      node-version: 24.x
-      run-build: true
       run-commit-lint: true
+      run-build: true
+      install-algokit: true
+      install-puyapy: true
       audit-script: npm run audit
