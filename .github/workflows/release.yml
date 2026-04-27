@@ -12,25 +12,27 @@ concurrency: release
 
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
+  issues: read
   id-token: write
 
 jobs:
-  build:
-    name: 'Build @algorandfoundation/algorand-typescript-testing'
-    uses: ./.github/workflows/node-ci.yml
+  ci:
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-ci.yml@chore/node-npm
     with:
-      pre-test-script: |
-        pipx install algokit
-        algokit localnet reset --update
-        pipx install puyapy
-      node-version: 24.x
-      run-build: true
       run-commit-lint: true
+      run-build: true
+      install-algokit: true
+      install-puyapy: true
       audit-script: npm run audit
-      upload-artifact-name: algo-ts-testing
-      upload-artifact-path: ./dist
+
+  build:
+    name: Build
+    needs:
+      - ci
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@chore/node-npm
+    with:
+      build-path: dist
+      artifact-name: algo-ts-testing
 
   release:
     name: Release
@@ -57,7 +59,7 @@ jobs:
 
       - run: npm ci --ignore-scripts
 
-      - name: Download package artifacts
+      - name: Download built package
         uses: actions/download-artifact@v8
         with:
           name: algo-ts-testing
@@ -76,10 +78,10 @@ jobs:
           provenance: true
           tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'beta' || github.ref_name == 'release' && 'latest' || 'pre-release' }}
 
-  publish-docs:
+  publish_docs:
     name: Publish docs
     needs: release
-    if: github.ref_name == 'release'
+    if: github.ref == 'refs/heads/release'
     uses: ./.github/workflows/gh-pages.yml
     permissions:
       contents: read
