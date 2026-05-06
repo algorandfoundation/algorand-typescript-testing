@@ -171,7 +171,7 @@ export const getByte = (a: StubBytesCompat, b: StubUint64Compat): uint64 => {
   const bytesValue = BytesCls.fromCompat(a)
   const index = Uint64Cls.fromCompat(b).asNumber()
   if (index >= bytesValue.length.asNumber()) {
-    throw new CodeError(`getBytes index ${index} is beyond length`)
+    throw new CodeError(`getByte index ${index} is beyond length`)
   }
   return bytesValue.at(index).toUint64().asAlgoTs()
 }

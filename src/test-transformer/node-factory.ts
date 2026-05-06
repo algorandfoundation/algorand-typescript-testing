@@ -134,11 +134,11 @@ export const nodeFactory = {
       ts.isPropertyAccessExpression(node.arguments[0]) &&
       ts.isPropertyAccessExpression(node.arguments[0].expression)
     ) {
-      const contractIdenifier = node.arguments[0].expression.expression
+      const contractIdentifier = node.arguments[0].expression.expression
       return factory.updateCallExpression(node, node.expression, node.typeArguments, [
         factory.createObjectLiteralExpression([
           factory.createPropertyAssignment('method', node.arguments[0]),
-          factory.createPropertyAssignment('contract', contractIdenifier),
+          factory.createPropertyAssignment('contract', contractIdentifier),
         ]),
       ])
     } else {
@@ -165,8 +165,8 @@ export const nodeFactory = {
       ts.isPropertyAccessExpression(node.arguments[0]) &&
       ts.isPropertyAccessExpression(node.arguments[0].expression)
     ) {
-      const contractIdenifier = node.arguments[0].expression.expression
-      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdenifier])
+      const contractIdentifier = node.arguments[0].expression.expression
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdentifier])
     } else if (
       node.arguments.length === 1 &&
       typeParams.length === 1 &&

@@ -702,7 +702,7 @@ describe('Pure op codes', async () => {
       await expect(getAvmResult<uint64>({ appClient }, 'verify_getbyte', asUint8Array(a as bytes), b as number)).rejects.toThrow(
         'getbyte index beyond array length',
       )
-      expect(() => op.getByte(a as bytes, b as number)).toThrow(/getBytes index \d+ is beyond length/)
+      expect(() => op.getByte(a as bytes, b as number)).toThrow(`getByte index ${b} is beyond length`)
     })
   })
 

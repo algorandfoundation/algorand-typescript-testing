@@ -36,7 +36,7 @@ interface States {
 
 const isUint64GenericType = (typeInfo: TypeInfo | undefined) => {
   if (!Array.isArray(typeInfo?.genericArgs) || !typeInfo?.genericArgs?.length) return false
-  return typeInfo.genericArgs.some((t) => t.name.toLocaleLowerCase() === 'uint64')
+  return typeInfo.genericArgs.some((t) => t.name.toLowerCase() === 'uint64')
 }
 
 const extractStates = (contract: BaseContract, contractOptions: ContractOptionsParameter | undefined): States => {
@@ -222,8 +222,8 @@ export class ContractContext {
    * @internal
    */
   private getContractProxyHandler<T extends BaseContract>(isArc4: boolean): ProxyHandler<IConstructor<T>> {
-    const onConstructed = (application: Application, instance: T, conrtactOptions: ContractOptionsParameter | undefined) => {
-      const states = extractStates(instance, conrtactOptions)
+    const onConstructed = (application: Application, instance: T, contractOptions: ContractOptionsParameter | undefined) => {
+      const states = extractStates(instance, contractOptions)
 
       const applicationData = lazyContext.ledger.applicationDataMap.getOrFail(application.id)
       applicationData.application = {

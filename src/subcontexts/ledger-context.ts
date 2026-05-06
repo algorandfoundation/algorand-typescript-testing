@@ -389,13 +389,12 @@ export class LedgerContext {
   }
 
   /**
-
- * Cache the materialised box for an application by key.
-* @internal
- * @param app - The application.
- * @param key - The key.
- * @param value - The box data.
- */
+   * Cache the materialised box for an application by key.
+   * @internal
+   * @param app - The application.
+   * @param key - The key.
+   * @param value - The box data.
+   */
   setMaterialisedBox<TValue>(app: ApplicationType | BaseContract, key: BytesCompat, value: TValue | undefined): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
