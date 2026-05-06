@@ -39,11 +39,10 @@ export function toExternalValue(val: biguint): bigint
 export function toExternalValue(val: bytes): Uint8Array
 export function toExternalValue(val: string): string
 export function toExternalValue(val: uint64 | biguint | bytes | string) {
-  const instance = val as unknown
-  if (instance instanceof BytesCls) return instance.asUint8Array()
-  if (instance instanceof Uint64Cls) return instance.asBigInt()
-  if (instance instanceof BigUintCls) return instance.asBigInt()
-  if (typeof val === 'string') return val
+  if (val instanceof BytesCls) return val.asUint8Array()
+  if (val instanceof Uint64Cls) return val.asBigInt()
+  if (val instanceof BigUintCls) return val.asBigInt()
+  return val
 }
 
 /** @internal */
@@ -55,6 +54,9 @@ export function* iterBigInt(start: bigint, end: bigint): Generator<bigint> {
 
 /** @internal */
 export const asUint64BigInt = (v: StubUint64Compat): bigint => asUint64Cls(v).asBigInt()
+
+/** @internal */
+export const asUint64Bytes = (v: StubUint64Compat) => asUint64Cls(v).toBytes()
 
 /** @internal */
 export const asNumber = (v: StubUint64Compat): number => asUint64Cls(v).asNumber()
@@ -81,48 +83,23 @@ export const asBytes = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).as
 /** @internal */
 export const asUint8Array = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).asUint8Array()
 
-/** @internal */
-export const asMaybeUint64Cls = (val: DeliberateAny, throwsOverflow: boolean = true) => {
+const tryFromCompat = <T>(fn: () => T, throwsOverflow = true): T | undefined => {
   try {
-    return Uint64Cls.fromCompat(val)
+    return fn()
   } catch (e) {
-    if (e instanceof InternalError) {
-      // swallow error and return undefined
-    } else if (!throwsOverflow && e instanceof AvmError && e.message.includes('overflow')) {
-      // swallow overflow error and return undefined
-    } else {
-      throw e
-    }
+    if (e instanceof InternalError) return undefined
+    if (!throwsOverflow && e instanceof AvmError && e.message.includes('overflow')) return undefined
+    throw e
   }
-  return undefined
 }
 
 /** @internal */
-export const asMaybeBigUintCls = (val: DeliberateAny) => {
-  try {
-    return BigUintCls.fromCompat(val)
-  } catch (e) {
-    if (e instanceof InternalError) {
-      // swallow error and return undefined
-    } else {
-      throw e
-    }
-  }
-  return undefined
-}
+export const asMaybeUint64Cls = (val: DeliberateAny, throwsOverflow: boolean = true) =>
+  tryFromCompat(() => Uint64Cls.fromCompat(val), throwsOverflow)
 /** @internal */
-export const asMaybeBytesCls = (val: DeliberateAny) => {
-  try {
-    return BytesCls.fromCompat(val)
-  } catch (e) {
-    if (e instanceof InternalError) {
-      // swallow error and return undefined
-    } else {
-      throw e
-    }
-  }
-  return undefined
-}
+export const asMaybeBigUintCls = (val: DeliberateAny) => tryFromCompat(() => BigUintCls.fromCompat(val))
+/** @internal */
+export const asMaybeBytesCls = (val: DeliberateAny) => tryFromCompat(() => BytesCls.fromCompat(val))
 
 /** @internal */
 export const binaryStringToBytes = (s: string): BytesCls =>
