@@ -54,7 +54,7 @@ export function* iterBigInt(start: bigint, end: bigint): Generator<bigint> {
 }
 
 /** @internal */
-export const asBigInt = (v: StubUint64Compat): bigint => asUint64Cls(v).asBigInt()
+export const asUint64BigInt = (v: StubUint64Compat): bigint => asUint64Cls(v).asBigInt()
 
 /** @internal */
 export const asNumber = (v: StubUint64Compat): number => asUint64Cls(v).asNumber()

@@ -29,7 +29,7 @@ import type {
   Transaction,
 } from '../impl/transactions'
 import type { DeliberateAny, FunctionKeys } from '../typescript-helpers'
-import { asBigInt, asNumber, asUint64 } from '../util'
+import { asNumber, asUint64, asUint64BigInt } from '../util'
 import { ContractContext } from './contract-context'
 
 function ScopeGenerator(dispose: () => void) {
@@ -225,7 +225,7 @@ export class TransactionContext {
   exportLogs<const T extends [...LogDecoding[]]>(appId: uint64, ...decoding: T): DecodedLogs<T> {
     const transaction = this.lastGroup.transactions
       .filter((t) => t.type === TransactionType.ApplicationCall)
-      .find((t) => asBigInt(t.appId.id) === asBigInt(appId))
+      .find((t) => asUint64BigInt(t.appId.id) === asUint64BigInt(appId))
     let logs = []
     if (transaction) {
       logs = transaction.appLogs
