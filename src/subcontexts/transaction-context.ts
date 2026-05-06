@@ -347,7 +347,7 @@ export class TransactionGroup {
    * @internal
    * @throws If there is no inner transaction group being constructed.
    */
-  appendInnerTransactionGroup() {
+  appendInnerTransaction() {
     if (!this.constructingItxnGroup.length) {
       throw new InternalError('itxn next without itxn begin')
     }
