@@ -30,7 +30,7 @@ import {
 import { GlobalStateCls, LocalStateForAccountCls } from '../impl/state'
 import { VoterData } from '../impl/voter-params'
 import type { PickPartial } from '../typescript-helpers'
-import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64BigInt, asUint64Cls, asUint8Array, iterBigInt } from '../util'
+import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64Cls, asUint8Array, iterBigInt } from '../util'
 
 export class LedgerContext {
   /** @internal */
@@ -51,7 +51,7 @@ export class LedgerContext {
   blocks = new Uint64Map<BlockData>()
   /** @internal */
   globalData = new GlobalData()
-  onlineStake = 0
+  onlineStake: uint64 = 0
 
   /**
    * Adds a contract to the application ID contract map.
@@ -124,19 +124,9 @@ export class LedgerContext {
     if (approvalProgram === undefined) {
       return undefined
     }
-    const entries = this.applicationDataMap.entries()
-    let next = entries.next()
-    let found = false
-    while (!next.done && !found) {
-      found = next.value[1].application.approvalProgram === approvalProgram
-      if (!found) {
-        next = entries.next()
-      }
-    }
-    if (found && next?.value) {
-      const appId = asUint64(next.value[0])
-      if (this.applicationDataMap.has(appId)) {
-        return Application(appId)
+    for (const [appId, data] of this.applicationDataMap) {
+      if (data.application.approvalProgram === approvalProgram) {
+        return Application(asUint64(appId))
       }
     }
     return undefined
@@ -152,8 +142,8 @@ export class LedgerContext {
    */
   updateAssetHolding(account: AccountType, assetId: Uint64Compat | AssetType, balance?: Uint64Compat, frozen?: boolean): void {
     const id = (asMaybeUint64Cls(assetId) ?? asUint64Cls((assetId as AssetType).id)).asAlgoTs()
-    const accountData = this.accountDataMap.get(account)!
-    const asset = this.assetDataMap.get(id)!
+    const accountData = this.accountDataMap.getOrFail(account)
+    const asset = this.assetDataMap.getOrFail(id)
     const holding = accountData.optedAssets.get(id) ?? new AssetHolding(0n, asset.defaultFrozen)
     if (balance !== undefined) holding.balance = asUint64(balance)
     if (frozen !== undefined) holding.frozen = frozen
@@ -255,7 +245,7 @@ export class LedgerContext {
    * @throws If the block is not set.
    */
   getBlockData(index: Uint64Compat): BlockData {
-    const i = asUint64BigInt(index)
+    const i = asUint64(index)
     if (this.blocks.has(i)) {
       return this.blocks.get(i)!
     }
@@ -268,7 +258,7 @@ export class LedgerContext {
    * @param key - The key.
    * @returns The global state and a boolean indicating if it was found.
    */
-  getGlobalState(app: ApplicationType | BaseContract, key: BytesCompat): [GlobalStateCls<unknown>, true] | [undefined, false] {
+  getGlobalState(app: ApplicationType | BaseContract | uint64, key: BytesCompat): [GlobalStateCls<unknown>, true] | [undefined, false] {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.get(appId)
     if (!appData?.application.globalStates.has(key)) {
@@ -283,7 +273,7 @@ export class LedgerContext {
    * @param key - The key.
    * @param value - The value (optional).
    */
-  setGlobalState(app: ApplicationType | BaseContract, key: BytesCompat, value: Uint64Compat | BytesCompat | undefined): void {
+  setGlobalState(app: ApplicationType | BaseContract | uint64, key: BytesCompat, value: Uint64Compat | BytesCompat | undefined): void {
     const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     const globalState = appData.application.globalStates.get(key)
@@ -308,7 +298,7 @@ export class LedgerContext {
     account: AccountType,
     key: BytesCompat,
   ): [LocalStateForAccount<unknown>, true] | [undefined, false] {
-    const appId = app instanceof Uint64Cls ? app.asAlgoTs() : this.getAppId(app as ApplicationType | BaseContract)
+    const appId = this.getAppId(app)
     const appData = this.applicationDataMap.get(appId)
     if (!appData?.application.localStateMaps.has(key)) {
       return [undefined, false]
@@ -326,7 +316,7 @@ export class LedgerContext {
    * @param value - The value (optional).
    */
   setLocalState<T>(app: ApplicationType | BaseContract | uint64, account: AccountType, key: BytesCompat, value: T | undefined): void {
-    const appId = app instanceof Uint64Cls ? app.asAlgoTs() : this.getAppId(app as ApplicationType | BaseContract)
+    const appId = this.getAppId(app)
     const appData = this.applicationDataMap.getOrFail(appId)
     if (!appData.application.localStateMaps.has(key)) {
       appData.application.localStateMaps.set(key, new AccountMap())
@@ -427,7 +417,9 @@ export class LedgerContext {
   }
 
   /** @internal */
-  private getAppId(app: ApplicationType | BaseContract): uint64 {
-    return app instanceof ApplicationCls ? app.id : this.getApplicationForContract(app as BaseContract).id
+  private getAppId(app: ApplicationType | BaseContract | uint64): uint64 {
+    if (app instanceof Uint64Cls) return app.asAlgoTs()
+    if (app instanceof ApplicationCls) return app.id
+    return this.getApplicationForContract(app as BaseContract).id
   }
 }

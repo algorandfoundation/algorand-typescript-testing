@@ -103,7 +103,7 @@ export const asMaybeBytesCls = (val: DeliberateAny) => tryFromCompat(() => Bytes
 
 /** @internal */
 export const binaryStringToBytes = (s: string): BytesCls =>
-  BytesCls.fromCompat(new Uint8Array(s.match(/.{1,8}/g)!.map((x) => parseInt(x, 2))))
+  BytesCls.fromCompat(new Uint8Array((s.match(/.{1,8}/g) ?? []).map((x) => parseInt(x, 2))))
 
 /** @internal */
 export const getRandomNumber = (min: number, max: number): number => {
@@ -119,7 +119,7 @@ export const getRandomBigInt = (min: number | bigint, max: number | bigint): big
 }
 
 /** @internal */
-export const getRandomBytes = (length: number): BytesCls => asBytesCls(Bytes(randomBytes(length)))
+export const getRandomBytes = (length: number): BytesCls => asBytesCls(randomBytes(length))
 
 /** @internal */
 export const flattenAsBytes = (arr: StubBytesCompat | StubBytesCompat[]): bytes => {
