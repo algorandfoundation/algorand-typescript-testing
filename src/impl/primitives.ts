@@ -210,18 +210,10 @@ Bytes.fromBase32 = <TLength extends uint64 = uint64>(b32: string, options?: ToFi
 function isOptionsOnly<TLength extends uint64>(
   value?: BytesCompat | TemplateStringsArray | biguint | uint64 | Iterable<number> | ToFixedBytesOptions<TLength>,
 ): value is ToFixedBytesOptions<TLength> {
+  const keys = Object.keys(value ?? {})
   return (
-    value !== null &&
     typeof value === 'object' &&
-    !Array.isArray(value) &&
-    !isTemplateStringsArray(value) &&
-    !(Symbol.iterator in value) &&
-    !(value instanceof BigUintCls) &&
-    !(value instanceof Uint64Cls) &&
-    !(value instanceof BytesCls) &&
-    !(value instanceof Uint8Array) &&
-    Object.keys(value).length <= 2 &&
-    Object.keys(value).includes('length')
+    ((keys.length === 1 && keys[0] === 'length') || (keys.length === 2 && keys.includes('length') && keys.includes('strategy')))
   )
 }
 
@@ -273,7 +265,7 @@ function isIterable(value: unknown): value is Iterable<number> {
 /**
  * Helper function to convert an iterable of numbers to BytesCls
  */
-function convertIterableToBytes(value: Iterable<number>): BytesCls {
+function convertIterableToBytes(value: Iterable<StubUint64Compat>): BytesCls {
   const valueItems = Array.from(value).map((v) => getNumber(v))
   const invalidValue = valueItems.find((v) => v < 0 || v > 255)
   if (invalidValue !== undefined) {
@@ -293,13 +285,7 @@ function extractOptionsFromReplacements<TLength extends uint64>(
   }
 
   const potentialOptions = replacements[0]
-  // Check if the replacement looks like options
-  if (
-    typeof potentialOptions === 'object' &&
-    potentialOptions !== null &&
-    Object.keys(potentialOptions).length <= 2 &&
-    Object.keys(potentialOptions).includes('length')
-  ) {
+  if (isOptionsOnly(potentialOptions)) {
     return potentialOptions as ToFixedBytesOptions<TLength>
   }
 
