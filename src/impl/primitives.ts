@@ -323,7 +323,7 @@ export const getNumber = (v: StubUint64Compat): number => {
     return Number(v)
   }
   if (v instanceof Uint64Cls) return v.asNumber()
-  throw new InternalError(`Cannot convert ${v} to number`)
+  throw new InternalError(`Cannot convert ${nameOfType(v)} to number`)
 }
 
 /** @internal */
@@ -417,7 +417,7 @@ export class Uint64Cls extends AlgoTsPrimitiveCls {
     if (typeof v == 'number') return new Uint64Cls(BigInt(v))
     if (typeof v == 'bigint') return new Uint64Cls(v)
     if (v instanceof Uint64Cls) return v
-    throw new InternalError(`Cannot convert ${v} to uint64`)
+    throw new InternalError(`Cannot convert ${nameOfType(v)} to uint64`)
   }
 
   valueOf(): bigint {
@@ -493,7 +493,7 @@ export class BigUintCls extends AlgoTsPrimitiveCls {
 }
 
 function isTemplateStringsArray(v: unknown): v is TemplateStringsArray {
-  return Boolean(v) && Array.isArray(v) && typeof v[0] === 'string'
+  return Array.isArray(v) && 'raw' in v
 }
 
 /** @internal */
@@ -607,7 +607,7 @@ export class BytesCls extends AlgoTsPrimitiveCls {
     return template
       .flatMap((templateText, index) => {
         const replacement = replacements[index]
-        if (replacement) {
+        if (replacement !== undefined) {
           return [BytesCls.fromCompat(templateText), BytesCls.fromCompat(replacement)]
         }
         return [BytesCls.fromCompat(templateText)]

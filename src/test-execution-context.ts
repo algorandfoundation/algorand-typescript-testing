@@ -112,7 +112,7 @@ export class TestExecutionContext {
   set defaultSender(val: bytes | AccountType) {
     if (val instanceof AccountCls) {
       this.#defaultSender = val
-    } else if (this.#defaultSender.bytes !== val) {
+    } else if (!this.#defaultSender.bytes.equals(val as bytes)) {
       this.#defaultSender = new AccountCls(val as bytes)
     }
   }

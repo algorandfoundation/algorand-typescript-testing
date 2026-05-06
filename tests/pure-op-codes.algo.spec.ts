@@ -896,7 +896,7 @@ describe('Pure op codes', async () => {
       await expect(
         getAvmResultRaw({ appClient }, 'verify_setbit_bytes', asUint8Array(a as bytes), b as number, c as number),
       ).rejects.toThrow('setbit index beyond byteslice')
-      expect(() => op.setBit(a as bytes, b as number, c as number)).toThrow(/setBit index \d+ is beyond length/)
+      expect(() => op.setBit(a as bytes, b as number, c as number)).toThrow(`setBit index ${b} is beyond length`)
     })
 
     test('should throw error when input is invalid', async ({ appClientMiscellaneousOpsContract: appClient }) => {

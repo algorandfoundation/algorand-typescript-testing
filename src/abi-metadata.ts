@@ -118,7 +118,7 @@ export const getContractMethod = (contractFullName: string, methodName: string) 
     throw new InternalError(`Unknown contract: ${contractFullName}`)
   }
 
-  if (!Object.hasOwn(contract.prototype, methodName)) {
+  if (!(methodName in contract.prototype)) {
     throw new InternalError(`Unknown method: ${methodName} in contract: ${contractFullName}`)
   }
 

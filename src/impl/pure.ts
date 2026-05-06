@@ -6,6 +6,8 @@ import { asBigUint, asBytes, asBytesCls, asMaybeBytesCls, asMaybeUint64Cls, asUi
 import type { StubBigUintCompat, StubBytesCompat, StubUint64Compat } from './primitives'
 import { BigUintCls, Bytes, BytesCls, checkBigUint, isUint64, Uint64, Uint64Cls } from './primitives'
 
+const BYTES_IN_UINT64 = UINT64_SIZE / BITS_IN_BYTE
+
 /** @internal */
 export const addw = (a: StubUint64Compat, b: StubUint64Compat): readonly [uint64, uint64] => {
   const uint64A = Uint64Cls.fromCompat(a)
@@ -49,7 +51,7 @@ export const bsqrt = (a: StubBigUintCompat): biguint => {
 /** @internal */
 export const btoi = (a: StubBytesCompat): uint64 => {
   const bytesValue = BytesCls.fromCompat(a)
-  if (bytesValue.length.asAlgoTs() > BITS_IN_BYTE) {
+  if (bytesValue.length.asAlgoTs() > BYTES_IN_UINT64) {
     throw new AvmError(`btoi arg too long, got ${bytesValue.length.valueOf()} bytes`)
   }
   return bytesValue.toUint64().asAlgoTs()
@@ -209,7 +211,7 @@ export const replace = (a: StubBytesCompat, b: StubUint64Compat, c: StubBytesCom
   return bytesValue
     .slice(0, index)
     .concat(replacement)
-    .concat(bytesValue.slice(index + replacementLength, valueLength))
+    .concat(bytesValue.slice(index + replacementLength))
     .asAlgoTs()
 }
 
@@ -260,14 +262,15 @@ export const setByte = (a: StubBytesCompat, b: StubUint64Compat, c: StubUint64Co
   const bitIndex = byteIndex * BITS_IN_BYTE
 
   const replacementNumber = Uint64Cls.fromCompat(c)
-  const replacement = toBinaryString(replacementNumber.toBytes().at(-1).asAlgoTs())
+  if (replacementNumber.valueOf() > MAX_UINT8) {
+    throw new CodeError(`setByte value ${replacementNumber.valueOf()} > ${MAX_UINT8}`)
+  }
 
+  const replacement = toBinaryString(replacementNumber.toBytes().at(-1).asAlgoTs())
   if (bitIndex >= binaryString.length) {
     throw new CodeError(`setByte index ${byteIndex} is beyond length`)
   }
-  if (replacementNumber.valueOf() > MAX_UINT8) {
-    throw new CodeError(`setByte value ${replacementNumber.asNumber()} > ${MAX_UINT8}`)
-  }
+
   const updatedString = binaryString.slice(0, bitIndex) + replacement + binaryString.slice(bitIndex + replacement.length)
   const updatedBytes = binaryStringToBytes(updatedString)
   return updatedBytes.asAlgoTs()
@@ -282,7 +285,7 @@ export const shl = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   if (bigIntB >= UINT64_SIZE) {
     throw new CodeError(`shl value ${bigIntB} >= ${UINT64_SIZE}`)
   }
-  const shifted = (bigIntA * 2n ** bigIntB) % 2n ** BigInt(UINT64_SIZE)
+  const shifted = (bigIntA << bigIntB) & MAX_UINT64
   return Uint64(shifted)
 }
 
@@ -295,7 +298,7 @@ export const shr = (a: StubUint64Compat, b: StubUint64Compat): uint64 => {
   if (bigIntB >= UINT64_SIZE) {
     throw new CodeError(`shr value ${bigIntB} >= ${UINT64_SIZE}`)
   }
-  const shifted = bigIntA / 2n ** bigIntB
+  const shifted = bigIntA >> bigIntB
   return Uint64(shifted)
 }
 
@@ -356,7 +359,7 @@ const toBinaryString = (a: bytes): string => {
 
 const doSetBit = (binaryString: string, index: number, bit: number): BytesCls => {
   if (index < 0 || index >= binaryString.length) {
-    throw new CodeError(`setBit index ${index < 0 ? binaryString.length - index : index} is beyond length`)
+    throw new CodeError(`setBit index ${index < 0 ? binaryString.length - index - 1 : index} is beyond length`)
   }
   if (bit !== 0 && bit !== 1) {
     throw new CodeError(`setBit value > 1`)
