@@ -114,7 +114,7 @@ export function Bytes(value: TemplateStringsArray, ...replacements: BytesCompat[
  */
 export function Bytes(value: string): bytes<uint64>
 /**
- * Create a byte array from a utf8 string
+ * Create a fixed-size byte array from a utf8 string
  */
 export function Bytes<TLength extends uint64>(value: string, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -130,7 +130,7 @@ export function Bytes<TLength extends uint64>(value: bytes, options: ToFixedByte
  */
 export function Bytes(value: biguint): bytes<uint64>
 /**
- * Create a byte array from a biguint value encoded as a variable length big-endian number
+ * Create a fixed-size byte array from a biguint value encoded as a variable length big-endian number
  */
 export function Bytes<TLength extends uint64>(value: biguint, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -138,7 +138,7 @@ export function Bytes<TLength extends uint64>(value: biguint, options: ToFixedBy
  */
 export function Bytes(value: uint64): bytes<uint64>
 /**
- * Create a byte array from a uint64 value encoded as a a variable length 64-bit number
+ * Create a fixed-size byte array from a uint64 value encoded as a a variable length 64-bit number
  */
 export function Bytes<TLength extends uint64 = 8>(value: uint64, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -146,7 +146,7 @@ export function Bytes<TLength extends uint64 = 8>(value: uint64, options: ToFixe
  */
 export function Bytes(value: Iterable<uint64>): bytes<uint64>
 /**
- * Create a byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
+ * Create a fixed-size byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
  */
 export function Bytes<TLength extends uint64>(value: Iterable<uint64>, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -154,7 +154,7 @@ export function Bytes<TLength extends uint64>(value: Iterable<uint64>, options: 
  */
 export function Bytes(): bytes<uint64>
 /**
- * Create an empty byte array
+ * Create an empty fixed-size byte array
  */
 export function Bytes<TLength extends uint64 = uint64>(options: ToFixedBytesOptions<TLength>): bytes<TLength>
 export function Bytes<TLength extends uint64 = uint64>(

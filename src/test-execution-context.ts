@@ -26,7 +26,7 @@ export class TestExecutionContext {
   #txnContext: TransactionContext
   #valueGenerator: ValueGenerator
   #defaultSender: AccountType
-  #activeLogicSigArgs: bytes[]
+  #activeLogicSigArgs: bytes[] = []
   #templateVars: Record<string, DeliberateAny> = {}
   #compiledApps: Map<ConstructorFor<BaseContract>, uint64> = new Map()
   #compiledLogicSigs: Map<ConstructorFor<LogicSig>, AccountType> = new Map()
@@ -44,7 +44,6 @@ export class TestExecutionContext {
     this.#txnContext = new TransactionContext()
     this.#valueGenerator = new ValueGenerator()
     this.#defaultSender = this.any.account({ address: defaultSenderAddress ?? getRandomBytes(32).asAlgoTs() })
-    this.#activeLogicSigArgs = []
   }
 
   /**
@@ -120,9 +119,9 @@ export class TestExecutionContext {
   /**
    * Returns the active logic signature arguments.
    *
-   * @type {bytes[]}
+   * @type {readonly bytes[]}
    */
-  get activeLogicSigArgs(): bytes[] {
+  get activeLogicSigArgs(): readonly bytes[] {
     return this.#activeLogicSigArgs
   }
 
@@ -131,7 +130,7 @@ export class TestExecutionContext {
    *
    * @type {Record<string, DeliberateAny>}
    */
-  get templateVars(): Record<string, DeliberateAny> {
+  get templateVars(): Readonly<Record<string, DeliberateAny>> {
     return this.#templateVars
   }
 
@@ -147,9 +146,8 @@ export class TestExecutionContext {
     try {
       if (logicSig.program.length === 0) {
         return logicSig.program()
-      } else {
-        return logicSig.program(...args)
       }
+      return logicSig.program(...args)
     } finally {
       this.#activeLogicSigArgs = []
     }
