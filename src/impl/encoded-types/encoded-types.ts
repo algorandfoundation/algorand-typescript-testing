@@ -104,6 +104,7 @@ export class Uint<N extends BitSize> extends _Uint<N> implements _ARC4Encodedint
     assert(bigIntValue <= maxValue, `expected value <= ${maxValue}, got: ${bigIntValue}`)
 
     this._value = encodingUtil.bigIntToUint8Array(bigIntValue, maxBytesLength(this.bitSize))
+    setARC4TypeSymbol(this, `arc4.Uint<${this.bitSize}>`)
   }
 
   get native() {
@@ -177,6 +178,7 @@ export class UFixed<N extends BitSize, M extends number> extends _UFixed<N, M> i
     assert(bigIntValue <= maxValue, `expected value <= ${maxValue}, got: ${bigIntValue}`)
 
     this._value = encodingUtil.bigIntToUint8Array(bigIntValue, maxBytesLength(this.bitSize))
+    setARC4TypeSymbol(this, `arc4.UFixed<${this.bitSize}, ${this.precision}>`)
   }
 
   get native() {
@@ -229,6 +231,7 @@ export class Byte extends _Byte implements _ARC4Encodedint8Array {
     super(v)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this._value = new Uint<8>(typeInfo, v)
+    setARC4TypeSymbol(this, `arc4.Uint<8>`)
   }
 
   asUint64() {
@@ -277,6 +280,7 @@ export class Str extends _Str implements _ARC4Encodedint8Array {
     const bytesLength = encodeLength(bytesValue.length.asNumber())
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this._value = asUint8Array(bytesLength.concat(bytesValue))
+    setARC4TypeSymbol(this, `arc4.Str`)
   }
   get native(): string {
     return encodingUtil.uint8ArrayToUtf8(this._value.slice(ABI_LENGTH_SIZE))
@@ -318,6 +322,7 @@ export class Bool extends _Bool implements _ARC4Encodedint8Array {
     super(v)
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this._value = encodingUtil.bigIntToUint8Array(v ? TRUE_BIGINT_VALUE : FALSE_BIGINT_VALUE, 1)
+    setARC4TypeSymbol(this, `arc4.Bool`)
   }
 
   get native(): boolean {
@@ -373,6 +378,7 @@ export class StaticArray<TItem extends _ARC4Encoded, TLength extends number>
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = this.typeInfo.genericArgs as StaticArrayGenericArgs
     this.size = parseInt(this.genericArgs.size.name, 10)
+    setARC4TypeSymbol(this, `arc4.StaticArray<${this.genericArgs.elementType.name}, ${this.size}>`)
 
     // if we are not initialising from bytes, we need to check and set the items
     if (!isInitialisingFromBytes) {
@@ -491,6 +497,7 @@ export class Address extends _Address implements _ARC4Encodedint8Array {
 
     this._value = StaticArray.fromBytes(uint8ArrayValue, typeInfo) as StaticArray<Byte, 32>
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
+    setARC4TypeSymbol(this, `arc4.Address`)
     return new Proxy(this, arrayProxyHandler<Byte>()) as Address
   }
 
@@ -552,6 +559,7 @@ export class DynamicArray<TItem extends _ARC4Encoded> extends _DynamicArray<TIte
     })
     this._value = items
 
+    setARC4TypeSymbol(this, `arc4.DynamicArray<${this.genericArgs.elementType.name}>`)
     return new Proxy(this, arrayProxyHandler<TItem>()) as DynamicArray<TItem>
   }
 
@@ -658,6 +666,7 @@ export class Tuple<TTuple extends [_ARC4Encoded, ..._ARC4Encoded[]]> extends _Tu
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     this.genericArgs = Object.values(this.typeInfo.genericArgs as Record<string, TypeInfo>)
 
+    setARC4TypeSymbol(this, `arc4.Tuple<${this.genericArgs.map((arg) => arg.name).join(', ')}>`)
     // if we are not initialising from bytes, we need to check and set the items
     if (!isInitialisingFromBytes) {
       assert(areAllARC4Encoded(items), 'expected ARC4 type')
@@ -747,6 +756,8 @@ export class Struct<T extends StructConstraint> extends (_Struct<StructConstrain
       })
     })
 
+    setARC4TypeSymbol(this, 'arc4.Struct')
+
     return new Proxy(this, {
       get(target, prop) {
         const originalValue = Reflect.get(target, prop)
@@ -825,6 +836,7 @@ export class DynamicBytes extends _DynamicBytes implements _ARC4Encodedint8Array
     const uint8ArrayValue = concatUint8Arrays(encodeLength(value?.length ?? 0).asUint8Array(), asUint8Array(value ?? new Uint8Array()))
     this._value = DynamicArray.fromBytes(uint8ArrayValue, typeInfo) as DynamicArray<Byte>
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
+    setARC4TypeSymbol(this, `arc4.DynamicBytes`)
     return new Proxy(this, arrayProxyHandler<Byte>()) as DynamicBytes
   }
 
@@ -891,6 +903,7 @@ export class StaticBytes<TLength extends uint64 = 0> extends _StaticBytes<TLengt
     this.typeInfo = typeof typeInfo === 'string' ? JSON.parse(typeInfo) : typeInfo
     const uint8ArrayValue = asUint8Array(value ?? new Uint8Array(getMaxLengthOfStaticContentType(this.typeInfo)))
     this._value = StaticArray.fromBytes(uint8ArrayValue, typeInfo) as unknown as StaticArray<Byte, TLength>
+    setARC4TypeSymbol(this, `arc4.StaticBytes<${this._value.length}>`)
     return new Proxy(this, arrayProxyHandler<Byte>()) as StaticBytes<TLength>
   }
 
@@ -1411,9 +1424,9 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     )
   }
   const encoders: Record<string, fromBytes<DeliberateAny>> = {
-    account: AccountCls.fromBytes,
-    application: ApplicationCls.fromBytes,
-    asset: AssetCls.fromBytes,
+    account: (value) => AccountCls.fromBytes(value),
+    application: (value) => ApplicationCls.fromBytes(value),
+    asset: (value) => AssetCls.fromBytes(value),
     boolean: booleanFromBytes,
     biguint: bigUintFromBytes,
     'bytes(<.*>)?': bytesFromBytes,
@@ -1449,4 +1462,10 @@ export const getEncoder = <T>(typeInfo: TypeInfo): fromBytes<T> => {
     throw new Error(`No encoder found for type ${typeInfo.name}`)
   }
   return encoder as fromBytes<T>
+}
+
+const setARC4TypeSymbol = (obj: DeliberateAny, value: string) => {
+  const symbol = Object.getOwnPropertySymbols(obj).find((s) => s.description === 'ARC4Type')
+  if (!symbol) return
+  obj[symbol] = value
 }

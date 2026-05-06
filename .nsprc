@@ -1,7 +1,10 @@
 {
-  "1112030": {
+  "GHSA-848j-6mx2-7j84": {
     "active": true,
-    "notes": "A new version of elliptic is not available yet",
-    "expiry": "2026-05-01"
+    "notes": "elliptic: cryptographic primitive with risky implementation. Direct dependency, required for Algorand cryptographic operations. No upstream fix published; monitor for patched release."
+  },
+  "GHSA-v2v4-37r5-5v8g": {
+    "active": true,
+    "notes": "ip-address: XSS in Address6 HTML-emitting methods. Transitive via semantic-release > @semantic-release/npm > npm (bundleDependencies) > make-fetch-happen > @npmcli/agent > socks-proxy-agent > socks. Not reachable from runtime/build flow; awaiting npm release that bumps bundled socks."
   }
 }

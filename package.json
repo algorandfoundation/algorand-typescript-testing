@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A library which allows you to execute Algorand TypeScript code locally under a test context either emulating or mocking AVM behaviour.",
   "private": false,
+    "repository": {
+    "type": "git",
+    "url": "https://github.com/algorandfoundation/algorand-typescript-testing.git"
+  },
   "main": "index.js",
   "types": "src/index.ts",
   "scripts": {
@@ -27,7 +31,7 @@
     "script:refresh-test-artifacts": "puya-ts --out-dir data --output-awst --output-awst-json ./tests/artifacts/*/ --puya-path=/home/parallels/.local/bin/puya"
   },
   "devDependencies": {
-    "@algorandfoundation/algokit-utils": "^10.0.0-alpha.40",
+    "@algorandfoundation/algokit-utils": "^10.0.0-beta.2",
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
     "@dotenvx/dotenvx": "^1.51.2",
@@ -68,20 +72,13 @@
     "vitest": "4.0.16"
   },
   "dependencies": {
-    "@algorandfoundation/algorand-typescript": "1.1.0",
-    "@algorandfoundation/puya-ts": "1.1.0",
+    "@algorandfoundation/algorand-typescript": "1.2.0-beta.31",
+    "@algorandfoundation/puya-ts": "1.2.0-beta.31",
     "elliptic": "^6.6.1",
     "js-sha256": "^0.11.1",
     "js-sha3": "^0.9.3",
     "js-sha512": "^0.9.0",
     "tweetnacl": "^1.0.3",
     "upath": "^2.0.1"
-  },
-  "overrides": {
-    "cross-spawn": "7.0.6",
-    "esbuild": "0.25.0",
-    "npm": "^11.8.0",
-    "lodash-es": "^4.17.23",
-    "tar": "7.5.11"
   }
 }

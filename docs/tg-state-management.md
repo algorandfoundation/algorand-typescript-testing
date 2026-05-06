@@ -30,6 +30,49 @@ contract.stateA.value = algots.Uint64(10)
 contract.stateB.value = algots.Uint64(20)
 ```
 
+## GlobalMap
+
+`GlobalMap` provides a key-value mapping stored in global state. Keys are prefixed with either an explicit `keyPrefix` or the attribute name by default.
+
+**Note**: _Contracts using `GlobalMap` must specify adequate [`stateTotals`](https://algorandfoundation.github.io/puya-ts/language-guide/program-structure/#contract-options) to allocate enough global storage slots for the application on creation._
+
+```ts
+@algots.contract({ stateTotals: { globalUints: 5, globalBytes: 5 } })
+class MyContract extends algots.arc4.Contract {
+  // Implicit key prefix (derived from attribute name)
+  counters = algots.GlobalMap<algots.uint64, algots.arc4.Uint64>()
+
+  // Explicit key prefix
+  labels = algots.GlobalMap<algots.uint64, algots.arc4.Str>({ keyPrefix: 'my_labels' })
+
+  @algots.arc4.abimethod()
+  setCounter(key: algots.uint64, value: algots.arc4.Uint64): void {
+    this.counters(key).value = value
+  }
+
+  @algots.arc4.abimethod()
+  getCounter(key: algots.uint64): algots.arc4.Uint64 {
+    return this.counters(key).value
+  }
+}
+
+// In your test
+const contract = ctx.contract.create(MyContract)
+
+// Set and get values
+contract.setCounter(algots.Uint64(1), new algots.arc4.Uint64(42))
+expect(contract.getCounter(algots.Uint64(1))).toEqual(new algots.arc4.Uint64(42))
+
+// Check key prefix
+expect(contract.counters.keyPrefix).toEqual('counters')
+expect(contract.labels.keyPrefix).toEqual('my_labels')
+
+// Check existence and delete
+expect(contract.counters(algots.Uint64(1)).hasValue).toBe(true)
+contract.counters(algots.Uint64(1)).delete()
+expect(contract.counters(algots.Uint64(1)).hasValue).toBe(false)
+```
+
 ## Local State
 
 Local state is defined similarly to global state, but accessed using account addresses as keys.
@@ -43,6 +86,50 @@ class MyContract extends algots.arc4.Contract {
 const contract = ctx.contract.create(MyContract)
 const account = ctx.any.account()
 contract.localStateA(account).value = algots.Uint64(10)
+```
+
+## LocalMap
+
+`LocalMap` provides a key-value mapping stored in local state, scoped per account. Like `GlobalMap`, keys are prefixed with either an explicit `keyPrefix` or the attribute name.
+
+**Note**: _Contracts using `LocalMap` must specify adequate [`stateTotals`](https://algorandfoundation.github.io/puya-ts/language-guide/program-structure/#contract-options) to allocate enough local storage slots for the application on creation._
+
+```ts
+@algots.contract({ stateTotals: { localUints: 5, localBytes: 5 } })
+class MyContract extends algots.arc4.Contract {
+  scores = algots.LocalMap<algots.uint64, algots.arc4.Uint64>()
+
+  @algots.arc4.abimethod({ allowActions: ['OptIn'] })
+  opt_in(): void {}
+
+  @algots.arc4.abimethod()
+  setScore(account: algots.Account, key: algots.uint64, value: algots.arc4.Uint64): void {
+    this.scores(key, account).value = value
+  }
+
+  @algots.arc4.abimethod()
+  getScore(account: algots.Account, key: algots.uint64): algots.arc4.Uint64 {
+    return this.scores(key, account).value
+  }
+}
+
+// In your test
+const contract = ctx.contract.create(MyContract)
+const account1 = ctx.defaultSender
+const account2 = ctx.any.account()
+
+// Set values per account
+contract.setScore(account1, algots.Uint64(1), new algots.arc4.Uint64(100))
+contract.setScore(account2, algots.Uint64(1), new algots.arc4.Uint64(200))
+
+// Each account has independent state
+expect(contract.getScore(account1, algots.Uint64(1))).toEqual(new algots.arc4.Uint64(100))
+expect(contract.getScore(account2, algots.Uint64(1))).toEqual(new algots.arc4.Uint64(200))
+
+// Check existence and delete
+expect(contract.scores(algots.Uint64(1), account1).hasValue).toBe(true)
+contract.scores(algots.Uint64(1), account1).delete()
+expect(contract.scores(algots.Uint64(1), account1).hasValue).toBe(false)
 ```
 
 ## Boxes

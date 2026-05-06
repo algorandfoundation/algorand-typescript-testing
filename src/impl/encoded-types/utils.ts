@@ -54,6 +54,8 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
     }
   }
   switch (trimGenericTypeName(type.name)) {
+    case 'Application':
+    case 'Asset':
     case 'uint64':
       return UINT64_SIZE / BITS_IN_BYTE
     case 'biguint':
@@ -67,6 +69,8 @@ export const getMaxLengthOfStaticContentType = (type: TypeInfo, asArc4Encoded: b
       return parseInt((type.genericArgs as TypeInfo[])![0].name, 10) / BITS_IN_BYTE
     case 'UFixed':
       return parseInt((type.genericArgs as uFixedGenericArgs).n.name, 10) / BITS_IN_BYTE
+    case 'Account':
+      return 32
     case 'Address':
     case 'StaticBytes':
     case 'StaticArray':

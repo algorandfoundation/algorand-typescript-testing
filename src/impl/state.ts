@@ -4,8 +4,10 @@ import type {
   BoxMap as BoxMapType,
   Box as BoxType,
   bytes,
+  GlobalMap as GlobalMapType,
   GlobalStateOptions,
   GlobalState as GlobalStateType,
+  LocalMap as LocalMapType,
   LocalStateForAccount,
   LocalState as LocalStateType,
   uint64,
@@ -69,7 +71,46 @@ export class GlobalStateCls<ValueType> {
   }
 }
 
-export class LocalStateCls<ValueType> {
+export class GlobalMapCls<TKey, TValue> {
+  private _keyPrefix: bytes | undefined
+
+  private readonly _type: string = GlobalMapCls.name
+
+  static [Symbol.hasInstance](x: unknown): x is GlobalMapCls<unknown, unknown> {
+    return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === GlobalMapCls.name
+  }
+
+  get hasKeyPrefix(): boolean {
+    return this._keyPrefix !== undefined && this._keyPrefix.length > 0
+  }
+
+  get keyPrefix(): bytes {
+    if (this._keyPrefix === undefined || this._keyPrefix.length === 0) {
+      throw new InternalError('GlobalMap key prefix is empty')
+    }
+    return this._keyPrefix
+  }
+
+  set keyPrefix(keyPrefix: StubBytesCompat) {
+    this._keyPrefix = asBytes(keyPrefix)
+  }
+
+  resolve(key: TKey): GlobalStateType<TValue> {
+    const fullKey = this.getFullKey(key)
+    const appData = lazyContext.getApplicationData(lazyContext.activeApplication.id)
+    const application = appData.application
+    if (!application.globalStates.has(fullKey)) {
+      application.globalStates.set(fullKey, new GlobalStateCls<TValue>(fullKey))
+    }
+    return application.globalStates.getOrFail(fullKey) as GlobalStateCls<TValue>
+  }
+
+  private getFullKey(key: TKey): bytes {
+    return this.keyPrefix.concat(toBytes(key))
+  }
+}
+
+export class LocalStateForAccountCls<ValueType> {
   /** @internal */
   #value: ValueType | undefined
 
@@ -105,20 +146,20 @@ export class LocalStateMapCls<ValueType> {
     this.applicationId = lazyContext.activeGroup.activeApplicationId
   }
 
-  getValue(key: string | bytes | undefined, account: Account): LocalStateCls<ValueType> {
+  getValue(key: string | bytes | undefined, account: Account): LocalStateForAccountCls<ValueType> {
     const bytesKey = key === undefined ? Bytes() : asBytes(key)
-    const localStateMap = this.ensureApplicationLocalStateMap(bytesKey)
+    const localStateMap = this.getApplicationLocalStateMap(bytesKey)
     if (!localStateMap.has(account)) {
-      localStateMap.set(account, new LocalStateCls())
+      localStateMap.set(account, new LocalStateForAccountCls())
     }
-    return localStateMap.getOrFail(account) as LocalStateCls<ValueType>
+    return localStateMap.getOrFail(account) as LocalStateForAccountCls<ValueType>
   }
 
   /** @internal */
-  private ensureApplicationLocalStateMap(key: bytes | string) {
+  getApplicationLocalStateMap(key: bytes | string) {
     const applicationData = lazyContext.ledger.applicationDataMap.getOrFail(this.applicationId)!.application
     if (!applicationData.localStateMaps.has(key)) {
-      applicationData.localStateMaps.set(key, new AccountMap<LocalStateCls<ValueType>>())
+      applicationData.localStateMaps.set(key, new AccountMap<LocalStateForAccountCls<ValueType>>())
     }
     return applicationData.localStateMaps.getOrFail(key)
   }
@@ -130,14 +171,96 @@ export function GlobalState<ValueType>(options?: GlobalStateOptions<ValueType>):
 }
 
 /** @internal */
-export function LocalState<ValueType>(options?: { key?: bytes | string }): LocalStateType<ValueType> {
-  function localStateInternal(account: Account): LocalStateForAccount<ValueType> {
-    return localStateInternal.map.getValue(localStateInternal.key, account)
+export function GlobalMap<TKey, TValue>(options?: { keyPrefix?: bytes | string }): GlobalMapType<TKey, TValue> {
+  const globalMap = new GlobalMapCls<TKey, TValue>()
+  const func = (key: TKey): GlobalStateType<TValue> => proxy.resolve(key)
+
+  const proxy = Object.setPrototypeOf(func, globalMap)
+  if (options?.keyPrefix !== undefined) {
+    proxy.keyPrefix = options.keyPrefix
   }
-  localStateInternal.key = options?.key
-  localStateInternal.hasKey = options?.key !== undefined && options.key.length > 0
-  localStateInternal.map = new LocalStateMapCls<ValueType>()
-  return localStateInternal
+
+  return proxy
+}
+
+export class LocalStateCls<ValueType> {
+  key: bytes | string | undefined
+
+  private readonly _type: string = LocalStateCls.name
+
+  static [Symbol.hasInstance](x: unknown): x is LocalStateCls<unknown> {
+    return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === LocalStateCls.name
+  }
+
+  get hasKey(): boolean {
+    return this.key !== undefined && this.key.length > 0
+  }
+
+  map: LocalStateMapCls<ValueType> = new LocalStateMapCls<ValueType>()
+
+  resolve(account: Account): LocalStateForAccount<ValueType> {
+    return this.map.getValue(this.key, account)
+  }
+}
+
+/** @internal */
+export function LocalState<ValueType>(options?: { key?: bytes | string }): LocalStateType<ValueType> {
+  const localState = new LocalStateCls<ValueType>()
+  const func = (account: Account): LocalStateForAccount<ValueType> => proxy.resolve(account)
+
+  const proxy = Object.setPrototypeOf(func, localState)
+  if (options?.key !== undefined) {
+    proxy.key = options.key
+  }
+
+  return proxy
+}
+
+export class LocalMapCls<TKey, TValue> {
+  private _keyPrefix: bytes | undefined
+
+  private readonly _type: string = LocalMapCls.name
+
+  static [Symbol.hasInstance](x: unknown): x is LocalMapCls<unknown, unknown> {
+    return x instanceof Object && '_type' in x && (x as { _type: string })['_type'] === LocalMapCls.name
+  }
+
+  get hasKeyPrefix(): boolean {
+    return this._keyPrefix !== undefined && this._keyPrefix.length > 0
+  }
+
+  get keyPrefix(): bytes {
+    if (this._keyPrefix === undefined || this._keyPrefix.length === 0) {
+      throw new InternalError('LocalMap key prefix is empty')
+    }
+    return this._keyPrefix
+  }
+
+  set keyPrefix(keyPrefix: StubBytesCompat) {
+    this._keyPrefix = asBytes(keyPrefix)
+  }
+
+  map: LocalStateMapCls<TValue> = new LocalStateMapCls<TValue>()
+
+  resolve(key: TKey, account?: Account): LocalStateForAccount<TValue> | LocalStateType<TValue> {
+    const fullKey = this.keyPrefix.concat(toBytes(key))
+    return account
+      ? this.map.getValue(fullKey, account)
+      : (this.map.getApplicationLocalStateMap(fullKey) as unknown as LocalStateType<TValue>)
+  }
+}
+
+/** @internal */
+export function LocalMap<TKey, TValue>(options?: { keyPrefix?: bytes | string }): LocalMapType<TKey, TValue> {
+  const localMap = new LocalMapCls<TKey, TValue>()
+  const func = (key: TKey, account?: Account): LocalStateForAccount<TValue> | LocalStateType<TValue> => proxy.resolve(key, account)
+
+  const proxy = Object.setPrototypeOf(func, localMap)
+  if (options?.keyPrefix !== undefined) {
+    proxy.keyPrefix = options.keyPrefix
+  }
+
+  return proxy
 }
 
 /** @internal */
@@ -345,7 +468,7 @@ export class BoxCls<TValue> {
 /** @internal */
 export class BoxMapCls<TKey, TValue> {
   private _keyPrefix: bytes | undefined
-  #app: Application
+  private _app: Application
 
   private readonly _type: string = BoxMapCls.name
 
@@ -354,7 +477,7 @@ export class BoxMapCls<TKey, TValue> {
   }
 
   constructor() {
-    this.#app = lazyContext.activeApplication
+    this._app = lazyContext.activeApplication
   }
 
   get hasKeyPrefix(): boolean {
@@ -372,10 +495,10 @@ export class BoxMapCls<TKey, TValue> {
     this._keyPrefix = asBytes(keyPrefix)
   }
 
-  call(key: TKey, proxy: (key: TKey) => BoxType<TValue>): BoxType<TValue> {
-    const typeInfo = getGenericTypeInfo(proxy)
+  resolve(key: TKey): BoxType<TValue> {
+    const typeInfo = getGenericTypeInfo(this)
     const valueType = (typeInfo!.genericArgs! as TypeInfo[])[1]
-    const box = new BoxCls<TValue>(this.getFullKey(key), this.#app, valueType)
+    const box = new BoxCls<TValue>(this.getFullKey(key), this._app, valueType)
     return box
   }
 
@@ -392,10 +515,11 @@ export function Box<TValue>(options?: { key: bytes | string }): BoxType<TValue> 
 /** @internal */
 export function BoxMap<TKey, TValue>(options?: { keyPrefix: bytes | string }): BoxMapType<TKey, TValue> {
   const boxMap = new BoxMapCls<TKey, TValue>()
+  const func = (key: TKey): BoxType<TValue> => proxy.resolve(key)
+  const proxy = Object.setPrototypeOf(func, boxMap)
   if (options?.keyPrefix !== undefined) {
-    boxMap.keyPrefix = options.keyPrefix
+    proxy.keyPrefix = options.keyPrefix
   }
 
-  const x = (key: TKey): BoxType<TValue> => boxMap.call(key, x)
-  return Object.setPrototypeOf(x, boxMap)
+  return proxy
 }

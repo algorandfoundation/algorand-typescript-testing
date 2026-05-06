@@ -21,7 +21,9 @@ See which `algorand-typescript` stubs are implemented in the `algorand-typescrip
 | ContractProxy                | Mockable            |
 | FixedArray                   | Native              |
 | Global                       | Emulated            |
+| GlobalMap                    | Emulated            |
 | GlobalState                  | Emulated            |
+| LocalMap                     | Emulated            |
 | LocalState                   | Emulated            |
 | OnCompleteAction             | Native              |
 | OpUpFeeSource                | Native              |

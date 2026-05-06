@@ -4,7 +4,7 @@ import ts from 'typescript'
 import { CodeError } from '../errors'
 import type { TypeInfo } from '../impl/encoded-types'
 import { instanceOfAny } from '../typescript-helpers'
-import { normalisePath } from './helpers'
+import { normalisePath, ptypeToArc4EncodedType } from './helpers'
 import { nodeFactory } from './node-factory'
 import type { TransformerConfig } from './program-factory'
 import {
@@ -176,7 +176,6 @@ class ExpressionVisitor {
       const type = this.helper.resolveType(node)
 
       const isGeneric = isGenericType(type)
-      const needsToCaptureTypeInfo = isGeneric && isStateOrBoxType(type)
       const isArc4Encoded = isEncodedType(type)
       const info = isGeneric || isArc4Encoded ? getGenericTypeInfo(type) : undefined
       let updatedNode = node
@@ -205,7 +204,7 @@ class ExpressionVisitor {
         ) {
           infoArg = this.helper.resolveTypeParameters(updatedNode).map((t) => getGenericTypeInfo(t, sourceLocation))[0]
         } else if (isCallingDecodeArc4(stubbedFunctionName)) {
-          const sourceType = ptypes.ptypeToArc4EncodedType(type, sourceLocation)
+          const sourceType = ptypeToArc4EncodedType(type, sourceLocation)
           const sourceTypeInfo = getGenericTypeInfo(sourceType, sourceLocation)
           const targetTypeInfo = getGenericTypeInfo(type, sourceLocation)
           infoArg = [sourceTypeInfo, targetTypeInfo]
@@ -226,7 +225,7 @@ class ExpressionVisitor {
           }
         }
       }
-      return needsToCaptureTypeInfo
+      return isGeneric
         ? nodeFactory.captureGenericTypeInfo(ts.visitEachChild(updatedNode, this.visit, this.context), JSON.stringify(info))
         : ts.visitEachChild(updatedNode, this.visit, this.context)
     }
@@ -409,7 +408,9 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.BoxMapPType,
     ptypes.BoxPType,
     ptypes.DynamicArrayType,
+    ptypes.GlobalMapType,
     ptypes.GlobalStateType,
+    ptypes.LocalMapType,
     ptypes.LocalStateType,
     ptypes.StaticArrayType,
     ptypes.UFixedNxMType,
@@ -419,9 +420,6 @@ const isGenericType = (type: ptypes.PType): boolean =>
     ptypes.MutableObjectPType,
     ptypes.ImmutableObjectPType,
   )
-
-const isStateOrBoxType = (type: ptypes.PType): boolean =>
-  instanceOfAny(type, ptypes.BoxMapPType, ptypes.BoxPType, ptypes.GlobalStateType, ptypes.LocalStateType)
 
 const isEncodedType = (type: ptypes.PType): boolean =>
   instanceOfAny(
@@ -449,7 +447,7 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
 
   if (instanceOfAny(type, ptypes.LocalStateType, ptypes.GlobalStateType, ptypes.BoxPType)) {
     genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
-  } else if (type instanceof ptypes.BoxMapPType) {
+  } else if (instanceOfAny(type, ptypes.BoxMapPType, ptypes.GlobalMapType, ptypes.LocalMapType)) {
     genericArgs.push(getGenericTypeInfo(type.keyType, sourceLocation))
     genericArgs.push(getGenericTypeInfo(type.contentType, sourceLocation))
   } else if (
@@ -475,18 +473,10 @@ const getGenericTypeInfo = (type: ptypes.PType, sourceLocation?: SourceLocation)
     genericArgs.push({ name: type.n.toString() })
   } else if (type instanceof ptypes.ARC4StructType) {
     typeName = `Struct<${type.name}>`
-    genericArgs = Object.fromEntries(
-      Object.entries(type.fields)
-        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
-        .filter((x) => !!x),
-    )
+    genericArgs = Object.fromEntries(type.fields.map((f) => [f.name, getGenericTypeInfo(f.ptype, sourceLocation)]).filter((x) => !!x))
   } else if (type instanceof ptypes.MutableObjectPType || type instanceof ptypes.ImmutableObjectPType) {
     typeName = type instanceof ptypes.MutableObjectPType ? `Object<${type.name}>` : `ReadonlyObject<${type.name}>`
-    genericArgs = Object.fromEntries(
-      Object.entries(type.properties)
-        .map(([key, value]) => [key, getGenericTypeInfo(value, sourceLocation)])
-        .filter((x) => !!x),
-    )
+    genericArgs = Object.fromEntries(type.properties.map((p) => [p.name, getGenericTypeInfo(p.ptype, sourceLocation)]).filter((x) => !!x))
   } else if (
     type instanceof ptypes.ARC4TupleType ||
     type instanceof ptypes.MutableTuplePType ||

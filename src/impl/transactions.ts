@@ -20,7 +20,7 @@ import { Account, Application, Asset } from './reference'
 
 /** @internal */
 const baseDefaultFields = () => ({
-  sender: lazyContext.defaultSender,
+  sender: lazyContext.hasActiveGroup ? lazyContext.activeApplication.address : lazyContext.defaultSender,
   fee: Uint64(0),
   firstValid: Uint64(0),
   firstValidTime: Uint64(0),

@@ -4,7 +4,7 @@ on:
       node-version:
         required: false
         type: string
-        default: 18.x
+        default: 24.x
       working-directory:
         required: false
         type: string
@@ -96,13 +96,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       # setup node + private repo access
       - name: Use Node.js ${{ inputs.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
           registry-url: 'https://npm.pkg.github.com'
@@ -112,7 +112,7 @@ jobs:
 
       - name: Download artifacts
         if: ${{ inputs.download-artifact-name || inputs.download-artifact-pattern }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.download-artifact-name }}
           pattern: ${{ inputs.download-artifact-pattern }}
@@ -151,7 +151,7 @@ jobs:
         #Requires permissions.checks: write
       - name: Publish test results
         if: ${{ inputs.output-test-results }}
-        uses: phoenix-actions/test-reporting@v10
+        uses: phoenix-actions/test-reporting@v15
         with:
           name: Test results
           path: ${{ inputs.test-results-file-pattern }}
@@ -171,9 +171,8 @@ jobs:
 
       - name: Publish artifact
         if: ${{ inputs.upload-artifact-name }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.upload-artifact-name }}
           path: ${{ inputs.upload-artifact-path }}
-
-
+          if-no-files-found: error
