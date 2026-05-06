@@ -19,9 +19,8 @@ export interface AbiMetadata {
   resourceEncoding?: arc4.ResourceEncodingOptions
 }
 
-const metadataStore: WeakMap<{ new (): Contract }, Record<string, AbiMetadata>> = new WeakMap()
-const contractSymbolMap: Map<string, symbol> = new Map()
-const contractMap: WeakMap<symbol, { new (): Contract }> = new WeakMap()
+const metadataStore: Map<{ new (): Contract }, Record<string, AbiMetadata>> = new Map()
+const contractMap: Map<string, { new (): Contract }> = new Map()
 /** @internal */
 export const attachAbiMetadata = (
   contract: { new (): Contract },
@@ -31,28 +30,21 @@ export const attachAbiMetadata = (
   contractName: string,
 ): void => {
   const contractFullName = `${fileName}::${contractName}`
-  if (!contractSymbolMap.has(contractFullName)) {
-    contractSymbolMap.set(contractFullName, Symbol(contractFullName))
+  if (!contractMap.has(contractFullName)) {
+    contractMap.set(contractFullName, contract)
   }
-  const contractSymbol = contractSymbolMap.get(contractFullName)!
-  if (!contractMap.has(contractSymbol)) {
-    contractMap.set(contractSymbol, contract)
+  let storedMetadata = metadataStore.get(contract)
+  if (!storedMetadata) {
+    storedMetadata = {}
+    metadataStore.set(contract, storedMetadata)
   }
-  if (!metadataStore.has(contract)) {
-    metadataStore.set(contract, {})
-  }
-  const metadatas: Record<string, AbiMetadata> = metadataStore.get(contract) as Record<string, AbiMetadata>
+
   const conventionalRoutingConfig = getConventionalRoutingConfig(methodName)
-  metadatas[methodName] = {
+  storedMetadata[methodName] = {
     ...metadata,
     allowActions: metadata.allowActions ?? conventionalRoutingConfig?.allowActions,
     onCreate: metadata.onCreate ?? conventionalRoutingConfig?.onCreate,
   }
-}
-
-export const getContractByName = (contractFullname: string): { new (): Contract } | undefined => {
-  const contractSymbol = contractSymbolMap.get(contractFullname)
-  return !contractSymbol ? undefined : contractMap.get(contractSymbol)
 }
 
 /** @internal */
@@ -64,14 +56,13 @@ export const getContractAbiMetadata = <T extends Contract>(contract: T | { new (
   let currentClass = contract instanceof Contract ? (contract.constructor as { new (): T }) : contract
 
   // Walk up the prototype chain
-  while (currentClass && currentClass.prototype) {
+  while (currentClass) {
     // Find metadata for current class
     const currentMetadata = metadataStore.get(currentClass)
 
     if (currentMetadata) {
       // Merge metadata with existing result (don't override existing entries)
-      const classMetadata = currentMetadata
-      for (const [methodName, metadata] of Object.entries(classMetadata)) {
+      for (const [methodName, metadata] of Object.entries(currentMetadata)) {
         if (!(methodName in result)) {
           result[methodName] = {
             ...metadata,
@@ -94,27 +85,24 @@ export const getContractMethodAbiMetadata = <T extends Contract>(contract: T | {
   return metadatas[methodName]
 }
 
-/** @internal */
-export const getArc4Signature = (metadata: AbiMetadata): string => {
-  if (metadata.methodSignature === undefined) {
-    const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map((t) => getArc4TypeName(t, metadata.resourceEncoding, 'in'))
-    const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo, metadata.resourceEncoding, 'out')
-    metadata.methodSignature = `${metadata.name ?? metadata.methodName}(${argTypes.join(',')})${returnType}`
-  }
-  return metadata.methodSignature
+const computeArc4Signature = (metadata: AbiMetadata): string => {
+  const argTypes = metadata.argTypes.map((t) => JSON.parse(t) as TypeInfo).map((t) => getArc4TypeName(t, metadata.resourceEncoding, 'in'))
+  const returnType = getArc4TypeName(JSON.parse(metadata.returnType) as TypeInfo, metadata.resourceEncoding, 'out')
+  return `${metadata.name ?? metadata.methodName}(${argTypes.join(',')})${returnType}`
 }
 
 /** @internal */
 export const getArc4Selector = (metadata: AbiMetadata): Uint8Array => {
-  const hash = js_sha512.sha512_256.array(getArc4Signature(metadata))
+  metadata.methodSignature ??= computeArc4Signature(metadata)
+  const hash = js_sha512.sha512_256.array(metadata.methodSignature)
   return new Uint8Array(hash.slice(0, 4))
 }
 
 /** @internal */
 export const getContractMethod = (contractFullName: string, methodName: string) => {
-  const contract = getContractByName(contractFullName)
+  const contract = contractMap.get(contractFullName)
 
-  if (contract === undefined || typeof contract !== 'function') {
+  if (contract === undefined) {
     throw new InternalError(`Unknown contract: ${contractFullName}`)
   }
 

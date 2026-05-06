@@ -127,9 +127,8 @@ export const flattenAsBytes = (arr: StubBytesCompat | StubBytesCompat[]): bytes 
 }
 
 const NoValue = Symbol('no-value')
-type LazyInstance<T> = () => T
 /** @internal */
-export const Lazy = <T>(factory: () => T): LazyInstance<T> => {
+export const Lazy = <T>(factory: () => T): (() => T) => {
   let val: T | typeof NoValue = NoValue
 
   return () => {
@@ -144,13 +143,8 @@ const ObjectReferenceSymbol = Symbol('ObjectReference')
 const objectRefIter = iterBigInt(1001n, MAX_UINT512)
 /** @internal */
 export const getObjectReference = (obj: DeliberateAny): bigint => {
-  const tryGetReference = (obj: DeliberateAny): bigint | undefined => {
-    const s = Object.getOwnPropertySymbols(obj).find((s) => s.toString() === ObjectReferenceSymbol.toString())
-    return s ? obj[s] : ObjectReferenceSymbol in obj ? obj[ObjectReferenceSymbol] : undefined
-  }
-  const existingRef = tryGetReference(obj)
-  if (existingRef !== undefined) {
-    return existingRef
+  if (ObjectReferenceSymbol in obj) {
+    return obj[ObjectReferenceSymbol]
   }
   const ref = objectRefIter.next().value
   Object.defineProperty(obj, ObjectReferenceSymbol, {
@@ -200,14 +194,6 @@ export const uint8ArrayToNumber = (value: Uint8Array): number => {
  * @param {unknown} condition - The condition to assert
  * @param {string} [message] - Optional error message if assertion fails
  * @throws {AssertError} Throws if condition is falsy
- *
- * @example
- * ```ts
- * const value: string | undefined = "test";
- * assert(value !== undefined);
- *
- * assert(false, "This will throw"); // throws AssertError: This will throw
- * ```
  */
 /** @internal */
 export function assert(condition: unknown, message?: string): asserts condition {
@@ -223,13 +209,6 @@ export function assert(condition: unknown, message?: string): asserts condition 
  * @param {string} [message] - Optional error message. Defaults to "err opcode executed"
  * @throws {AvmError} Always throws an AvmError
  * @returns {never} Function never returns normally
- *
- * @example
- * ```ts
- * if (amount < 0) {
- *   err("Invalid amount"); // Throws AvmError: Invalid amount
- * }
- * ```
  */
 /** @internal */
 export function err(message?: string): never {
