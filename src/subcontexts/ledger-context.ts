@@ -30,7 +30,7 @@ import {
 import { GlobalStateCls, LocalStateForAccountCls } from '../impl/state'
 import { VoterData } from '../impl/voter-params'
 import type { PickPartial } from '../typescript-helpers'
-import { asBigInt, asBytes, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64Cls, asUint8Array, iterBigInt } from '../util'
+import { asBytes, asMaybeBytesCls, asMaybeUint64Cls, asUint64, asUint64BigInt, asUint64Cls, asUint8Array, iterBigInt } from '../util'
 
 export class LedgerContext {
   /** @internal */
@@ -255,7 +255,7 @@ export class LedgerContext {
    * @throws If the block is not set.
    */
   getBlockData(index: Uint64Compat): BlockData {
-    const i = asBigInt(index)
+    const i = asUint64BigInt(index)
     if (this.blocks.has(i)) {
       return this.blocks.get(i)!
     }

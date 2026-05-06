@@ -28,7 +28,6 @@ import {
 import { AvmError, avmInvariant, CodeError, InternalError } from '../../errors'
 import { nameOfType, type DeliberateAny } from '../../typescript-helpers'
 import {
-  asBigInt,
   asBigUint,
   asBigUintCls,
   asBytes,
@@ -38,6 +37,7 @@ import {
   asMaybeUint64Cls,
   asNumber,
   asUint64,
+  asUint64BigInt,
   asUint64Cls,
   asUint8Array,
   concatUint8Arrays,
@@ -1257,7 +1257,7 @@ export const getArc4Encoded = (value: DeliberateAny, sourceTypeInfoString?: stri
     return new Bool({ name: 'Bool' }, value)
   }
   if (value instanceof Uint64Cls || typeof value === 'number') {
-    return new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asBigInt(value))
+    return new Uint({ name: 'Uint<64>', genericArgs: [{ name: '64' }] }, asUint64BigInt(value))
   }
   if (value instanceof BigUintCls) {
     return new Uint({ name: 'Uint<512>', genericArgs: [{ name: '512' }] }, value.asBigInt())
