@@ -1,6 +1,6 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { randomBytes } from 'crypto'
-import { BITS_IN_BYTE, MAX_BYTES_SIZE, MAX_UINT512, MAX_UINT8, UINT512_SIZE } from './constants'
+import { BITS_IN_BYTE, MAX_BYTES_SIZE, MAX_UINT512, UINT512_SIZE } from './constants'
 import { AssertError, AvmError, InternalError } from './errors'
 import type { StubBigUintCompat, StubBytesCompat, StubUint64Compat } from './impl/primitives'
 import { BigUintCls, Bytes, BytesCls, Uint64Cls } from './impl/primitives'
@@ -137,10 +137,8 @@ export const getRandomNumber = (min: number, max: number): number => {
 export const getRandomBigInt = (min: number | bigint, max: number | bigint): bigint => {
   const bigIntMin = BigInt(min)
   const bigIntMax = BigInt(max)
-  const randomValue = [...Array(UINT512_SIZE / BITS_IN_BYTE).keys()]
-    .map(() => getRandomNumber(0, MAX_UINT8))
-    .reduce((acc, x) => acc * 256n + BigInt(x), 0n)
-  return (randomValue % (bigIntMax - bigIntMin)) + bigIntMin
+  const randomValue = randomBytes(UINT512_SIZE / BITS_IN_BYTE).reduce((acc, x) => acc * 256n + BigInt(x), 0n)
+  return (randomValue % (bigIntMax - bigIntMin + 1n)) + bigIntMin
 }
 
 /** @internal */
@@ -190,7 +188,7 @@ export const getObjectReference = (obj: DeliberateAny): bigint => {
 /** @internal */
 export const combineIntoMaxBytePages = (pages: bytes[]): bytes[] => {
   const combined = pages.reduce((acc, x) => acc.concat(x), asBytesCls(''))
-  const totalPages = (asNumber(combined.length) + MAX_BYTES_SIZE - 1) / MAX_BYTES_SIZE
+  const totalPages = Math.ceil(asNumber(combined.length) / MAX_BYTES_SIZE)
   const result = [] as bytes[]
   for (let i = 0; i < totalPages; i++) {
     const start = i * MAX_BYTES_SIZE
@@ -214,7 +212,9 @@ export const concatUint8Arrays = (...values: Uint8Array[]): Uint8Array => {
 
 /** @internal */
 export const uint8ArrayToNumber = (value: Uint8Array): number => {
-  return value.reduce((acc, x) => acc * 256 + x, 0)
+  const result = value.reduce((acc, x) => acc * 256n + BigInt(x), 0n)
+  if (result > Number.MAX_SAFE_INTEGER) throw new RangeError(`Value ${result} exceeds maximum safe integer limit`)
+  return Number(result)
 }
 
 /**

@@ -153,7 +153,7 @@ export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
     itemTypeName === 'DynamicArray' ||
     itemTypeName === 'ReferenceArray' ||
     itemTypeName === 'DynamicBytes' ||
-    (itemTypeName === 'bytes' && itemTypeName === value.name) || // `bytes` has dynamic length but `bytes<N>` is statically sized
+    value.name === 'bytes' || // `bytes` has dynamic length but `bytes<N>` is statically sized
     itemTypeName === 'string' ||
     ((itemTypeName === 'StaticArray' || itemTypeName === 'FixedArray') &&
       holdsDynamicLengthContent((value.genericArgs as StaticArrayGenericArgs).elementType)) ||

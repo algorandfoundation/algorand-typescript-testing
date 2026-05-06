@@ -475,10 +475,10 @@ export class TransactionGroup {
   /** @internal */
   private _getTransaction({ type, index }: { type?: TransactionType; index?: Uint64Compat }) {
     const i = index !== undefined ? asNumber(index) : undefined
-    if (i !== undefined && i >= lazyContext.activeGroup.transactions.length) {
+    if (i !== undefined && i >= this.transactions.length) {
       throw new InternalError('Invalid group index')
     }
-    const transaction = i !== undefined ? lazyContext.activeGroup.transactions[i] : lazyContext.activeGroup.activeTransaction
+    const transaction = i !== undefined ? this.transactions[i] : this.activeTransaction
     if (type === undefined) {
       return transaction
     }
