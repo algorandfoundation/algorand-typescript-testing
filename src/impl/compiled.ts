@@ -18,13 +18,13 @@ export function compile(
 ): CompiledLogicSig | CompiledContract {
   let app: ApplicationData | undefined
   let account: Account | undefined
-  const compiledAppEntry = lazyContext.value.getCompiledAppEntry(artefact as ConstructorFor<BaseContract>)
-  const compiledLogicSigEntry = lazyContext.value.getCompiledLogicSigEntry(artefact as ConstructorFor<LogicSig>)
-  if (compiledAppEntry !== undefined) {
-    app = lazyContext.ledger.applicationDataMap.get(compiledAppEntry.value)
+  const compiledAppId = lazyContext.value.getCompiledApp(artefact as ConstructorFor<BaseContract>)
+  const compiledLogicSigAccount = lazyContext.value.getCompiledLogicSig(artefact as ConstructorFor<LogicSig>)
+  if (compiledAppId !== undefined) {
+    app = lazyContext.ledger.applicationDataMap.get(compiledAppId)
   }
-  if (compiledLogicSigEntry !== undefined) {
-    account = compiledLogicSigEntry.value
+  if (compiledLogicSigAccount !== undefined) {
+    account = compiledLogicSigAccount
   }
   if (options?.templateVars) {
     Object.entries(options.templateVars).forEach(([key, value]) => {
