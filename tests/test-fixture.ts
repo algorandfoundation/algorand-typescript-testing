@@ -123,14 +123,36 @@ export function createBaseTestFixture<TContracts extends string = ''>(options: {
             onComplete: options?.onComplete ?? OnApplicationComplete.NoOpOC,
             sender: options?.sender ?? localnet.context.testAccount.addr,
           }
-          if (common.appId === 0n || common.onComplete === OnApplicationComplete.UpdateApplicationOC) {
-            common.approvalProgram = approvalProgram
-            common.clearStateProgram = clearStateProgram
-          }
           const group = localnet.algorand.send.newGroup()
-          group.addAppCall(common as DeliberateAny)
-
-          // TODO: Add simulate call to gather trace
+          if (common.appId === 0n) {
+            invariant(common.onComplete !== OnApplicationComplete.UpdateApplicationOC, 'Cannot update appId 0')
+            invariant(common.onComplete !== OnApplicationComplete.ClearStateOC, 'Cannot clear state of appId 0')
+            const { appId, ...rest } = common
+            group.addAppCreate({
+              ...rest,
+              onComplete: common?.onComplete ?? OnApplicationComplete.NoOpOC,
+              approvalProgram,
+              clearStateProgram,
+              schema: {
+                localInts: options?.schema?.localInts ?? 0,
+                localByteSlices: options?.schema?.localByteSlices ?? 0,
+                globalInts: options?.schema?.globalInts ?? 0,
+                globalByteSlices: options?.schema?.globalByteSlices ?? 0,
+              },
+            })
+          } else if (common.onComplete === OnApplicationComplete.UpdateApplicationOC) {
+            group.addAppUpdate({
+              ...common,
+              onComplete: OnApplicationComplete.UpdateApplicationOC,
+              approvalProgram,
+              clearStateProgram,
+            })
+          } else {
+            group.addAppCall({
+              ...common,
+              onComplete: common?.onComplete ?? OnApplicationComplete.NoOpOC,
+            })
+          }
 
           const result = await group.send()
           return {

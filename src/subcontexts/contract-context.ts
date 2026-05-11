@@ -199,7 +199,6 @@ export class ContractContext {
     const appTxn = lazyContext.any.txn.applicationCall({
       appId: app,
       ...appCallArgs,
-      // TODO: This needs to be specifiable by the test code
       onCompletion: OnCompleteAction[(abiMetadata?.allowActions ?? [])[0]],
     })
     const txns = [...transactions, appTxn]
