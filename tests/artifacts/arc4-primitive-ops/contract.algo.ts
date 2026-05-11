@@ -368,7 +368,6 @@ export class Arc4PrimitiveOpsContract extends Contract {
     return convertBytes<Bool>(a, { prefix: 'log', strategy: 'unsafe-cast' })
   }
 
-  // TODO: recompile when puya-ts is updated
   @arc4.abimethod()
   public verify_emit(
     a: arc4.Str,
