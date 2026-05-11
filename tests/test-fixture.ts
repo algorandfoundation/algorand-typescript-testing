@@ -6,7 +6,7 @@ import type { SendAppTransactionResult } from '@algorandfoundation/algokit-utils
 import type { Arc56Contract } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
 import type { AppFactory, AppFactoryDeployParams } from '@algorandfoundation/algokit-utils/types/app-factory'
-import type { AssetCreateParams } from '@algorandfoundation/algokit-utils/types/composer'
+import type { AppCallParams, AppUpdateParams, AssetCreateParams } from '@algorandfoundation/algokit-utils/types/composer'
 import { nullLogger } from '@algorandfoundation/algokit-utils/types/logging'
 import type { AlgorandFixture } from '@algorandfoundation/algokit-utils/types/testing'
 import { compile, CompileOptions, LoggingContext, processInputPaths } from '@algorandfoundation/puya-ts'
@@ -127,10 +127,10 @@ export function createBaseTestFixture<TContracts extends string = ''>(options: {
           if (common.appId === 0n) {
             invariant(common.onComplete !== OnApplicationComplete.UpdateApplicationOC, 'Cannot update appId 0')
             invariant(common.onComplete !== OnApplicationComplete.ClearStateOC, 'Cannot clear state of appId 0')
-            const { appId, ...rest } = common
+            const { appId: _, ...rest } = common
             group.addAppCreate({
               ...rest,
-              onComplete: common?.onComplete ?? OnApplicationComplete.NoOpOC,
+              onComplete: common.onComplete,
               approvalProgram,
               clearStateProgram,
               schema: {
@@ -141,17 +141,15 @@ export function createBaseTestFixture<TContracts extends string = ''>(options: {
               },
             })
           } else if (common.onComplete === OnApplicationComplete.UpdateApplicationOC) {
+            const { schema: _, ...rest } = common
             group.addAppUpdate({
-              ...common,
-              onComplete: OnApplicationComplete.UpdateApplicationOC,
+              ...rest,
               approvalProgram,
               clearStateProgram,
-            })
+            } as AppUpdateParams)
           } else {
-            group.addAppCall({
-              ...common,
-              onComplete: common?.onComplete ?? OnApplicationComplete.NoOpOC,
-            })
+            const { schema: _, ...rest } = common
+            group.addAppCall(rest as AppCallParams)
           }
 
           const result = await group.send()
