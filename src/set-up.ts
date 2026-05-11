@@ -145,7 +145,7 @@ function doAddEqualityTesters(expectObj: ExpectObj) {
     function AccountIsAccount(this: TesterContext, subject, test, customTesters): boolean | undefined {
       if (subject instanceof AccountCls) {
         const testValue = test instanceof AccountCls ? test : undefined
-        if (testValue !== undefined) return this.equals(subject['data'], testValue['data'], customTesters)
+        if (testValue !== undefined) return this.equals(subject.bytes, testValue.bytes, customTesters)
         return undefined
       }
       // Defer to other testers
@@ -154,7 +154,7 @@ function doAddEqualityTesters(expectObj: ExpectObj) {
     function ApplicationIsApplication(this: TesterContext, subject, test, customTesters): boolean | undefined {
       if (subject instanceof ApplicationCls) {
         const testValue = test instanceof ApplicationCls ? test : undefined
-        if (testValue !== undefined) return this.equals(subject['data'], testValue['data'], customTesters)
+        if (testValue !== undefined) return this.equals(subject.id, testValue.id, customTesters)
         return undefined
       }
       // Defer to other testers
@@ -163,7 +163,7 @@ function doAddEqualityTesters(expectObj: ExpectObj) {
     function AssetIsAsset(this: TesterContext, subject, test, customTesters): boolean | undefined {
       if (subject instanceof AssetCls) {
         const testValue = test instanceof AssetCls ? test : undefined
-        if (testValue !== undefined) return this.equals(subject['data'], testValue['data'], customTesters)
+        if (testValue !== undefined) return this.equals(subject.id, testValue.id, customTesters)
         return undefined
       }
       // Defer to other testers
