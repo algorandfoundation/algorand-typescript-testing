@@ -5,6 +5,6 @@
   },
   "GHSA-v2v4-37r5-5v8g": {
     "active": true,
-    "notes": "ip-address: XSS in Address6 HTML-emitting methods. Transitive via semantic-release > @semantic-release/npm > npm (bundleDependencies) > make-fetch-happen > @npmcli/agent > socks-proxy-agent > socks. Not reachable from runtime/build flow; awaiting npm release that bumps bundled socks."
+    "notes": "XSS in Address6 HTML-emitting methods in ip-address. Transitive dependency via npm internals (npm > ip-address); not invoked in this project."
   }
 }

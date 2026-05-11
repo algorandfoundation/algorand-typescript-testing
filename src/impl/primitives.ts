@@ -114,7 +114,7 @@ export function Bytes(value: TemplateStringsArray, ...replacements: BytesCompat[
  */
 export function Bytes(value: string): bytes<uint64>
 /**
- * Create a byte array from a utf8 string
+ * Create a fixed-size byte array from a utf8 string
  */
 export function Bytes<TLength extends uint64>(value: string, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -130,7 +130,7 @@ export function Bytes<TLength extends uint64>(value: bytes, options: ToFixedByte
  */
 export function Bytes(value: biguint): bytes<uint64>
 /**
- * Create a byte array from a biguint value encoded as a variable length big-endian number
+ * Create a fixed-size byte array from a biguint value encoded as a variable length big-endian number
  */
 export function Bytes<TLength extends uint64>(value: biguint, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -138,7 +138,7 @@ export function Bytes<TLength extends uint64>(value: biguint, options: ToFixedBy
  */
 export function Bytes(value: uint64): bytes<uint64>
 /**
- * Create a byte array from a uint64 value encoded as a a variable length 64-bit number
+ * Create a fixed-size byte array from a uint64 value encoded as a a variable length 64-bit number
  */
 export function Bytes<TLength extends uint64 = 8>(value: uint64, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -146,7 +146,7 @@ export function Bytes<TLength extends uint64 = 8>(value: uint64, options: ToFixe
  */
 export function Bytes(value: Iterable<uint64>): bytes<uint64>
 /**
- * Create a byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
+ * Create a fixed-size byte array from an Iterable<uint64> where each item is interpreted as a single byte and must be between 0 and 255 inclusively
  */
 export function Bytes<TLength extends uint64>(value: Iterable<uint64>, options: ToFixedBytesOptions<TLength>): bytes<TLength>
 /**
@@ -154,7 +154,7 @@ export function Bytes<TLength extends uint64>(value: Iterable<uint64>, options: 
  */
 export function Bytes(): bytes<uint64>
 /**
- * Create an empty byte array
+ * Create an empty fixed-size byte array
  */
 export function Bytes<TLength extends uint64 = uint64>(options: ToFixedBytesOptions<TLength>): bytes<TLength>
 export function Bytes<TLength extends uint64 = uint64>(
@@ -210,18 +210,10 @@ Bytes.fromBase32 = <TLength extends uint64 = uint64>(b32: string, options?: ToFi
 function isOptionsOnly<TLength extends uint64>(
   value?: BytesCompat | TemplateStringsArray | biguint | uint64 | Iterable<number> | ToFixedBytesOptions<TLength>,
 ): value is ToFixedBytesOptions<TLength> {
+  const keys = Object.keys(value ?? {})
   return (
-    value !== null &&
     typeof value === 'object' &&
-    !Array.isArray(value) &&
-    !isTemplateStringsArray(value) &&
-    !(Symbol.iterator in value) &&
-    !(value instanceof BigUintCls) &&
-    !(value instanceof Uint64Cls) &&
-    !(value instanceof BytesCls) &&
-    !(value instanceof Uint8Array) &&
-    Object.keys(value).length <= 2 &&
-    Object.keys(value).includes('length')
+    ((keys.length === 1 && keys[0] === 'length') || (keys.length === 2 && keys.includes('length') && keys.includes('strategy')))
   )
 }
 
@@ -273,7 +265,7 @@ function isIterable(value: unknown): value is Iterable<number> {
 /**
  * Helper function to convert an iterable of numbers to BytesCls
  */
-function convertIterableToBytes(value: Iterable<number>): BytesCls {
+function convertIterableToBytes(value: Iterable<StubUint64Compat>): BytesCls {
   const valueItems = Array.from(value).map((v) => getNumber(v))
   const invalidValue = valueItems.find((v) => v < 0 || v > 255)
   if (invalidValue !== undefined) {
@@ -293,13 +285,7 @@ function extractOptionsFromReplacements<TLength extends uint64>(
   }
 
   const potentialOptions = replacements[0]
-  // Check if the replacement looks like options
-  if (
-    typeof potentialOptions === 'object' &&
-    potentialOptions !== null &&
-    Object.keys(potentialOptions).length <= 2 &&
-    Object.keys(potentialOptions).includes('length')
-  ) {
+  if (isOptionsOnly(potentialOptions)) {
     return potentialOptions as ToFixedBytesOptions<TLength>
   }
 
@@ -323,7 +309,7 @@ export const getNumber = (v: StubUint64Compat): number => {
     return Number(v)
   }
   if (v instanceof Uint64Cls) return v.asNumber()
-  throw new InternalError(`Cannot convert ${v} to number`)
+  throw new InternalError(`Cannot convert ${nameOfType(v)} to number`)
 }
 
 /** @internal */
@@ -417,7 +403,7 @@ export class Uint64Cls extends AlgoTsPrimitiveCls {
     if (typeof v == 'number') return new Uint64Cls(BigInt(v))
     if (typeof v == 'bigint') return new Uint64Cls(v)
     if (v instanceof Uint64Cls) return v
-    throw new InternalError(`Cannot convert ${v} to uint64`)
+    throw new InternalError(`Cannot convert ${nameOfType(v)} to uint64`)
   }
 
   valueOf(): bigint {
@@ -493,7 +479,7 @@ export class BigUintCls extends AlgoTsPrimitiveCls {
 }
 
 function isTemplateStringsArray(v: unknown): v is TemplateStringsArray {
-  return Boolean(v) && Array.isArray(v) && typeof v[0] === 'string'
+  return Array.isArray(v) && 'raw' in v
 }
 
 /** @internal */
@@ -607,7 +593,7 @@ export class BytesCls extends AlgoTsPrimitiveCls {
     return template
       .flatMap((templateText, index) => {
         const replacement = replacements[index]
-        if (replacement) {
+        if (replacement !== undefined) {
           return [BytesCls.fromCompat(templateText), BytesCls.fromCompat(replacement)]
         }
         return [BytesCls.fromCompat(templateText)]

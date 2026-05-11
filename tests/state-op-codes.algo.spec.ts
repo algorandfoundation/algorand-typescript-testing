@@ -14,14 +14,14 @@ import { BytesCls, Uint64Cls } from '../src/impl/primitives'
 import { AccountCls, encodeAddress } from '../src/impl/reference'
 import type { ApplicationCallTransaction } from '../src/impl/transactions'
 import type { DeliberateAny, FunctionKeys } from '../src/typescript-helpers'
-import { asBigInt, asNumber, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
+import { asNumber, asUint64BigInt, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
 import { AppExpectingEffects } from './artifacts/created-app-asset/contract.algo'
 import {
   BoxMapContract,
   GlobalMapContract,
-  LocalMapContract,
   ItxnDemoContract,
   ITxnOpsContract,
+  LocalMapContract,
   StateAcctParamsGetContract,
   StateAppGlobalContract,
   StateAppGlobalExContract,
@@ -598,7 +598,7 @@ describe('State op codes', async () => {
       const bytesResult = contract.verify_get_bytes(Bytes(bytesKey))
       const uint64Result = contract.verify_get_uint64(Bytes(uint64Key))
       expect(bytesResult).toEqual(bytesAvmResult)
-      expect(asBigInt(uint64Result)).toEqual(uint64AvmResult)
+      expect(asUint64BigInt(uint64Result)).toEqual(uint64AvmResult)
 
       // delete
       await getAvmResult({ appClient }, 'verify_delete', asUint8Array(bytesKey))
@@ -611,7 +611,7 @@ describe('State op codes', async () => {
 
       const uint64AvmResult2 = await getAvmResult({ appClient }, 'verify_get_uint64', asUint8Array(uint64Key))
       const uint64Result2 = contract.verify_get_uint64(Bytes(uint64Key))
-      expect(asBigInt(uint64Result2)).toEqual(uint64AvmResult2)
+      expect(asUint64BigInt(uint64Result2)).toEqual(uint64AvmResult2)
     })
 
     test('should be able to use _ex methods to get state of another app', async ({
@@ -692,7 +692,7 @@ describe('State op codes', async () => {
       const bytesResult = contract.verify_get_bytes(account, Bytes(bytesKey))
       const uint64Result = contract.verify_get_uint64(account, Bytes(uint64Key))
       expect(bytesResult).toEqual(bytesAvmResult)
-      expect(asBigInt(uint64Result)).toEqual(uint64AvmResult)
+      expect(asUint64BigInt(uint64Result)).toEqual(uint64AvmResult)
 
       // delete
       await getAvmResult({ appClient }, 'verify_delete', localNetAccount.addr.toString(), asUint8Array(bytesKey))
@@ -712,7 +712,7 @@ describe('State op codes', async () => {
         asUint8Array(uint64Key),
       )
       const uint64Result2 = contract.verify_get_uint64(account, Bytes(uint64Key))
-      expect(asBigInt(uint64Result2)).toEqual(uint64AvmResult2)
+      expect(asUint64BigInt(uint64Result2)).toEqual(uint64AvmResult2)
     })
 
     test('should be able to use _ex methods to get state of another app', async ({
