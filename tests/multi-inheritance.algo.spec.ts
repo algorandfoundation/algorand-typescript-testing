@@ -6,7 +6,7 @@ import { getAvmResult } from './avm-invoker'
 import { createArc4TestFixture } from './test-fixture'
 
 describe('multi-inheritance', async () => {
-  const test = createArc4TestFixture({ path: 'tests/artifacts/multi-inheritance/contract.algo.ts', contracts: { MultiBases: {} } })
+  const test = createArc4TestFixture({ paths: 'tests/artifacts/multi-inheritance/contract.algo.ts', contracts: { MultiBases: {} } })
   const ctx = new TestExecutionContext()
 
   afterEach(() => ctx.reset())

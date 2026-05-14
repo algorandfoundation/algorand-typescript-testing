@@ -22,7 +22,7 @@ const sqrtMaxUint64 = 4294967295n
 
 describe('Pure op codes', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/miscellaneous-ops/contract.algo.ts',
+    paths: 'tests/artifacts/miscellaneous-ops/contract.algo.ts',
     contracts: {
       MiscellaneousOpsContract: {},
     },

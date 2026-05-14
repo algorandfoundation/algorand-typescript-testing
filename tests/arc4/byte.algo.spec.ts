@@ -9,10 +9,10 @@ import { asBigUintCls, asUint8Array } from '../../src/util'
 import { getAvmResult } from '../avm-invoker'
 import { createArc4TestFixture } from '../test-fixture'
 
-const invalidBytesLengthError = 'byte string must be 1 byte long'
+const invalidBytesLengthError = (actual: number) => `Expected 1 byte for byte type, got ${actual}`
 describe('arc4.Byte', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
+    paths: 'tests/artifacts/arc4-primitive-ops/contract.algo.ts',
     contracts: {
       Arc4PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
     },
@@ -124,7 +124,7 @@ describe('arc4.Byte', async () => {
   test.for([encodingUtil.bigIntToUint8Array(0n, 2), encodingUtil.bigIntToUint8Array(255n, 8)])(
     'sdk throws error when creating Byte from bytes with invalid length',
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
-      await expect(getAvmResult({ appClient }, 'verify_byte_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError)
+      await expect(getAvmResult({ appClient }, 'verify_byte_from_bytes', value)).rejects.toThrowError(invalidBytesLengthError(value.length))
 
       const result = convertBytes<Byte>(Bytes(value), { strategy: 'unsafe-cast' })
       expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
@@ -168,7 +168,9 @@ describe('arc4.Byte', async () => {
     'sdk throws error when creating Byte from log with invalid length',
     async (value, { appClientArc4PrimitiveOpsContract: appClient }) => {
       const logValue = asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX.concat(Bytes(value)))
-      await expect(() => getAvmResult({ appClient }, 'verify_byte_from_log', logValue)).rejects.toThrowError(invalidBytesLengthError)
+      await expect(() => getAvmResult({ appClient }, 'verify_byte_from_log', logValue)).rejects.toThrowError(
+        invalidBytesLengthError(value.length),
+      )
 
       const result = convertBytes<Byte>(Bytes(logValue), { prefix: 'log', strategy: 'unsafe-cast' })
       expect(result.asUint64()).toEqual(encodingUtil.uint8ArrayToBigInt(value))
