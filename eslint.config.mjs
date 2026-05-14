@@ -1,40 +1,55 @@
-import { FlatCompat } from '@eslint/eslintrc'
-import js from '@eslint/js'
-import globals from 'globals'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import eslint from '@eslint/js'
+import prettier from 'eslint-config-prettier'
+import unusedImports from 'eslint-plugin-unused-imports'
+import tseslint from 'typescript-eslint'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-})
-
-export default [
+export default tseslint.config(
   {
     ignores: [
-      '**/.eslintrc.js',
-      '**/node_modules',
-      '**/dist',
-      '**/build',
-      '**/coverage',
+      '.eslintrc.js',
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
       '**/generated/types.d.ts',
       '**/generated/types.ts',
-      '**/.idea',
-      '**/.vscode',
+      '.idea/**',
+      '.vscode/**',
     ],
   },
-  ...compat.extends('@makerx/eslint-config'),
+  eslint.configs.recommended,
+  tseslint.configs.recommended,
   {
+    files: ['**/*.ts'],
+    plugins: {
+      'unused-imports': unusedImports,
+    },
     languageOptions: {
-      globals: {
-        ...globals.node,
+      parser: tseslint.parser,
+      parserOptions: {
+        projectService: true,
+        ecmaVersion: 'latest',
+        sourceType: 'module',
       },
     },
     rules: {
+      'no-console': 'warn',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        { ignoreRestSiblings: true, argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
+      'prefer-template': 'error',
     },
   },
-]
+  {
+    files: ['**/*.spec.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
+    },
+  },
+  prettier,
+)
