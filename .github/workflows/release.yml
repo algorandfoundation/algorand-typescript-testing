@@ -36,7 +36,7 @@ jobs:
     name: Build
     needs: check-puya-ts
     if: ${{ !failure() && !cancelled() }}
-    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@chore/node-npm
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@main
     with:
       run-commit-lint: true
       run-build: true
