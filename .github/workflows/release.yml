@@ -16,27 +16,40 @@ permissions:
   id-token: write
 
 jobs:
-  ci:
-    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-ci.yml@chore/node-npm
+  check-puya-ts:
+    name: 'Check puya-ts dependency'
+    if: github.ref_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 1 }
+      - name: Ensure puya-ts dependency is a production release
+        run: |
+          version=$(npm pkg get dependencies.@algorandfoundation/puya-ts)
+          echo "puya-ts version: $version"
+          if ! [[ "$version" =~ ^['\"]*[0-9]+\.[0-9]+\.[0-9]+['\"]*$ ]]; then
+            echo "::error::puya-ts '$version' is a pre-release; production releases require a stable puya-ts version."
+            exit 1
+          fi
+
+  build:
+    name: Build
+    needs: check-puya-ts
+    if: ${{ !failure() && !cancelled() }}
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@chore/node-npm
     with:
       run-commit-lint: true
       run-build: true
       install-algokit: true
       install-puyapy: true
       audit-script: npm run audit
-
-  build:
-    name: Build
-    needs:
-      - ci
-    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@chore/node-npm
-    with:
       build-path: dist
       artifact-name: algo-ts-testing
 
   release:
     name: Release
     needs: build
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Generate bot token

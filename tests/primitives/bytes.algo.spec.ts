@@ -1,11 +1,11 @@
 import type { bytes } from '@algorandfoundation/algorand-typescript'
 import { Bytes, FixedArray, op } from '@algorandfoundation/algorand-typescript'
-import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { describe, expect, it } from 'vitest'
-import { MAX_BYTES_SIZE } from '../../src/constants'
 
 import type { Byte, StaticArray } from '@algorandfoundation/algorand-typescript/arc4'
 import { convertBytes, decodeArc4, sizeOf } from '@algorandfoundation/algorand-typescript/arc4'
+import { encodingUtil } from '@algorandfoundation/puya-ts'
+import { describe, expect, it } from 'vitest'
+import { MAX_BYTES_SIZE } from '../../src/constants'
 import { sha256 } from '../../src/impl'
 import { BytesCls } from '../../src/impl/primitives'
 import { asUint8Array } from '../../src/util'
@@ -15,7 +15,7 @@ import { getSha256Hash, padUint8Array } from '../util'
 
 describe('Bytes', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/primitive-ops/contract.algo.ts',
+    paths: 'tests/artifacts/primitive-ops/contract.algo.ts',
     contracts: {
       PrimitiveOpsContract: { deployParams: { createParams: { extraProgramPages: undefined } } },
     },

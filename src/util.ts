@@ -1,6 +1,6 @@
 import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { randomBytes } from 'crypto'
-import { BITS_IN_BYTE, MAX_BYTES_SIZE, MAX_UINT512, MAX_UINT8, UINT512_SIZE } from './constants'
+import { BITS_IN_BYTE, MAX_BYTES_SIZE, MAX_UINT512, UINT512_SIZE } from './constants'
 import { AssertError, AvmError, InternalError } from './errors'
 import type { StubBigUintCompat, StubBytesCompat, StubUint64Compat } from './impl/primitives'
 import { BigUintCls, Bytes, BytesCls, Uint64Cls } from './impl/primitives'
@@ -39,11 +39,10 @@ export function toExternalValue(val: biguint): bigint
 export function toExternalValue(val: bytes): Uint8Array
 export function toExternalValue(val: string): string
 export function toExternalValue(val: uint64 | biguint | bytes | string) {
-  const instance = val as unknown
-  if (instance instanceof BytesCls) return instance.asUint8Array()
-  if (instance instanceof Uint64Cls) return instance.asBigInt()
-  if (instance instanceof BigUintCls) return instance.asBigInt()
-  if (typeof val === 'string') return val
+  if (val instanceof BytesCls) return val.asUint8Array()
+  if (val instanceof Uint64Cls) return val.asBigInt()
+  if (val instanceof BigUintCls) return val.asBigInt()
+  return val
 }
 
 /** @internal */
@@ -54,7 +53,10 @@ export function* iterBigInt(start: bigint, end: bigint): Generator<bigint> {
 }
 
 /** @internal */
-export const asBigInt = (v: StubUint64Compat): bigint => asUint64Cls(v).asBigInt()
+export const asUint64BigInt = (v: StubUint64Compat): bigint => asUint64Cls(v).asBigInt()
+
+/** @internal */
+export const asUint64Bytes = (v: StubUint64Compat) => asUint64Cls(v).toBytes()
 
 /** @internal */
 export const asNumber = (v: StubUint64Compat): number => asUint64Cls(v).asNumber()
@@ -81,52 +83,27 @@ export const asBytes = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).as
 /** @internal */
 export const asUint8Array = (val: StubBytesCompat | Uint8Array) => asBytesCls(val).asUint8Array()
 
-/** @internal */
-export const asMaybeUint64Cls = (val: DeliberateAny, throwsOverflow: boolean = true) => {
+const tryFromCompat = <T>(fn: () => T, throwsOverflow = true): T | undefined => {
   try {
-    return Uint64Cls.fromCompat(val)
+    return fn()
   } catch (e) {
-    if (e instanceof InternalError) {
-      // swallow error and return undefined
-    } else if (!throwsOverflow && e instanceof AvmError && e.message.includes('overflow')) {
-      // swallow overflow error and return undefined
-    } else {
-      throw e
-    }
+    if (e instanceof InternalError) return undefined
+    if (!throwsOverflow && e instanceof AvmError && e.message.includes('overflow')) return undefined
+    throw e
   }
-  return undefined
 }
 
 /** @internal */
-export const asMaybeBigUintCls = (val: DeliberateAny) => {
-  try {
-    return BigUintCls.fromCompat(val)
-  } catch (e) {
-    if (e instanceof InternalError) {
-      // swallow error and return undefined
-    } else {
-      throw e
-    }
-  }
-  return undefined
-}
+export const asMaybeUint64Cls = (val: DeliberateAny, throwsOverflow: boolean = true) =>
+  tryFromCompat(() => Uint64Cls.fromCompat(val), throwsOverflow)
 /** @internal */
-export const asMaybeBytesCls = (val: DeliberateAny) => {
-  try {
-    return BytesCls.fromCompat(val)
-  } catch (e) {
-    if (e instanceof InternalError) {
-      // swallow error and return undefined
-    } else {
-      throw e
-    }
-  }
-  return undefined
-}
+export const asMaybeBigUintCls = (val: DeliberateAny) => tryFromCompat(() => BigUintCls.fromCompat(val))
+/** @internal */
+export const asMaybeBytesCls = (val: DeliberateAny) => tryFromCompat(() => BytesCls.fromCompat(val))
 
 /** @internal */
 export const binaryStringToBytes = (s: string): BytesCls =>
-  BytesCls.fromCompat(new Uint8Array(s.match(/.{1,8}/g)!.map((x) => parseInt(x, 2))))
+  BytesCls.fromCompat(new Uint8Array((s.match(/.{1,8}/g) ?? []).map((x) => parseInt(x, 2))))
 
 /** @internal */
 export const getRandomNumber = (min: number, max: number): number => {
@@ -137,14 +114,12 @@ export const getRandomNumber = (min: number, max: number): number => {
 export const getRandomBigInt = (min: number | bigint, max: number | bigint): bigint => {
   const bigIntMin = BigInt(min)
   const bigIntMax = BigInt(max)
-  const randomValue = [...Array(UINT512_SIZE / BITS_IN_BYTE).keys()]
-    .map(() => getRandomNumber(0, MAX_UINT8))
-    .reduce((acc, x) => acc * 256n + BigInt(x), 0n)
-  return (randomValue % (bigIntMax - bigIntMin)) + bigIntMin
+  const randomValue = randomBytes(UINT512_SIZE / BITS_IN_BYTE).reduce((acc, x) => acc * 256n + BigInt(x), 0n)
+  return (randomValue % (bigIntMax - bigIntMin + 1n)) + bigIntMin
 }
 
 /** @internal */
-export const getRandomBytes = (length: number): BytesCls => asBytesCls(Bytes(randomBytes(length)))
+export const getRandomBytes = (length: number): BytesCls => asBytesCls(randomBytes(length))
 
 /** @internal */
 export const flattenAsBytes = (arr: StubBytesCompat | StubBytesCompat[]): bytes => {
@@ -152,9 +127,8 @@ export const flattenAsBytes = (arr: StubBytesCompat | StubBytesCompat[]): bytes 
 }
 
 const NoValue = Symbol('no-value')
-type LazyInstance<T> = () => T
 /** @internal */
-export const Lazy = <T>(factory: () => T): LazyInstance<T> => {
+export const Lazy = <T>(factory: () => T): (() => T) => {
   let val: T | typeof NoValue = NoValue
 
   return () => {
@@ -169,13 +143,8 @@ const ObjectReferenceSymbol = Symbol('ObjectReference')
 const objectRefIter = iterBigInt(1001n, MAX_UINT512)
 /** @internal */
 export const getObjectReference = (obj: DeliberateAny): bigint => {
-  const tryGetReference = (obj: DeliberateAny): bigint | undefined => {
-    const s = Object.getOwnPropertySymbols(obj).find((s) => s.toString() === ObjectReferenceSymbol.toString())
-    return s ? obj[s] : ObjectReferenceSymbol in obj ? obj[ObjectReferenceSymbol] : undefined
-  }
-  const existingRef = tryGetReference(obj)
-  if (existingRef !== undefined) {
-    return existingRef
+  if (ObjectReferenceSymbol in obj) {
+    return obj[ObjectReferenceSymbol]
   }
   const ref = objectRefIter.next().value
   Object.defineProperty(obj, ObjectReferenceSymbol, {
@@ -190,7 +159,7 @@ export const getObjectReference = (obj: DeliberateAny): bigint => {
 /** @internal */
 export const combineIntoMaxBytePages = (pages: bytes[]): bytes[] => {
   const combined = pages.reduce((acc, x) => acc.concat(x), asBytesCls(''))
-  const totalPages = (asNumber(combined.length) + MAX_BYTES_SIZE - 1) / MAX_BYTES_SIZE
+  const totalPages = Math.ceil(asNumber(combined.length) / MAX_BYTES_SIZE)
   const result = [] as bytes[]
   for (let i = 0; i < totalPages; i++) {
     const start = i * MAX_BYTES_SIZE
@@ -214,7 +183,9 @@ export const concatUint8Arrays = (...values: Uint8Array[]): Uint8Array => {
 
 /** @internal */
 export const uint8ArrayToNumber = (value: Uint8Array): number => {
-  return value.reduce((acc, x) => acc * 256 + x, 0)
+  const result = value.reduce((acc, x) => acc * 256n + BigInt(x), 0n)
+  if (result > Number.MAX_SAFE_INTEGER) throw new RangeError(`Value ${result} exceeds maximum safe integer limit`)
+  return Number(result)
 }
 
 /**
@@ -223,14 +194,6 @@ export const uint8ArrayToNumber = (value: Uint8Array): number => {
  * @param {unknown} condition - The condition to assert
  * @param {string} [message] - Optional error message if assertion fails
  * @throws {AssertError} Throws if condition is falsy
- *
- * @example
- * ```ts
- * const value: string | undefined = "test";
- * assert(value !== undefined);
- *
- * assert(false, "This will throw"); // throws AssertError: This will throw
- * ```
  */
 /** @internal */
 export function assert(condition: unknown, message?: string): asserts condition {
@@ -246,13 +209,6 @@ export function assert(condition: unknown, message?: string): asserts condition 
  * @param {string} [message] - Optional error message. Defaults to "err opcode executed"
  * @throws {AvmError} Always throws an AvmError
  * @returns {never} Function never returns normally
- *
- * @example
- * ```ts
- * if (amount < 0) {
- *   err("Invalid amount"); // Throws AvmError: Invalid amount
- * }
- * ```
  */
 /** @internal */
 export function err(message?: string): never {

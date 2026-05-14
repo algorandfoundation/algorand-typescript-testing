@@ -11,7 +11,7 @@ import { createArc4TestFixture } from './test-fixture'
 
 describe('ARC4 AppGlobal values', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/state-ops/contract.algo.ts',
+    paths: 'tests/artifacts/state-ops/contract.algo.ts',
     contracts: {
       GlobalStateContract: {},
     },

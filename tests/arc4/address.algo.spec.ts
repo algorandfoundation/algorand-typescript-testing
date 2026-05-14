@@ -1,4 +1,3 @@
-import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Account, Bytes } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { Address, convertBytes } from '@algorandfoundation/algorand-typescript/arc4'
@@ -6,6 +5,7 @@ import { afterEach, describe, expect, test } from 'vitest'
 import { ABI_RETURN_VALUE_LOG_PREFIX } from '../../src/constants'
 import { encodeAddress } from '../../src/impl/reference'
 import { asUint8Array } from '../../src/util'
+import { getABIEncodedValue } from './util'
 
 const abiTypeString = 'address'
 const testData = [
@@ -22,19 +22,19 @@ describe('arc4.Address', () => {
   })
 
   test.each(testData)('create address from bytes', (value) => {
-    const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString, {})
+    const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString)
     const result = new Address(value)
     expect(result.bytes).toEqual(sdkResult)
   })
   test.each(testData)('create address from str', (value) => {
     const stringValue = encodeAddress(asUint8Array(value))
-    const sdkResult = getABIEncodedValue(stringValue, abiTypeString, {})
+    const sdkResult = getABIEncodedValue(stringValue, abiTypeString)
     const result = new Address(stringValue)
     expect(result.bytes).toEqual(sdkResult)
   })
   test.each(testData)('create address from Account', (value) => {
     const accountValue = Account(value)
-    const sdkResult = getABIEncodedValue(asUint8Array(accountValue.bytes), abiTypeString, {})
+    const sdkResult = getABIEncodedValue(asUint8Array(accountValue.bytes), abiTypeString)
     const result = new Address(accountValue)
     expect(result.bytes).toEqual(sdkResult)
   })
@@ -70,14 +70,14 @@ describe('arc4.Address', () => {
   })
 
   test.each(testData)('fromBytes method', (value) => {
-    const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString, {})
+    const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString)
     // no actual validation in testing lib, just making sure 'validate' strategy value can be passed
     const result = convertBytes<Address>(value, { strategy: 'validate' })
     expect(result.bytes).toEqual(sdkResult)
   })
 
   test.each(testData)('fromLog method', (value) => {
-    const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString, {})
+    const sdkResult = getABIEncodedValue(asUint8Array(value), abiTypeString)
     const paddedValue = Bytes([...asUint8Array(ABI_RETURN_VALUE_LOG_PREFIX), ...asUint8Array(value)])
     const result = convertBytes<Address>(paddedValue, { prefix: 'log', strategy: 'unsafe-cast' })
     expect(result.bytes).toEqual(sdkResult)
