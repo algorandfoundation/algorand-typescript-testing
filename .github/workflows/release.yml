@@ -53,6 +53,7 @@ jobs:
   release:
     name: Release
     needs: build
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Generate bot token
