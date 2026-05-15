@@ -1,10 +1,9 @@
 ---
 title: AVM Opcodes
+description: How AVM opcodes are exposed in algorand-typescript-testing — Native, Emulated, and Mockable categories with examples.
 ---
 
-# AVM Opcodes
-
-The [coverage](coverage.md) file provides a comprehensive list of all opcodes and their respective types, categorized as _Mockable_, _Emulated_, or _Native_ within the `algorand-typescript-testing` package. This section highlights a **subset** of opcodes and types that typically require interaction with the test execution context.
+The [coverage](/algorand-typescript-testing/reference/coverage/) page provides a comprehensive list of all opcodes and their respective types, categorized as _Mockable_, _Emulated_, or _Native_ within the `algorand-typescript-testing` package. This section highlights a **subset** of opcodes and types that typically require interaction with the test execution context.
 
 `Native` opcodes are assumed to function as they do in the Algorand Virtual Machine, given their stateless nature. If you encounter issues with any `Native` opcodes, please raise an issue in the [`algorand-typescript-testing` repo](https://github.com/algorandfoundation/algorand-typescript-testing/issues/new/choose) or contribute a PR following the [Contributing](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md) guide.
 
@@ -70,7 +69,7 @@ const isBitSet = op.getBit(value, 3)
 const newValue = op.setBit(value, 2, 1)
 ```
 
-For a comprehensive list of all opcodes and types, refer to the [coverage](./coverage.md) page.
+For a comprehensive list of all opcodes and types, refer to the [coverage](/algorand-typescript-testing/reference/coverage/) page.
 
 ## Emulated Types Requiring Transaction Context
 
@@ -79,7 +78,6 @@ These types necessitate interaction with the transaction context:
 ### op.Global
 
 ```ts
-import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { op, arc4, uint64, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 

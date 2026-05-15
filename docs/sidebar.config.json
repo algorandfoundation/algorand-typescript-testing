@@ -1,0 +1,43 @@
+[
+  { "label": "Home", "link": "/" },
+  {
+    "label": "Getting Started",
+    "items": [{ "label": "Quick Start", "slug": "tutorials/quick-start" }]
+  },
+  {
+    "label": "Guides",
+    "items": [
+      { "slug": "guide/application-spy" },
+      { "slug": "guide/contract-testing" },
+      { "slug": "guide/signature-testing" },
+      { "slug": "guide/state-management" },
+      { "slug": "guide/transactions" }
+    ]
+  },
+  {
+    "label": "Concepts",
+    "items": [
+      { "slug": "concepts/overview" },
+      { "slug": "concepts/algots" },
+      { "slug": "concepts/avm-types" },
+      { "slug": "concepts/arc4-types" },
+      { "slug": "concepts/opcodes" }
+    ]
+  },
+  {
+    "label": "Examples",
+    "autogenerate": { "directory": "examples" }
+  },
+  {
+    "label": "Reference",
+    "items": [
+      { "slug": "reference/coverage" },
+      { "slug": "reference/faq" }
+    ]
+  },
+  {
+    "label": "API Reference",
+    "collapsed": true,
+    "autogenerate": { "directory": "api" }
+  }
+]

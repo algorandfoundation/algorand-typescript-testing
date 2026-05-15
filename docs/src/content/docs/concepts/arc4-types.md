@@ -1,18 +1,15 @@
 ---
 title: ARC4 Types
+description: ARC4 types and value generators — Uint variants, Address, DynamicBytes, Str.
 ---
-
-# ARC4 Types
 
 These types are available under the `arc4` namespace. Refer to the [ARC4 specification](https://dev.algorand.co/arc-standards/arc-0004/) for more details on the spec.
 
-```
-Test execution context provides _value generators_ for ARC4 types. To access their _value generators_, use `{context_instance}.any.arc4` property. See more examples below.
-```
+> [!NOTE]
+> Test execution context provides _value generators_ for ARC4 types. To access their _value generators_, use `{context_instance}.any.arc4` property. See more examples below.
 
-```
-For all `arc4` types, with or without a respective _value generator_, instantiation can be performed directly. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
-```
+> [!NOTE]
+> For all `arc4` types, with or without a respective _value generator_, instantiation can be performed directly. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
 
 ```ts
 import { arc4 } from '@algorandfoundation/algorand-typescript'
