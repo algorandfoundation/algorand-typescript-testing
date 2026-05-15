@@ -25,7 +25,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --coverage --reporter junit --outputFile test-results.xml",
-    "script:documentation": "typedoc",
+    "docs:dev": "pnpm --dir docs run dev",
+    "docs:build": "pnpm --dir docs run build",
+    "docs:preview": "pnpm --dir docs run preview",
     "script:build-examples": "rollup --config examples/rollup.config.ts --configPlugin typescript",
     "script:compile-examples": "puya-ts --out-dir data ./examples/*/ --puya-path=/home/parallels/.local/bin/puya",
     "script:refresh-test-artifacts": "puya-ts --out-dir data --output-awst --output-awst-json ./tests/artifacts/*/ --puya-path=/home/parallels/.local/bin/puya"
@@ -64,9 +66,6 @@
     "semantic-release": "^25.0.2",
     "shx": "^0.4.0",
     "tsx": "4.21.0",
-    "typedoc": "^0.28.15",
-    "typedoc-plugin-markdown": "^4.9.0",
-    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "^5.9.3",
     "upath": "^2.0.1",
     "vitest": "4.0.16"

@@ -1,14 +1,12 @@
 ---
 title: AVM Types
+description: AVM primitive types — uint64, bytes, string, biguint, Asset, Account, Application — and their value generators.
 ---
-
-# AVM Types
 
 These types are available directly under the `algorand-typescript` namespace. They represent the basic AVM primitive types and can be instantiated directly or created via _value generators_:
 
-```
-For primitive `algorand-typescript` types such as `Account`, `Application`, `Asset`, `uint64`, `biguint`, `bytes`, and `string`, instantiation can be performed directly, with or without a respective _value generator_. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
-```
+> [!NOTE]
+> For primitive `algorand-typescript` types such as `Account`, `Application`, `Asset`, `uint64`, `biguint`, `bytes`, and `string`, instantiation can be performed directly, with or without a respective _value generator_. If you have a suggestion for a new _value generator_ implementation, please open an issue in the [`algorand-typescript-testing`](https://github.com/algorandfoundation/algorand-typescript-testing) repository or contribute by following the [contribution guide](https://github.com/algorandfoundation/algorand-typescript-testing/blob/main/CONTRIBUTING.md).
 
 ```ts
 import * as algots from '@algorandfoundation/algorand-typescript'

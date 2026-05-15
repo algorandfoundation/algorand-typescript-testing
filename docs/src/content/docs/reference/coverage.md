@@ -1,10 +1,9 @@
 ---
 title: Coverage
+description: Implementation status of each algorand-typescript stub in algorand-typescript-testing — Native, Emulated, or Mockable.
 ---
 
-# Coverage
-
-See which `algorand-typescript` stubs are implemented in the `algorand-typescript-testing` library. See the [Concepts](tg-concepts.md#types-of-algorand-typescript-stub-implementations) section for more details on the implementation categories. Refer to the [`algorand-typescript-testing` API](api.md) for a full list of stubs implemented by the `algorand-typescript-testing` library, as referenced in the table below.
+See which `algorand-typescript` stubs are implemented in the `algorand-typescript-testing` library. See the [Overview](/algorand-typescript-testing/concepts/overview/#types-of-algorand-typescript-stub-implementations) section for more details on the implementation categories. Refer to the [API Reference](/algorand-typescript-testing/api/) for a full list of stubs implemented by the `algorand-typescript-testing` library, as referenced in the table below.
 
 | Name                         | Implementation type |
 | ---------------------------- | ------------------- |

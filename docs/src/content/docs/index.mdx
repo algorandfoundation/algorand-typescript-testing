@@ -1,0 +1,87 @@
+---
+title: Algorand TypeScript Testing
+description: Offline unit testing toolkit for Algorand TypeScript smart contracts.
+template: splash
+hero:
+  title: Algorand TypeScript Testing
+  tagline: Offline unit testing for Algorand TypeScript smart contracts — fast, type-safe, network-free.
+  actions:
+    - text: Get Started
+      link: tutorials/quick-start/
+      icon: right-arrow
+    - text: API Reference
+      link: api/
+      variant: minimal
+---
+
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components'
+
+## Installation
+
+`algorand-typescript-testing` is a companion to [Algorand TypeScript](https://github.com/algorandfoundation/puya-ts) and requires Node.js 20+.
+
+<Tabs>
+  <TabItem label="npm">
+    ```bash
+    npm install @algorandfoundation/algorand-typescript-testing
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```bash
+    pnpm add @algorandfoundation/algorand-typescript-testing
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```bash
+    yarn add @algorandfoundation/algorand-typescript-testing
+    ```
+  </TabItem>
+</Tabs>
+
+## Quick Example
+
+```typescript
+import { arc4, GlobalState, Uint64, uint64 } from '@algorandfoundation/algorand-typescript'
+import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { afterEach, describe, expect, test } from 'vitest'
+
+class Counter extends arc4.Contract {
+  count = GlobalState({ initialValue: Uint64(0) })
+
+  @arc4.abimethod()
+  increment(): uint64 {
+    this.count.value = this.count.value + 1
+    return this.count.value
+  }
+}
+
+describe('Counter', () => {
+  const ctx = new TestExecutionContext()
+  afterEach(() => ctx.reset())
+
+  test('increments the counter', () => {
+    const contract = ctx.contract.create(Counter)
+    expect(contract.increment()).toEqual(1)
+    expect(contract.count.value).toEqual(1)
+  })
+})
+```
+
+See the [Quick Start tutorial](/algorand-typescript-testing/tutorials/quick-start/) for a richer walkthrough including transformer setup for vitest and jest.
+
+## Features
+
+<CardGrid>
+  <Card title="Offline AVM Simulation" icon="rocket">
+    Emulate AVM behaviour in pure TypeScript — no sandbox, no network, no waiting.
+  </Card>
+  <Card title="ARC4 Support" icon="document">
+    First-class testing for `arc4.Contract` classes, ABI methods, and ARC4 types.
+  </Card>
+  <Card title="Transaction & State Helpers" icon="setting">
+    Build transaction groups, manage global/local/box state, and inspect inner txns.
+  </Card>
+  <Card title="vitest & jest Compatible" icon="approve-check">
+    Works with any TypeScript test runner via the `puyaTsTransformer` plugin.
+  </Card>
+</CardGrid>
