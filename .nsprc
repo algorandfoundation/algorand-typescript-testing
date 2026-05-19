@@ -6,5 +6,9 @@
   "GHSA-v2v4-37r5-5v8g": {
     "active": true,
     "notes": "XSS in Address6 HTML-emitting methods in ip-address. Transitive dependency via npm internals (npm > ip-address); not invoked in this project."
+  },
+  "GHSA-jxxr-4gwj-5jf2": {
+    "active": true,
+    "notes": "brace-expansion DoS via large numeric ranges. Transitive dev/build dependency via minimatch (eslint, typescript-eslint, puya-ts, semantic-release, npm); no user-controlled input is passed to brace-expansion in this project."
   }
 }
