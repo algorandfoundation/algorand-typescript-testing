@@ -1,9 +1,9 @@
 ---
-title: Smart Signature Testing
-description: Test Algorand smart signatures (LogicSigs) using TestExecutionContext.executeLogicSig.
+title: Logic Signature Testing
+description: Test Algorand Logic Signatures (LogicSigs) using TestExecutionContext.executeLogicSig.
 ---
 
-Test Algorand smart signatures (LogicSigs) with ease using the Algorand TypeScript Testing framework.
+Test Algorand LogicSigs with ease using the Algorand TypeScript Testing framework.
 
 ```ts
 import * as algots from '@algorandfoundation/algorand-typescript'
