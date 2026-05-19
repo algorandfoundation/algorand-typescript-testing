@@ -72,8 +72,3 @@ expect(ctx.executeLogicSig(new HashedTimeLockedLogicSig(), secret))
 ```
 
 For more details on available operations, see the [coverage](/algorand-typescript-testing/reference/coverage/).
-
-```ts
-// Test cleanup
-ctx.reset()
-```

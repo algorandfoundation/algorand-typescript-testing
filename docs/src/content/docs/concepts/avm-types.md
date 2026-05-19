@@ -207,8 +207,3 @@ const contract = ctx.contract.create(MyContract)
 
 const activeApp = ctx.ledger.getApplicationForContract(contract)
 ```
-
-```ts
-// test context clean up
-ctx.reset()
-```

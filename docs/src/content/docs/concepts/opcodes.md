@@ -394,8 +394,3 @@ Mocking these opcodes allows you to:
 1. Control complex operations' behaviour not covered by _implemented_ and _emulated_ types.
 2. Test edge cases and error conditions.
 3. Isolate contract logic from external dependencies.
-
-```ts
-// test cleanup
-ctx.reset()
-```

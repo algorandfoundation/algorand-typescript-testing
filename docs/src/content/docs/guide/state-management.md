@@ -189,8 +189,3 @@ expect(scratchSpace[1]).toEqual(5)
 ```
 
 For more detailed information, explore the example contracts in the `examples/` directory, the [coverage](/algorand-typescript-testing/reference/coverage/) page, and the [API Reference](/algorand-typescript-testing/api/).
-
-```ts
-// Test cleanup
-ctx.reset()
-```

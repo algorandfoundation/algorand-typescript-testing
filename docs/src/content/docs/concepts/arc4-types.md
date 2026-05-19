@@ -79,8 +79,3 @@ const stringValue = new arc4.Str('Hello, Algorand!')
 // Generate random string
 const randomString = ctx.any.arc4.str(12) // n is the number of bits in the arc4 string
 ```
-
-```ts
-// Test cleanup
-ctx.reset()
-```

@@ -3,7 +3,7 @@ title: Transactions
 description: Test group transactions, inner transactions, pre-compiled contracts, and strongly typed ABI calls.
 ---
 
-The testing framework follows the Transaction definitions described in [`algorand-typescript` docs](https://algorandfoundation.github.io/puya-ts/documents/Algorand_TypeScript_Language_Guide.Types.html#group-transactions). This section focuses on _value generators_ and interactions with inner transactions, it also explains how the framework identifies _active_ transaction group during contract method/subroutine/logicsig invocation.
+The testing framework follows the Transaction definitions described in [`algorand-typescript` docs](https://algorandfoundation.github.io/puya-ts/language-guide/types/#group-transactions). This section focuses on _value generators_ and interactions with inner transactions, it also explains how the framework identifies _active_ transaction group during contract method/subroutine/logicsig invocation.
 
 ```ts
 import * as algots from '@algorandfoundation/algorand-typescript'
@@ -414,8 +414,3 @@ describe('pre compiled typed app calls', () => {
 - [API Reference](/algorand-typescript-testing/api/) for more details on the test context manager and inner transactions related methods that perform implicit inner transaction type validation.
 - [Examples](/algorand-typescript-testing/examples/) for more examples of smart contracts and associated tests that interact with inner transactions.
 - [Application Spy](/algorand-typescript-testing/guide/application-spy/) for detailed explanation on the usage of it.
-
-```ts
-// Test cleanup
-ctx.reset()
-```
