@@ -33,9 +33,16 @@ jobs:
             exit 1
           fi
 
+  check_docs:
+    name: 'Check docs'
+    if: ${{ !failure() && !cancelled() }}
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/check-docs.yml@main
+
   build:
     name: 'Build @algorandfoundation/algorand-typescript-testing'
-    needs: check-puya-ts
+    needs:
+      - check-puya-ts
+      - check_docs
     if: ${{ !failure() && !cancelled() }}
     uses: ./.github/workflows/node-ci.yml
     with:
