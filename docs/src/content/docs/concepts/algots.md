@@ -9,4 +9,4 @@ It preserves the syntax and semantics of TypeScript so that a developer who know
 
 Algorand TypeScript is compiled for execution on the AVM by PuyaTs, a TypeScript frontend for the [Puya](https://github.com/algorandfoundation/puya) optimising compiler. PuyaTs ensures the resulting AVM bytecode has execution semantics that match the given TypeScript code, and it produces output that is directly compatible with AlgoKit typed clients to simplify deployment and invocation.
 
-See the [Algorand TypeScript documentation](https://algorandfoundation.github.io/puya-ts/index.html) for the full language reference.
+See the [Algorand TypeScript documentation](https://algorandfoundation.github.io/puya-ts/language-guide/) for the full language reference.
