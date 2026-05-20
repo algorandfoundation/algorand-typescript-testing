@@ -12,8 +12,7 @@ concurrency: release
 
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
+  issues: read
   id-token: write
 
 jobs:
@@ -38,24 +37,27 @@ jobs:
     if: ${{ !failure() && !cancelled() }}
     uses: algorandfoundation/algokit-shared-config/.github/workflows/check-docs.yml@main
 
-  build:
-    name: 'Build @algorandfoundation/algorand-typescript-testing'
+  ci:
+    name: CI
     needs:
       - check-puya-ts
       - check_docs
     if: ${{ !failure() && !cancelled() }}
-    uses: ./.github/workflows/node-ci.yml
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-ci.yml@main
     with:
-      pre-test-script: |
-        pipx install algokit
-        algokit localnet reset --update
-        pipx install puyapy
-      node-version: 24.x
-      run-build: true
       run-commit-lint: true
+      install-algokit: true
+      install-puyapy: true
       audit-script: npm run audit
-      upload-artifact-name: algo-ts-testing
-      upload-artifact-path: ./dist
+
+  build:
+    name: Build
+    needs: ci
+    if: ${{ !failure() && !cancelled() }}
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@main
+    with:
+      build-path: dist
+      artifact-name: algo-ts-testing
 
   release:
     name: Release
@@ -83,7 +85,7 @@ jobs:
 
       - run: npm ci --ignore-scripts
 
-      - name: Download package artifacts
+      - name: Download built package
         uses: actions/download-artifact@v8
         with:
           name: algo-ts-testing
@@ -104,8 +106,6 @@ jobs:
 
   publish_docs:
     name: Publish docs to GitHub Pages
-    needs:
-      - release
-      - check_docs
+    needs: release
     if: github.ref_name == 'release'
     uses: algorandfoundation/algokit-shared-config/.github/workflows/publish-docs.yml@main

@@ -9,6 +9,6 @@
   },
   "GHSA-jxxr-4gwj-5jf2": {
     "active": true,
-    "notes": "brace-expansion: large numeric range defeats max DoS protection. Transitive dependency via npm internals (npm > brace-expansion); not invoked in this project."
+    "notes": "brace-expansion DoS via large numeric ranges. Transitive dev/build dependency via minimatch (eslint, typescript-eslint, puya-ts, semantic-release, npm); no user-controlled input is passed to brace-expansion in this project."
   }
 }
