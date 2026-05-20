@@ -12,4 +12,3 @@ module.exports = {
     'footer-max-line-length': [1, 'always', 150],
   },
 }
-
