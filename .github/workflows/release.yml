@@ -32,17 +32,23 @@ jobs:
             exit 1
           fi
 
-  build:
-    name: Build
+  ci:
+    name: CI
     needs: check-puya-ts
     if: ${{ !failure() && !cancelled() }}
-    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@main
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-ci.yml@main
     with:
       run-commit-lint: true
-      run-build: true
       install-algokit: true
       install-puyapy: true
       audit-script: npm run audit
+
+  build:
+    name: Build
+    needs: ci
+    if: ${{ !failure() && !cancelled() }}
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/node-build.yml@main
+    with:
       build-path: dist
       artifact-name: algo-ts-testing
 
