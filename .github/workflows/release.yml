@@ -108,4 +108,8 @@ jobs:
     name: Publish docs to GitHub Pages
     needs: release
     if: github.ref_name == 'release'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     uses: algorandfoundation/algokit-shared-config/.github/workflows/publish-docs.yml@main
