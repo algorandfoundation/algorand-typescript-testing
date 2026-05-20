@@ -32,9 +32,16 @@ jobs:
             exit 1
           fi
 
+  check_docs:
+    name: 'Check docs'
+    if: ${{ !failure() && !cancelled() }}
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/check-docs.yml@main
+
   ci:
     name: CI
-    needs: check-puya-ts
+    needs:
+      - check-puya-ts
+      - check_docs
     if: ${{ !failure() && !cancelled() }}
     uses: algorandfoundation/algokit-shared-config/.github/workflows/node-ci.yml@main
     with:
@@ -98,11 +105,7 @@ jobs:
           tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'beta' || github.ref_name == 'release' && 'latest' || 'pre-release' }}
 
   publish_docs:
-    name: Publish docs
+    name: Publish docs to GitHub Pages
     needs: release
-    if: github.ref == 'refs/heads/release'
-    uses: ./.github/workflows/gh-pages.yml
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
+    if: github.ref_name == 'release'
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/publish-docs.yml@main

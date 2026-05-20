@@ -6,7 +6,6 @@ on:
       - main
       - alpha
     paths-ignore:
-      - 'docs/**'
       - 'scripts/**'
 
 permissions:
@@ -22,3 +21,6 @@ jobs:
       install-algokit: true
       install-puyapy: true
       audit-script: npm run audit
+
+  check_docs:
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/check-docs.yml@main

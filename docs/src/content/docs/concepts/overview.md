@@ -1,14 +1,13 @@
 ---
-title: Concepts
+title: Overview
+description: Core concepts of the Algorand TypeScript Testing framework — test context, value generators, stub implementation categories, and data validation.
 ---
-
-# Concepts
 
 The following sections provide an overview of key concepts and features in the Algorand TypeScript Testing framework.
 
 ## Test Context
 
-The main abstraction for interacting with the testing framework is the [`TestExecutionContext`](../classes/index.TestExecutionContext.html). It creates an emulated Algorand environment that closely mimics AVM behaviour relevant to unit testing the contracts and provides a TypeScript interface for interacting with the emulated environment.
+The main abstraction for interacting with the testing framework is the `TestExecutionContext`. It creates an emulated Algorand environment that closely mimics AVM behaviour relevant to unit testing the contracts and provides a TypeScript interface for interacting with the emulated environment.
 
 ```typescript
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
@@ -35,12 +34,7 @@ The context manager interface exposes four main properties:
 1. `txn`: An instance of `TransactionContext` for creating and managing transaction groups, submitting transactions, and accessing transaction results.
 1. `any`: An instance of `ValueGenerator` for generating randomized test data.
 
-For detailed method signatures, parameters, and return types, refer to the following API sections:
-
-- [`ContractContext`](../classes/index._internal_.ContractContext.html)
-- [`LedgerContext`](../classes/index._internal_.LedgerContext.html)
-- [`TransactionContext`](../classes/index._internal_.TransactionContext.html)
-- [`AvmValueGenerator`, `TxnValueGenerator`, `Arc4ValueGenerator`](../classes/value-generators.ValueGenerator.html)
+For detailed method signatures, parameters, and return types, refer to the [API Reference](/algorand-typescript-testing/api/).
 
 ### Value generators
 
@@ -52,16 +46,14 @@ The `any` property provides access to different value generators:
 
 These generators allow creation of constrained random values for various AVM entities (accounts, assets, applications, etc.) when specific values are not required.
 
-```
-Value generators are powerful tools for generating test data for specified AVM types. They allow further constraints on random value generation via arguments, making it easier to generate test data when exact values are not necessary.
-
-When used with the 'Arrange, Act, Assert' pattern, value generators can be especially useful in setting up clear and concise test data in arrange steps.
-
-```
+> [!NOTE]
+> Value generators are powerful tools for generating test data for specified AVM types. They allow further constraints on random value generation via arguments, making it easier to generate test data when exact values are not necessary.
+>
+> When used with the 'Arrange, Act, Assert' pattern, value generators can be especially useful in setting up clear and concise test data in arrange steps.
 
 ## Types of `algorand-typescript` stub implementations
 
-As explained in the [introduction](testing-guide.md), `algorand-typescript-testing` _injects_ test implementations for stubs available in the `algorand-typescript` package. However, not all of the stubs are implemented in the same manner:
+`algorand-typescript-testing` _injects_ test implementations for stubs available in the `algorand-typescript` package. However, not all of the stubs are implemented in the same manner:
 
 1. **Native**: Fully matches AVM computation in Python. For example, `op.sha256` and other cryptographic operations behave identically in AVM and unit tests. This implies that the majority of opcodes that are 'pure' functions in AVM also have a native TypeScript implementation provided by this package. These abstractions and opcodes can be used within and outside of the testing context.
 
@@ -69,7 +61,7 @@ As explained in the [introduction](testing-guide.md), `algorand-typescript-testi
 
 3. **Mockable**: Not implemented, but can be mocked or patched. For example, `op.onlineStake` can be mocked to return specific values or behaviours; otherwise, it raises a `NotImplementedError`. This category covers cases where native or emulated implementation in a unit test context is impractical or overly complex.
 
-For a full list of all public `algorand-typescript` types and their corresponding implementation category, refer to the [Coverage](./coverage.md) section.
+For a full list of all public `algorand-typescript` types and their corresponding implementation category, refer to the [Coverage](/algorand-typescript-testing/reference/coverage/) section.
 
 ## Data Validation
 

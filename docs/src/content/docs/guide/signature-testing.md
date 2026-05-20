@@ -1,10 +1,9 @@
 ---
-title: Smart Signature Testing
+title: Logic Signature Testing
+description: Test Algorand Logic Signatures (LogicSigs) using TestExecutionContext.executeLogicSig.
 ---
 
-# Smart Signature Testing
-
-Test Algorand smart signatures (LogicSigs) with ease using the Algorand TypeScript Testing framework.
+Test Algorand LogicSigs with ease using the Algorand TypeScript Testing framework.
 
 ```ts
 import * as algots from '@algorandfoundation/algorand-typescript'
@@ -72,9 +71,4 @@ const secret = algots.Bytes('secret')
 expect(ctx.executeLogicSig(new HashedTimeLockedLogicSig(), secret))
 ```
 
-For more details on available operations, see the [coverage](./coverage.md).
-
-```ts
-// Test cleanup
-ctx.reset()
-```
+For more details on available operations, see the [coverage](/algorand-typescript-testing/reference/coverage/).

@@ -52,10 +52,11 @@ coverage
 # Test results
 test-results.xml
 
-# Website & Code docs generation
-code-docs/
-out/
-docs/_html
+# Starlight docs build output and generated content
+docs/dist/
+docs/.astro/
+docs/src/content/docs/api/
+docs/src/content/docs/examples/
 
 # dotenv environment variable files
 .env

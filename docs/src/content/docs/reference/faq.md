@@ -1,12 +1,11 @@
 ---
 title: FAQ
+description: Common questions about test contexts, AVM, opcodes, value generators, and framework limitations.
 ---
-
-# FAQ
 
 ## What is a Test Context?
 
-A test context is a context manager that provides a simulated Algorand environment for testing TypeScript smart contracts. It allows developers to create and manipulate a virtual Algorand ecosystem for testing purposes. For more details, see the [Test Context section](tg-concepts.md#test-context) in our documentation.
+A test context is a context manager that provides a simulated Algorand environment for testing TypeScript smart contracts. It allows developers to create and manipulate a virtual Algorand ecosystem for testing purposes. For more details, see the [Test Context section](/algorand-typescript-testing/concepts/overview/#test-context) in our documentation.
 
 ## What is the Algorand Virtual Machine (AVM)?
 
@@ -18,7 +17,7 @@ Operational Codes, or opcodes, are AVM instructions that are executed directly b
 
 ## What are Value Generators?
 
-Value Generators are helper methods that generate randomized values for testing when the specific value of the tested type is not important. In the context of Algorand TypeScript testing, these are represented by properties on the context manager, accessed via `any.*` (`any.txn.*` or `any.arc4.*` in the case of ARC 4 types). To understand how to use Value Generators effectively, check out our [Value Generators section](tg-concepts.md#value-generators) in the documentation.
+Value Generators are helper methods that generate randomized values for testing when the specific value of the tested type is not important. In the context of Algorand TypeScript testing, these are represented by properties on the context manager, accessed via `any.*` (`any.txn.*` or `any.arc4.*` in the case of ARC 4 types). To understand how to use Value Generators effectively, check out our [Value Generators section](/algorand-typescript-testing/concepts/overview/#value-generators) in the documentation.
 
 ## What are the limitations of the Algorand TypeScript Testing framework?
 
@@ -46,7 +45,7 @@ The framework does not implement a strict opcode budget system. For scenarios wh
 
 ## Are all cryptographic operations fully implemented?
 
-Some cryptographic operations are mocked or simplified in the framework. For a detailed list of which operations are mocked, refer to the _mockable_ types under the [coverage](./coverage.md) section.
+Some cryptographic operations are mocked or simplified in the framework. For a detailed list of which operations are mocked, refer to the _mockable_ types under the [coverage](/algorand-typescript-testing/reference/coverage/) section.
 
 ## Can I use this framework for security-critical validations?
 
@@ -56,9 +55,8 @@ While this framework is useful for unit testing and local development, it should
 
 Yes, the `algokit-typescript-template`, accessible via `algokit init`, provides a working example of how to structure `algorand-typescript-testing` along with regular integration tests against localnet.
 
-```
-The `algokit-typescript-template` accessible via `algokit init -t typescript` provides a comprehensive and customizable working example of how to structure `algorand-typescript-testing` along with regular integration tests against localnet.
-```
+> [!NOTE]
+> The `algokit-typescript-template` accessible via `algokit init -t typescript` provides a comprehensive and customizable working example of how to structure `algorand-typescript-testing` along with regular integration tests against localnet.
 
 ## Is it compatible with `vitest`?
 
