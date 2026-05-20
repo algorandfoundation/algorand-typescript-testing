@@ -101,3 +101,11 @@ jobs:
           access: 'public'
           provenance: true
           tag: ${{ github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'main' && 'beta' || github.ref_name == 'release' && 'latest' || 'pre-release' }}
+
+  publish_docs:
+    name: Publish docs to GitHub Pages
+    needs:
+      - release
+      - check_docs
+    if: github.ref_name == 'release'
+    uses: algorandfoundation/algokit-shared-config/.github/workflows/publish-docs.yml@main
