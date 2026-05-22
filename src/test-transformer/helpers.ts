@@ -59,10 +59,10 @@ export function ptypeToArc4EncodedType(ptype: ptypes.PType, sourceLocation: Sour
   if (ptype.equals(ptypes.uint64PType)) return new ptypes.UintNType({ n: 64n })
   if (ptype.equals(ptypes.biguintPType)) return new ptypes.UintNType({ n: 512n })
   if (ptype instanceof ptypes.BytesPType)
-    return ptype.length === null ? ptypes.DynamicBytesType : new ptypes.StaticBytesType({ length: ptype.length })
+    return ptype.length === null ? ptypes.dynamicBytesType : new ptypes.StaticBytesType({ length: ptype.length })
   if (ptype.equals(ptypes.stringPType)) return ptypes.arc4StringType
-  if (ptype.equals(ptypes.assetPType)) return ptypes.arc4Uint64
-  if (ptype.equals(ptypes.applicationPType)) return ptypes.arc4Uint64
+  if (ptype.equals(ptypes.assetPType)) return new ptypes.UintNType({ n: 64n })
+  if (ptype.equals(ptypes.applicationPType)) return new ptypes.UintNType({ n: 64n })
   if (ptype.equals(ptypes.accountPType)) return ptypes.arc4AddressAlias
   if (ptype instanceof ptypes.TransientType) {
     throw new CodeError(ptype.expressionMessage)
