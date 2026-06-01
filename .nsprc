@@ -10,5 +10,10 @@
   "GHSA-jxxr-4gwj-5jf2": {
     "active": true,
     "notes": "brace-expansion DoS via large numeric ranges. Transitive dev/build dependency via minimatch (eslint, typescript-eslint, puya-ts, semantic-release, npm); no user-controlled input is passed to brace-expansion in this project."
+  },
+  "GHSA-5xrq-8626-4rwp": {
+    "active": true,
+    "expiry": "2026-09-01",
+    "notes": "vitest: arbitrary file read/execute only when the Vitest UI server is listening (--ui). Dev-only devDependency; the UI server is never started here (CI runs `vitest run` headless). Fixed in vitest >=4.1.0. Safe to remove once dependency is upgraded."
   }
 }
