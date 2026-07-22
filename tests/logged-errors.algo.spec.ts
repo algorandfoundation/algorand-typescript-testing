@@ -29,6 +29,13 @@ describe('logged errors', async () => {
     assertLog(expectedError)
   })
 
+  test('should ignore desc option in logged output', () => {
+    const expectedError = 'ERR:01:arg is 1'
+    const contract = ctx.contract.create(LoggedErrorsContract)
+    expect(() => contract.testDesc(1)).toThrow(expectedError)
+    assertLog(expectedError)
+  })
+
   test.for([
     { arg: 1, expectedError: 'ERR:not-alnum!' },
     { arg: 2, expectedError: 'ERR:not-alnum!' },
