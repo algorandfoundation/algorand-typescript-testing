@@ -11,9 +11,109 @@
     "active": true,
     "notes": "brace-expansion DoS via large numeric ranges. Transitive dev/build dependency via minimatch (eslint, typescript-eslint, puya-ts, semantic-release, npm); no user-controlled input is passed to brace-expansion in this project."
   },
+  "GHSA-3jxr-9vmj-r5cp": {
+    "active": true,
+    "notes": "brace-expansion DoS via exponential-time expansion. Transitive dev/build dependency via minimatch; not in published runtime dependencies and no user-controlled input reaches it."
+  },
   "GHSA-5xrq-8626-4rwp": {
     "active": true,
     "expiry": "2026-09-01",
     "notes": "vitest: arbitrary file read/execute only when the Vitest UI server is listening (--ui). Dev-only devDependency; the UI server is never started here (CI runs `vitest run` headless). Fixed in vitest >=4.1.0. Safe to remove once dependency is upgraded."
+  },
+  "GHSA-fx2h-pf6j-xcff": {
+    "active": true,
+    "notes": "vite: server.fs.deny bypass on Windows alternate paths. Dev-only, transitive via vitest; the Vite dev server is never started here (CI runs `vitest run`). Not in published runtime dependencies."
+  },
+  "GHSA-v6wh-96g9-6wx3": {
+    "active": true,
+    "notes": "vite/launch-editor: NTLMv2 hash disclosure via UNC path on Windows. Dev-only, transitive via vitest; requires the interactive dev-server error overlay which is never used in headless CI. Not in published runtime dependencies."
+  },
+  "GHSA-g7r4-m6w7-qqqr": {
+    "active": true,
+    "notes": "esbuild: arbitrary file read when the dev server is running. Dev-only, transitive via vite/vitest; no esbuild dev server is started here. Not in published runtime dependencies."
+  },
+  "GHSA-23hp-3jrh-7fpw": {
+    "active": true,
+    "notes": "node-tar: decompression/parse DoS. Flagged instance is the tar bundled inside npm (dev, via semantic-release release tooling). Not in published runtime dependencies; only trusted archives are processed."
+  },
+  "GHSA-8x88-c5mf-7j5w": {
+    "active": true,
+    "notes": "node-tar: negative entry size causes infinite loop. Dev-only via npm bundled in semantic-release release tooling. Not in published runtime dependencies; only trusted archives are processed."
+  },
+  "GHSA-vmf3-w455-68vh": {
+    "active": true,
+    "notes": "node-tar: PAX size override applied to intermediary entries. Dev-only via npm bundled in semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-w8wr-v893-vjvp": {
+    "active": true,
+    "notes": "node-tar: process crash via PAX numeric path type. Dev-only via npm bundled in semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-gvwx-54wh-qm9j": {
+    "active": true,
+    "notes": "node-tar: uncaught exception DoS via NUL byte in PAX path. Dev-only via npm bundled in semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-w7jw-789q-3m8p": {
+    "active": true,
+    "notes": "shell-quote: quote() does not escape newlines. Dev-only, transitive via npm-run-all2 used by build scripts; only static, project-authored script strings are passed. Not in published runtime dependencies."
+  },
+  "GHSA-395f-4hp3-45gv": {
+    "active": true,
+    "notes": "shell-quote: quadratic-complexity DoS. Dev-only, transitive via npm-run-all2 used by build scripts; only static, project-authored input. Not in published runtime dependencies."
+  },
+  "GHSA-vmh5-mc38-953g": {
+    "active": true,
+    "notes": "undici: TLS certificate validation bypass. Dev-only, transitive via @actions/http-client and npm within semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-vxpw-j846-p89q": {
+    "active": true,
+    "notes": "undici: WebSocket client DoS via fragment count bypass. Dev-only, transitive via semantic-release release tooling. Not in published runtime dependencies; no WebSocket usage in this project."
+  },
+  "GHSA-hm92-r4w5-c3mj": {
+    "active": true,
+    "notes": "undici: cross-origin request routing via SOCKS5 proxy pool reuse. Dev-only, transitive via semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-p88m-4jfj-68fv": {
+    "active": true,
+    "notes": "undici: HTTP header injection via Set-Cookie percent-decoding. Dev-only, transitive via semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-pr7r-676h-xcf6": {
+    "active": true,
+    "notes": "undici: cross-user information disclosure via shared cache whitespace bypass. Dev-only, transitive via semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-35p6-xmwp-9g52": {
+    "active": true,
+    "notes": "undici: HTTP response queue poisoning via keep-alive socket reuse. Dev-only, transitive via semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-g8m3-5g58-fq7m": {
+    "active": true,
+    "notes": "undici: Set-Cookie SameSite downgrade via permissive substring matching. Dev-only, transitive via semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-52v5-jr5w-gjxr": {
+    "active": true,
+    "notes": "sigstore: certificateOIDs verification constraint issue. Dev-only, transitive via npm bundled in semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-jfc7-64v2-mr8c": {
+    "active": true,
+    "notes": "@sigstore/core: DSSE payloadType type-binding flaw. Dev-only, transitive via npm bundled in semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-xgjw-pm74-86q4": {
+    "active": true,
+    "notes": "@sigstore/verify: insufficient verification of data authenticity. Dev-only, transitive via npm bundled in semantic-release release tooling. Not in published runtime dependencies."
+  },
+  "GHSA-52cp-r559-cp3m": {
+    "active": true,
+    "notes": "js-yaml: YAML merge-key chains force quadratic complexity. Dev-only, transitive via eslint and semantic-release; only trusted, project-authored config is parsed. Not in published runtime dependencies."
+  },
+  "GHSA-h67p-54hq-rp68": {
+    "active": true,
+    "notes": "js-yaml: quadratic-complexity DoS in merge key handling. Dev-only, transitive via eslint and semantic-release; only trusted config is parsed. Not in published runtime dependencies."
+  },
+  "GHSA-v2hh-gcrm-f6hx": {
+    "active": true,
+    "notes": "fast-uri: host confusion via literal IP. Dev-only, transitive via ajv within the @algorandfoundation/algokit-utils devDependency. Not in published runtime dependencies."
+  },
+  "GHSA-4c8g-83qw-93j6": {
+    "active": true,
+    "notes": "fast-uri: host confusion via failed IP parse. Dev-only, transitive via ajv within the @algorandfoundation/algokit-utils devDependency. Not in published runtime dependencies."
   }
 }
