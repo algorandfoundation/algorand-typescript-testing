@@ -29,25 +29,8 @@ import type {
   Transaction,
 } from '../impl/transactions'
 import type { DeliberateAny, FunctionKeys } from '../typescript-helpers'
-import { asBigInt, asNumber, asUint64 } from '../util'
+import { asNumber, asUint64, asUint64BigInt } from '../util'
 import { ContractContext } from './contract-context'
-
-function ScopeGenerator(dispose: () => void) {
-  function* internal() {
-    try {
-      yield
-    } finally {
-      dispose()
-    }
-  }
-  const scope = internal()
-  scope.next()
-  return {
-    done: () => {
-      scope.return()
-    },
-  }
-}
 
 interface ExecutionScope {
   execute: <TReturn>(body: () => TReturn) => TReturn
@@ -99,7 +82,7 @@ export class TransactionContext {
     activeTransactionIndex?: number,
   ): ExecutionScope {
     let activeIndex = activeTransactionIndex
-    const transactions = group.map((t) => (t instanceof DeferredAppCall ? t.txns : [t])).flat()
+    const transactions = group.flatMap((t) => (t instanceof DeferredAppCall ? t.txns : [t]))
     if (activeIndex === undefined) {
       const lastAppCall = group
         .filter((t) => t instanceof DeferredAppCall)
@@ -113,12 +96,14 @@ export class TransactionContext {
 
     this.#activeGroup = transactionGroup
 
-    const scope = ScopeGenerator(() => {
-      if (this.#activeGroup?.transactions?.length) {
-        this.groups.push(this.#activeGroup)
-      }
-      this.#activeGroup = undefined
-    })
+    const scope = {
+      done: () => {
+        if (this.#activeGroup?.transactions?.length) {
+          this.groups.push(this.#activeGroup)
+        }
+        this.#activeGroup = undefined
+      },
+    }
     return {
       execute: <TReturn>(body: () => TReturn) => {
         const result = body()
@@ -168,10 +153,11 @@ export class TransactionContext {
    * @throws If there are no transaction groups.
    */
   get lastGroup(): TransactionGroup {
-    if (this.groups.length === 0) {
+    const group = this.groups.at(-1)
+    if (group === undefined) {
       throw new InternalError('No group transactions found!')
     }
-    return this.groups.at(-1)!
+    return group
   }
 
   /**
@@ -225,13 +211,9 @@ export class TransactionContext {
   exportLogs<const T extends [...LogDecoding[]]>(appId: uint64, ...decoding: T): DecodedLogs<T> {
     const transaction = this.lastGroup.transactions
       .filter((t) => t.type === TransactionType.ApplicationCall)
-      .find((t) => asBigInt(t.appId.id) === asBigInt(appId))
-    let logs = []
-    if (transaction) {
-      logs = transaction.appLogs
-    } else {
-      logs = lazyContext.getApplicationData(appId).application.appLogs
-    }
+      .find((t) => asUint64BigInt(t.appId.id) === asUint64BigInt(appId))
+
+    const logs = transaction?.appLogs ?? lazyContext.getApplicationData(appId).application.appLogs
 
     return decodeLogs(logs, decoding)
   }
@@ -282,12 +264,13 @@ export class TransactionGroup {
     return (this.activeTransaction as ApplicationCallTransaction).backingAppId.id
   }
 
-  /* @internal */
+  /** @internal */
   get constructingItxn() {
-    if (!this.constructingItxnGroup.length) {
+    const itxn = this.constructingItxnGroup.at(-1)
+    if (!itxn) {
       throw new InternalError('itxn field without itxn begin')
     }
-    return this.constructingItxnGroup.at(-1)!
+    return itxn
   }
 
   /**
@@ -347,7 +330,7 @@ export class TransactionGroup {
    * @internal
    * @throws If there is no inner transaction group being constructed.
    */
-  appendInnerTransactionGroup() {
+  appendInnerTransaction() {
     if (!this.constructingItxnGroup.length) {
       throw new InternalError('itxn next without itxn begin')
     }
@@ -404,8 +387,8 @@ export class TransactionGroup {
     if (i !== undefined && i >= this.itxnGroups.length) {
       throw new InternalError('Invalid group index')
     }
-    const group = i !== undefined ? this.itxnGroups[i] : this.itxnGroups.at(-1)!
-    invariant(group.itxns.length > 0, 'no previous inner transactions')
+    const group = i !== undefined ? this.itxnGroups[i] : this.itxnGroups.at(-1)
+    invariant(group && group.itxns.length > 0, 'no previous inner transactions')
 
     return group
   }
@@ -416,7 +399,7 @@ export class TransactionGroup {
    * @returns The application transaction.
    */
   getApplicationCallTransaction(index?: Uint64Compat): ApplicationCallTransaction {
-    return this._getTransaction({ type: TransactionType.ApplicationCall, index }) as ApplicationCallTransaction
+    return this._getTransaction({ type: TransactionType.ApplicationCall, index })
   }
 
   /**
@@ -425,7 +408,7 @@ export class TransactionGroup {
    * @returns The asset configuration transaction.
    */
   getAssetConfigTransaction(index?: Uint64Compat): AssetConfigTransaction {
-    return this._getTransaction({ type: TransactionType.AssetConfig, index }) as AssetConfigTransaction
+    return this._getTransaction({ type: TransactionType.AssetConfig, index })
   }
 
   /**
@@ -434,7 +417,7 @@ export class TransactionGroup {
    * @returns The asset transfer transaction.
    */
   getAssetTransferTransaction(index?: Uint64Compat): AssetTransferTransaction {
-    return this._getTransaction({ type: TransactionType.AssetTransfer, index }) as AssetTransferTransaction
+    return this._getTransaction({ type: TransactionType.AssetTransfer, index })
   }
 
   /**
@@ -443,7 +426,7 @@ export class TransactionGroup {
    * @returns The asset freeze transaction.
    */
   getAssetFreezeTransaction(index?: Uint64Compat): AssetFreezeTransaction {
-    return this._getTransaction({ type: TransactionType.AssetFreeze, index }) as AssetFreezeTransaction
+    return this._getTransaction({ type: TransactionType.AssetFreeze, index })
   }
 
   /**
@@ -452,7 +435,7 @@ export class TransactionGroup {
    * @returns The key registration transaction.
    */
   getKeyRegistrationTransaction(index?: Uint64Compat): KeyRegistrationTransaction {
-    return this._getTransaction({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationTransaction
+    return this._getTransaction({ type: TransactionType.KeyRegistration, index })
   }
 
   /**
@@ -461,7 +444,7 @@ export class TransactionGroup {
    * @returns The payment transaction.
    */
   getPaymentTransaction(index?: Uint64Compat): PaymentTransaction {
-    return this._getTransaction({ type: TransactionType.Payment, index }) as PaymentTransaction
+    return this._getTransaction({ type: TransactionType.Payment, index })
   }
 
   /**
@@ -473,34 +456,27 @@ export class TransactionGroup {
     return this._getTransaction({ index })
   }
   /** @internal */
-  private _getTransaction({ type, index }: { type?: TransactionType; index?: Uint64Compat }) {
+  private _getTransaction(args: { type: TransactionType.ApplicationCall; index?: Uint64Compat }): ApplicationCallTransaction
+  private _getTransaction(args: { type: TransactionType.Payment; index?: Uint64Compat }): PaymentTransaction
+  private _getTransaction(args: { type: TransactionType.AssetConfig; index?: Uint64Compat }): AssetConfigTransaction
+  private _getTransaction(args: { type: TransactionType.AssetTransfer; index?: Uint64Compat }): AssetTransferTransaction
+  private _getTransaction(args: { type: TransactionType.AssetFreeze; index?: Uint64Compat }): AssetFreezeTransaction
+  private _getTransaction(args: { type: TransactionType.KeyRegistration; index?: Uint64Compat }): KeyRegistrationTransaction
+  private _getTransaction(args: { index?: Uint64Compat }): Transaction
+  private _getTransaction({ type, index }: { type?: TransactionType; index?: Uint64Compat }): Transaction {
     const i = index !== undefined ? asNumber(index) : undefined
-    if (i !== undefined && i >= lazyContext.activeGroup.transactions.length) {
+    if (i !== undefined && i >= this.transactions.length) {
       throw new InternalError('Invalid group index')
     }
-    const transaction = i !== undefined ? lazyContext.activeGroup.transactions[i] : lazyContext.activeGroup.activeTransaction
+    const transaction = i !== undefined ? this.transactions[i] : this.activeTransaction
     if (type === undefined) {
       return transaction
     }
     if (transaction.type !== type) {
       throw new InternalError(`Invalid transaction type: ${transaction.type}`)
     }
-    switch (type) {
-      case TransactionType.ApplicationCall:
-        return transaction as ApplicationCallTransaction
-      case TransactionType.Payment:
-        return transaction as PaymentTransaction
-      case TransactionType.AssetConfig:
-        return transaction as AssetConfigTransaction
-      case TransactionType.AssetTransfer:
-        return transaction as AssetTransferTransaction
-      case TransactionType.AssetFreeze:
-        return transaction as AssetFreezeTransaction
-      case TransactionType.KeyRegistration:
-        return transaction as KeyRegistrationTransaction
-      default:
-        throw new InternalError(`Invalid transaction type: ${type}`)
-    }
+
+    return transaction
   }
 }
 
@@ -520,7 +496,7 @@ export class ItxnGroup {
    * @returns The application inner transaction.
    */
   getApplicationCallInnerTxn(index?: Uint64Compat): ApplicationCallInnerTxn {
-    return this._getInnerTxn({ type: TransactionType.ApplicationCall, index }) as ApplicationCallInnerTxn
+    return this._getInnerTxn({ type: TransactionType.ApplicationCall, index })
   }
 
   /**
@@ -529,7 +505,7 @@ export class ItxnGroup {
    * @returns The asset configuration inner transaction.
    */
   getAssetConfigInnerTxn(index?: Uint64Compat): AssetConfigInnerTxn {
-    return this._getInnerTxn({ type: TransactionType.AssetConfig, index }) as AssetConfigInnerTxn
+    return this._getInnerTxn({ type: TransactionType.AssetConfig, index })
   }
 
   /**
@@ -538,7 +514,7 @@ export class ItxnGroup {
    * @returns The asset transfer inner transaction.
    */
   getAssetTransferInnerTxn(index?: Uint64Compat): AssetTransferInnerTxn {
-    return this._getInnerTxn({ type: TransactionType.AssetTransfer, index }) as AssetTransferInnerTxn
+    return this._getInnerTxn({ type: TransactionType.AssetTransfer, index })
   }
 
   /**
@@ -547,7 +523,7 @@ export class ItxnGroup {
    * @returns The asset freeze inner transaction.
    */
   getAssetFreezeInnerTxn(index?: Uint64Compat): AssetFreezeInnerTxn {
-    return this._getInnerTxn({ type: TransactionType.AssetFreeze, index }) as AssetFreezeInnerTxn
+    return this._getInnerTxn({ type: TransactionType.AssetFreeze, index })
   }
 
   /**
@@ -556,7 +532,7 @@ export class ItxnGroup {
    * @returns The key registration inner transaction.
    */
   getKeyRegistrationInnerTxn(index?: Uint64Compat): KeyRegistrationInnerTxn {
-    return this._getInnerTxn({ type: TransactionType.KeyRegistration, index }) as KeyRegistrationInnerTxn
+    return this._getInnerTxn({ type: TransactionType.KeyRegistration, index })
   }
 
   /**
@@ -565,7 +541,7 @@ export class ItxnGroup {
    * @returns The payment inner transaction.
    */
   getPaymentInnerTxn(index?: Uint64Compat): PaymentInnerTxn {
-    return this._getInnerTxn({ type: TransactionType.Payment, index }) as PaymentInnerTxn
+    return this._getInnerTxn({ type: TransactionType.Payment, index })
   }
 
   /**
@@ -578,34 +554,28 @@ export class ItxnGroup {
   }
 
   /** @internal */
-  private _getInnerTxn({ type, index }: { type?: TransactionType; index?: Uint64Compat }) {
+  private _getInnerTxn(args: { type: TransactionType.ApplicationCall; index?: Uint64Compat }): ApplicationCallInnerTxn
+  private _getInnerTxn(args: { type: TransactionType.Payment; index?: Uint64Compat }): PaymentInnerTxn
+  private _getInnerTxn(args: { type: TransactionType.AssetConfig; index?: Uint64Compat }): AssetConfigInnerTxn
+  private _getInnerTxn(args: { type: TransactionType.AssetTransfer; index?: Uint64Compat }): AssetTransferInnerTxn
+  private _getInnerTxn(args: { type: TransactionType.AssetFreeze; index?: Uint64Compat }): AssetFreezeInnerTxn
+  private _getInnerTxn(args: { type: TransactionType.KeyRegistration; index?: Uint64Compat }): KeyRegistrationInnerTxn
+  private _getInnerTxn(args: { index?: Uint64Compat }): InnerTxn
+  private _getInnerTxn({ type, index }: { type?: TransactionType; index?: Uint64Compat }): InnerTxn {
     invariant(this.itxns.length > 0, 'no previous inner transactions')
     const i = index !== undefined ? asNumber(index) : undefined
     if (i !== undefined && i >= this.itxns.length) {
       throw new InternalError('Invalid group index')
     }
-    const transaction = i !== undefined ? this.itxns[i] : this.itxns.at(-1)!
+    const transaction = i !== undefined ? this.itxns[i] : this.itxns.at(-1)
+    invariant(transaction, 'no previous inner transactions')
+
     if (type === undefined) {
       return transaction
     }
     if (transaction.type !== type) {
       throw new InternalError(`Invalid transaction type: ${transaction.type}`)
     }
-    switch (type) {
-      case TransactionType.ApplicationCall:
-        return transaction as ApplicationCallInnerTxn
-      case TransactionType.Payment:
-        return transaction as PaymentInnerTxn
-      case TransactionType.AssetConfig:
-        return transaction as AssetConfigInnerTxn
-      case TransactionType.AssetTransfer:
-        return transaction as AssetTransferInnerTxn
-      case TransactionType.AssetFreeze:
-        return transaction as AssetFreezeInnerTxn
-      case TransactionType.KeyRegistration:
-        return transaction as KeyRegistrationInnerTxn
-      default:
-        throw new InternalError(`Invalid transaction type: ${type}`)
-    }
+    return transaction
   }
 }

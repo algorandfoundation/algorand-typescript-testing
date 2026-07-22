@@ -872,7 +872,7 @@ export const ITxnCreate: typeof op.ITxnCreate = {
     setConstructingItxnField({ rejectVersion: asUint64(a) })
   },
   next: function (): void {
-    lazyContext.activeGroup.appendInnerTransactionGroup()
+    lazyContext.activeGroup.appendInnerTransaction()
   },
   submit: function (): void {
     lazyContext.activeGroup.submitInnerTransactionGroup()

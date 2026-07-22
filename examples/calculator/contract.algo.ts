@@ -1,5 +1,5 @@
 import type { uint64 } from '@algorandfoundation/algorand-typescript'
-import { assert, BaseContract, Bytes, err, log, op, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { BaseContract, Bytes, log, loggedAssert, loggedErr, op, Txn, Uint64 } from '@algorandfoundation/algorand-typescript'
 
 const ADD = Uint64(1)
 const SUB = Uint64(2)
@@ -24,7 +24,7 @@ export default class MyContract extends BaseContract {
       log(a)
       log(b)
     } else {
-      assert(numArgs === 3, 'Expected 3 args')
+      loggedAssert(numArgs === 3, 'Expected 3 args')
       action = op.btoi(Txn.applicationArgs(0))
       const a_bytes = Txn.applicationArgs(1)
       const b_bytes = Txn.applicationArgs(2)
@@ -49,7 +49,7 @@ export default class MyContract extends BaseContract {
       case DIV:
         return ` / `
       default:
-        err('Unknown operation')
+        loggedErr('Unknown operation')
     }
   }
 
@@ -64,7 +64,7 @@ export default class MyContract extends BaseContract {
       case DIV:
         return this.div(a, b)
       default:
-        err('Unknown operation')
+        loggedErr('Unknown operation')
     }
   }
 

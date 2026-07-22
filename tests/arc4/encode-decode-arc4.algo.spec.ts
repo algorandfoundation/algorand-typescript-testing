@@ -1,4 +1,4 @@
-import type { biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
+import type { Account, Application, Asset, biguint, bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { arc4, assertMatch, Bytes } from '@algorandfoundation/algorand-typescript'
 import type { StaticBytes, UFixed, Uint64 } from '@algorandfoundation/algorand-typescript/arc4'
 import {
@@ -18,7 +18,7 @@ import {
 import { itob } from '@algorandfoundation/algorand-typescript/op'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
 import { describe, expect, test } from 'vitest'
-import { MAX_UINT128 } from '../../src/constants'
+import { ABI_RETURN_VALUE_LOG_PREFIX, MAX_UINT128 } from '../../src/constants'
 import type { StubBytesCompat } from '../../src/impl/primitives'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
@@ -185,6 +185,60 @@ describe('decodeArc4', () => {
     expect(decodeArc4<string[]>(Bytes`${lenPrefix}${offsetHeader}${dBytes}`)).toEqual([d])
     assertMatch(decodeArc4<TestObj[]>(Bytes`${lenPrefix}${offsetHeader}${eBytes}`), [e])
     expect(JSON.stringify(decodeArc4<Address[]>(Bytes`${lenPrefix}${fBytes}`))).toEqual(JSON.stringify([f]))
+  })
+})
+
+describe('decodeArc4 with prefix=log', () => {
+  // ABI return values (e.g. from `abiCall`) arrive as the 4-byte log prefix followed by the encoded value.
+  // These tests assert that decodeArc4 correctly strips the prefix for each natively-typed return.
+
+  const withLogPrefix = (raw: bytes | Uint8Array) => ABI_RETURN_VALUE_LOG_PREFIX.concat(asBytes(raw))
+
+  const lengthPrefixed = (data: Uint8Array): bytes =>
+    asBytes(new Uint8Array([...encodingUtil.bigIntToUint8Array(BigInt(data.length), 2), ...data]))
+
+  test('uint64', () => {
+    const raw = encodingUtil.bigIntToUint8Array(234234n, 8)
+    expect(decodeArc4<uint64>(withLogPrefix(raw), 'log')).toEqual(234234)
+  })
+
+  test('biguint', () => {
+    const raw = encodingUtil.bigIntToUint8Array(340943934n, 64)
+    expect(decodeArc4<biguint>(withLogPrefix(raw), 'log')).toEqual(340943934n)
+  })
+
+  test('boolean', () => {
+    expect(decodeArc4<boolean>(withLogPrefix(new Uint8Array([0x80])), 'log')).toEqual(true)
+  })
+
+  test('bytes', () => {
+    const raw = new Uint8Array([1, 2, 3, 4, 5])
+    expect(decodeArc4<bytes>(withLogPrefix(lengthPrefixed(raw)), 'log')).toEqual(asBytes(raw))
+  })
+
+  test('string', () => {
+    const raw = encodingUtil.utf8ToUint8Array('hello')
+    expect(decodeArc4<string>(withLogPrefix(lengthPrefixed(raw)), 'log')).toEqual('hello')
+  })
+
+  test('Account', () => {
+    const raw = Bytes.fromHex(`${'00'.repeat(31)}ff`)
+    expect(decodeArc4<Account>(withLogPrefix(raw), 'log')).toEqual(raw)
+  })
+
+  test('Application', () => {
+    const raw = encodingUtil.bigIntToUint8Array(234234n, 8)
+    expect(decodeArc4<Application>(withLogPrefix(raw), 'log')).toEqual(234234)
+  })
+
+  test('Asset', () => {
+    const raw = encodingUtil.bigIntToUint8Array(234234n, 8)
+    expect(decodeArc4<Asset>(withLogPrefix(raw), 'log')).toEqual(234234)
+  })
+
+  test('throws when prefix=log but prefix is missing', () => {
+    const raw = asBytes(encodingUtil.bigIntToUint8Array(234234n, 8))
+    expect(() => decodeArc4<uint64>(raw, 'log')).toThrowError('ABI return prefix not found')
   })
 })
 

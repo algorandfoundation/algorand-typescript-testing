@@ -10,7 +10,7 @@ import { createArc4TestFixture } from '../test-fixture'
 describe('circular reference', () => {
   const ctx = new TestExecutionContext()
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/circurlar-reference',
+    paths: 'tests/artifacts/circurlar-reference',
     contracts: {
       ContractOne: { funding: algo(1) },
       ContractTwo: { funding: algo(1) },

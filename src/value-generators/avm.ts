@@ -15,7 +15,7 @@ import { InternalError } from '../errors'
 import { BigUint, Bytes, Uint64 } from '../impl/primitives'
 import type { AssetData } from '../impl/reference'
 import { Account, AccountData, ApplicationCls, ApplicationData, AssetCls, getDefaultAssetData } from '../impl/reference'
-import { asBigInt, asBigUintCls, asUint64, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
+import { asBigUintCls, asUint64, asUint64BigInt, asUint64Cls, getRandomBigInt, getRandomBytes } from '../util'
 
 type AccountContextData = Partial<AccountData['account']> & {
   address?: bytes
@@ -38,8 +38,8 @@ export class AvmValueGenerator {
    * @returns {uint64} - A random uint64 value.
    */
   uint64(minValue: Uint64Compat = 0n, maxValue: Uint64Compat = MAX_UINT64): uint64 {
-    const min = asBigInt(minValue)
-    const max = asBigInt(maxValue)
+    const min = asUint64BigInt(minValue)
+    const max = asUint64BigInt(maxValue)
     if (max > MAX_UINT64) {
       throw new InternalError('maxValue must be less than or equal to 2n ** 64n - 1n')
     }
@@ -121,7 +121,7 @@ export class AvmValueGenerator {
     }
     if (input?.optedApplications) {
       for (const app of input.optedApplications) {
-        data.optedApplications.set(asBigInt(app.id), app)
+        data.optedApplications.set(asUint64BigInt(app.id), app)
       }
     }
     return account

@@ -1,4 +1,3 @@
-import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { Bytes } from '@algorandfoundation/algorand-typescript'
 import { Bool, convertBytes, DynamicArray, StaticArray, Str, Struct, Tuple, Uint } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
@@ -7,6 +6,7 @@ import type { StubBytesCompat } from '../../src/impl/primitives'
 import { AccountCls } from '../../src/impl/reference'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBytes } from '../../src/util'
+import { getABIEncodedValue } from './util'
 
 const nativeString = 'hello'
 const nativeNumber = 42
@@ -236,14 +236,14 @@ const testData = [
 
 describe('arc4.Struct', async () => {
   test.each(testData)('should be able to get bytes representation', async (data) => {
-    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString)
     const result = data.struct()
     expect(result.bytes).toEqual(sdkResult)
   })
 
   test.each(testData)('create struct from bytes', async (data) => {
     const nativeValues = data.nativeValues()
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString)
     const result = data.create(Bytes(sdkResult))
 
     let i = 0
@@ -263,7 +263,7 @@ describe('arc4.Struct', async () => {
     nativeValues[3][0][1][0].push('test')
     nativeValues[3][1][1][0] = 24
 
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString)
 
     const abiValues = data.struct() as Swapped6
     abiValues.b = new Uint<64>(43)
@@ -285,8 +285,8 @@ describe('arc4.Struct', async () => {
     nativeValues[3][0][1][0].push('test')
     nativeValues[3][1][1][0] = 24
 
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
-    const bytes = Bytes(getABIEncodedValue(data.nativeValues(), data.abiTypeString, {}))
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString)
+    const bytes = Bytes(getABIEncodedValue(data.nativeValues(), data.abiTypeString))
 
     const abiValues = data.create(bytes) as Swapped6
     abiValues.b = new Uint<64>(43)

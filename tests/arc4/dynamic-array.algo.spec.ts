@@ -1,4 +1,3 @@
-import { getABIEncodedValue } from '@algorandfoundation/algokit-utils/types/app-arc56'
 import { clone } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import {
@@ -19,6 +18,7 @@ import { Bytes, type StubBytesCompat } from '../../src/impl/primitives'
 import { AccountCls } from '../../src/impl/reference'
 import type { DeliberateAny } from '../../src/typescript-helpers'
 import { asBigUint, asBytes, asUint8Array } from '../../src/util'
+import { getABIEncodedValue } from './util'
 
 const addressDynamicArray = {
   abiTypeString: 'address[]',
@@ -49,7 +49,7 @@ const addressDynamicArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<Address>) {
     return clone(array)
@@ -73,7 +73,7 @@ const boolDynamicArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<Bool>) {
     return clone(array)
@@ -97,7 +97,7 @@ const uint256DynamicArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<Uint<256>>) {
     return clone(array)
@@ -132,7 +132,7 @@ const ufixedDynamicArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<UFixed<256, 16>>) {
     return clone(array)
@@ -167,7 +167,7 @@ const stringDynamicArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<Str>) {
     return clone(array)
@@ -193,7 +193,7 @@ const boolDynamicArrayOfArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<DynamicArray<Bool>>) {
     return clone(array)
@@ -219,7 +219,7 @@ const addressDynamicArrayOfArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<DynamicArray<Address>>) {
     return clone(array)
@@ -245,7 +245,7 @@ const uint256DynamicArrayOfArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<DynamicArray<Uint<256>>>) {
     return clone(array)
@@ -273,7 +273,7 @@ const uint256DynamicArrayOfStaticArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<StaticArray<Uint<256>, 10>>) {
     return clone(array)
@@ -299,7 +299,7 @@ const stringDynamicArrayOfArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<DynamicArray<Str>>) {
     return clone(array)
@@ -330,7 +330,7 @@ const stringDynamicArrayOfArrayOfArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<DynamicArray<DynamicArray<Str>>>) {
     return clone(array)
@@ -384,7 +384,7 @@ const tupleDynamicArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(
     array: DynamicArray<Tuple<[DynamicArray<Str>, Tuple<[DynamicArray<Str>, Str, Uint<256>, Address]>, Bool, StaticArray<Uint<256>, 3>]>>,
@@ -446,7 +446,7 @@ const structDynamicArray = {
     return this.array().concat(this.array())
   },
   concatABIValue() {
-    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString, {})
+    return getABIEncodedValue([...this.nativeValues(), ...this.nativeValues()], this.abiTypeString)
   },
   clone(array: DynamicArray<Swapped>) {
     return clone(array)
@@ -474,13 +474,13 @@ describe('arc4.DynamicArray', () => {
   })
 
   test.each([testDataArray])('should be able to get bytes representation', (data) => {
-    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString)
     const result = data.array().bytes
     expect(result).toEqual(sdkResult)
   })
 
   test.each(testDataArray)('copy dynamic array', (data) => {
-    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(data.nativeValues(), data.abiTypeString)
     const original = data.array()
     const copy = data.clone(original as DeliberateAny)
     const result = copy.bytes
@@ -520,13 +520,13 @@ describe('arc4.DynamicArray', () => {
     dynamicArrayCopy[dynamicArrayCopy.length - 1] = dynamicArrayCopy[0]
     dynamicArrayCopy[0] = arrayTemp
 
-    const sdkResult = getABIEncodedValue(nativeValuesCopy, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValuesCopy, data.abiTypeString)
     const result = dynamicArrayCopy.bytes
     expect(result).toEqual(Bytes(sdkResult))
   })
 
   test.each(testDataArray)('create dynamic array from bytes', (data) => {
-    const sdkEncodedBytes = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
+    const sdkEncodedBytes = getABIEncodedValue(data.nativeValues(), data.abiTypeString)
     const result = data.create(Bytes(sdkEncodedBytes))
     const nativeValues = data.nativeValues()
     for (let i = 0; i < result.length; i++) {
@@ -544,14 +544,14 @@ describe('arc4.DynamicArray', () => {
     const dynamicArrayCopy = data.clone(dynamicArray as DeliberateAny)
     dynamicArrayCopy.push(dynamicArray.at(-1) as never, dynamicArray[0] as never)
 
-    const sdkResult = getABIEncodedValue(nativeValuesCopy, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValuesCopy, data.abiTypeString)
     const result = dynamicArrayCopy.bytes
     expect(result).toEqual(Bytes(sdkResult))
   })
 
   test.each(testDataArray)('push item to empty dynamic array', (data) => {
     const nativeValues = data.nativeValues()
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString)
 
     const emptyArray = data.array(true)
     data.abiValues().forEach((v) => emptyArray.push(v as never))
@@ -561,9 +561,9 @@ describe('arc4.DynamicArray', () => {
 
   test.each(testDataArray)('push item to empty dynamic array created from bytes', (data) => {
     const nativeValues = data.nativeValues()
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString)
 
-    const emptyArray = data.create(Bytes(getABIEncodedValue([], data.abiTypeString, {})))
+    const emptyArray = data.create(Bytes(getABIEncodedValue([], data.abiTypeString)))
     data.abiValues().forEach((v) => emptyArray.push(v as never))
     expect(emptyArray.length).toEqual(nativeValues.length)
     expect(emptyArray.bytes).toEqual(sdkResult)
@@ -583,7 +583,7 @@ describe('arc4.DynamicArray', () => {
     compareARC4AndABIValue(value1, nativeValue1)
     compareARC4AndABIValue(value2, nativeValue2)
 
-    const sdkResult = getABIEncodedValue(nativeValuesCopy, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValuesCopy, data.abiTypeString)
     const result = dynamicArrayCopy.bytes
     expect(result).toEqual(Bytes(sdkResult))
   })
@@ -596,7 +596,7 @@ describe('arc4.DynamicArray', () => {
     const dynamicArray = data.array()
     dynamicArray[0][0][0] = new Str('new value')
 
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString)
     const result = dynamicArray.bytes
     expect(result).toEqual(Bytes(sdkResult))
   })
@@ -606,11 +606,11 @@ describe('arc4.DynamicArray', () => {
     const nativeValues = data.nativeValues()
     nativeValues[0][0][0] = 'new value'
 
-    const sdkEncodedBytes = getABIEncodedValue(data.nativeValues(), data.abiTypeString, {})
+    const sdkEncodedBytes = getABIEncodedValue(data.nativeValues(), data.abiTypeString)
     const dynamicArray = data.create(Bytes(sdkEncodedBytes))
     dynamicArray[0][0][0] = new Str('new value')
 
-    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString, {})
+    const sdkResult = getABIEncodedValue(nativeValues, data.abiTypeString)
     const result = dynamicArray.bytes
     expect(result).toEqual(Bytes(sdkResult))
   })

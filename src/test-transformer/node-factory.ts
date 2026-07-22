@@ -1,24 +1,31 @@
 import { ptypes } from '@algorandfoundation/puya-ts'
 import ts from 'typescript'
 import type { TypeInfo } from '../impl/encoded-types'
-import type { DeliberateAny } from '../typescript-helpers'
 import { getPropertyNameAsString, trimGenericTypeName } from './helpers'
 
 const factory = ts.factory
+
+const callRuntimeHelper = (name: string, args: ts.Expression[]) =>
+  factory.createCallExpression(
+    factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier(name)),
+    undefined,
+    args,
+  )
+
 /** @internal */
 export const nodeFactory = {
   importHelpers(testingPackageName: string) {
     return [
       factory.createImportDeclaration(
         undefined,
-        factory.createImportClause(false, undefined, factory.createNamespaceImport(factory.createIdentifier('runtimeHelpers'))),
+        factory.createImportClause(undefined, undefined, factory.createNamespaceImport(factory.createIdentifier('runtimeHelpers'))),
         factory.createStringLiteral(`${testingPackageName}/runtime-helpers`),
         undefined,
       ),
       factory.createImportDeclaration(
         undefined,
         factory.createImportClause(
-          false,
+          undefined,
           undefined,
           factory.createNamedImports([factory.createImportSpecifier(false, undefined, factory.createIdentifier('arc4'))]),
         ),
@@ -29,36 +36,17 @@ export const nodeFactory = {
   },
 
   switchableValue(x: ts.Expression) {
-    return factory.createCallExpression(
-      factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('switchableValue')),
-      undefined,
-      [x],
-    )
+    return callRuntimeHelper('switchableValue', [x])
   },
   binaryOp(left: ts.Expression, right: ts.Expression, op: string) {
-    return factory.createCallExpression(
-      factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('binaryOp')),
-      undefined,
-      [left, right, factory.createStringLiteral(op)],
-    )
+    return callRuntimeHelper('binaryOp', [left, right, factory.createStringLiteral(op)])
   },
   augmentedAssignmentBinaryOp(left: ts.Expression, right: ts.Expression, op: string) {
-    return factory.createAssignment(
-      left,
-      factory.createCallExpression(
-        factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('binaryOp')),
-        undefined,
-        [left, right, factory.createStringLiteral(op.replace('=', ''))],
-      ),
-    )
+    return factory.createAssignment(left, callRuntimeHelper('binaryOp', [left, right, factory.createStringLiteral(op.replace(/=$/, ''))]))
   },
 
   prefixUnaryOp(operand: ts.Expression, op: string) {
-    return factory.createCallExpression(
-      factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('unaryOp')),
-      undefined,
-      [operand, factory.createStringLiteral(op)],
-    )
+    return callRuntimeHelper('unaryOp', [operand, factory.createStringLiteral(op)])
   },
 
   attachMetaData(
@@ -78,39 +66,29 @@ export const nodeFactory = {
       factory.createPropertyAssignment('returnType', factory.createStringLiteral(returnType)),
     ])
     return factory.createExpressionStatement(
-      factory.createCallExpression(
-        factory.createPropertyAccessExpression(factory.createIdentifier('runtimeHelpers'), factory.createIdentifier('attachAbiMetadata')),
-        undefined,
-        [
-          classIdentifier,
-          methodName,
-          metadata,
-          factory.createStringLiteral(sourceFileName),
-          factory.createStringLiteral(classIdentifier.text),
-        ],
-      ),
+      callRuntimeHelper('attachAbiMetadata', [
+        classIdentifier,
+        methodName,
+        metadata,
+        factory.createStringLiteral(sourceFileName),
+        factory.createStringLiteral(classIdentifier.text),
+      ]),
     )
   },
 
   captureGenericTypeInfo(x: ts.Expression, info: string) {
-    return factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-        factory.createIdentifier('runtimeHelpers'),
-        factory.createIdentifier('captureGenericTypeInfo'),
-      ),
-      undefined,
-      [x, factory.createStringLiteral(info)],
-    )
+    return callRuntimeHelper('captureGenericTypeInfo', [x, factory.createStringLiteral(info)])
   },
 
   instantiateEncodedType(node: ts.NewExpression, typeInfo?: TypeInfo) {
-    const infoString = JSON.stringify(typeInfo)
     const classIdentifier = node.expression.getText().replace('arc4.', '')
-    return factory.createNewExpression(
-      factory.createIdentifier(`arc4.${trimGenericTypeName(typeInfo?.name ?? classIdentifier)}`),
-      node.typeArguments,
-      [infoString ? factory.createStringLiteral(infoString) : undefined, ...(node.arguments ?? [])].filter((arg) => !!arg),
-    )
+    const arc4ClassIdentifier = factory.createIdentifier(`arc4.${trimGenericTypeName(typeInfo?.name ?? classIdentifier)}`)
+    const args = [...(node.arguments ?? [])]
+    if (typeInfo) {
+      args.unshift(factory.createStringLiteral(JSON.stringify(typeInfo)))
+    }
+
+    return factory.createNewExpression(arc4ClassIdentifier, node.typeArguments, args)
   },
 
   callStubbedFunction(node: ts.CallExpression, typeInfo?: TypeInfo | TypeInfo[]) {
@@ -129,23 +107,25 @@ export const nodeFactory = {
           factory.createPropertyAssignment('contract', factory.createStringLiteral(typeParams[0].declaredIn.fullName)),
         ]),
       ])
-    } else if (
+    }
+    if (
       node.arguments.length === 1 &&
       ts.isPropertyAccessExpression(node.arguments[0]) &&
       ts.isPropertyAccessExpression(node.arguments[0].expression)
     ) {
-      const contractIdenifier = node.arguments[0].expression.expression
       return factory.updateCallExpression(node, node.expression, node.typeArguments, [
         factory.createObjectLiteralExpression([
           factory.createPropertyAssignment('method', node.arguments[0]),
-          factory.createPropertyAssignment('contract', contractIdenifier),
+          factory.createPropertyAssignment('contract', node.arguments[0].expression.expression),
         ]),
       ])
-    } else {
+    }
+    if (node.arguments.length === 1) {
       return factory.updateCallExpression(node, node.expression, node.typeArguments, [
         factory.createObjectLiteralExpression([factory.createPropertyAssignment('method', node.arguments[0])]),
       ])
     }
+    return node
   },
 
   callAbiCallFunction(node: ts.CallExpression, typeParams: ptypes.PType[]) {
@@ -165,9 +145,10 @@ export const nodeFactory = {
       ts.isPropertyAccessExpression(node.arguments[0]) &&
       ts.isPropertyAccessExpression(node.arguments[0].expression)
     ) {
-      const contractIdenifier = node.arguments[0].expression.expression
-      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdenifier])
-    } else if (
+      const contractIdentifier = node.arguments[0].expression.expression
+      return factory.updateCallExpression(node, node.expression, node.typeArguments, [...node.arguments, contractIdentifier])
+    }
+    if (
       node.arguments.length === 1 &&
       typeParams.length === 1 &&
       typeParams[0] instanceof ptypes.FunctionPType &&
@@ -179,4 +160,4 @@ export const nodeFactory = {
     }
     return node
   },
-} satisfies Record<string, (...args: DeliberateAny[]) => ts.Node | ts.Node[]>
+}

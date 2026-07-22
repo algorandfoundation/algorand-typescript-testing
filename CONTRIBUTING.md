@@ -44,7 +44,8 @@ To set up the project locally:
 
 Here are some common commands you will use with npm:
 
-- **Generate API reference documentation** `npm run script:documentation`
+- **Run the docs site locally (regenerates API reference on the fly)** `npm run docs:dev`
+- **Build the docs site (includes a fresh API reference)** `npm run docs:build`
 - **Fix linting errors** `npm run lint:fix`
 - **Build a distribution locally** `npm run build`
 - **Compile all contracts used by tests for debugging** `npm run script:refresh-test-artifacts`

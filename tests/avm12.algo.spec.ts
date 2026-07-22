@@ -6,7 +6,7 @@ import { createArc4TestFixture } from './test-fixture'
 
 describe('avm12', () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/avm12/contract.algo.ts',
+    paths: 'tests/artifacts/avm12/contract.algo.ts',
     contracts: {
       Avm12Contract: { funding: algos(1) },
     },

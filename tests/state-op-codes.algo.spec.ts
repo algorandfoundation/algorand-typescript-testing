@@ -1,8 +1,8 @@
-import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
-import type { AppClient } from '@algorandfoundation/algokit-utils/types/app-client'
+import { AlgoAmount } from '@algorandfoundation/algokit-utils/amount'
+import type { AppClient } from '@algorandfoundation/algokit-utils/app-client'
 import type { bytes, uint64 } from '@algorandfoundation/algorand-typescript'
 import { Account, arc4, Bytes, Global, OnCompleteAction, op, TransactionType, Uint64 } from '@algorandfoundation/algorand-typescript'
-import { DynamicBytes } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, Bool, Byte, DynamicBytes, Str, Uint128 } from '@algorandfoundation/algorand-typescript/arc4'
 import { afterEach, describe, expect } from 'vitest'
 import { TestExecutionContext } from '../src'
 import { ABI_RETURN_VALUE_LOG_PREFIX, MIN_TXN_FEE, OnApplicationComplete, ZERO_ADDRESS } from '../src/constants'
@@ -13,13 +13,15 @@ import type { InnerTxn } from '../src/impl/itxn'
 import { BytesCls, Uint64Cls } from '../src/impl/primitives'
 import { AccountCls, encodeAddress } from '../src/impl/reference'
 import type { ApplicationCallTransaction } from '../src/impl/transactions'
-import type { DeliberateAny } from '../src/typescript-helpers'
-import { asBigInt, asNumber, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
+import type { DeliberateAny, FunctionKeys } from '../src/typescript-helpers'
+import { asNumber, asUint64BigInt, asUint64Cls, asUint8Array, getRandomBytes } from '../src/util'
 import { AppExpectingEffects } from './artifacts/created-app-asset/contract.algo'
 import {
   BoxMapContract,
+  GlobalMapContract,
   ItxnDemoContract,
   ITxnOpsContract,
+  LocalMapContract,
   StateAcctParamsGetContract,
   StateAppGlobalContract,
   StateAppGlobalExContract,
@@ -34,7 +36,7 @@ import { createArc4TestFixture } from './test-fixture'
 
 describe('State op codes', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/state-ops/contract.algo.ts',
+    paths: 'tests/artifacts/state-ops/contract.algo.ts',
     contracts: {
       ItxnDemoContract: {},
       ITxnOpsContract: {},
@@ -596,7 +598,7 @@ describe('State op codes', async () => {
       const bytesResult = contract.verify_get_bytes(Bytes(bytesKey))
       const uint64Result = contract.verify_get_uint64(Bytes(uint64Key))
       expect(bytesResult).toEqual(bytesAvmResult)
-      expect(asBigInt(uint64Result)).toEqual(uint64AvmResult)
+      expect(asUint64BigInt(uint64Result)).toEqual(uint64AvmResult)
 
       // delete
       await getAvmResult({ appClient }, 'verify_delete', asUint8Array(bytesKey))
@@ -609,7 +611,7 @@ describe('State op codes', async () => {
 
       const uint64AvmResult2 = await getAvmResult({ appClient }, 'verify_get_uint64', asUint8Array(uint64Key))
       const uint64Result2 = contract.verify_get_uint64(Bytes(uint64Key))
-      expect(asBigInt(uint64Result2)).toEqual(uint64AvmResult2)
+      expect(asUint64BigInt(uint64Result2)).toEqual(uint64AvmResult2)
     })
 
     test('should be able to use _ex methods to get state of another app', async ({
@@ -690,7 +692,7 @@ describe('State op codes', async () => {
       const bytesResult = contract.verify_get_bytes(account, Bytes(bytesKey))
       const uint64Result = contract.verify_get_uint64(account, Bytes(uint64Key))
       expect(bytesResult).toEqual(bytesAvmResult)
-      expect(asBigInt(uint64Result)).toEqual(uint64AvmResult)
+      expect(asUint64BigInt(uint64Result)).toEqual(uint64AvmResult)
 
       // delete
       await getAvmResult({ appClient }, 'verify_delete', localNetAccount.addr.toString(), asUint8Array(bytesKey))
@@ -710,7 +712,7 @@ describe('State op codes', async () => {
         asUint8Array(uint64Key),
       )
       const uint64Result2 = contract.verify_get_uint64(account, Bytes(uint64Key))
-      expect(asBigInt(uint64Result2)).toEqual(uint64AvmResult2)
+      expect(asUint64BigInt(uint64Result2)).toEqual(uint64AvmResult2)
     })
 
     test('should be able to use _ex methods to get state of another app', async ({
@@ -783,10 +785,245 @@ describe('State op codes', async () => {
       expect(isAllowed).toBe(true)
     })
   })
+
+  describe('GlobalMap', () => {
+    const createContract = () => ctx.contract.create(GlobalMapContract)
+
+    test.for([
+      { method: 'implicit_key_arc4_uint', key: Uint64(1), value: new arc4.Uint64(42) },
+      { method: 'implicit_key_arc4_string', key: Uint64(1), value: new Str('Hello') },
+      { method: 'implicit_key_arc4_byte', key: Uint64(1), value: new Byte(255) },
+      { method: 'implicit_key_arc4_bool', key: Uint64(1), value: new Bool(true) },
+      { method: 'implicit_key_arc4_address', key: Uint64(1), value: new Address(Bytes(new Uint8Array(32).fill(1))) },
+      { method: 'implicit_key_arc4_uint128', key: Uint64(1), value: new Uint128(2n ** 100n) },
+      { method: 'implicit_key_arc4_dynamic_bytes', key: Uint64(1), value: new DynamicBytes('dynamic') },
+      { method: 'arc4_uint', key: Uint64(10), value: new arc4.Uint64(99) },
+      { method: 'arc4_string', key: Uint64(10), value: new Str('World') },
+      { method: 'arc4_bool', key: Uint64(10), value: new Bool(false) },
+      { method: 'implicit_key_tuple', key: [Uint64(10), Bytes('test'), false], value: Uint64(1) },
+    ])('set and get $method', ({ method, key, value }) => {
+      const contract = createContract()
+      const setter = contract[`set_${method}` as FunctionKeys<GlobalMapContract>]
+      const getter = contract[`get_${method}` as FunctionKeys<GlobalMapContract>] as (k: unknown) => unknown
+      setter(key as never, value as never)
+      const result = getter(key)
+      expect(result).toEqual(value)
+    })
+
+    test('key prefix', () => {
+      const contract = createContract()
+      expect(contract.implicitKeyArc4Uint.keyPrefix).toEqual('implicitKeyArc4Uint')
+      expect(contract.arc4Uint.keyPrefix).toEqual('explicit_arc4_uint')
+      expect(contract.arc4Bool.keyPrefix).toEqual('explicit_arc4_bool')
+    })
+
+    test('delete', () => {
+      const contract = createContract()
+      const key = Uint64(5)
+      contract.set_implicit_key_arc4_uint(key, new arc4.Uint64(100))
+      expect(contract.contains_implicit_key_arc4_uint(key)).toBe(true)
+      contract.delete_implicit_key_arc4_uint(key)
+      expect(contract.contains_implicit_key_arc4_uint(key)).toBe(false)
+    })
+
+    test('contains', () => {
+      const contract = createContract()
+      const key = Uint64(7)
+      expect(contract.contains_implicit_key_arc4_uint(key)).toBe(false)
+      contract.set_implicit_key_arc4_uint(key, new arc4.Uint64(50))
+      expect(contract.contains_implicit_key_arc4_uint(key)).toBe(true)
+    })
+
+    test('maybe when exists', () => {
+      const contract = createContract()
+      const key = Uint64(3)
+      contract.set_implicit_key_arc4_uint(key, new arc4.Uint64(77))
+      const [value, exists] = contract.maybe_implicit_key_arc4_uint(key)
+      expect(exists).toBe(true)
+      expect(value).toEqual(new arc4.Uint64(77))
+    })
+
+    test('maybe when not exists', () => {
+      const contract = createContract()
+      const key = Uint64(99)
+      const [, exists] = contract.maybe_implicit_key_arc4_uint(key)
+      expect(exists).toBe(false)
+    })
+
+    test('get default when exists', () => {
+      const contract = createContract()
+      const key = Uint64(4)
+      contract.set_implicit_key_arc4_uint(key, new arc4.Uint64(88))
+      const result = contract.get_default_implicit_key_arc4_uint(key, new arc4.Uint64(0))
+      expect(result).toEqual(new arc4.Uint64(88))
+    })
+
+    test('get default when not exists', () => {
+      const contract = createContract()
+      const key = Uint64(999)
+      const result = contract.get_default_implicit_key_arc4_uint(key, new arc4.Uint64(42))
+      expect(result).toEqual(new arc4.Uint64(42))
+    })
+
+    test('multiple keys', () => {
+      const contract = createContract()
+      contract.set_implicit_key_arc4_uint(Uint64(1), new arc4.Uint64(10))
+      contract.set_implicit_key_arc4_uint(Uint64(2), new arc4.Uint64(20))
+      contract.set_implicit_key_arc4_uint(Uint64(3), new arc4.Uint64(30))
+
+      expect(contract.get_implicit_key_arc4_uint(Uint64(1))).toEqual(new arc4.Uint64(10))
+      expect(contract.get_implicit_key_arc4_uint(Uint64(2))).toEqual(new arc4.Uint64(20))
+      expect(contract.get_implicit_key_arc4_uint(Uint64(3))).toEqual(new arc4.Uint64(30))
+    })
+
+    test('get missing key raises', () => {
+      const contract = createContract()
+      expect(() => contract.get_implicit_key_arc4_uint(Uint64(404))).toThrow('value is not set')
+    })
+
+    test('maps are independent', () => {
+      const contract = createContract()
+      const key = Uint64(1)
+      contract.set_implicit_key_arc4_uint(key, new arc4.Uint64(42))
+      contract.set_arc4_uint(key, new arc4.Uint64(99))
+
+      expect(contract.get_implicit_key_arc4_uint(key)).toEqual(new arc4.Uint64(42))
+      expect(contract.get_arc4_uint(key)).toEqual(new arc4.Uint64(99))
+    })
+  })
+
+  describe('LocalMap', () => {
+    const createContract = () => ctx.contract.create(LocalMapContract)
+    const account = () => ctx.defaultSender
+
+    test.for([
+      { method: 'implicit_key_arc4_uint', key: Uint64(1), value: new arc4.Uint64(42) },
+      { method: 'implicit_key_arc4_string', key: Uint64(1), value: new Str('Hello') },
+      { method: 'implicit_key_arc4_byte', key: Uint64(1), value: new Byte(255) },
+      { method: 'implicit_key_arc4_bool', key: Uint64(1), value: new Bool(true) },
+      { method: 'implicit_key_arc4_address', key: Uint64(1), value: new Address(Bytes(new Uint8Array(32).fill(1))) },
+      { method: 'implicit_key_arc4_uint128', key: Uint64(1), value: new Uint128(2n ** 100n) },
+      { method: 'implicit_key_arc4_dynamic_bytes', key: Uint64(1), value: new DynamicBytes('dynamic') },
+      { method: 'arc4_uint', key: Uint64(10), value: new arc4.Uint64(99) },
+      { method: 'arc4_string', key: Uint64(10), value: new Str('World') },
+      { method: 'arc4_bool', key: Uint64(10), value: new Bool(false) },
+      { method: 'implicit_key_tuple', key: [Uint64(10), Bytes('test'), false], value: Uint64(1) },
+    ])('set and get $method', ({ method, key, value }) => {
+      const contract = createContract()
+      const acct = account()
+      const setter = contract[`set_${method}` as FunctionKeys<LocalMapContract>] as (account: Account, k: unknown, v: unknown) => void
+      const getter = contract[`get_${method}` as FunctionKeys<LocalMapContract>] as (account: Account, k: unknown) => unknown
+      setter(acct, key, value)
+      const result = getter(acct, key)
+      expect(result).toEqual(value)
+    })
+
+    test('key prefix', () => {
+      const contract = createContract()
+      expect(contract.implicitKeyArc4Uint.keyPrefix).toEqual('implicitKeyArc4Uint')
+      expect(contract.arc4Uint.keyPrefix).toEqual('explicit_arc4_uint')
+      expect(contract.arc4Bool.keyPrefix).toEqual('explicit_arc4_bool')
+    })
+
+    test('delete', () => {
+      const contract = createContract()
+      const acct = account()
+      const key = Uint64(5)
+      contract.set_implicit_key_arc4_uint(acct, key, new arc4.Uint64(100))
+      expect(contract.contains_implicit_key_arc4_uint(acct, key)).toBe(true)
+      contract.delete_implicit_key_arc4_uint(acct, key)
+      expect(contract.contains_implicit_key_arc4_uint(acct, key)).toBe(false)
+    })
+
+    test('contains', () => {
+      const contract = createContract()
+      const acct = account()
+      const key = Uint64(7)
+      expect(contract.contains_implicit_key_arc4_uint(acct, key)).toBe(false)
+      contract.set_implicit_key_arc4_uint(acct, key, new arc4.Uint64(50))
+      expect(contract.contains_implicit_key_arc4_uint(acct, key)).toBe(true)
+    })
+
+    test('maybe when exists', () => {
+      const contract = createContract()
+      const acct = account()
+      const key = Uint64(3)
+      contract.set_implicit_key_arc4_uint(acct, key, new arc4.Uint64(77))
+      const [value, exists] = contract.maybe_implicit_key_arc4_uint(acct, key)
+      expect(exists).toBe(true)
+      expect(value).toEqual(new arc4.Uint64(77))
+    })
+
+    test('maybe when not exists', () => {
+      const contract = createContract()
+      const acct = account()
+      const key = Uint64(99)
+      const [, exists] = contract.maybe_implicit_key_arc4_uint(acct, key)
+      expect(exists).toBe(false)
+    })
+
+    test('get default when exists', () => {
+      const contract = createContract()
+      const acct = account()
+      const key = Uint64(4)
+      contract.set_implicit_key_arc4_uint(acct, key, new arc4.Uint64(88))
+      const result = contract.get_default_implicit_key_arc4_uint(acct, key, new arc4.Uint64(0))
+      expect(result).toEqual(new arc4.Uint64(88))
+    })
+
+    test('get default when not exists', () => {
+      const contract = createContract()
+      const acct = account()
+      const key = Uint64(999)
+      const result = contract.get_default_implicit_key_arc4_uint(acct, key, new arc4.Uint64(42))
+      expect(result).toEqual(new arc4.Uint64(42))
+    })
+
+    test('multiple keys', () => {
+      const contract = createContract()
+      const acct = account()
+      contract.set_implicit_key_arc4_uint(acct, Uint64(1), new arc4.Uint64(10))
+      contract.set_implicit_key_arc4_uint(acct, Uint64(2), new arc4.Uint64(20))
+      contract.set_implicit_key_arc4_uint(acct, Uint64(3), new arc4.Uint64(30))
+
+      expect(contract.get_implicit_key_arc4_uint(acct, Uint64(1))).toEqual(new arc4.Uint64(10))
+      expect(contract.get_implicit_key_arc4_uint(acct, Uint64(2))).toEqual(new arc4.Uint64(20))
+      expect(contract.get_implicit_key_arc4_uint(acct, Uint64(3))).toEqual(new arc4.Uint64(30))
+    })
+
+    test('get missing key raises', () => {
+      const contract = createContract()
+      const acct = account()
+      expect(() => contract.get_implicit_key_arc4_uint(acct, Uint64(404))).toThrow('value is not set')
+    })
+
+    test('maps are independent', () => {
+      const contract = createContract()
+      const acct = account()
+      const key = Uint64(1)
+      contract.set_implicit_key_arc4_uint(acct, key, new arc4.Uint64(42))
+      contract.set_arc4_uint(acct, key, new arc4.Uint64(99))
+
+      expect(contract.get_implicit_key_arc4_uint(acct, key)).toEqual(new arc4.Uint64(42))
+      expect(contract.get_arc4_uint(acct, key)).toEqual(new arc4.Uint64(99))
+    })
+
+    test('multiple accounts can store different values', () => {
+      const contract = createContract()
+      const account1 = ctx.defaultSender
+      const account2 = ctx.any.account()
+      const key = Uint64(1)
+      contract.set_implicit_key_arc4_uint(account1, key, new arc4.Uint64(10))
+      contract.set_implicit_key_arc4_uint(account2, key, new arc4.Uint64(20))
+
+      expect(contract.get_implicit_key_arc4_uint(account1, key)).toEqual(new arc4.Uint64(10))
+      expect(contract.get_implicit_key_arc4_uint(account2, key)).toEqual(new arc4.Uint64(20))
+    })
+  })
 })
 const tryOptIn = async (client: AppClient) => {
   try {
-    await client.send.call({ method: 'opt_in', args: [], onComplete: OnApplicationComplete.OptInOC })
+    await client.send.call({ method: 'opt_in', args: [], onComplete: OnApplicationComplete.OptIn })
   } catch (e) {
     if (!(e as DeliberateAny).message.includes('has already opted in to app')) {
       throw e

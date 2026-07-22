@@ -1,6 +1,19 @@
 {
-  "1109842": {
+  "GHSA-848j-6mx2-7j84": {
     "active": true,
-    "notes": "Ignored since we don't use glob-cli"
+    "notes": "elliptic: cryptographic primitive with risky implementation. Direct dependency, required for Algorand cryptographic operations. No upstream fix published; monitor for patched release."
+  },
+  "GHSA-v2v4-37r5-5v8g": {
+    "active": true,
+    "notes": "XSS in Address6 HTML-emitting methods in ip-address. Transitive dependency via npm internals (npm > ip-address); not invoked in this project."
+  },
+  "GHSA-jxxr-4gwj-5jf2": {
+    "active": true,
+    "notes": "brace-expansion DoS via large numeric ranges. Transitive dev/build dependency via minimatch (eslint, typescript-eslint, puya-ts, semantic-release, npm); no user-controlled input is passed to brace-expansion in this project."
+  },
+  "GHSA-5xrq-8626-4rwp": {
+    "active": true,
+    "expiry": "2026-09-01",
+    "notes": "vitest: arbitrary file read/execute only when the Vitest UI server is listening (--ui). Dev-only devDependency; the UI server is never started here (CI runs `vitest run` headless). Fixed in vitest >=4.1.0. Safe to remove once dependency is upgraded."
   }
 }

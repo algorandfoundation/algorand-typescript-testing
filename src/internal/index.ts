@@ -17,7 +17,7 @@ export { ensureBudget } from '../impl/ensure-budget'
 /** @internal */
 export { Global } from '../impl/global'
 /** @internal */
-export { log } from '../impl/log'
+export { log, loggedAssert, loggedErr } from '../impl/log'
 /** @internal */
 export { assertMatch, match } from '../impl/match'
 /** @internal */
@@ -25,7 +25,7 @@ export { BigUint, Bytes, Uint64 } from '../impl/primitives'
 /** @internal */
 export { Account, Application, Asset } from '../impl/reference'
 /** @internal */
-export { Box, BoxMap, GlobalState, LocalState } from '../impl/state'
+export { Box, BoxMap, GlobalMap, GlobalState, LocalMap, LocalState } from '../impl/state'
 /** @internal */
 export { TemplateVar } from '../impl/template-var'
 /** @internal */

@@ -15,12 +15,8 @@ export abstract class BytesBackedCls {
     this.#value = value
   }
 
-  static fromBytes<T extends BytesBackedCls>(
-    this: { new (v: bytes, typeInfo?: TypeInfo): T },
-    value: StubBytesCompat | Uint8Array,
-    typeInfo?: TypeInfo,
-  ) {
-    return new this(BytesCls.fromCompat(value).asAlgoTs(), typeInfo)
+  static fromBytes<T extends BytesBackedCls>(this: { new (v: bytes): T }, value: StubBytesCompat | Uint8Array) {
+    return new this(BytesCls.fromCompat(value).asAlgoTs())
   }
 }
 

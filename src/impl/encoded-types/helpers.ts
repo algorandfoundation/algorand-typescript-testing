@@ -1,18 +1,24 @@
-import type { biguint, bytes, OnCompleteAction, TransactionType, uint64 } from '@algorandfoundation/algorand-typescript'
+import type {
+  Account,
+  Application,
+  Asset,
+  biguint,
+  bytes,
+  OnCompleteAction,
+  TransactionType,
+  uint64,
+} from '@algorandfoundation/algorand-typescript'
 import { ARC4Encoded, Bool } from '@algorandfoundation/algorand-typescript/arc4'
 import { encodingUtil } from '@algorandfoundation/puya-ts'
-import { BITS_IN_BYTE } from '../../constants'
+import { ABI_RETURN_VALUE_LOG_PREFIX, BITS_IN_BYTE } from '../../constants'
 import type { DeliberateAny } from '../../typescript-helpers'
-import { asBytesCls, assert } from '../../util'
+import { asBytes, asBytesCls, assert, asUint8Array } from '../../util'
 import { BytesBackedCls, Uint64BackedCls } from '../base'
-import type { BytesCls } from '../primitives'
-import { AlgoTsPrimitiveCls } from '../primitives'
+import type { BytesCls, StubBytesCompat } from '../primitives'
+import { AlgoTsPrimitiveCls, BigUint, Uint64 } from '../primitives'
+import { AccountCls, ApplicationCls, AssetCls } from '../reference'
 import { ABI_LENGTH_SIZE } from './constants'
-import type { StaticArrayGenericArgs, TypeInfo } from './types'
-
-import { asBytes, asUint8Array } from '../../util'
-import { BigUint, Uint64 } from '../primitives'
-import type { fromBytes } from './types'
+import type { fromBytes, StaticArrayGenericArgs, TypeInfo } from './types'
 
 /** @internal */
 export const validBitSizes = [...Array(64).keys()].map((x) => (x + 1) * 8)
@@ -29,27 +35,27 @@ export const trimTrailingDecimalZeros = (v: string) => v.replace(/(\d+\.\d*?)0+$
 export const trimGenericTypeName = (typeName: string): string => typeName.replace(/<.*>/, '')
 
 /** @internal */
-export const areAllARC4Encoded = <T extends ARC4Encoded>(items: T[]): items is T[] => items.every((item) => item instanceof ARC4Encoded)
+export const areAllARC4Encoded = <T>(items: T[]): items is T[] => items.every((item) => item instanceof ARC4Encoded)
 
 /** @internal */
 export const checkItemTypeName = (type: TypeInfo, value: ARC4Encoded) => {
-  const typeName = trimGenericTypeName(type.name)
-  const validTypeNames = [typeName]
-  assert(validTypeNames.includes(value.constructor.name), `item must be of type ${typeName}, not ${value.constructor.name}`)
+  const validTypeName = trimGenericTypeName(type.name)
+  assert(validTypeName === value.constructor.name, `item must be of type ${validTypeName}, not ${value.constructor.name}`)
 }
 
-/** @internal */
-export const findBoolTypes = (values: TypeInfo[], index: number, delta: number, isHomogenous?: boolean): number => {
-  // Helper function to find consecutive booleans from current index in a tuple.
-  let until = 0
+// Walk consecutive booleans from `index` in direction `delta`, returning the count of
+// neighbouring bools (excluding the starting element). Returns -1 if the starting element
+// is not a bool, and 0 when `index` is already at the boundary in the chosen direction.
+const findBoolRun = <T>(values: T[], index: number, delta: number, isBool: (v: T) => boolean, isHomogenous?: boolean): number => {
   const length = values.length
   if (isHomogenous) {
     return delta < 0 ? 0 : length - index - 1
   }
+  let until = 0
   while (true) {
     const curr = index + delta * until
-    if (['Bool', 'boolean'].includes(values[curr].name)) {
-      if ((curr != length - 1 && delta > 0) || (curr > 0 && delta < 0)) {
+    if (isBool(values[curr])) {
+      if ((curr !== length - 1 && delta > 0) || (curr > 0 && delta < 0)) {
         until += 1
       } else {
         break
@@ -61,6 +67,10 @@ export const findBoolTypes = (values: TypeInfo[], index: number, delta: number, 
   }
   return until
 }
+
+/** @internal */
+export const findBoolTypes = (values: TypeInfo[], index: number, delta: number, isHomogenous?: boolean): number =>
+  findBoolRun(values, index, delta, (v) => v.name === 'Bool' || v.name === 'boolean', isHomogenous)
 
 /** @internal */
 export const getNativeValue = (value: DeliberateAny, targetTypeInfo: TypeInfo | undefined): DeliberateAny => {
@@ -105,27 +115,8 @@ export const encodeLength = (length: number): BytesCls => {
 }
 
 /** @internal */
-export const findBool = (values: ARC4Encoded[], index: number, delta: number, isHomogenous?: boolean) => {
-  let until = 0
-  const length = values.length
-  if (isHomogenous) {
-    return delta < 0 ? 0 : length - index - 1
-  }
-  while (true) {
-    const curr = index + delta * until
-    if (values[curr] instanceof Bool) {
-      if ((curr !== length - 1 && delta > 0) || (curr > 0 && delta < 0)) {
-        until += 1
-      } else {
-        break
-      }
-    } else {
-      until -= 1
-      break
-    }
-  }
-  return until
-}
+export const findBool = (values: ARC4Encoded[], index: number, delta: number, isHomogenous?: boolean): number =>
+  findBoolRun(values, index, delta, (v) => v instanceof Bool, isHomogenous)
 
 /** @internal */
 export const compressMultipleBool = (values: Bool[]): number => {
@@ -153,7 +144,7 @@ export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
     itemTypeName === 'DynamicArray' ||
     itemTypeName === 'ReferenceArray' ||
     itemTypeName === 'DynamicBytes' ||
-    (itemTypeName === 'bytes' && itemTypeName === value.name) || // `bytes` has dynamic length but `bytes<N>` is statically sized
+    value.name === 'bytes' || // `bytes` has dynamic length but `bytes<N>` is statically sized
     itemTypeName === 'string' ||
     ((itemTypeName === 'StaticArray' || itemTypeName === 'FixedArray') &&
       holdsDynamicLengthContent((value.genericArgs as StaticArrayGenericArgs).elementType)) ||
@@ -168,36 +159,45 @@ export const holdsDynamicLengthContent = (value: TypeInfo): boolean => {
 }
 
 /** @internal */
-export const booleanFromBytes: fromBytes<boolean> = (val) => {
-  return encodingUtil.uint8ArrayToBigInt(asUint8Array(val)) > 0n
+export const stripLogPrefix = (value: StubBytesCompat | Uint8Array, prefix: 'none' | 'log'): Uint8Array => {
+  const uint8ArrayValue = value instanceof Uint8Array ? value : asUint8Array(value)
+  if (prefix === 'log') {
+    assert(asBytes(uint8ArrayValue.slice(0, 4)).equals(ABI_RETURN_VALUE_LOG_PREFIX), 'ABI return prefix not found')
+    return uint8ArrayValue.slice(4)
+  }
+  return uint8ArrayValue
 }
 
-/** @internal */
-export const bigUintFromBytes: fromBytes<biguint> = (val) => {
-  return BigUint(encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
-}
+const bigIntFromBytes = (val: StubBytesCompat | Uint8Array, _typeInfo: TypeInfo, prefix: 'none' | 'log' = 'none'): bigint =>
+  encodingUtil.uint8ArrayToBigInt(asUint8Array(stripLogPrefix(val, prefix)))
 
 /** @internal */
-export const bytesFromBytes: fromBytes<bytes> = (val) => {
-  return asBytes(val)
-}
+export const booleanFromBytes: fromBytes<boolean> = (...args) => bigIntFromBytes(...args) > 0n
 
 /** @internal */
-export const stringFromBytes: fromBytes<string> = (val) => {
-  return asBytes(val).toString()
-}
+export const bigUintFromBytes: fromBytes<biguint> = (...args) => BigUint(bigIntFromBytes(...args))
 
 /** @internal */
-export const uint64FromBytes: fromBytes<uint64> = (val) => {
-  return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val)))
-}
+export const uint64FromBytes: fromBytes<uint64> = (...args) => Uint64(bigIntFromBytes(...args))
 
 /** @internal */
-export const onCompletionFromBytes: fromBytes<OnCompleteAction> = (val) => {
-  return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as OnCompleteAction
-}
+export const onCompletionFromBytes: fromBytes<OnCompleteAction> = (...args) => uint64FromBytes(...args) as OnCompleteAction
 
 /** @internal */
-export const transactionTypeFromBytes: fromBytes<TransactionType> = (val) => {
-  return Uint64(encodingUtil.uint8ArrayToBigInt(asUint8Array(val))) as TransactionType
-}
+export const transactionTypeFromBytes: fromBytes<TransactionType> = (...args) => uint64FromBytes(...args) as TransactionType
+
+/** @internal */
+export const bytesFromBytes: fromBytes<bytes> = (val, _typeInfo, prefix = 'none') => asBytes(stripLogPrefix(val, prefix))
+
+/** @internal */
+export const stringFromBytes: fromBytes<string> = (...args) => bytesFromBytes(...args).toString()
+
+/** @internal */
+export const accountFromBytes: fromBytes<Account> = (val, _typeInfo, prefix = 'none') => AccountCls.fromBytes(stripLogPrefix(val, prefix))
+
+/** @internal */
+export const applicationFromBytes: fromBytes<Application> = (val, _typeInfo, prefix = 'none') =>
+  ApplicationCls.fromBytes(stripLogPrefix(val, prefix))
+
+/** @internal */
+export const assetFromBytes: fromBytes<Asset> = (val, _typeInfo, prefix = 'none') => AssetCls.fromBytes(stripLogPrefix(val, prefix))

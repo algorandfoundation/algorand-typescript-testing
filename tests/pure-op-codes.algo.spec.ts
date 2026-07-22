@@ -22,7 +22,7 @@ const sqrtMaxUint64 = 4294967295n
 
 describe('Pure op codes', async () => {
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/miscellaneous-ops/contract.algo.ts',
+    paths: 'tests/artifacts/miscellaneous-ops/contract.algo.ts',
     contracts: {
       MiscellaneousOpsContract: {},
     },
@@ -702,7 +702,7 @@ describe('Pure op codes', async () => {
       await expect(getAvmResult<uint64>({ appClient }, 'verify_getbyte', asUint8Array(a as bytes), b as number)).rejects.toThrow(
         'getbyte index beyond array length',
       )
-      expect(() => op.getByte(a as bytes, b as number)).toThrow(/getBytes index \d+ is beyond length/)
+      expect(() => op.getByte(a as bytes, b as number)).toThrow(`getByte index ${b} is beyond length`)
     })
   })
 
@@ -896,7 +896,7 @@ describe('Pure op codes', async () => {
       await expect(
         getAvmResultRaw({ appClient }, 'verify_setbit_bytes', asUint8Array(a as bytes), b as number, c as number),
       ).rejects.toThrow('setbit index beyond byteslice')
-      expect(() => op.setBit(a as bytes, b as number, c as number)).toThrow(/setBit index \d+ is beyond length/)
+      expect(() => op.setBit(a as bytes, b as number, c as number)).toThrow(`setBit index ${b} is beyond length`)
     })
 
     test('should throw error when input is invalid', async ({ appClientMiscellaneousOpsContract: appClient }) => {

@@ -18,9 +18,9 @@ export function compileArc4<TContract extends Contract>(
   options?: CompileContractOptions,
 ): ContractProxy<TContract> {
   let app: ApplicationData | undefined
-  const compiledAppEntry = lazyContext.value.getCompiledAppEntry(contract)
-  if (compiledAppEntry !== undefined) {
-    app = lazyContext.ledger.applicationDataMap.get(compiledAppEntry.value)
+  const compiledAppId = lazyContext.value.getCompiledApp(contract)
+  if (compiledAppId !== undefined) {
+    app = lazyContext.ledger.applicationDataMap.get(compiledAppId)
   }
 
   if (options?.templateVars) {

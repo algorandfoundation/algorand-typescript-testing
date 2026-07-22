@@ -1,4 +1,4 @@
-import { OnCompleteAction, TransactionType } from '@algorandfoundation/algorand-typescript'
+import { TransactionType } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, it } from 'vitest'
 import { Auction } from './contract.algo'
@@ -139,9 +139,7 @@ describe('Auction', () => {
       contract.createApplication()
     })
 
-    ctx.txn.createScope([ctx.any.txn.applicationCall({ onCompletion: OnCompleteAction.DeleteApplication })]).execute(() => {
-      contract!.deleteApplication()
-    })
+    contract!.deleteApplication()
 
     // Assert
     const innerTransactions = ctx.txn.lastGroup.lastItxnGroup().getPaymentInnerTxn()

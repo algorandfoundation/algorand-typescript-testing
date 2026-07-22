@@ -79,11 +79,13 @@ describe('arc4 contract creation', () => {
     const arg1 = ctx.any.uint64()
     const sender = ctx.any.account()
 
-    const contract = ctx.contract.create(ContractARC4Create)
-    ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: ctx.ledger.getApplicationForContract(contract), sender })]).execute(() => {
-      contract.createApplication(arg1)
-      expect(contract.arg1).toEqual(arg1)
-      expect(contract.creator).toEqual(sender)
+    ctx.txn.createScope([ctx.any.txn.applicationCall({ sender })]).execute(() => {
+      const contract = ctx.contract.create(ContractARC4Create)
+      ctx.txn.createScope([ctx.any.txn.applicationCall({ appId: ctx.ledger.getApplicationForContract(contract), sender })]).execute(() => {
+        contract.createApplication(arg1)
+        expect(contract.arg1).toEqual(arg1)
+        expect(contract.creator).toEqual(sender)
+      })
     })
   })
 

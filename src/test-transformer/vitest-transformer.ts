@@ -22,14 +22,18 @@ programTransformer.factory = createProgramFactory(defaultTransformerConfig)
 
 /**
  * TypeScript transformer for Algorand TypeScript smart contracts and testing files
- * which is mainly responsilbe for swapping in stub implementations of op codes,
+ * which is mainly responsible for swapping in stub implementations of op codes,
  * and capturing TypeScript type information for the Node.js runtime.
  *
- ** @type {ts.TransformerFactory<ts.SourceFile> & ((config: Partial<TransformerConfig>) => ts.TransformerFactory<ts.SourceFile>)}
+ * Call directly to use the default configuration, or invoke it with a partial
+ * `TransformerConfig` to override defaults.
  *
- * @param {Partial<TransformerConfig>} [config] Configuration options
- * @param {string[]} [config.includeExt=['.algo.ts', '.algo.spec.ts']] File extensions to process
- * @param {string} [config.testingPackageName='@algorandfoundation/algorand-typescript-testing'] Package name for testing imports
+ * **Config options**
+ *
+ * | Property | Type | Default | Description |
+ * | --- | --- | --- | --- |
+ * | `includeExt` | `string[]` | `['.algo.ts', '.algo.spec.ts', '.algo.test.ts']` | File extensions to process. |
+ * | `testingPackageName` | `string` | `'@algorandfoundation/algorand-typescript-testing'` | Package name used when injecting testing imports. |
  *
  * @example
  * ```ts

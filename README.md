@@ -299,9 +299,9 @@ To dig deeper into the capabilities of `algorand-typescript-testing`, continue w
 
 #### Contents
 
-- [Testing Guide](https://algorandfoundation.github.io/algorand-typescript-testing/documents/Algorand_TypeScript_Testing_Guide.html)
-- [Examples](https://algorandfoundation.github.io/algorand-typescript-testing/documents/Examples.html)
-- [Coverage](https://algorandfoundation.github.io/algorand-typescript-testing/documents/Coverage.html)
-- [FAQ](https://algorandfoundation.github.io/algorand-typescript-testing/documents/FAQ.html)
-- [API Reference](https://algorandfoundation.github.io/algorand-typescript-testing/documents/API_Reference.html)
-- [Algorand TypeScript](https://algorandfoundation.github.io/algorand-typescript-testing/documents/Algorand_TypeScript.html)
+- [Testing Guide](https://algorandfoundation.github.io/algorand-typescript-testing/concepts/overview/)
+- [Examples](https://algorandfoundation.github.io/algorand-typescript-testing/examples/)
+- [Coverage](https://algorandfoundation.github.io/algorand-typescript-testing/reference/coverage/)
+- [FAQ](https://algorandfoundation.github.io/algorand-typescript-testing/reference/faq/)
+- [API Reference](https://algorandfoundation.github.io/algorand-typescript-testing/api/)
+- [Algorand TypeScript](https://algorandfoundation.github.io/algorand-typescript-testing/concepts/algots/)

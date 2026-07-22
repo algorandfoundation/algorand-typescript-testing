@@ -1,5 +1,5 @@
 import { Uint64 } from '@algorandfoundation/algorand-typescript'
-import { AvmError, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+import { AssertError, AvmError, TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
 import { afterEach, describe, expect, it } from 'vitest'
 import MyContract from './contract.algo'
 
@@ -19,7 +19,29 @@ describe('Calculator', () => {
           }),
         ])
         .execute(() => {
-          expect(() => contract.approvalProgram()).toThrowError(new AvmError('Unknown operation'))
+          expect(() => contract.approvalProgram()).toThrowError(new AvmError('ERR:Unknown operation'))
+          const logs = ctx.txn.activeGroup.getApplicationCallTransaction().appLogs
+          expect(logs.length).toBe(3)
+          expect(logs[2].toString()).toEqual('ERR:Unknown operation')
+        })
+    })
+  })
+
+  describe('when calling with with two args', () => {
+    it('errors', async () => {
+      const contract = ctx.contract.create(MyContract)
+      ctx.txn
+        .createScope([
+          ctx.any.txn.applicationCall({
+            appId: contract,
+            appArgs: [Uint64(1), Uint64(2)],
+          }),
+        ])
+        .execute(() => {
+          expect(() => contract.approvalProgram()).toThrowError(new AssertError('ERR:Expected 3 args'))
+          const logs = ctx.txn.activeGroup.getApplicationCallTransaction().appLogs
+          expect(logs.length).toBe(1)
+          expect(logs[0].toString()).toEqual('ERR:Expected 3 args')
         })
     })
   })

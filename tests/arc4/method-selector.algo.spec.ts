@@ -1,4 +1,4 @@
-import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
+import { AlgoAmount } from '@algorandfoundation/algokit-utils/amount'
 import type { gtxn } from '@algorandfoundation/algorand-typescript'
 import { arc4, Bytes, Global, Uint64 } from '@algorandfoundation/algorand-typescript'
 import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
@@ -16,7 +16,7 @@ const _FUNDED_ACCOUNT_SPENDING = Uint64(1234)
 describe('methodSelector', async () => {
   const ctx = new TestExecutionContext()
   const test = createArc4TestFixture({
-    path: 'tests/artifacts/arc4-abi-method/contract.algo.ts',
+    paths: 'tests/artifacts/arc4-abi-method/contract.algo.ts',
     contracts: {
       SignaturesContract: {
         deployParams: { createParams: { extraProgramPages: undefined, method: 'create' } },
@@ -120,7 +120,7 @@ describe('methodSelector', async () => {
         sender: localnetCreator,
         total: 123n,
       })
-    ).confirmation.assetIndex
+    ).confirmation.assetId
 
     // act
     await getAvmResult({ appClient }, 'withAsset', 'hello', asaId, [1, 2])
@@ -282,7 +282,7 @@ describe('methodSelector', async () => {
         sender: localnetCreator,
         total: 123n,
       })
-    ).confirmation.assetIndex
+    ).confirmation.assetId
 
     const asset = ctx.any.asset({ assetId: asaId, total: 123 })
 
@@ -334,7 +334,7 @@ describe('methodSelector', async () => {
         sender: localnetCreator,
         total: 123n,
       })
-    ).confirmation.assetIndex
+    ).confirmation.assetId
 
     const asset = ctx.any.asset({ assetId: asaId, total: 123 })
 
