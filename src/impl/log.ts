@@ -14,7 +14,7 @@ export function log(...args: Array<StubUint64Compat | StubBytesCompat | StubBigU
 export function loggedAssert(
   condition: unknown,
   code: string,
-  messageOrOptions?: string | { message?: string | undefined; prefix?: 'ERR' | 'AER' },
+  messageOrOptions?: string | { message?: string | undefined; prefix?: 'ERR' | 'AER'; desc?: string | undefined },
 ): asserts condition {
   if (!condition) {
     const errorMessage = resolveErrorMessage(code, messageOrOptions)
@@ -24,14 +24,20 @@ export function loggedAssert(
 }
 
 /** @internal */
-export function loggedErr(code: string, messageOrOptions?: string | { message?: string; prefix?: 'ERR' | 'AER' }): never {
+export function loggedErr(
+  code: string,
+  messageOrOptions?: string | { message?: string; prefix?: 'ERR' | 'AER'; desc?: string | undefined },
+): never {
   const errorMessage = resolveErrorMessage(code, messageOrOptions)
   log(errorMessage)
   throw new AvmError(errorMessage)
 }
 
 const VALID_PREFIXES = new Set(['ERR', 'AER'])
-function resolveErrorMessage(code: string, messageOrOptions?: string | { message?: string | undefined; prefix?: 'ERR' | 'AER' }): string {
+function resolveErrorMessage(
+  code: string,
+  messageOrOptions?: string | { message?: string | undefined; prefix?: 'ERR' | 'AER'; desc?: string | undefined },
+): string {
   const message = typeof messageOrOptions === 'string' ? messageOrOptions : messageOrOptions?.message
   const prefix = typeof messageOrOptions === 'string' ? undefined : (messageOrOptions?.prefix ?? 'ERR')
 

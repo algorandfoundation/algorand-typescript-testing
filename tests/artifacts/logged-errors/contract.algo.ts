@@ -29,6 +29,11 @@ export class LoggedErrorsContract extends Contract {
     }
   }
 
+  public testDesc(arg: uint64): void {
+    // `desc` is accepted but must not affect the logged output; it only feeds ARC-56 source info upstream.
+    loggedAssert(arg !== 1, '01', { message: 'arg is 1', desc: 'a plain description of the failure' })
+  }
+
   public testInvalidCode(arg: uint64): void {
     loggedAssert(arg !== 1, 'not-alnum!')
     loggedErr('not-alnum!')
